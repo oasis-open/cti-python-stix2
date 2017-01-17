@@ -81,3 +81,16 @@ def test_indicator_id_must_start_with_indicator():
         indicator = stix2.Indicator(id='my-prefix--')
 
     assert "Indicator id values must begin with 'indicator--'." in str(excinfo)
+
+
+def test_indicator_required_field_labels():
+    with pytest.raises(ValueError) as excinfo:
+        indicator = stix2.Indicator()
+    assert "Missing required field for Indicator: 'labels'." in str(excinfo)
+
+
+def test_indicator_required_field_pattern():
+    with pytest.raises(ValueError) as excinfo:
+        # Label is checked first, so make sure that is provided
+        indicator = stix2.Indicator(labels=['malicious-activity'])
+    assert "Missing required field for Indicator: 'pattern'." in str(excinfo)

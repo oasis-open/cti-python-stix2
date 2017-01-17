@@ -43,7 +43,13 @@ class Indicator:
 
         self.created = created or now
         self.modified = modified or now
+
+        if not labels:
+            raise ValueError("Missing required field for Indicator: 'labels'.")
         self.labels = labels
+
+        if not pattern:
+            raise ValueError("Missing required field for Indicator: 'pattern'.")
         self.pattern = pattern
         self.valid_from = valid_from or now
 
