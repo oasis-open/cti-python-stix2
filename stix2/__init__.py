@@ -31,10 +31,16 @@ class Indicator:
                  labels=None, pattern=None, valid_from=None):
         now = datetime.now(tz=pytz.UTC)
 
+        if type != 'indicator':
+            raise ValueError("Indicators must have type='indicator'.")
         self.type = type
+
         if not id:
-            id = "indicator--" + str(uuid.uuid4())
+            id = 'indicator--' + str(uuid.uuid4())
+        if not id.startswith('indicator--'):
+            raise ValueError("Indicator id values must begin with 'indicator--'.")
         self.id = id
+
         self.created = created or now
         self.modified = modified or now
         self.labels = labels
