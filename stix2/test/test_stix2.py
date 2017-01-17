@@ -102,3 +102,12 @@ def test_indicator_required_field_pattern():
         # Label is checked first, so make sure that is provided
         indicator = stix2.Indicator(labels=['malicious-activity'])
     assert "Missing required field for Indicator: 'pattern'." in str(excinfo)
+
+
+def test_cannot_assign_to_attributes():
+    indicator = stix2.Indicator(**KWARGS)
+
+    with pytest.raises(ValueError) as excinfo:
+        indicator.valid_from = datetime.datetime.now()
+
+    assert "Cannot modify properties after creation." in str(excinfo)
