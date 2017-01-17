@@ -19,13 +19,16 @@ def format_datetime(dt):
 # - modified
 
 
-class Indicator:
+class Indicator(object):
     # REQUIRED (Indicator):
     # - type
     # - labels
     # - pattern
     # - valid_from
     required = ['']
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 
     def __init__(self, type='indicator', id=None, created=None, modified=None,
                  labels=None, pattern=None, valid_from=None):
