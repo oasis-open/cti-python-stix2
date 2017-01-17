@@ -26,10 +26,10 @@ indicator = Indicator(name="File hash for malware variant",
 
 ```
 
-Certain required attributes of all objectswill be set automatically if not
+Certain required attributes of all objects will be set automatically if not
 provided as keyword arguments:
 
-- If not provided, `type` will be set automatically to the correct type. 
+- If not provided, `type` will be set automatically to the correct type.
   You can also provide the type explicitly, but this is not necessary:
 
   ```python
@@ -40,7 +40,7 @@ provided as keyword arguments:
   will cause an error:
 
   ```python
-  >>> indicator = Indicator(type='indicator', ...)
+  >>> indicator = Indicator(type='xxx', ...)
   ValueError: Indicators must have type='indicator'
   ```
 
@@ -48,7 +48,7 @@ provided as keyword arguments:
   argument, it must begin with the correct prefix:
 
   ```python
-  >>> indicator = Indicator(id="campaign--63ce9068-b5ab-47fa-a2cf-a602ea01f21a") 
+  >>> indicator = Indicator(id="campaign--63ce9068-b5ab-47fa-a2cf-a602ea01f21a")
   ValueError: Indicator id values must begin with 'indicator--'
   ```
 
@@ -60,7 +60,7 @@ automatically. Trying to create an indicator that is missing one of these fields
 will result in an error:
 
 ```python
->>> indicator = Indicator() 
+>>> indicator = Indicator()
 ValueError: Missing required field for Indicator: 'labels'
 ```
 
@@ -102,14 +102,14 @@ malware = Malware(name="Poison Ivy",
 
 As with indicators, the `type`, `id`, `created`, and `modified` properties will
 be set automatically if not provided. For Malware objects, the `labels` and
-`name` properties must be provided. 
+`name` properties must be provided.
 
 ### Creating Relationships
 
 STIX 2 Relationships are separate objects, not properties of the object on
 either side of the relationship. They are constructed similarly to other STIX
 objects. The `type`, `id`, `created`, and `modified` properties are added
-automatically if not provided. Callers must provide the `relationship_type`, 
+automatically if not provided. Callers must provide the `relationship_type`,
 `source_ref`, and `target_ref` properties.
 
 ```python
@@ -120,10 +120,10 @@ relationship = Relationship(relationship_type='indicates',
                             target_ref=malware.id)
 ```
 
-The `source_ref` and `target_ref` properties can be either the ID's of other 
+The `source_ref` and `target_ref` properties can be either the ID's of other
 STIX objects, or the STIX objects themselves. For readability, Relationship
 objects can also be constructed with the `source_ref`, `relationship_type`, and
-`target_ref` as positional (non-keyword) arguments: 
+`target_ref` as positional (non-keyword) arguments:
 
 ```python
 relationship = Relationship(indicator, 'indicates', malware)
