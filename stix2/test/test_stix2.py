@@ -81,7 +81,7 @@ def test_indicator_type_must_be_indicator():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(type='xxx')
 
-    assert "Indicators must have type='indicator'." in str(excinfo)
+    assert "Indicator must have type='indicator'." in str(excinfo)
 
 
 def test_indicator_id_must_start_with_indicator():
@@ -111,6 +111,12 @@ def test_cannot_assign_to_attributes():
         indicator.valid_from = datetime.datetime.now()
 
     assert "Cannot modify properties after creation." in str(excinfo)
+
+
+def test_invalid_kwarg_to_indicator():
+    with pytest.raises(TypeError) as excinfo:
+        indicator = stix2.Indicator(my_custom_property="foo", **INDICATOR_KWARGS)
+    assert "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
 
 
 EXPECTED_MALWARE = """{

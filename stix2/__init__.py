@@ -47,8 +47,17 @@ class _STIXBase(collections.Mapping):
 
 class Indicator(_STIXBase):
 
-    def __init__(self, type='indicator', id=None, created=None, modified=None,
-                 labels=None, pattern=None, valid_from=None):
+    _properties = [
+        'type',
+        'id',
+        'created',
+        'modified',
+        'labels',
+        'pattern',
+        'valid_from',
+    ]
+
+    def __init__(self, **kwargs):
         # TODO:
         # - created_by_ref
         # - revoked
@@ -61,31 +70,38 @@ class Indicator(_STIXBase):
         # - valid_until
         # - kill_chain_phases
 
-        if not created or not modified or not valid_from:
-            now = datetime.now(tz=pytz.UTC)
+        # TODO: do we care about the performance penalty of creating this
+        # if we won't need it?
+        now = datetime.now(tz=pytz.UTC)
 
-        if type != 'indicator':
-            raise ValueError("Indicators must have type='indicator'.")
+        if not kwargs.get('type'):
+            kwargs['type'] = 'indicator'
+        if kwargs['type'] != 'indicator':
+            raise ValueError("Indicator must have type='indicator'.")
 
-        if not id:
-            id = 'indicator--' + str(uuid.uuid4())
-        if not id.startswith('indicator--'):
+        if not kwargs.get('id'):
+            kwargs['id'] = 'indicator--' + str(uuid.uuid4())
+        if not kwargs['id'].startswith('indicator--'):
             raise ValueError("Indicator id values must begin with 'indicator--'.")
 
-        if not labels:
+        if not kwargs.get('labels'):
             raise ValueError("Missing required field for Indicator: 'labels'.")
 
-        if not pattern:
+        if not kwargs.get('pattern'):
             raise ValueError("Missing required field for Indicator: 'pattern'.")
 
+        extra_kwargs = list(set(kwargs.keys()) - set(self._properties))
+        if extra_kwargs:
+            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
+
         self._inner = {
-            'type': type,
-            'id': id,
-            'created': created or now,
-            'modified': modified or now,
-            'labels': labels,
-            'pattern': pattern,
-            'valid_from': valid_from or now,
+            'type': kwargs['type'],
+            'id': kwargs['id'],
+            'created': kwargs.get('created', now),
+            'modified': kwargs.get('modified', now),
+            'labels': kwargs['labels'],
+            'pattern': kwargs['pattern'],
+            'valid_from': kwargs.get('valid_from', now),
         }
 
     def _dict(self):
@@ -102,8 +118,16 @@ class Indicator(_STIXBase):
 
 class Malware(_STIXBase):
 
-    def __init__(self, type='malware', id=None, created=None, modified=None,
-                 labels=None, name=None):
+    _properties = [
+        'type',
+        'id',
+        'created',
+        'modified',
+        'labels',
+        'name',
+    ]
+
+    def __init__(self, **kwargs):
         # TODO:
         # - created_by_ref
         # - revoked
@@ -114,30 +138,37 @@ class Malware(_STIXBase):
         # - description
         # - kill_chain_phases
 
-        if not created or not modified:
-            now = datetime.now(tz=pytz.UTC)
+        # TODO: do we care about the performance penalty of creating this
+        # if we won't need it?
+        now = datetime.now(tz=pytz.UTC)
 
-        if type != 'malware':
+        if not kwargs.get('type'):
+            kwargs['type'] = 'malware'
+        if kwargs['type'] != 'malware':
             raise ValueError("Malware must have type='malware'.")
 
-        if not id:
-            id = 'malware--' + str(uuid.uuid4())
-        if not id.startswith('malware--'):
+        if not kwargs.get('id'):
+            kwargs['id'] = 'malware--' + str(uuid.uuid4())
+        if not kwargs['id'].startswith('malware--'):
             raise ValueError("Malware id values must begin with 'malware--'.")
 
-        if not labels:
+        if not kwargs.get('labels'):
             raise ValueError("Missing required field for Malware: 'labels'.")
 
-        if not name:
+        if not kwargs.get('name'):
             raise ValueError("Missing required field for Malware: 'name'.")
 
+        extra_kwargs = list(set(kwargs.keys()) - set(self._properties))
+        if extra_kwargs:
+            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
+
         self._inner = {
-            'type': type,
-            'id': id,
-            'created': created or now,
-            'modified': modified or now,
-            'labels': labels,
-            'name': name,
+            'type': kwargs['type'],
+            'id': kwargs['id'],
+            'created': kwargs.get('created', now),
+            'modified': kwargs.get('modified', now),
+            'labels': kwargs['labels'],
+            'name': kwargs['name'],
         }
 
     def _dict(self):
