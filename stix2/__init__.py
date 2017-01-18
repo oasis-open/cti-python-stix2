@@ -180,3 +180,74 @@ class Malware(_STIXBase):
             'labels': self['labels'],
             'name': self['name'],
         }
+
+
+class Relationship(_STIXBase):
+
+    _properties = [
+        'type',
+        'id',
+        'created',
+        'modified',
+        'relationship_type',
+        'source_ref',
+        'target_ref',
+    ]
+
+    def __init__(self, **kwargs):
+        # TODO:
+        # - created_by_ref
+        # - revoked
+        # - external_references
+        # - object_marking_refs
+        # - granular_markings
+
+        # - description
+
+        # TODO: do we care about the performance penalty of creating this
+        # if we won't need it?
+        now = datetime.now(tz=pytz.UTC)
+
+        if not kwargs.get('type'):
+            kwargs['type'] = 'relationship'
+        if kwargs['type'] != 'relationship':
+            raise ValueError("Relationship must have type='relationship'.")
+
+        if not kwargs.get('id'):
+            kwargs['id'] = 'relationship--' + str(uuid.uuid4())
+        if not kwargs['id'].startswith('relationship--'):
+            raise ValueError("Relationship id values must begin with 'relationship--'.")
+
+        if not kwargs.get('relationship_type'):
+            raise ValueError("Missing required field for Relationship: 'relationship_type'.")
+
+        if not kwargs.get('source_ref'):
+            raise ValueError("Missing required field for Relationship: 'source_ref'.")
+
+        if not kwargs.get('target_ref'):
+            raise ValueError("Missing required field for Relationship: 'target_ref'.")
+
+        extra_kwargs = list(set(kwargs.keys()) - set(self._properties))
+        if extra_kwargs:
+            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
+
+        self._inner = {
+            'type': kwargs['type'],
+            'id': kwargs['id'],
+            'created': kwargs.get('created', now),
+            'modified': kwargs.get('modified', now),
+            'relationship_type': kwargs['relationship_type'],
+            'source_ref': kwargs['source_ref'],
+            'target_ref': kwargs['target_ref'],
+        }
+
+    def _dict(self):
+        return {
+            'type': self['type'],
+            'id': self['id'],
+            'created': format_datetime(self['created']),
+            'modified': format_datetime(self['modified']),
+            'relationship_type': self['relationship_type'],
+            'source_ref': self['source_ref'],
+            'target_ref': self['target_ref'],
+        }
