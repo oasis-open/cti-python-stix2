@@ -336,3 +336,11 @@ def test_create_relationship_from_objects_rather_than_ids(indicator, malware):
     assert relationship.relationship_type == 'indicates'
     assert relationship.source_ref == INDICATOR_ID
     assert relationship.target_ref == MALWARE_ID
+
+
+def test_create_relationship_with_positional_args(indicator, malware):
+    relationship = stix2.Relationship(indicator, 'indicates', malware)
+
+    assert relationship.relationship_type == 'indicates'
+    assert relationship.source_ref == INDICATOR_ID
+    assert relationship.target_ref == MALWARE_ID

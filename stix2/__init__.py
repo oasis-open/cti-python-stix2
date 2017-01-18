@@ -194,7 +194,8 @@ class Relationship(_STIXBase):
         'target_ref',
     ]
 
-    def __init__(self, **kwargs):
+    def __init__(self, source_ref=None, relationship_type=None, target_ref=None,
+                 **kwargs):
         # TODO:
         # - created_by_ref
         # - revoked
@@ -203,6 +204,13 @@ class Relationship(_STIXBase):
         # - granular_markings
 
         # - description
+
+        if source_ref and not kwargs.get('source_ref'):
+            kwargs['source_ref'] = source_ref
+        if relationship_type and not kwargs.get('relationship_type'):
+            kwargs['relationship_type'] = relationship_type
+        if target_ref and not kwargs.get('target_ref'):
+            kwargs['target_ref'] = target_ref
 
         # TODO: do we care about the performance penalty of creating this
         # if we won't need it?
