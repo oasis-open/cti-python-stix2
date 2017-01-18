@@ -324,3 +324,15 @@ def test_invalid_kwarg_to_relationship():
     with pytest.raises(TypeError) as excinfo:
         relationship = stix2.Relationship(my_custom_property="foo", **RELATIONSHIP_KWARGS)
     assert "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
+
+
+def test_create_relationship_from_objects_rather_than_ids(indicator, malware):
+    relationship = stix2.Relationship(
+        relationship_type="indicates",
+        source_ref=indicator,
+        target_ref=malware,
+    )
+
+    assert relationship.relationship_type == 'indicates'
+    assert relationship.source_ref == INDICATOR_ID
+    assert relationship.target_ref == MALWARE_ID

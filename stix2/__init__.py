@@ -223,9 +223,13 @@ class Relationship(_STIXBase):
 
         if not kwargs.get('source_ref'):
             raise ValueError("Missing required field for Relationship: 'source_ref'.")
+        elif isinstance(kwargs['source_ref'], _STIXBase):
+            kwargs['source_ref'] = kwargs['source_ref'].id
 
         if not kwargs.get('target_ref'):
             raise ValueError("Missing required field for Relationship: 'target_ref'.")
+        elif isinstance(kwargs['target_ref'], _STIXBase):
+            kwargs['target_ref'] = kwargs['target_ref'].id
 
         extra_kwargs = list(set(kwargs.keys()) - set(self._properties))
         if extra_kwargs:
