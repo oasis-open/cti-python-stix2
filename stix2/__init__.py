@@ -39,6 +39,11 @@ class _STIXBase(collections.Mapping):
             raise ValueError("Cannot modify properties after creation.")
         super(_STIXBase, self).__setattr__(name, value)
 
+    def __str__(self):
+        # TODO: put keys in specific order. Probably need custom JSON encoder.
+        return json.dumps(self._dict(), indent=4, sort_keys=True,
+                          separators=(",", ": "))  # Don't include spaces after commas.
+
 
 class Indicator(_STIXBase):
 
@@ -83,9 +88,8 @@ class Indicator(_STIXBase):
             'valid_from': valid_from or now,
         }
 
-    def __str__(self):
-        # TODO: put keys in specific order. Probably need custom JSON encoder.
-        return json.dumps({
+    def _dict(self):
+        return {
             'type': self['type'],
             'id': self['id'],
             'created': format_datetime(self['created']),
@@ -93,7 +97,7 @@ class Indicator(_STIXBase):
             'labels': self['labels'],
             'pattern': self['pattern'],
             'valid_from': format_datetime(self['valid_from']),
-        }, indent=4, sort_keys=True, separators=(",", ": "))  # Don't include spaces after commas.
+        }
 
 
 class Malware(_STIXBase):
@@ -136,13 +140,12 @@ class Malware(_STIXBase):
             'name': name,
         }
 
-    def __str__(self):
-        # TODO: put keys in specific order. Probably need custom JSON encoder.
-        return json.dumps({
+    def _dict(self):
+        return {
             'type': self['type'],
             'id': self['id'],
             'created': format_datetime(self['created']),
             'modified': format_datetime(self['modified']),
             'labels': self['labels'],
             'name': self['name'],
-        }, indent=4, sort_keys=True, separators=(",", ": "))  # Don't include spaces after commas.
+        }
