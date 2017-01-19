@@ -1,5 +1,5 @@
 import collections
-from datetime import datetime
+import datetime
 import json
 import uuid
 
@@ -72,7 +72,7 @@ class Indicator(_STIXBase):
 
         # TODO: do we care about the performance penalty of creating this
         # if we won't need it?
-        now = datetime.now(tz=pytz.UTC)
+        now = datetime.datetime.now(tz=pytz.UTC)
 
         if not kwargs.get('type'):
             kwargs['type'] = 'indicator'
@@ -140,7 +140,7 @@ class Malware(_STIXBase):
 
         # TODO: do we care about the performance penalty of creating this
         # if we won't need it?
-        now = datetime.now(tz=pytz.UTC)
+        now = datetime.datetime.now(tz=pytz.UTC)
 
         if not kwargs.get('type'):
             kwargs['type'] = 'malware'
@@ -215,7 +215,7 @@ class Relationship(_STIXBase):
 
         # TODO: do we care about the performance penalty of creating this
         # if we won't need it?
-        now = datetime.now(tz=pytz.UTC)
+        now = datetime.datetime.now(tz=pytz.UTC)
 
         if not kwargs.get('type'):
             kwargs['type'] = 'relationship'
