@@ -135,7 +135,7 @@ STIX Bundles can be created by passing objects as arguments to the Bundle
 constructor. All required properties (`type`, `id`, and `spec_version`) will be
 set automatically if not provided, or can be provided as keyword arguments:
 
-```
+```python
 from stix2 import bundle
 
 bundle = Bundle(indicator, malware, relationship)
@@ -143,7 +143,13 @@ bundle = Bundle(indicator, malware, relationship)
 
 ### Serializing STIX objects
 
-TBD
+The string representation of all STIX classes is a valid STIX JSON object.
+
+```python
+indicator = Indicator(...)
+
+print(str(indicator))
+```
 
 ### Versioning
 
