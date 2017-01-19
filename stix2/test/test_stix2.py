@@ -387,35 +387,34 @@ def test_create_relationship_with_positional_args(indicator, malware):
     assert relationship.id == 'relationship--00000000-0000-0000-0000-000000000003'
 
 
-EXPECTED_BUNDLE = """
-{
-    "id": "bundle--624182ea-4c8f-5cd9-979d-3ae5f8a3ee56",
+EXPECTED_BUNDLE = """{
+    "id": "bundle--00000000-0000-0000-0000-000000000004",
     "objects": [
         {
-            "created": "2017-01-01T00:00:00Z",
-            "id": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+            "created": "2017-01-01T12:34:56Z",
+            "id": "indicator--00000000-0000-0000-0000-000000000001",
             "labels": [
                 "malicious-activity"
             ],
-            "modified": "2017-01-01T00:00:00Z",
+            "modified": "2017-01-01T12:34:56Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
             "type": "indicator",
-            "valid_from": "1970-01-01T00:00:00Z"
+            "valid_from": "2017-01-01T12:34:56Z"
         },
         {
-            "created": "2016-05-12T08:17:27Z",
-            "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+            "created": "2017-01-01T12:34:56Z",
+            "id": "malware--00000000-0000-0000-0000-000000000002",
             "labels": [
                 "ransomware"
             ],
-            "modified": "2016-05-12T08:17:27Z",
+            "modified": "2017-01-01T12:34:56Z",
             "name": "Cryptolocker",
             "type": "malware"
         },
         {
-            "created": "2016-04-06T20:06:37Z",
-            "id": "relationship--00000000-1111-2222-3333-444444444444",
-            "modified": "2016-04-06T20:06:37Z",
+            "created": "2017-01-01T12:34:56Z",
+            "id": "relationship--00000000-0000-0000-0000-000000000003",
+            "modified": "2017-01-01T12:34:56Z",
             "relationship_type": "indicates",
             "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
             "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210",
@@ -454,3 +453,9 @@ def test_bundle_with_wrong_spec_version():
         bundle = stix2.Bundle(spec_version="1.2")
 
     assert "Bundle must have spec_version='2.0'." in str(excinfo)
+
+
+def test_create_bundle(indicator, malware, relationship):
+    bundle = stix2.Bundle(objects=[indicator, malware, relationship])
+
+    assert str(bundle) == EXPECTED_BUNDLE
