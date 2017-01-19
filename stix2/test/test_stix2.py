@@ -9,6 +9,19 @@ import stix2
 
 amsterdam = pytz.timezone('Europe/Amsterdam')
 eastern = pytz.timezone('US/Eastern')
+FAKE_TIME = datetime.datetime(2017, 01, 01, 12, 34, 56)
+
+
+# Inspired by: http://stackoverflow.com/a/24006251
+@pytest.fixture
+def clock(monkeypatch):
+
+    class mydatetime(datetime.datetime):
+        @classmethod
+        def now(cls):
+            return FAKE_TIME
+
+    monkeypatch.setattr(datetime, 'datetime', mydatetime)
 
 
 @pytest.mark.parametrize('dt,timestamp', [
