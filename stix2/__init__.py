@@ -45,6 +45,42 @@ class _STIXBase(collections.Mapping):
                           separators=(",", ": "))  # Don't include spaces after commas.
 
 
+class Bundle(_STIXBase):
+
+    def __init__(self, type="bundle", id=None, spec_version="2.0", objects=None):
+
+        if type != 'bundle':
+            raise ValueError("Bundle must have type='bundle'.")
+
+        id = id or 'bundle--' + str(uuid.uuid4())
+        if not id.startswith('bundle--'):
+            raise ValueError("Bundle id values must begin with 'bundle--'.")
+
+        if spec_version != '2.0':
+            raise ValueError("Bundle must have spec_version='2.0'.")
+
+        objects = objects or []
+
+        self._inner = {
+            'type': type,
+            'id': id,
+            'spec_version': spec_version,
+            'objects': objects,
+        }
+
+    def _dict(self):
+        bundle = {
+            'type': self['type'],
+            'id': self['id'],
+            'spec_version': self['spec_version'],
+        }
+
+        if self.get('objects'):
+            bundle['objects'] = [x._dict() for x in self['objects']]
+
+        return bundle
+
+
 class Indicator(_STIXBase):
 
     _properties = [

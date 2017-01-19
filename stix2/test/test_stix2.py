@@ -385,3 +385,72 @@ def test_create_relationship_with_positional_args(indicator, malware):
     assert relationship.source_ref == 'indicator--00000000-0000-0000-0000-000000000001'
     assert relationship.target_ref == 'malware--00000000-0000-0000-0000-000000000002'
     assert relationship.id == 'relationship--00000000-0000-0000-0000-000000000003'
+
+
+EXPECTED_BUNDLE = """
+{
+    "id": "bundle--624182ea-4c8f-5cd9-979d-3ae5f8a3ee56",
+    "objects": [
+        {
+            "created": "2017-01-01T00:00:00Z",
+            "id": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+            "labels": [
+                "malicious-activity"
+            ],
+            "modified": "2017-01-01T00:00:00Z",
+            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "type": "indicator",
+            "valid_from": "1970-01-01T00:00:00Z"
+        },
+        {
+            "created": "2016-05-12T08:17:27Z",
+            "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+            "labels": [
+                "ransomware"
+            ],
+            "modified": "2016-05-12T08:17:27Z",
+            "name": "Cryptolocker",
+            "type": "malware"
+        },
+        {
+            "created": "2016-04-06T20:06:37Z",
+            "id": "relationship--00000000-1111-2222-3333-444444444444",
+            "modified": "2016-04-06T20:06:37Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+            "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+            "type": "relationship"
+        }
+    ],
+    "spec_version": "2.0",
+    "type": "bundle"
+}"""
+
+
+def test_empty_bundle():
+    bundle = stix2.Bundle()
+
+    assert bundle.type == "bundle"
+    assert bundle.id.startswith("bundle--")
+    assert bundle.spec_version == "2.0"
+
+
+def test_bundle_with_wrong_type():
+    with pytest.raises(ValueError) as excinfo:
+        bundle = stix2.Bundle(type="not-a-bundle")
+
+    assert "Bundle must have type='bundle'." in str(excinfo)
+
+
+def test_bundle_id_must_start_with_bundle():
+    with pytest.raises(ValueError) as excinfo:
+        bundle = stix2.Bundle(id='my-prefix--')
+
+    assert "Bundle id values must begin with 'bundle--'." in str(excinfo)
+
+
+def test_bundle_with_wrong_spec_version():
+    with pytest.raises(ValueError) as excinfo:
+        bundle = stix2.Bundle(spec_version="1.2")
+
+    assert "Bundle must have spec_version='2.0'." in str(excinfo)
