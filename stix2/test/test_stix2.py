@@ -37,7 +37,6 @@ MALWARE_KWARGS = dict(
     name="Cryptolocker",
 )
 
-
 # Minimum required args for a Relationship instance
 RELATIONSHIP_KWARGS = dict(
     relationship_type="indicates",
