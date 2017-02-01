@@ -29,6 +29,17 @@ def format_datetime(dt):
     return dt.astimezone(pytz.utc).isoformat()[:-6] + "Z"
 
 
+class STIXJSONEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, (datetime.date, datetime.datetime)):
+            return format_datetime(obj)
+        elif isinstance(obj, _STIXBase):
+            return dict(obj)
+        else:
+            return super(STIXJSONEncoder, self).default(obj)
+
+
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
@@ -105,7 +116,7 @@ class _STIXBase(collections.Mapping):
 
     def __str__(self):
         # TODO: put keys in specific order. Probably need custom JSON encoder.
-        return json.dumps(self._dict(), indent=4, sort_keys=True,
+        return json.dumps(self, indent=4, sort_keys=True, cls=STIXJSONEncoder,
                           separators=(",", ": "))  # Don't include spaces after commas.
 
 
@@ -130,18 +141,6 @@ class Bundle(_STIXBase):
             kwargs['objects'] = kwargs.get('objects', []) + list(args)
 
         super(Bundle, self).__init__(**kwargs)
-
-    def _dict(self):
-        bundle = {
-            'type': self['type'],
-            'id': self['id'],
-            'spec_version': self['spec_version'],
-        }
-
-        if self.get('objects'):
-            bundle['objects'] = [x._dict() for x in self['objects']]
-
-        return bundle
 
 
 class Indicator(_STIXBase):
@@ -187,17 +186,6 @@ class Indicator(_STIXBase):
         })
         super(Indicator, self).__init__(**kwargs)
 
-    def _dict(self):
-        return {
-            'type': self['type'],
-            'id': self['id'],
-            'created': format_datetime(self['created']),
-            'modified': format_datetime(self['modified']),
-            'labels': self['labels'],
-            'pattern': self['pattern'],
-            'valid_from': format_datetime(self['valid_from']),
-        }
-
 
 class Malware(_STIXBase):
 
@@ -237,16 +225,6 @@ class Malware(_STIXBase):
             'modified': kwargs.get('modified', now),
         })
         super(Malware, self).__init__(**kwargs)
-
-    def _dict(self):
-        return {
-            'type': self['type'],
-            'id': self['id'],
-            'created': format_datetime(self['created']),
-            'modified': format_datetime(self['modified']),
-            'labels': self['labels'],
-            'name': self['name'],
-        }
 
 
 class Relationship(_STIXBase):
@@ -309,15 +287,5 @@ class Relationship(_STIXBase):
             'relationship_type': kwargs['relationship_type'],
             'target_ref': kwargs['target_ref'],
         })
-        super(Relationship, self).__init__(**kwargs)
 
-    def _dict(self):
-        return {
-            'type': self['type'],
-            'id': self['id'],
-            'created': format_datetime(self['created']),
-            'modified': format_datetime(self['modified']),
-            'relationship_type': self['relationship_type'],
-            'source_ref': self['source_ref'],
-            'target_ref': self['target_ref'],
-        }
+        super(Relationship, self).__init__(**kwargs)
