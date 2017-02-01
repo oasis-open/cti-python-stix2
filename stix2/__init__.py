@@ -5,12 +5,11 @@ import uuid
 
 import pytz
 
-
+DEFAULT_ERROR = "{type} must have {field}='{expected}'."
 COMMON_PROPERTIES = {
     'type': {
         'default': (lambda x: x._type),
-        'validate': (lambda x, val: val == x._type),
-        'error_msg': "{type} must have {field}='{expected}'.",
+        'validate': (lambda x, val: val == x._type)
     },
     'id': {},
     'created': {},
@@ -42,15 +41,26 @@ class _STIXBase(collections.Mapping):
         class_name = cls.__name__
 
         for prop_name, prop_metadata in cls._properties.items():
-            if prop_metadata.get('default') and prop_name not in kwargs:
-                kwargs[prop_name] = prop_metadata['default'](cls)
+            if prop_name not in kwargs:
+                if prop_metadata.get('default'):
+                    kwargs[prop_name] = prop_metadata['default'](cls)
+                elif prop_metadata.get('fixed'):
+                    kwargs[prop_name] = prop_metadata['fixed']
 
             if prop_metadata.get('validate'):
                 if not prop_metadata['validate'](cls, kwargs[prop_name]):
-                    msg = prop_metadata['error_msg'].format(
+                    msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
                         type=class_name,
                         field=prop_name,
-                        expected=prop_metadata.get('default')(cls),
+                        expected=prop_metadata['default'](cls),
+                    )
+                    raise ValueError(msg)
+            elif prop_metadata.get('fixed'):
+                if kwargs[prop_name] != prop_metadata['fixed']:
+                    msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
+                        type=class_name,
+                        field=prop_name,
+                        expected=prop_metadata['fixed']
                     )
                     raise ValueError(msg)
 
@@ -64,14 +74,14 @@ class _STIXBase(collections.Mapping):
         return kwargs
 
     def __init__(self, **kwargs):
+        # TODO: move all of this back into init, once we check the right things
+        # in the right order, or move after the unexpected check.
+        kwargs = self._check_kwargs(**kwargs)
+
         # Detect any keyword arguments not allowed for a specific type
         extra_kwargs = list(set(kwargs) - set(self.__class__._properties))
         if extra_kwargs:
             raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
-
-        # TODO: move all of this back into init, once we check the right things
-        # in the right order.
-        self._check_kwargs(**kwargs)
 
         self._inner = kwargs
 
@@ -105,22 +115,18 @@ class Bundle(_STIXBase):
     _properties = {
         'type': {
             'default': (lambda x: x._type),
-            'validate': (lambda x, val: val == x._type),
-            'error_msg': "{type} must have {field}='{expected}'.",
+            'validate': (lambda x, val: val == x._type)
         },
         'id': {},
-        'spec_version': {},
+        'spec_version': {
+            'fixed': "2.0",
+        },
         'objects': {},
     }
 
     def __init__(self, **kwargs):
-        # TODO: remove once we check all the fields in the right order
-        kwargs = self._check_kwargs(**kwargs)
-
-        if not kwargs.get('spec_version'):
-            kwargs['spec_version'] = '2.0'
-        if kwargs['spec_version'] != '2.0':
-            raise ValueError("Bundle must have spec_version='2.0'.")
+        # TODO: Allow variable number of arguments to pass "objects" to the
+        # Bundle constructor
 
         super(Bundle, self).__init__(**kwargs)
 
