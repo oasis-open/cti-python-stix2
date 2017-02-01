@@ -124,9 +124,10 @@ class Bundle(_STIXBase):
         'objects': {},
     }
 
-    def __init__(self, **kwargs):
-        # TODO: Allow variable number of arguments to pass "objects" to the
-        # Bundle constructor
+    def __init__(self, *args, **kwargs):
+        # Add any positional arguments to the 'objects' kwarg.
+        if args:
+            kwargs['objects'] = kwargs.get('objects', []) + list(args)
 
         super(Bundle, self).__init__(**kwargs)
 
