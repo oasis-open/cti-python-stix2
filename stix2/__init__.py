@@ -80,22 +80,20 @@ class Bundle(_STIXBase):
         'objects',
     ]
 
-    def __init__(self, type="bundle", id=None, spec_version="2.0", objects=None):
-        id = id or 'bundle--' + str(uuid.uuid4())
-        if not id.startswith('bundle--'):
+    def __init__(self, **kwargs):
+        # TODO: remove once we check all the fields in the right order
+        kwargs = self._check_kwargs(**kwargs)
+
+        if not kwargs.get('id'):
+            kwargs['id'] = 'bundle--' + str(uuid.uuid4())
+        if not kwargs['id'].startswith('bundle--'):
             raise ValueError("Bundle id values must begin with 'bundle--'.")
 
-        if spec_version != '2.0':
+        if not kwargs.get('spec_version'):
+            kwargs['spec_version'] = '2.0'
+        if kwargs['spec_version'] != '2.0':
             raise ValueError("Bundle must have spec_version='2.0'.")
 
-        objects = objects or []
-
-        kwargs = {
-            'type': type,
-            'id': id,
-            'spec_version': spec_version,
-            'objects': objects,
-        }
         super(Bundle, self).__init__(**kwargs)
 
     def _dict(self):
@@ -156,12 +154,8 @@ class Indicator(_STIXBase):
             raise ValueError("Missing required field for Indicator: 'pattern'.")
 
         kwargs.update({
-            # 'type': kwargs['type'],
-            'id': kwargs['id'],
             'created': kwargs.get('created', now),
             'modified': kwargs.get('modified', now),
-            'labels': kwargs['labels'],
-            'pattern': kwargs['pattern'],
             'valid_from': kwargs.get('valid_from', now),
         })
         super(Indicator, self).__init__(**kwargs)
@@ -225,12 +219,8 @@ class Malware(_STIXBase):
             raise ValueError("Missing required field for Malware: 'name'.")
 
         kwargs.update({
-            'type': kwargs['type'],
-            'id': kwargs['id'],
             'created': kwargs.get('created', now),
             'modified': kwargs.get('modified', now),
-            'labels': kwargs['labels'],
-            'name': kwargs['name'],
         })
         super(Malware, self).__init__(**kwargs)
 
@@ -308,13 +298,9 @@ class Relationship(_STIXBase):
             kwargs['target_ref'] = kwargs['target_ref'].id
 
         kwargs.update({
-            'type': kwargs['type'],
-            'id': kwargs['id'],
             'created': kwargs.get('created', now),
             'modified': kwargs.get('modified', now),
             'relationship_type': kwargs['relationship_type'],
-            'source_ref': kwargs['source_ref'],
-            'target_ref': kwargs['target_ref'],
         })
         super(Relationship, self).__init__(**kwargs)
 
