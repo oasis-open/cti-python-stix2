@@ -10,7 +10,7 @@ import stix2
 
 amsterdam = pytz.timezone('Europe/Amsterdam')
 eastern = pytz.timezone('US/Eastern')
-FAKE_TIME = datetime.datetime(2017, 01, 01, 12, 34, 56, tzinfo=pytz.utc)
+FAKE_TIME = datetime.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
 
 
 # Inspired by: http://stackoverflow.com/a/24006251
