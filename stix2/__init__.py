@@ -11,7 +11,12 @@ COMMON_PROPERTIES = {
         'default': (lambda x: x._type),
         'validate': (lambda x, val: val == x._type)
     },
-    'id': {},
+    'id': {
+        'default': (lambda x: x._make_id()),
+        'validate': (lambda x, val: val.startswith(x._type + "--")),
+        'expected': (lambda x: x._type + "--"),
+        'error_msg': "{type} {field} values must begin with '{expected}'."
+    },
     'created': {},
     'modified': {},
 }
@@ -63,7 +68,8 @@ class _STIXBase(collections.Mapping):
                     msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
                         type=class_name,
                         field=prop_name,
-                        expected=prop_metadata['default'](cls),
+                        expected=prop_metadata.get('expected',
+                                                   prop_metadata['default'])(cls),
                     )
                     raise ValueError(msg)
             elif prop_metadata.get('fixed'):
@@ -74,13 +80,6 @@ class _STIXBase(collections.Mapping):
                         expected=prop_metadata['fixed']
                     )
                     raise ValueError(msg)
-
-        id_prefix = cls._type + "--"
-        if not kwargs.get('id'):
-            kwargs['id'] = cls._make_id()
-        if not kwargs['id'].startswith(id_prefix):
-            msg = "{0} id values must begin with '{1}'."
-            raise ValueError(msg.format(class_name, id_prefix))
 
         return kwargs
 
@@ -124,11 +123,9 @@ class Bundle(_STIXBase):
 
     _type = 'bundle'
     _properties = {
-        'type': {
-            'default': (lambda x: x._type),
-            'validate': (lambda x, val: val == x._type)
-        },
-        'id': {},
+        # Borrow the 'type' and 'id' definitions
+        'type': COMMON_PROPERTIES['type'],
+        'id': COMMON_PROPERTIES['id'],
         'spec_version': {
             'fixed': "2.0",
         },
@@ -262,11 +259,6 @@ class Relationship(_STIXBase):
         # TODO: do we care about the performance penalty of creating this
         # if we won't need it?
         now = datetime.datetime.now(tz=pytz.UTC)
-
-        if not kwargs.get('id'):
-            kwargs['id'] = 'relationship--' + str(uuid.uuid4())
-        if not kwargs['id'].startswith('relationship--'):
-            raise ValueError("Relationship id values must begin with 'relationship--'.")
 
         if not kwargs.get('relationship_type'):
             raise ValueError("Missing required field for Relationship: 'relationship_type'.")
