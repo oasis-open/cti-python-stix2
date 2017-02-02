@@ -188,6 +188,13 @@ def test_invalid_kwarg_to_indicator():
     assert "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
 
 
+def test_created_modified_time_are_identical_by_default():
+    """By default, the created and modified times should be the same."""
+    indicator = stix2.Indicator(**INDICATOR_KWARGS)
+
+    assert indicator.created == indicator.modified
+
+
 EXPECTED_MALWARE = """{
     "created": "2016-05-12T08:17:27Z",
     "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
@@ -432,6 +439,7 @@ def test_empty_bundle():
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
     assert bundle.spec_version == "2.0"
+    assert bundle.objects is None
 
 
 def test_bundle_with_wrong_type():
