@@ -58,6 +58,10 @@ class _STIXBase(collections.Mapping):
 
         for prop_name, prop_metadata in cls._properties.items():
             if prop_name not in kwargs:
+                if prop_metadata.get('required'):
+                    msg = "Missing required field for {type}: '{field}'."
+                    raise ValueError(msg.format(type=class_name,
+                                                field=prop_name))
                 if prop_metadata.get('default'):
                     kwargs[prop_name] = prop_metadata['default'](cls)
                 elif prop_metadata.get('fixed'):
@@ -145,8 +149,12 @@ class Indicator(_STIXBase):
     _type = 'indicator'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
-        'labels': {},
-        'pattern': {},
+        'labels': {
+            'required': True,
+        },
+        'pattern': {
+            'required': True,
+        },
         'valid_from': {},
     })
 
@@ -170,12 +178,6 @@ class Indicator(_STIXBase):
         # TODO: remove once we check all the fields in the right order
         kwargs = self._check_kwargs(**kwargs)
 
-        if not kwargs.get('labels'):
-            raise ValueError("Missing required field for Indicator: 'labels'.")
-
-        if not kwargs.get('pattern'):
-            raise ValueError("Missing required field for Indicator: 'pattern'.")
-
         kwargs.update({
             'created': kwargs.get('created', now),
             'modified': kwargs.get('modified', now),
@@ -189,8 +191,12 @@ class Malware(_STIXBase):
     _type = 'malware'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
-        'labels': {},
-        'name': {},
+        'labels': {
+            'required': True,
+        },
+        'name': {
+            'required': True,
+        },
     })
 
     def __init__(self, **kwargs):
@@ -211,12 +217,6 @@ class Malware(_STIXBase):
         # TODO: remove once we check all the fields in the right order
         kwargs = self._check_kwargs(**kwargs)
 
-        if not kwargs.get('labels'):
-            raise ValueError("Missing required field for Malware: 'labels'.")
-
-        if not kwargs.get('name'):
-            raise ValueError("Missing required field for Malware: 'name'.")
-
         kwargs.update({
             'created': kwargs.get('created', now),
             'modified': kwargs.get('modified', now),
@@ -229,9 +229,15 @@ class Relationship(_STIXBase):
     _type = 'relationship'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
-        'relationship_type': {},
-        'source_ref': {},
-        'target_ref': {},
+        'relationship_type': {
+            'required': True,
+        },
+        'source_ref': {
+            'required': True,
+        },
+        'target_ref': {
+            'required': True,
+        },
     })
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
@@ -246,9 +252,7 @@ class Relationship(_STIXBase):
 
         # - description
 
-        # TODO: remove once we check all the fields in the right order
-        kwargs = self._check_kwargs(**kwargs)
-
+        # Allow (source_ref, relationship_type, target_ref) as positional args.
         if source_ref and not kwargs.get('source_ref'):
             kwargs['source_ref'] = source_ref
         if relationship_type and not kwargs.get('relationship_type'):
@@ -256,28 +260,24 @@ class Relationship(_STIXBase):
         if target_ref and not kwargs.get('target_ref'):
             kwargs['target_ref'] = target_ref
 
+        # TODO: remove once we check all the fields in the right order
+        kwargs = self._check_kwargs(**kwargs)
+
         # TODO: do we care about the performance penalty of creating this
         # if we won't need it?
         now = datetime.datetime.now(tz=pytz.UTC)
 
-        if not kwargs.get('relationship_type'):
-            raise ValueError("Missing required field for Relationship: 'relationship_type'.")
-
-        if not kwargs.get('source_ref'):
-            raise ValueError("Missing required field for Relationship: 'source_ref'.")
-        elif isinstance(kwargs['source_ref'], _STIXBase):
+        # If actual STIX objects (vs. just the IDs) are passed in, extract the
+        # ID values to use in the Relationship object.
+        if kwargs.get('source_ref') and isinstance(kwargs['source_ref'], _STIXBase):
             kwargs['source_ref'] = kwargs['source_ref'].id
 
-        if not kwargs.get('target_ref'):
-            raise ValueError("Missing required field for Relationship: 'target_ref'.")
-        elif isinstance(kwargs['target_ref'], _STIXBase):
+        if kwargs.get('target_ref') and isinstance(kwargs['target_ref'], _STIXBase):
             kwargs['target_ref'] = kwargs['target_ref'].id
 
         kwargs.update({
             'created': kwargs.get('created', now),
             'modified': kwargs.get('modified', now),
-            'relationship_type': kwargs['relationship_type'],
-            'target_ref': kwargs['target_ref'],
         })
 
         super(Relationship, self).__init__(**kwargs)
