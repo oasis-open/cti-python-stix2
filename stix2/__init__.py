@@ -136,6 +136,17 @@ class _STIXBase(collections.Mapping):
                           separators=(",", ": "))  # Don't include spaces after commas.
 
 
+class ExternalReference(_STIXBase):
+    _properties = {
+        'source_name': {
+            'required': True,
+        },
+        'description': {},
+        'url': {},
+        'external_id': {},
+    }
+
+
 class Bundle(_STIXBase):
 
     _type = 'bundle'
