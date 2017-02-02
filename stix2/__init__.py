@@ -5,6 +5,12 @@ import uuid
 
 import pytz
 
+
+# Sentinel value for fields that should be set to the current time.
+# We can't use the standard 'default' approach, since if there are multiple
+# timestamps in a single object, the timestamps will vary by a few microseconds.
+NOW = object()
+
 DEFAULT_ERROR = "{type} must have {field}='{expected}'."
 COMMON_PROPERTIES = {
     'type': {
@@ -17,8 +23,12 @@ COMMON_PROPERTIES = {
         'expected': (lambda x: x._type + "--"),
         'error_msg': "{type} {field} values must begin with '{expected}'."
     },
-    'created': {},
-    'modified': {},
+    'created': {
+        'default': NOW,
+    },
+    'modified': {
+        'default': NOW,
+    },
 }
 
 
@@ -52,9 +62,17 @@ class _STIXBase(collections.Mapping):
     def _make_id(cls):
         return cls._type + "--" + str(uuid.uuid4())
 
-    @classmethod
-    def _check_kwargs(cls, **kwargs):
+    def __init__(self, **kwargs):
+        cls = self.__class__
         class_name = cls.__name__
+
+        # Use the same timestamp for any auto-generated datetimes
+        now = datetime.datetime.now(tz=pytz.UTC)
+
+        # Detect any keyword arguments not allowed for a specific type
+        extra_kwargs = list(set(kwargs) - set(cls._properties))
+        if extra_kwargs:
+            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
 
         for prop_name, prop_metadata in cls._properties.items():
             if prop_name not in kwargs:
@@ -63,7 +81,11 @@ class _STIXBase(collections.Mapping):
                     raise ValueError(msg.format(type=class_name,
                                                 field=prop_name))
                 if prop_metadata.get('default'):
-                    kwargs[prop_name] = prop_metadata['default'](cls)
+                    default = prop_metadata['default']
+                    if default == NOW:
+                        kwargs[prop_name] = now
+                    else:
+                        kwargs[prop_name] = default(cls)
                 elif prop_metadata.get('fixed'):
                     kwargs[prop_name] = prop_metadata['fixed']
 
@@ -84,18 +106,6 @@ class _STIXBase(collections.Mapping):
                         expected=prop_metadata['fixed']
                     )
                     raise ValueError(msg)
-
-        return kwargs
-
-    def __init__(self, **kwargs):
-        # TODO: move all of this back into init, once we check the right things
-        # in the right order, or move after the unexpected check.
-        kwargs = self._check_kwargs(**kwargs)
-
-        # Detect any keyword arguments not allowed for a specific type
-        extra_kwargs = list(set(kwargs) - set(self.__class__._properties))
-        if extra_kwargs:
-            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
 
         self._inner = kwargs
 
@@ -155,7 +165,9 @@ class Indicator(_STIXBase):
         'pattern': {
             'required': True,
         },
-        'valid_from': {},
+        'valid_from': {
+            'default': NOW,
+        },
     })
 
     def __init__(self, **kwargs):
@@ -171,18 +183,6 @@ class Indicator(_STIXBase):
         # - valid_until
         # - kill_chain_phases
 
-        # TODO: do we care about the performance penalty of creating this
-        # if we won't need it?
-        now = datetime.datetime.now(tz=pytz.UTC)
-
-        # TODO: remove once we check all the fields in the right order
-        kwargs = self._check_kwargs(**kwargs)
-
-        kwargs.update({
-            'created': kwargs.get('created', now),
-            'modified': kwargs.get('modified', now),
-            'valid_from': kwargs.get('valid_from', now),
-        })
         super(Indicator, self).__init__(**kwargs)
 
 
@@ -210,17 +210,6 @@ class Malware(_STIXBase):
         # - description
         # - kill_chain_phases
 
-        # TODO: do we care about the performance penalty of creating this
-        # if we won't need it?
-        now = datetime.datetime.now(tz=pytz.UTC)
-
-        # TODO: remove once we check all the fields in the right order
-        kwargs = self._check_kwargs(**kwargs)
-
-        kwargs.update({
-            'created': kwargs.get('created', now),
-            'modified': kwargs.get('modified', now),
-        })
         super(Malware, self).__init__(**kwargs)
 
 
@@ -260,13 +249,6 @@ class Relationship(_STIXBase):
         if target_ref and not kwargs.get('target_ref'):
             kwargs['target_ref'] = target_ref
 
-        # TODO: remove once we check all the fields in the right order
-        kwargs = self._check_kwargs(**kwargs)
-
-        # TODO: do we care about the performance penalty of creating this
-        # if we won't need it?
-        now = datetime.datetime.now(tz=pytz.UTC)
-
         # If actual STIX objects (vs. just the IDs) are passed in, extract the
         # ID values to use in the Relationship object.
         if kwargs.get('source_ref') and isinstance(kwargs['source_ref'], _STIXBase):
@@ -274,10 +256,5 @@ class Relationship(_STIXBase):
 
         if kwargs.get('target_ref') and isinstance(kwargs['target_ref'], _STIXBase):
             kwargs['target_ref'] = kwargs['target_ref'].id
-
-        kwargs.update({
-            'created': kwargs.get('created', now),
-            'modified': kwargs.get('modified', now),
-        })
 
         super(Relationship, self).__init__(**kwargs)
