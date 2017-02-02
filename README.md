@@ -61,7 +61,7 @@ will result in an error:
 
 ```python
 >>> indicator = Indicator()
-ValueError: Missing required field for Indicator: 'labels'
+ValueError: Missing required field(s) for Indicator: (labels, pattern).
 ```
 
 However, the required `valid_from` attribute on Indicators will be set to the

@@ -74,12 +74,15 @@ class _STIXBase(collections.Mapping):
         if extra_kwargs:
             raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
 
+        required_fields = [k for k, v in cls._properties.items() if v.get('required')]
+        missing_kwargs = set(required_fields) - set(kwargs)
+        if missing_kwargs:
+            msg = "Missing required field(s) for {type}: ({fields})."
+            field_list = ", ".join(x for x in sorted(list(missing_kwargs)))
+            raise ValueError(msg.format(type=class_name, fields=field_list))
+
         for prop_name, prop_metadata in cls._properties.items():
             if prop_name not in kwargs:
-                if prop_metadata.get('required'):
-                    msg = "Missing required field for {type}: '{field}'."
-                    raise ValueError(msg.format(type=class_name,
-                                                field=prop_name))
                 if prop_metadata.get('default'):
                     default = prop_metadata['default']
                     if default == NOW:
