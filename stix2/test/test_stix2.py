@@ -152,39 +152,39 @@ def test_indicator_type_must_be_indicator():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(type='xxx', **INDICATOR_KWARGS)
 
-    assert "Indicator must have type='indicator'." in str(excinfo)
+    assert str(excinfo.value) == "Indicator must have type='indicator'."
 
 
 def test_indicator_id_must_start_with_indicator():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(id='my-prefix--', **INDICATOR_KWARGS)
 
-    assert "Indicator id values must begin with 'indicator--'." in str(excinfo)
+    assert str(excinfo.value) == "Indicator id values must begin with 'indicator--'."
 
 
 def test_indicator_required_fields():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator()
-    assert "Missing required field(s) for Indicator: (labels, pattern)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Indicator: (labels, pattern)."
 
 
 def test_indicator_required_field_pattern():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(labels=['malicious-activity'])
-    assert "Missing required field(s) for Indicator: (pattern)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Indicator: (pattern)."
 
 
 def test_cannot_assign_to_indicator_attributes(indicator):
     with pytest.raises(ValueError) as excinfo:
         indicator.valid_from = datetime.datetime.now()
 
-    assert "Cannot modify properties after creation." in str(excinfo)
+    assert str(excinfo.value) == "Cannot modify properties after creation."
 
 
 def test_invalid_kwarg_to_indicator():
     with pytest.raises(TypeError) as excinfo:
         indicator = stix2.Indicator(my_custom_property="foo", **INDICATOR_KWARGS)
-    assert "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
+    assert str(excinfo.value) == "unexpected keyword arguments: ['my_custom_property']"
 
 
 def test_created_modified_time_are_identical_by_default():
@@ -241,39 +241,39 @@ def test_malware_type_must_be_malware():
     with pytest.raises(ValueError) as excinfo:
         malware = stix2.Malware(type='xxx', **MALWARE_KWARGS)
 
-    assert "Malware must have type='malware'." in str(excinfo)
+    assert str(excinfo.value) == "Malware must have type='malware'."
 
 
 def test_malware_id_must_start_with_malware():
     with pytest.raises(ValueError) as excinfo:
         malware = stix2.Malware(id='my-prefix--', **MALWARE_KWARGS)
 
-    assert "Malware id values must begin with 'malware--'." in str(excinfo)
+    assert str(excinfo.value) == "Malware id values must begin with 'malware--'."
 
 
 def test_malware_required_fields():
     with pytest.raises(ValueError) as excinfo:
         malware = stix2.Malware()
-    assert "Missing required field(s) for Malware: (labels, name)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Malware: (labels, name)."
 
 
 def test_malware_required_field_name():
     with pytest.raises(ValueError) as excinfo:
         malware = stix2.Malware(labels=['ransomware'])
-    assert "Missing required field(s) for Malware: (name)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Malware: (name)."
 
 
 def test_cannot_assign_to_malware_attributes(malware):
     with pytest.raises(ValueError) as excinfo:
         malware.name = "Cryptolocker II"
 
-    assert "Cannot modify properties after creation." in str(excinfo)
+    assert str(excinfo.value) == "Cannot modify properties after creation."
 
 
 def test_invalid_kwarg_to_malware():
     with pytest.raises(TypeError) as excinfo:
         malware = stix2.Malware(my_custom_property="foo", **MALWARE_KWARGS)
-    assert "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
+    assert str(excinfo.value) == "unexpected keyword arguments: ['my_custom_property']"
 
 
 EXPECTED_RELATIONSHIP = """{
@@ -324,27 +324,27 @@ def test_relationship_type_must_be_relationship():
     with pytest.raises(ValueError) as excinfo:
         relationship = stix2.Relationship(type='xxx', **RELATIONSHIP_KWARGS)
 
-    assert "Relationship must have type='relationship'." in str(excinfo)
+    assert str(excinfo.value) == "Relationship must have type='relationship'."
 
 
 def test_relationship_id_must_start_with_relationship():
     with pytest.raises(ValueError) as excinfo:
         relationship = stix2.Relationship(id='my-prefix--', **RELATIONSHIP_KWARGS)
 
-    assert "Relationship id values must begin with 'relationship--'." in str(excinfo)
+    assert str(excinfo.value) == "Relationship id values must begin with 'relationship--'."
 
 
 def test_relationship_required_field_relationship_type():
     with pytest.raises(ValueError) as excinfo:
         relationship = stix2.Relationship()
-    assert "Missing required field(s) for Relationship: (relationship_type, source_ref, target_ref)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Relationship: (relationship_type, source_ref, target_ref)."
 
 
 def test_relationship_missing_some_required_fields():
     with pytest.raises(ValueError) as excinfo:
         # relationship_type is checked first, so make sure that is provided
         relationship = stix2.Relationship(relationship_type='indicates')
-    assert "Missing required field(s) for Relationship: (source_ref, target_ref)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Relationship: (source_ref, target_ref)."
 
 
 def test_relationship_required_field_target_ref():
@@ -353,20 +353,20 @@ def test_relationship_required_field_target_ref():
             relationship_type='indicates',
             source_ref=INDICATOR_ID
         )
-    assert "Missing required field(s) for Relationship: (target_ref)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for Relationship: (target_ref)."
 
 
 def test_cannot_assign_to_relationship_attributes(relationship):
     with pytest.raises(ValueError) as excinfo:
         relationship.relationship_type = "derived-from"
 
-    assert "Cannot modify properties after creation." in str(excinfo)
+    assert str(excinfo.value) == "Cannot modify properties after creation."
 
 
 def test_invalid_kwarg_to_relationship():
     with pytest.raises(TypeError) as excinfo:
         relationship = stix2.Relationship(my_custom_property="foo", **RELATIONSHIP_KWARGS)
-    assert "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
+    assert str(excinfo.value) == "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
 
 
 def test_create_relationship_from_objects_rather_than_ids(indicator, malware):
@@ -443,21 +443,21 @@ def test_bundle_with_wrong_type():
     with pytest.raises(ValueError) as excinfo:
         bundle = stix2.Bundle(type="not-a-bundle")
 
-    assert "Bundle must have type='bundle'." in str(excinfo)
+    assert str(excinfo.value) == "Bundle must have type='bundle'."
 
 
 def test_bundle_id_must_start_with_bundle():
     with pytest.raises(ValueError) as excinfo:
         bundle = stix2.Bundle(id='my-prefix--')
 
-    assert "Bundle id values must begin with 'bundle--'." in str(excinfo)
+    assert str(excinfo.value) == "Bundle id values must begin with 'bundle--'."
 
 
 def test_bundle_with_wrong_spec_version():
     with pytest.raises(ValueError) as excinfo:
         bundle = stix2.Bundle(spec_version="1.2")
 
-    assert "Bundle must have spec_version='2.0'." in str(excinfo)
+    assert str(excinfo.value) == "Bundle must have spec_version='2.0'."
 
 
 def test_create_bundle(indicator, malware, relationship):

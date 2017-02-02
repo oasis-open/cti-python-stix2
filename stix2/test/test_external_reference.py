@@ -105,4 +105,4 @@ def test_external_reference_offline():
 def test_external_reference_source_required():
     with pytest.raises(ValueError) as excinfo:
         ref = stix2.ExternalReference()
-    assert "Missing required field(s) for ExternalReference: (source_name)." in str(excinfo)
+    assert str(excinfo.value) == "Missing required field(s) for ExternalReference: (source_name)."
