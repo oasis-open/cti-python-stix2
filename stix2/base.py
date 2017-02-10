@@ -102,3 +102,8 @@ class _STIXBase(collections.Mapping):
         # TODO: put keys in specific order. Probably need custom JSON encoder.
         return json.dumps(self, indent=4, sort_keys=True, cls=STIXJSONEncoder,
                           separators=(",", ": "))  # Don't include spaces after commas.
+
+    def __repr__(self):
+        props = [(k, self[k]) for k in sorted(self._properties)]
+        return "{0}({1})".format(self.__class__.__name__,
+                                 ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
