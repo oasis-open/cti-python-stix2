@@ -1,32 +1,32 @@
 """Tests for the stix2 library"""
 
-import datetime
+import datetime as dt
 import uuid
 
 import pytest
 import pytz
 
 import stix2
+import stix2.utils
 
-amsterdam = pytz.timezone('Europe/Amsterdam')
-eastern = pytz.timezone('US/Eastern')
-FAKE_TIME = datetime.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
+
+FAKE_TIME = dt.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
 
 
 # Inspired by: http://stackoverflow.com/a/24006251
 @pytest.fixture
 def clock(monkeypatch):
 
-    class mydatetime(datetime.datetime):
+    class mydatetime(dt.datetime):
         @classmethod
         def now(cls, tz=None):
             return FAKE_TIME
 
-    monkeypatch.setattr(datetime, 'datetime', mydatetime)
+    monkeypatch.setattr(dt, 'datetime', mydatetime)
 
 
 def test_clock(clock):
-    assert datetime.datetime.now() == FAKE_TIME
+    assert dt.datetime.now() == FAKE_TIME
 
 
 @pytest.fixture
@@ -49,16 +49,6 @@ def test_my_uuid4_fixture(uuid4):
     for _ in range(256):
         uuid.uuid4()
     assert uuid.uuid4() == "00000000-0000-0000-0000-000000000104"
-
-
-@pytest.mark.parametrize('dt,timestamp', [
-    (datetime.datetime(2017, 1, 1, tzinfo=pytz.utc), '2017-01-01T00:00:00Z'),
-    (amsterdam.localize(datetime.datetime(2017, 1, 1)), '2016-12-31T23:00:00Z'),
-    (eastern.localize(datetime.datetime(2017, 1, 1, 12, 34, 56)), '2017-01-01T17:34:56Z'),
-    (eastern.localize(datetime.datetime(2017, 7, 1)), '2017-07-01T04:00:00Z'),
-])
-def test_timestamp_formatting(dt, timestamp):
-    assert stix2.format_datetime(dt) == timestamp
 
 
 INDICATOR_ID = "indicator--01234567-89ab-cdef-0123-456789abcdef"
@@ -114,8 +104,8 @@ EXPECTED_INDICATOR = """{
 
 
 def test_indicator_with_all_required_fields():
-    now = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)
-    epoch = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=pytz.utc)
+    now = dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)
+    epoch = dt.datetime(1970, 1, 1, 0, 0, 0, tzinfo=pytz.utc)
 
     indicator = stix2.Indicator(
         type="indicator",
@@ -176,7 +166,7 @@ def test_indicator_required_field_pattern():
 
 def test_cannot_assign_to_indicator_attributes(indicator):
     with pytest.raises(ValueError) as excinfo:
-        indicator.valid_from = datetime.datetime.now()
+        indicator.valid_from = dt.datetime.now()
 
     assert str(excinfo.value) == "Cannot modify properties after creation."
 
@@ -207,7 +197,7 @@ EXPECTED_MALWARE = """{
 
 
 def test_malware_with_all_required_fields():
-    now = datetime.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
+    now = dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
 
     malware = stix2.Malware(
         type="malware",
@@ -288,7 +278,7 @@ EXPECTED_RELATIONSHIP = """{
 
 
 def test_relationship_all_required_fields():
-    now = datetime.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
+    now = dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
 
     relationship = stix2.Relationship(
         type='relationship',
