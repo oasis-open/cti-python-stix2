@@ -34,6 +34,7 @@ def test_external_reference_capec():
     )
 
     assert str(ref) == CAPEC
+    assert repr(ref) == "ExternalReference(external_id='CAPEC-550', source_name='capec')"
 
 
 CAPEC_URL = """{
@@ -100,6 +101,9 @@ def test_external_reference_offline():
     )
 
     assert str(ref) == OFFLINE
+    assert repr(ref) == "ExternalReference(description='Threat report', source_name='ACME Threat Intel')"
+    # Yikes! This works
+    assert eval("stix2." + repr(ref)) == ref
 
 
 def test_external_reference_source_required():
