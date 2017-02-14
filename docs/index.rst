@@ -10,6 +10,10 @@ Welcome to stix2's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   overview
+   roadmap
+   datastore_api
+   contributing
 
 
 Indices and tables
