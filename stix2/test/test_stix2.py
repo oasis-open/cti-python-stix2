@@ -54,6 +54,7 @@ def test_my_uuid4_fixture(uuid4):
 INDICATOR_ID = "indicator--01234567-89ab-cdef-0123-456789abcdef"
 MALWARE_ID = "malware--fedcba98-7654-3210-fedc-ba9876543210"
 RELATIONSHIP_ID = "relationship--00000000-1111-2222-3333-444444444444"
+IDENTITY_ID = "identity--d4d765ce-cff7-40e8-b7a6-e205d005ac2c"
 
 # Minimum required args for an Indicator instance
 INDICATOR_KWARGS = dict(
@@ -173,6 +174,12 @@ def test_indicator_required_field_pattern():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(labels=['malicious-activity'])
     assert str(excinfo.value) == "Missing required field(s) for Indicator: (pattern)."
+
+
+def test_indicator_created_ref_invalid_format():
+    with pytest.raises(ValueError) as excinfo:
+        indicator = stix2.Indicator(created_by_ref='myprefix--12345678', **INDICATOR_KWARGS)
+    assert str(excinfo.value) == "Indicator created_by_ref values must consist of a valid STIX type name and a valid UUID, separated by '--'."
 
 
 def test_cannot_assign_to_indicator_attributes(indicator):

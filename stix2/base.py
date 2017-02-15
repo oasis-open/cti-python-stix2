@@ -61,12 +61,13 @@ class _STIXBase(collections.Mapping):
                     kwargs[prop_name] = prop_metadata['fixed']
 
             if prop_metadata.get('validate'):
-                if not prop_metadata['validate'](cls, kwargs[prop_name]):
+                if (prop_name in kwargs and
+                        not prop_metadata['validate'](cls, kwargs[prop_name])):
                     msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
                         type=class_name,
                         field=prop_name,
                         expected=prop_metadata.get('expected',
-                                                   prop_metadata['default'])(cls),
+                                                   prop_metadata.get('default', lambda x: ''))(cls),
                     )
                     raise ValueError(msg)
             elif prop_metadata.get('fixed'):
