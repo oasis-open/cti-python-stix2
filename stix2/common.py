@@ -24,6 +24,11 @@ REF_PROPERTY = {
     'error_msg': "{type} {field} values must consist of a valid STIX type name and a valid UUID, separated by '--'."
 }
 
+BOOL_PROPERTY = {
+    'validate': (lambda x, val: isinstance(val, bool)),
+    'error_msg': "{type} {field} value must be a boolean."
+}
+
 COMMON_PROPERTIES = {
     'type': TYPE_PROPERTY,
     'id': ID_PROPERTY,
@@ -33,6 +38,7 @@ COMMON_PROPERTIES = {
     'modified': {
         'default': NOW,
     },
+    'revoked': BOOL_PROPERTY,
     'created_by_ref': REF_PROPERTY
 }
 

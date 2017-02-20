@@ -182,6 +182,12 @@ def test_indicator_created_ref_invalid_format():
     assert str(excinfo.value) == "Indicator created_by_ref values must consist of a valid STIX type name and a valid UUID, separated by '--'."
 
 
+def test_indicator_revoked_invalid():
+    with pytest.raises(ValueError) as excinfo:
+        indicator = stix2.Indicator(revoked='false', **INDICATOR_KWARGS)
+    assert str(excinfo.value) == "Indicator revoked value must be a boolean."
+
+
 def test_cannot_assign_to_indicator_attributes(indicator):
     with pytest.raises(ValueError) as excinfo:
         indicator.valid_from = dt.datetime.now()
