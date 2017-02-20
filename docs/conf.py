@@ -16,6 +16,14 @@ pygments_style = 'sphinx'
 todo_include_todos = False
 
 html_theme = 'alabaster'
+html_sidebars = {
+    '**': [
+        'about.html',
+        'navigation.html',
+        'relations.html',
+        'searchbox.html',
+    ]
+}
 
 latex_elements = {}
 latex_documents = [
