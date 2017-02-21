@@ -36,4 +36,4 @@ either explicitly include or exclude results with certain criteria. For example,
 
 Additionally, the python-stix2 library will contain a "composite" data store,
 which implements the DataStore API while delegating functionality to one or more
-"child" data store.
+"child" data stores.

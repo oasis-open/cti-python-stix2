@@ -48,7 +48,7 @@ Testing
     All of the tools mentioned in this section are installed when you run ``pip
     install -r requirements.txt``.
 
-python-stix2 uses `pytest <http://pytest.org>` for testing.  We encourage the
+python-stix2 uses `pytest <http://pytest.org>`_ for testing.  We encourage the
 use of test-driven development (TDD), where you write (failing) tests that
 demonstrate a bug or proposed new feature before writing code that fixes the bug
 or implements the features. Any code contributions to python-stix2 should come
@@ -88,6 +88,6 @@ run::
 
 then look at the resulting report in ``htmlcov/index.html``.
 
-All commits pushed to the ``master`` branch or submitted as a pull request is
-tested with `Travis-CI <https://travis-ci.org/oasis-open/cti-python-stix2>`
+All commits pushed to the ``master`` branch or submitted as a pull request are
+tested with `Travis-CI <https://travis-ci.org/oasis-open/cti-python-stix2>`_
 automatically.
