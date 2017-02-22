@@ -52,3 +52,14 @@ class ExternalReference(_STIXBase):
         'url': {},
         'external_id': {},
     }
+
+
+class KillChainPhase(_STIXBase):
+    _properties = {
+        'kill_chain_name': {
+            'required': True,
+        },
+        'phase_name': {
+            'required': True,
+        },
+    }
