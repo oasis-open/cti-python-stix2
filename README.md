@@ -50,7 +50,7 @@ provided as keyword arguments:
 
   ```python
   >>> indicator = Indicator(id="campaign--63ce9068-b5ab-47fa-a2cf-a602ea01f21a")
-  ValueError: Indicator id values must begin with 'indicator--'
+  ValueError: Invalid value for Indicator 'id': must start with 'indicator--'.
   ```
 
 - If not provided, `created` and `modified` will be set to the (same) current

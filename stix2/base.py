@@ -74,6 +74,19 @@ class _STIXBase(collections.Mapping):
                 )
                 raise ValueError(msg)
 
+    def _check_property(self, prop_name, prop, kwargs):
+        if prop_name not in kwargs:
+            kwargs[prop_name] = prop.default()
+            # if default == NOW:
+            #     kwargs[prop_name] = self.__now
+        try:
+            kwargs[prop_name] = prop.validate(kwargs[prop_name])
+        except ValueError as exc:
+            msg = "Invalid value for {0} '{1}': {2}"
+            raise ValueError(msg.format(self.__class__.__name__,
+                                        prop_name,
+                                        exc))
+
     def __init__(self, **kwargs):
         cls = self.__class__
         class_name = cls.__name__
@@ -98,8 +111,7 @@ class _STIXBase(collections.Mapping):
             if isinstance(prop_metadata, dict):
                 self._handle_old_style_property(prop_name, prop_metadata, kwargs)
             else:  # This is a Property Subclasses
-                # self.check_property(prop_name, prop_metadata, kwargs)
-                pass
+                self._check_property(prop_name, prop_metadata, kwargs)
 
         self._inner = kwargs
 

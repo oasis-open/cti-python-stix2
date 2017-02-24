@@ -100,11 +100,14 @@ class List(Property):
 class IDProperty(Property):
 
     def __init__(self, type):
-        self.type = type
+        self.required_prefix = type + "--"
+        super(IDProperty, self).__init__()
 
     def validate(self, value):
         # TODO: validate GUID as well
-        return value.startswith(self.type + "--")
+        if not value.startswith(self.required_prefix):
+            raise ValueError("must start with '{0}'.".format(self.required_prefix))
+        return value
 
     def default(self):
-        return self.type + "--" + str(uuid.uuid4())
+        return self.required_prefix + str(uuid.uuid4())

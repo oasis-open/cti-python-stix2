@@ -2,6 +2,7 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
+from .properties import IDProperty
 
 
 class Relationship(_STIXBase):
@@ -9,6 +10,7 @@ class Relationship(_STIXBase):
     _type = 'relationship'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'relationship_type': {
             'required': True,
         },

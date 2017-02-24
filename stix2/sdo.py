@@ -2,6 +2,7 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
+from .properties import IDProperty
 from .utils import NOW
 
 
@@ -10,6 +11,7 @@ class AttackPattern(_STIXBase):
     _type = 'attack-pattern'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'name': {
             'required': True,
         },
@@ -35,6 +37,7 @@ class Campaign(_STIXBase):
     _type = 'campaign'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'name': {
             'required': True,
         },
@@ -66,6 +69,7 @@ class CourseOfAction(_STIXBase):
     _type = 'course-of-action'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'name': {
             'required': True,
         },
@@ -89,6 +93,7 @@ class Identity(_STIXBase):
     _type = 'identity'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'name': {
             'required': True,
         },
@@ -120,6 +125,7 @@ class Indicator(_STIXBase):
     _type = 'indicator'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'labels': {
             'required': True,
         },
@@ -155,6 +161,7 @@ class IntrusionSet(_STIXBase):
     _type = 'intrusion-set'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'name': {
             'required': True,
         },
@@ -192,6 +199,7 @@ class Malware(_STIXBase):
     _type = 'malware'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'labels': {
             'required': True,
         },
@@ -220,6 +228,7 @@ class ObservedData(_STIXBase):
     _type = 'observed-data'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'first_observed': {},
         'last_observed': {},
         'number_observed': {},
@@ -246,6 +255,7 @@ class Report(_STIXBase):
     _type = 'report'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'labels': {
             'required': True,
         },
@@ -276,6 +286,7 @@ class ThreatActor(_STIXBase):
     _type = 'threat-actor'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'labels': {
             'required': True,
         },
@@ -318,6 +329,7 @@ class Tool(_STIXBase):
     _type = 'tool'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'labels': {
             'required': True,
         },
@@ -348,6 +360,7 @@ class Vulnerability(_STIXBase):
     _type = 'vulnerability'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
+        'id': IDProperty(_type),
         'name': {
             'required': True,
         },

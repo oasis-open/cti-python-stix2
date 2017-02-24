@@ -9,13 +9,6 @@ TYPE_PROPERTY = {
     'validate': (lambda x, val: val == x._type)
 }
 
-ID_PROPERTY = {
-    'default': (lambda x: x._make_id()),
-    'validate': (lambda x, val: val.startswith(x._type + "--")),
-    'expected': (lambda x: x._type + "--"),
-    'error_msg': "{type} {field} values must begin with '{expected}'."
-}
-
 ref_regex = ("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}"
              "-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
@@ -31,7 +24,7 @@ BOOL_PROPERTY = {
 
 COMMON_PROPERTIES = {
     'type': TYPE_PROPERTY,
-    'id': ID_PROPERTY,
+    # 'id' should be defined on each individual type
     'created': {
         'default': NOW,
     },

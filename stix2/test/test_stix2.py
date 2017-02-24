@@ -161,7 +161,7 @@ def test_indicator_id_must_start_with_indicator():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(id='my-prefix--', **INDICATOR_KWARGS)
 
-    assert str(excinfo.value) == "Indicator id values must begin with 'indicator--'."
+    assert str(excinfo.value) == "Invalid value for Indicator 'id': must start with 'indicator--'."
 
 
 def test_indicator_required_fields():
@@ -262,7 +262,7 @@ def test_malware_id_must_start_with_malware():
     with pytest.raises(ValueError) as excinfo:
         malware = stix2.Malware(id='my-prefix--', **MALWARE_KWARGS)
 
-    assert str(excinfo.value) == "Malware id values must begin with 'malware--'."
+    assert str(excinfo.value) == "Invalid value for Malware 'id': must start with 'malware--'."
 
 
 def test_malware_required_fields():
@@ -345,7 +345,7 @@ def test_relationship_id_must_start_with_relationship():
     with pytest.raises(ValueError) as excinfo:
         relationship = stix2.Relationship(id='my-prefix--', **RELATIONSHIP_KWARGS)
 
-    assert str(excinfo.value) == "Relationship id values must begin with 'relationship--'."
+    assert str(excinfo.value) == "Invalid value for Relationship 'id': must start with 'relationship--'."
 
 
 def test_relationship_required_field_relationship_type():
@@ -464,7 +464,7 @@ def test_bundle_id_must_start_with_bundle():
     with pytest.raises(ValueError) as excinfo:
         bundle = stix2.Bundle(id='my-prefix--')
 
-    assert str(excinfo.value) == "Bundle id values must begin with 'bundle--'."
+    assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
 
 
 def test_bundle_with_wrong_spec_version():

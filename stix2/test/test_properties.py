@@ -49,6 +49,7 @@ def test_fixed_property():
 def test_id_property():
     idprop = IDProperty('my-type')
 
-    assert idprop.validate('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c') is True
-    assert idprop.validate('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c') is False
+    assert idprop.validate('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+    with pytest.raises(ValueError):
+        idprop.validate('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
     assert idprop.validate(idprop.default())
