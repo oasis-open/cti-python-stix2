@@ -23,6 +23,16 @@ class STIXJSONEncoder(json.JSONEncoder):
             return super(STIXJSONEncoder, self).default(obj)
 
 
+def get_required_properties(properties):
+    for k, v in properties.items():
+        if isinstance(v, dict):
+            if v.get('required'):
+                yield k
+        else:  # This is a Property subclass
+            if v.required:
+                yield k
+
+
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
@@ -30,19 +40,53 @@ class _STIXBase(collections.Mapping):
     def _make_id(cls):
         return cls._type + "--" + str(uuid.uuid4())
 
+    # TODO: remove this
+    def _handle_old_style_property(self, prop_name, prop_metadata, kwargs):
+        cls = self.__class__
+        class_name = cls.__name__
+
+        if prop_name not in kwargs:
+            if prop_metadata.get('default'):
+                default = prop_metadata['default']
+                if default == NOW:
+                    kwargs[prop_name] = self.__now
+                else:
+                    kwargs[prop_name] = default(cls)
+            elif prop_metadata.get('fixed'):
+                kwargs[prop_name] = prop_metadata['fixed']
+
+        if prop_metadata.get('validate'):
+            if (prop_name in kwargs and
+                    not prop_metadata['validate'](cls, kwargs[prop_name])):
+                msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
+                    type=class_name,
+                    field=prop_name,
+                    expected=prop_metadata.get('expected',
+                                               prop_metadata.get('default', lambda x: ''))(cls),
+                )
+                raise ValueError(msg)
+        elif prop_metadata.get('fixed'):
+            if kwargs[prop_name] != prop_metadata['fixed']:
+                msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
+                    type=class_name,
+                    field=prop_name,
+                    expected=prop_metadata['fixed']
+                )
+                raise ValueError(msg)
+
     def __init__(self, **kwargs):
         cls = self.__class__
         class_name = cls.__name__
 
         # Use the same timestamp for any auto-generated datetimes
-        now = get_timestamp()
+        self.__now = get_timestamp()
 
         # Detect any keyword arguments not allowed for a specific type
         extra_kwargs = list(set(kwargs) - set(cls._properties))
         if extra_kwargs:
             raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
 
-        required_fields = [k for k, v in cls._properties.items() if v.get('required')]
+        required_fields = get_required_properties(cls._properties)
         missing_kwargs = set(required_fields) - set(kwargs)
         if missing_kwargs:
             msg = "Missing required field(s) for {type}: ({fields})."
@@ -50,34 +94,12 @@ class _STIXBase(collections.Mapping):
             raise ValueError(msg.format(type=class_name, fields=field_list))
 
         for prop_name, prop_metadata in cls._properties.items():
-            if prop_name not in kwargs:
-                if prop_metadata.get('default'):
-                    default = prop_metadata['default']
-                    if default == NOW:
-                        kwargs[prop_name] = now
-                    else:
-                        kwargs[prop_name] = default(cls)
-                elif prop_metadata.get('fixed'):
-                    kwargs[prop_name] = prop_metadata['fixed']
 
-            if prop_metadata.get('validate'):
-                if (prop_name in kwargs and
-                        not prop_metadata['validate'](cls, kwargs[prop_name])):
-                    msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
-                        type=class_name,
-                        field=prop_name,
-                        expected=prop_metadata.get('expected',
-                                                   prop_metadata.get('default', lambda x: ''))(cls),
-                    )
-                    raise ValueError(msg)
-            elif prop_metadata.get('fixed'):
-                if kwargs[prop_name] != prop_metadata['fixed']:
-                    msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
-                        type=class_name,
-                        field=prop_name,
-                        expected=prop_metadata['fixed']
-                    )
-                    raise ValueError(msg)
+            if isinstance(prop_metadata, dict):
+                self._handle_old_style_property(prop_name, prop_metadata, kwargs)
+            else:  # This is a Property Subclasses
+                # self.check_property(prop_name, prop_metadata, kwargs)
+                pass
 
         self._inner = kwargs
 
@@ -92,10 +114,13 @@ class _STIXBase(collections.Mapping):
 
     # Handle attribute access just like key access
     def __getattr__(self, name):
+        if name.startswith('_'):
+            return super(_STIXBase, self).__getattr__(name)
         return self.get(name)
 
     def __setattr__(self, name, value):
-        if name != '_inner':
+        if name != '_inner' and not name.startswith("_STIXBase__"):
+            print(name)
             raise ValueError("Cannot modify properties after creation.")
         super(_STIXBase, self).__setattr__(name, value)
 
