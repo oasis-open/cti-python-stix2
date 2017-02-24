@@ -68,7 +68,7 @@ class Property(object):
     def validate(self, value):
         try:
             value = self.clean(value)
-        except NotImplemetedError:
+        except NotImplementedError:
             pass
         return value
 

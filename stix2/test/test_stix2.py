@@ -471,7 +471,7 @@ def test_bundle_with_wrong_spec_version():
     with pytest.raises(ValueError) as excinfo:
         bundle = stix2.Bundle(spec_version="1.2")
 
-    assert str(excinfo.value) == "Bundle must have spec_version='2.0'."
+    assert str(excinfo.value) == "Invalid value for Bundle 'spec_version': must equal '2.0'."
 
 
 def test_create_bundle(indicator, malware, relationship):
