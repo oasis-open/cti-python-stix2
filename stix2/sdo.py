@@ -10,9 +10,6 @@ class AttackPattern(_STIXBase):
     _type = 'attack-pattern'
     _properties = COMMON_PROPERTIES.copy()
     _properties.update({
-        'labels': {
-            'required': True,
-        },
         'name': {
             'required': True,
         },

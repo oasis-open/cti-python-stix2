@@ -38,6 +38,7 @@ COMMON_PROPERTIES = {
     'modified': {
         'default': NOW,
     },
+    'external_references': {},
     'revoked': BOOL_PROPERTY,
     'created_by_ref': REF_PROPERTY
 }
