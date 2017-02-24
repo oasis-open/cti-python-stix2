@@ -1,0 +1,9 @@
+CHANGELOG
+=========
+
+0.0.1 - 2017-02-24
+
+* First packaged version
+* Supports all SDOs, Relationships, Bundle (not Sightings).
+* Limited support for Cyber Observables objects
+* Does not support markings.
