@@ -11,7 +11,7 @@ class Bundle(_STIXBase):
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
         'spec_version': Property(fixed="2.0"),
-        'objects': {},
+        'objects': Property(),
     }
 
     def __init__(self, *args, **kwargs):

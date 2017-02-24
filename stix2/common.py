@@ -1,7 +1,9 @@
 """STIX 2 Common Data Types and Properties"""
 
 import re
+
 from .base import _STIXBase
+from .properties import Property
 from .utils import NOW
 
 ref_regex = ("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}"
@@ -33,12 +35,10 @@ COMMON_PROPERTIES = {
 
 class ExternalReference(_STIXBase):
     _properties = {
-        'source_name': {
-            'required': True,
-        },
-        'description': {},
-        'url': {},
-        'external_id': {},
+        'source_name': Property(required=True),
+        'description': Property(),
+        'url': Property(),
+        'external_id': Property(),
     }
 
 

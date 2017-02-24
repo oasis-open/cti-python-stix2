@@ -65,27 +65,22 @@ class _STIXBase(collections.Mapping):
                                                prop_metadata.get('default', lambda x: ''))(cls),
                 )
                 raise ValueError(msg)
-        elif prop_metadata.get('fixed'):
-            if kwargs[prop_name] != prop_metadata['fixed']:
-                msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
-                    type=class_name,
-                    field=prop_name,
-                    expected=prop_metadata['fixed']
-                )
-                raise ValueError(msg)
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
-            kwargs[prop_name] = prop.default()
+            if hasattr(prop, 'default'):
+                kwargs[prop_name] = prop.default()
             # if default == NOW:
             #     kwargs[prop_name] = self.__now
-        try:
-            kwargs[prop_name] = prop.validate(kwargs[prop_name])
-        except ValueError as exc:
-            msg = "Invalid value for {0} '{1}': {2}"
-            raise ValueError(msg.format(self.__class__.__name__,
-                                        prop_name,
-                                        exc))
+
+        if prop_name in kwargs:
+            try:
+                kwargs[prop_name] = prop.validate(kwargs[prop_name])
+            except ValueError as exc:
+                msg = "Invalid value for {0} '{1}': {2}"
+                raise ValueError(msg.format(self.__class__.__name__,
+                                            prop_name,
+                                            exc))
 
     def __init__(self, **kwargs):
         cls = self.__class__

@@ -25,7 +25,7 @@ FOO_PRE_ATTACK = """{
 }"""
 
 
-def test_lockheed_martin_cyber_kill_chain():
+def test_kill_chain_example():
     preattack = stix2.KillChainPhase(
         kill_chain_name="foo",
         phase_name="pre-attack",
