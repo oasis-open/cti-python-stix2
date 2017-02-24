@@ -2,5 +2,6 @@ pytest
 tox
 pytest-cov
 sphinx
+bumpversion
 
 -e .
