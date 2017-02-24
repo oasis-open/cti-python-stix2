@@ -49,7 +49,7 @@ class Property(object):
             raise ValueError("must equal '{0}'.".format(self._fixed_value))
         return value
 
-    def __init__(self, required=False, fixed=None, clean=None, validate=None, default=None):
+    def __init__(self, required=False, fixed=None, clean=None, default=None):
         self.required = required
         if fixed:
             self._fixed_value = fixed
@@ -57,8 +57,6 @@ class Property(object):
             self.default = lambda: fixed
         if clean:
             self.clean = clean
-        if validate:
-            self.validate = validate
         if default:
             self.default = default
 
@@ -71,19 +69,6 @@ class Property(object):
         except NotImplementedError:
             pass
         return value
-
-
-class TypeProperty(Property):
-
-    def __init__(self, type):
-        self.type = type
-
-    def validate(self, value):
-        if value != self.type:
-            raise ValueError("Invalid type value")
-
-    def default(self):
-        return self.type
 
 
 class List(Property):

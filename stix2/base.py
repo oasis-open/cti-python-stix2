@@ -36,10 +36,6 @@ def get_required_properties(properties):
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
-    @classmethod
-    def _make_id(cls):
-        return cls._type + "--" + str(uuid.uuid4())
-
     # TODO: remove this
     def _handle_old_style_property(self, prop_name, prop_metadata, kwargs):
         cls = self.__class__
@@ -50,10 +46,6 @@ class _STIXBase(collections.Mapping):
                 default = prop_metadata['default']
                 if default == NOW:
                     kwargs[prop_name] = self.__now
-                else:
-                    kwargs[prop_name] = default(cls)
-            elif prop_metadata.get('fixed'):
-                kwargs[prop_name] = prop_metadata['fixed']
 
         if prop_metadata.get('validate'):
             if (prop_name in kwargs and
@@ -121,8 +113,6 @@ class _STIXBase(collections.Mapping):
 
     # Handle attribute access just like key access
     def __getattr__(self, name):
-        if name.startswith('_'):
-            return super(_STIXBase, self).__getattr__(name)
         return self.get(name)
 
     def __setattr__(self, name, value):
