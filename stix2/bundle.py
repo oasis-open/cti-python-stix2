@@ -1,15 +1,14 @@
 """STIX 2 Bundle object"""
 
 from .base import _STIXBase
-from .common import TYPE_PROPERTY
-from .properties import IDProperty
+from .properties import IDProperty, TypeProperty
 
 
 class Bundle(_STIXBase):
 
     _type = 'bundle'
     _properties = {
-        'type': TYPE_PROPERTY,
+        'type': TypeProperty(_type),
         'id': IDProperty(_type),
         'spec_version': {
             'fixed': "2.0",

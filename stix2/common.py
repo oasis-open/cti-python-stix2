@@ -4,11 +4,6 @@ import re
 from .base import _STIXBase
 from .utils import NOW
 
-TYPE_PROPERTY = {
-    'default': (lambda x: x._type),
-    'validate': (lambda x, val: val == x._type)
-}
-
 ref_regex = ("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}"
              "-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
@@ -23,8 +18,7 @@ BOOL_PROPERTY = {
 }
 
 COMMON_PROPERTIES = {
-    'type': TYPE_PROPERTY,
-    # 'id' should be defined on each individual type
+    # 'type' and 'id' should be defined on each individual type
     'created': {
         'default': NOW,
     },

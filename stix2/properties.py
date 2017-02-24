@@ -44,10 +44,16 @@ class Property(object):
     lambdas cannot raise their own exceptions.
     """
 
+    def _default_validate(self, value):
+        if value != self._fixed_value:
+            raise ValueError("must equal '{0}'.".format(self._fixed_value))
+        return value
+
     def __init__(self, required=False, fixed=None, clean=None, validate=None, default=None):
         self.required = required
         if fixed:
-            self.validate = lambda x: x == fixed
+            self._fixed_value = fixed
+            self.validate = self._default_validate
             self.default = lambda: fixed
         if clean:
             self.clean = clean
@@ -95,6 +101,12 @@ class List(Property):
 
     def clean(self, value):
         return [self.contained(x) for x in value]
+
+
+class TypeProperty(Property):
+
+    def __init__(self, type):
+        super(TypeProperty, self).__init__(fixed=type)
 
 
 class IDProperty(Property):

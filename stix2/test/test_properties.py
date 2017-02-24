@@ -1,6 +1,6 @@
 import pytest
 
-from stix2.properties import Property, IDProperty
+from stix2.properties import Property, IDProperty, TypeProperty
 
 
 def test_property():
@@ -39,11 +39,23 @@ def test_default_field():
 def test_fixed_property():
     p = Property(fixed="2.0")
 
-    assert p.validate("2.0") is True
-    assert p.validate("x") is False
-    assert p.validate(2.0) is False
+    assert p.validate("2.0")
+    with pytest.raises(ValueError):
+        assert p.validate("x") is False
+    with pytest.raises(ValueError):
+        assert p.validate(2.0) is False
 
     assert p.default() == "2.0"
+    assert p.validate(p.default())
+
+
+def test_type_property():
+    prop = TypeProperty('my-type')
+
+    assert prop.validate('my-type')
+    with pytest.raises(ValueError):
+        prop.validate('not-my-type')
+    assert prop.validate(prop.default())
 
 
 def test_id_property():

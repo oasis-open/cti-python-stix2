@@ -154,7 +154,7 @@ def test_indicator_type_must_be_indicator():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(type='xxx', **INDICATOR_KWARGS)
 
-    assert str(excinfo.value) == "Indicator must have type='indicator'."
+    assert str(excinfo.value) == "Invalid value for Indicator 'type': must equal 'indicator'."
 
 
 def test_indicator_id_must_start_with_indicator():
@@ -255,7 +255,7 @@ def test_malware_type_must_be_malware():
     with pytest.raises(ValueError) as excinfo:
         malware = stix2.Malware(type='xxx', **MALWARE_KWARGS)
 
-    assert str(excinfo.value) == "Malware must have type='malware'."
+    assert str(excinfo.value) == "Invalid value for Malware 'type': must equal 'malware'."
 
 
 def test_malware_id_must_start_with_malware():
@@ -338,7 +338,7 @@ def test_relationship_type_must_be_relationship():
     with pytest.raises(ValueError) as excinfo:
         relationship = stix2.Relationship(type='xxx', **RELATIONSHIP_KWARGS)
 
-    assert str(excinfo.value) == "Relationship must have type='relationship'."
+    assert str(excinfo.value) == "Invalid value for Relationship 'type': must equal 'relationship'."
 
 
 def test_relationship_id_must_start_with_relationship():
@@ -457,7 +457,7 @@ def test_bundle_with_wrong_type():
     with pytest.raises(ValueError) as excinfo:
         bundle = stix2.Bundle(type="not-a-bundle")
 
-    assert str(excinfo.value) == "Bundle must have type='bundle'."
+    assert str(excinfo.value) == "Invalid value for Bundle 'type': must equal 'bundle'."
 
 
 def test_bundle_id_must_start_with_bundle():
