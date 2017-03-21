@@ -3,16 +3,8 @@
 import re
 
 from .base import _STIXBase
-from .properties import Property, BooleanProperty
+from .properties import Property, BooleanProperty, ReferenceProperty
 from .utils import NOW
-
-ref_regex = ("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}"
-             "-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
-
-REF_PROPERTY = {
-    'validate': (lambda x, val: re.match(ref_regex, val)),
-    'error_msg': "{type} {field} values must consist of a valid STIX type name and a valid UUID, separated by '--'."
-}
 
 COMMON_PROPERTIES = {
     # 'type' and 'id' should be defined on each individual type
@@ -24,7 +16,7 @@ COMMON_PROPERTIES = {
     },
     'external_references': {},
     'revoked': BooleanProperty(),
-    'created_by_ref': REF_PROPERTY
+    'created_by_ref': ReferenceProperty(),
 }
 
 

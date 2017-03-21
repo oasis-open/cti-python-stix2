@@ -1,3 +1,4 @@
+import re
 import uuid
 
 
@@ -116,4 +117,17 @@ class BooleanProperty(Property):
     def validate(self, value):
         if not isinstance(value, bool):
             raise ValueError("must be a boolean value.")
+        return value
+
+
+REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"
+                       "-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+
+
+class ReferenceProperty(Property):
+    # TODO: support references that must be to a specific object type
+
+    def validate(self, value):
+        if not REF_REGEX.match(value):
+            raise ValueError("must match <object-type>--<guid>.")
         return value

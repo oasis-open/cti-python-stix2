@@ -179,7 +179,7 @@ def test_indicator_required_field_pattern():
 def test_indicator_created_ref_invalid_format():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(created_by_ref='myprefix--12345678', **INDICATOR_KWARGS)
-    assert str(excinfo.value) == "Indicator created_by_ref values must consist of a valid STIX type name and a valid UUID, separated by '--'."
+    assert str(excinfo.value) == "Invalid value for Indicator 'created_by_ref': must match <object-type>--<guid>."
 
 
 def test_indicator_revoked_invalid():

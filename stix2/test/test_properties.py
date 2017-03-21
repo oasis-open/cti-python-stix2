@@ -1,6 +1,7 @@
 import pytest
 
-from stix2.properties import Property, BooleanProperty, IDProperty, TypeProperty
+from stix2.properties import (Property, BooleanProperty, IDProperty,
+                              ReferenceProperty, TypeProperty)
 
 
 def test_property():
@@ -76,3 +77,11 @@ def test_boolean_property():
         print(invalid)
         with pytest.raises(ValueError):
             bool_prop.validate(invalid)
+
+
+def test_reference_property():
+    ref_prop = ReferenceProperty()
+
+    assert ref_prop.validate("my-type--3a331bfe-0566-55e1-a4a0-9a2cd355a300")
+    with pytest.raises(ValueError):
+        ref_prop.validate("foo")
