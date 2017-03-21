@@ -108,3 +108,12 @@ class IDProperty(Property):
 
     def default(self):
         return self.required_prefix + str(uuid.uuid4())
+
+
+class BooleanProperty(Property):
+    # TODO:  Consider coercing some values (like the strings "true" and "false")
+
+    def validate(self, value):
+        if not isinstance(value, bool):
+            raise ValueError("must be a boolean value.")
+        return value

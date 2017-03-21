@@ -185,7 +185,7 @@ def test_indicator_created_ref_invalid_format():
 def test_indicator_revoked_invalid():
     with pytest.raises(ValueError) as excinfo:
         indicator = stix2.Indicator(revoked='false', **INDICATOR_KWARGS)
-    assert str(excinfo.value) == "Indicator revoked value must be a boolean."
+    assert str(excinfo.value) == "Invalid value for Indicator 'revoked': must be a boolean value."
 
 
 def test_cannot_assign_to_indicator_attributes(indicator):

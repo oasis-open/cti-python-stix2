@@ -1,6 +1,6 @@
 import pytest
 
-from stix2.properties import Property, IDProperty, TypeProperty
+from stix2.properties import Property, BooleanProperty, IDProperty, TypeProperty
 
 
 def test_property():
@@ -65,3 +65,14 @@ def test_id_property():
     with pytest.raises(ValueError):
         idprop.validate('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
     assert idprop.validate(idprop.default())
+
+
+def test_boolean_property():
+    bool_prop = BooleanProperty()
+
+    assert bool_prop.validate(True) is not None
+    assert bool_prop.validate(False) is not None
+    for invalid in ('true', 'false', "T", "F", 1, 0):
+        print(invalid)
+        with pytest.raises(ValueError):
+            bool_prop.validate(invalid)
