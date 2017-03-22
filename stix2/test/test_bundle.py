@@ -2,7 +2,7 @@ import pytest
 
 import stix2
 
-from .fixtures import clock, uuid4, indicator, malware, relationship
+from .fixtures import clock, uuid4, indicator, malware, relationship  # noqa: F401
 
 EXPECTED_BUNDLE = """{
     "id": "bundle--00000000-0000-0000-0000-000000000004",
@@ -54,32 +54,32 @@ def test_empty_bundle():
 
 def test_bundle_with_wrong_type():
     with pytest.raises(ValueError) as excinfo:
-        bundle = stix2.Bundle(type="not-a-bundle")
+        stix2.Bundle(type="not-a-bundle")
 
     assert str(excinfo.value) == "Invalid value for Bundle 'type': must equal 'bundle'."
 
 
 def test_bundle_id_must_start_with_bundle():
     with pytest.raises(ValueError) as excinfo:
-        bundle = stix2.Bundle(id='my-prefix--')
+        stix2.Bundle(id='my-prefix--')
 
     assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
 
 
 def test_bundle_with_wrong_spec_version():
     with pytest.raises(ValueError) as excinfo:
-        bundle = stix2.Bundle(spec_version="1.2")
+        stix2.Bundle(spec_version="1.2")
 
     assert str(excinfo.value) == "Invalid value for Bundle 'spec_version': must equal '2.0'."
 
 
-def test_create_bundle(indicator, malware, relationship):
+def test_create_bundle(indicator, malware, relationship):  # noqa: F811
     bundle = stix2.Bundle(objects=[indicator, malware, relationship])
 
     assert str(bundle) == EXPECTED_BUNDLE
 
 
-def test_create_bundle_with_positional_args(indicator, malware, relationship):
+def test_create_bundle_with_positional_args(indicator, malware, relationship):  # noqa: F811
     bundle = stix2.Bundle(indicator, malware, relationship)
 
     assert str(bundle) == EXPECTED_BUNDLE

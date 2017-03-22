@@ -3,7 +3,6 @@
 import collections
 import datetime as dt
 import json
-import uuid
 
 from .utils import format_datetime, get_timestamp, NOW
 

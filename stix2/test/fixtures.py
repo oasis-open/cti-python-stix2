@@ -2,11 +2,10 @@ import datetime as dt
 import uuid
 
 import pytest
-import pytz
 
 import stix2
 
-from .constants import FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID
+from .constants import FAKE_TIME
 from .constants import INDICATOR_KWARGS, MALWARE_KWARGS, RELATIONSHIP_KWARGS
 
 

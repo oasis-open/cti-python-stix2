@@ -1,7 +1,5 @@
 """STIX 2 Common Data Types and Properties"""
 
-import re
-
 from .base import _STIXBase
 from .properties import Property, BooleanProperty, ReferenceProperty
 from .utils import NOW
