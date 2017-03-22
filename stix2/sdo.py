@@ -18,18 +18,6 @@ class AttackPattern(_STIXBase):
         'kill_chain_phases': Property(),
     })
 
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - kill_chain_phases
-
-        super(AttackPattern, self).__init__(**kwargs)
-
 
 class Campaign(_STIXBase):
 
@@ -46,21 +34,6 @@ class Campaign(_STIXBase):
         'objective': Property(),
     })
 
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - aliases
-        # - first_seen
-        # - last_seen
-        # - objective
-
-        super(Campaign, self).__init__(**kwargs)
-
 
 class CourseOfAction(_STIXBase):
 
@@ -72,17 +45,6 @@ class CourseOfAction(_STIXBase):
         'name': Property(required=True),
         'description': Property(),
     })
-
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-
-        super(CourseOfAction, self).__init__(**kwargs)
 
 
 class Identity(_STIXBase):
@@ -98,20 +60,6 @@ class Identity(_STIXBase):
         'sectors': Property(),
         'contact_information': Property(),
     })
-
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - identity_class
-        # - sectors
-        # - contact_information
-
-        super(Identity, self).__init__(**kwargs)
 
 
 class Indicator(_STIXBase):
@@ -129,20 +77,6 @@ class Indicator(_STIXBase):
         'valid_until': Property(),
         'kill_chain_phases': Property(),
     })
-
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - name
-        # - description
-        # - valid_until
-        # - kill_chain_phases
-
-        super(Indicator, self).__init__(**kwargs)
 
 
 class IntrusionSet(_STIXBase):
@@ -163,24 +97,6 @@ class IntrusionSet(_STIXBase):
         'secondary_motivations': Property(),
     })
 
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - aliases
-        # - first_seen
-        # - last_seen
-        # - goals
-        # - resource_level
-        # - primary_motivation
-        # - secondary_motivations
-
-        super(IntrusionSet, self).__init__(**kwargs)
-
 
 class Malware(_STIXBase):
 
@@ -194,18 +110,6 @@ class Malware(_STIXBase):
         'description': Property(),
         'kill_chain_phases': Property(),
     })
-
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - kill_chain_phases
-
-        super(Malware, self).__init__(**kwargs)
 
 
 class ObservedData(_STIXBase):
@@ -221,20 +125,6 @@ class ObservedData(_STIXBase):
         'objects': Property(),
     })
 
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - first_observed
-        # - last_observed
-        # - number_observed
-        # - objects
-
-        super(ObservedData, self).__init__(**kwargs)
-
 
 class Report(_STIXBase):
 
@@ -249,19 +139,6 @@ class Report(_STIXBase):
         'published': Property(),
         'object_refs': Property(),
     })
-
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - published
-        # - object_refs
-
-        super(Report, self).__init__(**kwargs)
 
 
 class ThreatActor(_STIXBase):
@@ -284,25 +161,6 @@ class ThreatActor(_STIXBase):
         'personal_motivations': Property(),
     })
 
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - aliases
-        # - roles
-        # - goals
-        # - sophistication
-        # - resource_level
-        # - primary_motivation
-        # - secondary_motivations
-        # - personal_motivations
-
-        super(ThreatActor, self).__init__(**kwargs)
-
 
 class Tool(_STIXBase):
 
@@ -318,19 +176,6 @@ class Tool(_STIXBase):
         'tool_version': Property(),
     })
 
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-        # - kill_chain_phases
-        # - tool_version
-
-        super(Tool, self).__init__(**kwargs)
-
 
 class Vulnerability(_STIXBase):
 
@@ -342,14 +187,3 @@ class Vulnerability(_STIXBase):
         'name': Property(required=True),
         'description': Property(),
     })
-
-    def __init__(self, **kwargs):
-        # TODO:
-        # - created_by_ref
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
-        # - description
-
-        super(Vulnerability, self).__init__(**kwargs)

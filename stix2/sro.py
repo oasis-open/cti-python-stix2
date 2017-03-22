@@ -21,12 +21,6 @@ class Relationship(_STIXBase):
     def __init__(self, source_ref=None, relationship_type=None, target_ref=None,
                  **kwargs):
         # TODO:
-        # - created_by_ref
-        # - revoked
-        # - external_references
-        # - object_marking_refs
-        # - granular_markings
-
         # - description
 
         # Allow (source_ref, relationship_type, target_ref) as positional args.

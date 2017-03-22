@@ -13,6 +13,9 @@ COMMON_PROPERTIES = {
     'external_references': Property(),
     'revoked': BooleanProperty(),
     'created_by_ref': ReferenceProperty(),
+    # TODO:
+    # - object_marking_refs
+    # - granular_markings
 }
 
 
