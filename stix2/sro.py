@@ -2,7 +2,7 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
-from .properties import IDProperty, TypeProperty
+from .properties import IDProperty, TypeProperty, Property
 
 
 class Relationship(_STIXBase):
@@ -12,15 +12,9 @@ class Relationship(_STIXBase):
     _properties.update({
         'id': IDProperty(_type),
         'type': TypeProperty(_type),
-        'relationship_type': {
-            'required': True,
-        },
-        'source_ref': {
-            'required': True,
-        },
-        'target_ref': {
-            'required': True,
-        },
+        'relationship_type': Property(required=True),
+        'source_ref': Property(required=True),
+        'target_ref': Property(required=True),
     })
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.

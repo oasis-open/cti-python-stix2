@@ -14,7 +14,7 @@ COMMON_PROPERTIES = {
     'modified': {
         'default': NOW,
     },
-    'external_references': {},
+    'external_references': Property(),
     'revoked': BooleanProperty(),
     'created_by_ref': ReferenceProperty(),
 }
@@ -31,10 +31,6 @@ class ExternalReference(_STIXBase):
 
 class KillChainPhase(_STIXBase):
     _properties = {
-        'kill_chain_name': {
-            'required': True,
-        },
-        'phase_name': {
-            'required': True,
-        },
+        'kill_chain_name': Property(required=True),
+        'phase_name': Property(required=True),
     }

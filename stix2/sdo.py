@@ -2,7 +2,7 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
-from .properties import IDProperty, TypeProperty
+from .properties import IDProperty, TypeProperty, Property
 from .utils import NOW
 
 
@@ -13,11 +13,9 @@ class AttackPattern(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'kill_chain_phases': {},
+        'name': Property(required=True),
+        'description': Property(),
+        'kill_chain_phases': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -40,14 +38,12 @@ class Campaign(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'aliases': {},
-        'first_seen': {},
-        'last_seen': {},
-        'objective': {},
+        'name': Property(required=True),
+        'description': Property(),
+        'aliases': Property(),
+        'first_seen': Property(),
+        'last_seen': Property(),
+        'objective': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -73,10 +69,8 @@ class CourseOfAction(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': {
-            'required': True,
-        },
-        'description': {},
+        'name': Property(required=True),
+        'description': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -98,15 +92,11 @@ class Identity(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'identity_class': {
-            'required': True,
-        },
-        'sectors': {},
-        'contact_information': {},
+        'name': Property(required=True),
+        'description': Property(),
+        'identity_class': Property(required=True),
+        'sectors': Property(),
+        'contact_information': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -131,19 +121,15 @@ class Indicator(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': {
-            'required': True,
-        },
-        'name': {},
-        'description': {},
-        'pattern': {
-            'required': True,
-        },
+        'labels': Property(required=True),
+        'name': Property(),
+        'description': Property(),
+        'pattern': Property(required=True),
         'valid_from': {
             'default': NOW,
         },
-        'valid_until': {},
-        'kill_chain_phases': {},
+        'valid_until': Property(),
+        'kill_chain_phases': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -168,17 +154,15 @@ class IntrusionSet(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'aliases': {},
-        'first_seen': {},
-        'last_seen ': {},
-        'goals': {},
-        'resource_level': {},
-        'primary_motivation': {},
-        'secondary_motivations': {},
+        'name': Property(required=True),
+        'description': Property(),
+        'aliases': Property(),
+        'first_seen': Property(),
+        'last_seen ': Property(),
+        'goals': Property(),
+        'resource_level': Property(),
+        'primary_motivation': Property(),
+        'secondary_motivations': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -207,14 +191,10 @@ class Malware(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': {
-            'required': True,
-        },
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'kill_chain_phases': {},
+        'labels': Property(required=True),
+        'name': Property(required=True),
+        'description': Property(),
+        'kill_chain_phases': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -237,10 +217,10 @@ class ObservedData(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'first_observed': {},
-        'last_observed': {},
-        'number_observed': {},
-        'objects': {},
+        'first_observed': Property(),
+        'last_observed': Property(),
+        'number_observed': Property(),
+        'objects': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -265,15 +245,11 @@ class Report(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': {
-            'required': True,
-        },
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'published': {},
-        'object_refs': {},
+        'labels': Property(required=True),
+        'name': Property(required=True),
+        'description': Property(),
+        'published': Property(),
+        'object_refs': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -297,21 +273,17 @@ class ThreatActor(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': {
-            'required': True,
-        },
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'aliases': {},
-        'roles': {},
-        'goals': {},
-        'sophistication': {},
-        'resource_level': {},
-        'primary_motivation': {},
-        'secondary_motivations': {},
-        'personal_motivations': {},
+        'labels': Property(required=True),
+        'name': Property(required=True),
+        'description': Property(),
+        'aliases': Property(),
+        'roles': Property(),
+        'goals': Property(),
+        'sophistication': Property(),
+        'resource_level': Property(),
+        'primary_motivation': Property(),
+        'secondary_motivations': Property(),
+        'personal_motivations': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -341,15 +313,11 @@ class Tool(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': {
-            'required': True,
-        },
-        'name': {
-            'required': True,
-        },
-        'description': {},
-        'kill_chain_phases': {},
-        'tool_version': {},
+        'labels': Property(required=True),
+        'name': Property(required=True),
+        'description': Property(),
+        'kill_chain_phases': Property(),
+        'tool_version': Property(),
     })
 
     def __init__(self, **kwargs):
@@ -373,10 +341,8 @@ class Vulnerability(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': {
-            'required': True,
-        },
-        'description': {},
+        'name': Property(required=True),
+        'description': Property(),
     })
 
     def __init__(self, **kwargs):
