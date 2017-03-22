@@ -22,4 +22,4 @@ def test_encode_json_object():
     with pytest.raises(TypeError) as excinfo:
         json.dumps(test_dict, cls=STIXJSONEncoder)
 
-    assert str(excinfo.value) == "Object of type 'object' is not JSON serializable"
+    assert " is not JSON serializable" in str(excinfo.value)
