@@ -23,13 +23,7 @@ class STIXJSONEncoder(json.JSONEncoder):
 
 
 def get_required_properties(properties):
-    for k, v in properties.items():
-        if isinstance(v, dict):
-            if v.get('required'):
-                yield k
-        else:  # This is a Property subclass
-            if v.required:
-                yield k
+    return (k for k, v in properties.items() if v.required)
 
 
 class _STIXBase(collections.Mapping):
