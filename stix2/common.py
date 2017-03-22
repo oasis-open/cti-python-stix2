@@ -8,12 +8,8 @@ from .utils import NOW
 
 COMMON_PROPERTIES = {
     # 'type' and 'id' should be defined on each individual type
-    'created': {
-        'default': NOW,
-    },
-    'modified': {
-        'default': NOW,
-    },
+    'created': Property(default=lambda: NOW),
+    'modified': Property(default=lambda: NOW),
     'external_references': Property(),
     'revoked': BooleanProperty(),
     'created_by_ref': ReferenceProperty(),

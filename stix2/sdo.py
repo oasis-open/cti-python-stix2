@@ -125,9 +125,7 @@ class Indicator(_STIXBase):
         'name': Property(),
         'description': Property(),
         'pattern': Property(required=True),
-        'valid_from': {
-            'default': NOW,
-        },
+        'valid_from': Property(default=lambda: NOW),
         'valid_until': Property(),
         'kill_chain_phases': Property(),
     })

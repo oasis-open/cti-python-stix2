@@ -36,34 +36,13 @@ def get_required_properties(properties):
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
-    # TODO: remove this
-    def _handle_old_style_property(self, prop_name, prop_metadata, kwargs):
-        cls = self.__class__
-        class_name = cls.__name__
-
-        if prop_name not in kwargs:
-            if prop_metadata.get('default'):
-                default = prop_metadata['default']
-                if default == NOW:
-                    kwargs[prop_name] = self.__now
-
-        if prop_metadata.get('validate'):
-            if (prop_name in kwargs and
-                    not prop_metadata['validate'](cls, kwargs[prop_name])):
-                msg = prop_metadata.get('error_msg', DEFAULT_ERROR).format(
-                    type=class_name,
-                    field=prop_name,
-                    expected=prop_metadata.get('expected',
-                                               prop_metadata.get('default', lambda x: ''))(cls),
-                )
-                raise ValueError(msg)
-
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
             if hasattr(prop, 'default'):
-                kwargs[prop_name] = prop.default()
-            # if default == NOW:
-            #     kwargs[prop_name] = self.__now
+                value = prop.default()
+                if value == NOW:
+                    value = self.__now
+                kwargs[prop_name] = value
 
         if prop_name in kwargs:
             try:
@@ -94,11 +73,7 @@ class _STIXBase(collections.Mapping):
             raise ValueError(msg.format(type=class_name, fields=field_list))
 
         for prop_name, prop_metadata in cls._properties.items():
-
-            if isinstance(prop_metadata, dict):
-                self._handle_old_style_property(prop_name, prop_metadata, kwargs)
-            else:  # This is a Property Subclasses
-                self._check_property(prop_name, prop_metadata, kwargs)
+            self._check_property(prop_name, prop_metadata, kwargs)
 
         self._inner = kwargs
 

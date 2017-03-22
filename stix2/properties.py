@@ -1,6 +1,8 @@
 import re
 import uuid
 
+from .utils import NOW
+
 
 class Property(object):
     """Represent a property of STIX data type.
