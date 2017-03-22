@@ -1,0 +1,8 @@
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    sha: e626cd57090d8df0be21e4df0f4e55cc3511d6ab
+    hooks:
+    -   id: trailing-whitespace
+    -   id: flake8
+        args:
+        - --max-line-length=160
+    -   id: check-merge-conflict

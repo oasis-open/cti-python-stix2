@@ -1,7 +1,8 @@
+bumpversion
+pre-commit
 pytest
-tox
 pytest-cov
 sphinx
-bumpversion
+tox
 
 -e .
