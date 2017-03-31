@@ -2,7 +2,7 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
-from .properties import IDProperty, TypeProperty, Property
+from .properties import IDProperty, TypeProperty, ReferenceProperty, ListProperty, Property
 
 
 class Relationship(_STIXBase):
@@ -13,8 +13,9 @@ class Relationship(_STIXBase):
         'id': IDProperty(_type),
         'type': TypeProperty(_type),
         'relationship_type': Property(required=True),
-        'source_ref': Property(required=True),
-        'target_ref': Property(required=True),
+        'description': Property(),
+        'source_ref': ReferenceProperty(required=True),
+        'target_ref': ReferenceProperty(required=True),
     })
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
@@ -31,12 +32,31 @@ class Relationship(_STIXBase):
         if target_ref and not kwargs.get('target_ref'):
             kwargs['target_ref'] = target_ref
 
-        # If actual STIX objects (vs. just the IDs) are passed in, extract the
-        # ID values to use in the Relationship object.
-        if kwargs.get('source_ref') and isinstance(kwargs['source_ref'], _STIXBase):
-            kwargs['source_ref'] = kwargs['source_ref'].id
-
-        if kwargs.get('target_ref') and isinstance(kwargs['target_ref'], _STIXBase):
-            kwargs['target_ref'] = kwargs['target_ref'].id
-
         super(Relationship, self).__init__(**kwargs)
+
+
+class Sighting(_STIXBase):
+    _type = 'sighting'
+    _properties = COMMON_PROPERTIES.copy()
+    _properties.update({
+        'id': IDProperty(_type),
+        'type': TypeProperty(_type),
+        'first_seen': Property(),
+        'last_seen': Property(),
+        'count': Property(),
+        'sighting_of_ref': ReferenceProperty(required=True),
+        'observed_data_refs': ListProperty(ReferenceProperty, element_type="observed-data"),
+        'where_sighted_refs': ListProperty(ReferenceProperty, element_type="identity"),
+        'summary': Property(),
+    })
+
+    # Explicitly define the first kwargs to make readable Sighting declarations.
+    def __init__(self, sighting_of_ref=None, **kwargs):
+        # TODO:
+        # - description
+
+        # Allow sighting_of_ref as a positional arg.
+        if sighting_of_ref and not kwargs.get('sighting_of_ref'):
+            kwargs['sighting_of_ref'] = sighting_of_ref
+
+        super(Sighting, self).__init__(**kwargs)

@@ -8,6 +8,7 @@ INDICATOR_ID = "indicator--01234567-89ab-cdef-0123-456789abcdef"
 MALWARE_ID = "malware--fedcba98-7654-3210-fedc-ba9876543210"
 RELATIONSHIP_ID = "relationship--00000000-1111-2222-3333-444444444444"
 IDENTITY_ID = "identity--d4d765ce-cff7-40e8-b7a6-e205d005ac2c"
+SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 
 # Minimum required args for an Indicator instance
 INDICATOR_KWARGS = dict(
@@ -26,4 +27,8 @@ RELATIONSHIP_KWARGS = dict(
     relationship_type="indicates",
     source_ref=INDICATOR_ID,
     target_ref=MALWARE_ID,
+)
+
+SIGHTING_KWARGS = dict(
+    sighting_of_ref=INDICATOR_ID,
 )

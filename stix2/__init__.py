@@ -7,4 +7,5 @@ from .common import ExternalReference, KillChainPhase
 from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
     IntrusionSet, Malware, ObservedData, Report, ThreatActor, Tool, \
     Vulnerability
-from .sro import Relationship
+from .sro import Relationship, Sighting
+from .markings import MarkingDefinition, GranularMarking, StatementMarking, TLPMarking

@@ -2,7 +2,7 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
-from .properties import IDProperty, TypeProperty, Property
+from .properties import IDProperty, TypeProperty, ListProperty, ReferenceProperty, Property
 from .utils import NOW
 
 
@@ -137,7 +137,7 @@ class Report(_STIXBase):
         'name': Property(required=True),
         'description': Property(),
         'published': Property(),
-        'object_refs': Property(),
+        'object_refs': ListProperty(ReferenceProperty),
     })
 
 

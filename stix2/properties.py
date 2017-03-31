@@ -1,5 +1,6 @@
 import re
 import uuid
+from .base import _STIXBase
 
 
 class Property(object):
@@ -50,8 +51,9 @@ class Property(object):
             raise ValueError("must equal '{0}'.".format(self._fixed_value))
         return value
 
-    def __init__(self, required=False, fixed=None, clean=None, default=None):
+    def __init__(self, required=False, fixed=None, clean=None, default=None, type=None):
         self.required = required
+        self.type = type
         if fixed:
             self._fixed_value = fixed
             self.validate = self._default_validate
@@ -72,25 +74,28 @@ class Property(object):
         return value
 
 
-class List(Property):
+class ListProperty(Property):
 
-    def __init__(self, contained):
+    def __init__(self, contained, required=False, element_type=None):
         """
         contained should be a type whose constructor creates an object from the value
         """
         self.contained = contained
+        self.element_type = element_type
+        super(ListProperty, self).__init__(required)
 
     def validate(self, value):
         # TODO: ensure iterable
+        result = []
         for item in value:
-            self.contained.validate(item)
+            result.append(self.contained(type=self.element_type).validate(item))
+        return result
 
     def clean(self, value):
         return [self.contained(x) for x in value]
 
 
 class TypeProperty(Property):
-
     def __init__(self, type):
         super(TypeProperty, self).__init__(fixed=type)
 
@@ -125,9 +130,33 @@ REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"
 
 
 class ReferenceProperty(Property):
-    # TODO: support references that must be to a specific object type
+    def __init__(self, required=False, type=None):
+        """
+        references sometimes must be to a specific object type
+        """
+        self.type = type
+        super(ReferenceProperty, self).__init__(required, type=type)
 
     def validate(self, value):
+        if isinstance(value, _STIXBase):
+            value = value.id
+        if self.type:
+            if not value.startswith(self.type):
+                raise ValueError("must start with '{0}'.".format(self.type))
         if not REF_REGEX.match(value):
             raise ValueError("must match <object-type>--<guid>.")
+        return value
+
+
+SELECTOR_REGEX = re.compile("^[a-z0-9_-]{3,250}(\\.(\\[\\d+\\]|[a-z0-9_-]{1,250}))*$")
+
+
+class SelectorProperty(Property):
+    def __init__(self, type=None):
+        # ignore type
+        super(SelectorProperty, self).__init__()
+
+    def validate(self, value):
+        if not SELECTOR_REGEX.match(value):
+            raise ValueError("values must adhere to selector syntax")
         return value

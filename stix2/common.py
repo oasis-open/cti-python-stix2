@@ -1,7 +1,7 @@
 """STIX 2 Common Data Types and Properties"""
 
 from .base import _STIXBase
-from .properties import Property, BooleanProperty, ReferenceProperty
+from .properties import Property, BooleanProperty, ReferenceProperty, ListProperty
 from .utils import NOW
 
 COMMON_PROPERTIES = {
@@ -10,10 +10,9 @@ COMMON_PROPERTIES = {
     'modified': Property(default=lambda: NOW),
     'external_references': Property(),
     'revoked': BooleanProperty(),
-    'created_by_ref': ReferenceProperty(),
-    # TODO:
-    # - object_marking_refs
-    # - granular_markings
+    'created_by_ref': ReferenceProperty(type="identity"),
+    'object_marking_refs': ListProperty(ReferenceProperty, element_type="marking-definition"),
+    'granular_markings': ListProperty(Property)
 }
 
 
