@@ -12,4 +12,4 @@ install:
   - pip install tox-travis pre-commit
 script:
   - tox
-  - pre-commit run --all-files
+  - if [[ $TRAVIS_PYTHON_VERSION != 2.6 ]]; then pre-commit run --all-files; fi
