@@ -12,4 +12,4 @@ install:
   - pip install tox-travis
 script:
   - tox
-  - git diff-tree --no-commit-id --name-only -r $REVISION | xargs pre-commit run --files
+  - pre-commit run --all-files
