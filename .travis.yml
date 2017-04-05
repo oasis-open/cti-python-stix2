@@ -9,7 +9,7 @@ python:
   - "3.6"
 install:
   - pip install -U pip setuptools
-  - pip install tox-travis
+  - pip install tox-travis pre-commit
 script:
   - tox
   - pre-commit run --all-files
