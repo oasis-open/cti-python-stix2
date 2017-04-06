@@ -1,5 +1,6 @@
 import re
 import uuid
+import sys
 
 
 class Property(object):
@@ -72,21 +73,66 @@ class Property(object):
         return value
 
 
-class List(Property):
+class ListProperty(Property):
 
     def __init__(self, contained):
         """
         contained should be a type whose constructor creates an object from the value
         """
-        self.contained = contained
+        if contained == StringProperty:
+            self.contained = StringProperty().string_type
+        elif contained == BooleanProperty:
+            self.contained = bool
+        else:
+            self.contained = contained
 
     def validate(self, value):
-        # TODO: ensure iterable
-        for item in value:
-            self.contained.validate(item)
+        try:
+            list_ = self.clean(value)
+        except ValueError:
+            raise
+
+        if len(list_) < 1:
+            raise ValueError("must not be empty.")
+
+        try:
+            for item in list_:
+                self.contained.validate(item)
+        except ValueError:
+            raise
+        except AttributeError:
+            # type of list has no validate() function (eg. built in Python types)
+            # TODO Should we raise an error here?
+            pass
+
+        return list_
 
     def clean(self, value):
         return [self.contained(x) for x in value]
+        try:
+            return [self.contained(x) for x in value]
+        except TypeError:
+            raise ValueError("must be an iterable over a type whose constructor creates an object from the value.")
+
+
+class StringProperty(Property):
+
+    def __init__(self):
+        if sys.version_info[0] == 2:
+            self.string_type = unicode
+        else:
+            self.string_type = str
+        super(StringProperty, self).__init__()
+
+    def clean(self, value):
+        return self.string_type(value)
+
+    def validate(self, value):
+        try:
+            val = self.clean(value)
+        except ValueError:
+            raise
+        return val
 
 
 class TypeProperty(Property):

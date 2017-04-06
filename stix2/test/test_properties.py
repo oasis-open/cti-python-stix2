@@ -1,7 +1,8 @@
 import pytest
 
-from stix2.properties import (Property, BooleanProperty, IDProperty,
-                              ReferenceProperty, TypeProperty)
+from stix2.properties import (Property, BooleanProperty, ListProperty,
+                              StringProperty, TypeProperty, IDProperty,
+                              ReferenceProperty)
 
 
 def test_property():
@@ -48,6 +49,22 @@ def test_fixed_property():
 
     assert p.default() == "2.0"
     assert p.validate(p.default())
+
+
+def test_list_property():
+    p = ListProperty(StringProperty)
+
+    assert p.validate(['abc', 'xyz'])
+    with pytest.raises(ValueError):
+        p.validate([])
+
+
+def test_string_property():
+    prop = StringProperty()
+
+    assert prop.validate('foobar')
+    assert prop.validate(1)
+    assert prop.validate([1, 2, 3])
 
 
 def test_type_property():
