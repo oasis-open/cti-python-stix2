@@ -63,8 +63,13 @@ def test_id_property():
     idprop = IDProperty('my-type')
 
     assert idprop.validate('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         idprop.validate('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+    assert str(excinfo.value) == "must start with 'my-type--'."
+    with pytest.raises(ValueError) as excinfo:
+        idprop.validate('my-type--foo')
+    assert str(excinfo.value) == "must have a valid version 4 UUID after the prefix."
+
     assert idprop.validate(idprop.default())
 
 

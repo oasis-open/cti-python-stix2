@@ -102,9 +102,12 @@ class IDProperty(Property):
         super(IDProperty, self).__init__()
 
     def validate(self, value):
-        # TODO: validate GUID as well
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{0}'.".format(self.required_prefix))
+        try:
+            uuid.UUID(value.split('--', 1)[1], version=4)
+        except Exception:
+            raise ValueError("must have a valid version 4 UUID after the prefix.")
         return value
 
     def default(self):
