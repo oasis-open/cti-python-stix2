@@ -115,12 +115,31 @@ class IDProperty(Property):
 
 
 class BooleanProperty(Property):
-    # TODO:  Consider coercing some values (like the strings "true" and "false")
+
+    def clean(self, value):
+        if isinstance(value, bool):
+            return value
+
+        trues = ['true', 't']
+        falses = ['false', 'f']
+        try:
+            if value.lower() in trues:
+                return True
+            if value.lower() in falses:
+                return False
+        except AttributeError:
+            if value == 1:
+                return True
+            if value == 0:
+                return False
+
+        raise ValueError("not a coercible boolean value.")
 
     def validate(self, value):
-        if not isinstance(value, bool):
+        try:
+            return self.clean(value)
+        except ValueError:
             raise ValueError("must be a boolean value.")
-        return value
 
 
 REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"

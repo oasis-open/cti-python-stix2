@@ -78,7 +78,19 @@ def test_boolean_property():
 
     assert bool_prop.validate(True) is not None
     assert bool_prop.validate(False) is not None
-    for invalid in ('true', 'false', "T", "F", 1, 0):
+    assert bool_prop.validate('True') is not None
+    assert bool_prop.validate('False') is not None
+    assert bool_prop.validate('true') is not None
+    assert bool_prop.validate('false') is not None
+    assert bool_prop.validate('TRUE') is not None
+    assert bool_prop.validate('FALSE') is not None
+    assert bool_prop.validate('T') is not None
+    assert bool_prop.validate('F') is not None
+    assert bool_prop.validate('t') is not None
+    assert bool_prop.validate('f') is not None
+    assert bool_prop.validate(1) is not None
+    assert bool_prop.validate(0) is not None
+    for invalid in ('abc', ['false'], {'true': 'true'}, 2, -1):
         print(invalid)
         with pytest.raises(ValueError):
             bool_prop.validate(invalid)
