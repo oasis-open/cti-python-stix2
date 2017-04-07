@@ -75,7 +75,7 @@ class Property(object):
 
 class ListProperty(Property):
 
-    def __init__(self, contained):
+    def __init__(self, contained, **kwargs):
         """
         contained should be a type whose constructor creates an object from the value
         """
@@ -85,6 +85,7 @@ class ListProperty(Property):
             self.contained = bool
         else:
             self.contained = contained
+        super(ListProperty, self).__init__(**kwargs)
 
     def validate(self, value):
         try:
@@ -108,7 +109,6 @@ class ListProperty(Property):
         return list_
 
     def clean(self, value):
-        return [self.contained(x) for x in value]
         try:
             return [self.contained(x) for x in value]
         except TypeError:
@@ -117,12 +117,12 @@ class ListProperty(Property):
 
 class StringProperty(Property):
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         if sys.version_info[0] == 2:
             self.string_type = unicode
         else:
             self.string_type = str
-        super(StringProperty, self).__init__()
+        super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         return self.string_type(value)

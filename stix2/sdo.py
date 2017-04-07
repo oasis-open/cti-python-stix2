@@ -2,7 +2,8 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
-from .properties import IDProperty, TypeProperty, Property
+from .properties import (StringProperty, IDProperty, ListProperty,
+                         TypeProperty, Property)
 from .utils import NOW
 
 
@@ -105,9 +106,9 @@ class Malware(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': Property(required=True),
-        'name': Property(required=True),
-        'description': Property(),
+        'labels': ListProperty(StringProperty, required=True),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
         'kill_chain_phases': Property(),
     })
 
