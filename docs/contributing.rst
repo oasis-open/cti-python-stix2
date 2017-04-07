@@ -21,16 +21,22 @@ Setting up a development environment
 We recommend using a `virtualenv <https://virtualenv.pypa.io/en/stable/>`_.
 
 1. Clone the repository. If you're planning to make pull request, you should fork
-the repository on GitHub and clone your fork instead of the main repo::
+the repository on GitHub and clone your fork instead of the main repo:
+
+.. code:: bash
 
     $ git clone https://github.com/yourusername/cti-python-stix2.git
 
-2. Install develoment-related dependencies::
+2. Install develoment-related dependencies:
+
+.. code:: bash
 
     $ cd cti-python-stix2
     $ pip install -r requirements.txt
 
-3. Install [pre-commit](http://pre-commit.com/#usage) git hooks.
+3. Install `pre-commit <http://pre-commit.com/#usage>`_ git hooks:
+
+.. code:: bash
 
     $ pre-commit install
 
