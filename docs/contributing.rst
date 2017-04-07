@@ -30,6 +30,10 @@ the repository on GitHub and clone your fork instead of the main repo::
     $ cd cti-python-stix2
     $ pip install -r requirements.txt
 
+3. Install [pre-commit](http://pre-commit.com/#usage) git hooks.
+
+    $ pre-commit install
+
 At this point you should be able to make changes to the code.
 
 Code style
