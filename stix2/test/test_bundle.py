@@ -2,8 +2,6 @@ import pytest
 
 import stix2
 
-from .fixtures import clock, uuid4, indicator, malware, relationship  # noqa: F401
-
 EXPECTED_BUNDLE = """{
     "id": "bundle--00000000-0000-0000-0000-000000000004",
     "objects": [
@@ -73,13 +71,13 @@ def test_bundle_with_wrong_spec_version():
     assert str(excinfo.value) == "Invalid value for Bundle 'spec_version': must equal '2.0'."
 
 
-def test_create_bundle(indicator, malware, relationship):  # noqa: F811
+def test_create_bundle(indicator, malware, relationship):
     bundle = stix2.Bundle(objects=[indicator, malware, relationship])
 
     assert str(bundle) == EXPECTED_BUNDLE
 
 
-def test_create_bundle_with_positional_args(indicator, malware, relationship):  # noqa: F811
+def test_create_bundle_with_positional_args(indicator, malware, relationship):
     bundle = stix2.Bundle(indicator, malware, relationship)
 
     assert str(bundle) == EXPECTED_BUNDLE
