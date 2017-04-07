@@ -110,7 +110,7 @@ class ListProperty(Property):
 
     def clean(self, value):
         try:
-            return [self.contained(x) for x in value]
+            return [self.contained(**x) if type(x) is dict else self.contained(x) for x in value]
         except TypeError:
             raise ValueError("must be an iterable over a type whose constructor creates an object from the value.")
 

@@ -58,6 +58,7 @@ class _STIXBase(collections.Mapping):
         if extra_kwargs:
             raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
 
+        # Detect any missing required fields
         required_fields = get_required_properties(cls._properties)
         missing_kwargs = set(required_fields) - set(kwargs)
         if missing_kwargs:

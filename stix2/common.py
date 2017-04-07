@@ -1,7 +1,8 @@
 """STIX 2 Common Data Types and Properties"""
 
 from .base import _STIXBase
-from .properties import Property, BooleanProperty, ReferenceProperty
+from .properties import (Property, BooleanProperty, ReferenceProperty,
+                         StringProperty)
 from .utils import NOW
 
 COMMON_PROPERTIES = {
@@ -28,6 +29,6 @@ class ExternalReference(_STIXBase):
 
 class KillChainPhase(_STIXBase):
     _properties = {
-        'kill_chain_name': Property(required=True),
-        'phase_name': Property(required=True),
+        'kill_chain_name': StringProperty(required=True),
+        'phase_name': StringProperty(required=True),
     }

@@ -1,7 +1,7 @@
 """STIX 2.0 Domain Objects"""
 
 from .base import _STIXBase
-from .common import COMMON_PROPERTIES
+from .common import COMMON_PROPERTIES, KillChainPhase
 from .properties import (StringProperty, IDProperty, ListProperty,
                          TypeProperty, Property)
 from .utils import NOW
@@ -109,7 +109,7 @@ class Malware(_STIXBase):
         'labels': ListProperty(StringProperty, required=True),
         'name': StringProperty(required=True),
         'description': StringProperty(),
-        'kill_chain_phases': Property(),
+        'kill_chain_phases': ListProperty(KillChainPhase),
     })
 
 
