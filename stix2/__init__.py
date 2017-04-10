@@ -15,10 +15,13 @@ from .sro import Relationship
 def parse(data):
     """Deserialize a string or file-like object into a STIX object"""
 
-    try:
-        obj = json.loads(data)
-    except TypeError:
-        obj = json.load(data)
+    if type(data) is dict:
+        obj = data
+    else:
+        try:
+            obj = json.loads(data)
+        except TypeError:
+            obj = json.load(data)
 
     if 'type' not in obj:
         # TODO parse external references, kill chain phases, and granular markings
