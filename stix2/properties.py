@@ -1,6 +1,6 @@
 import re
 import uuid
-import sys
+from six import PY2
 
 
 class Property(object):
@@ -93,6 +93,7 @@ class ListProperty(Property):
         except ValueError:
             raise
 
+        # STIX spec forbids empty lists
         if len(list_) < 1:
             raise ValueError("must not be empty.")
 
@@ -110,15 +111,20 @@ class ListProperty(Property):
 
     def clean(self, value):
         try:
+            iter(value)
+        except TypeError:
+            raise ValueError("must be an iterable.")
+
+        try:
             return [self.contained(**x) if type(x) is dict else self.contained(x) for x in value]
         except TypeError:
-            raise ValueError("must be an iterable over a type whose constructor creates an object from the value.")
+            raise ValueError("the type of objects in the list must have a constructor that creates an object from the value.")
 
 
 class StringProperty(Property):
 
     def __init__(self, **kwargs):
-        if sys.version_info[0] == 2:
+        if PY2:
             self.string_type = unicode
         else:
             self.string_type = str

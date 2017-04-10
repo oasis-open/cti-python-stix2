@@ -90,27 +90,39 @@ def test_id_property():
     assert idprop.validate(idprop.default())
 
 
-def test_boolean_property():
+@pytest.mark.parametrize("value", [
+    True,
+    False,
+    'True',
+    'False',
+    'true',
+    'false',
+    'TRUE',
+    'FALSE',
+    'T',
+    'F',
+    't',
+    'f',
+    1,
+    0,
+])
+def test_boolean_property_valid(value):
     bool_prop = BooleanProperty()
 
-    assert bool_prop.validate(True) is not None
-    assert bool_prop.validate(False) is not None
-    assert bool_prop.validate('True') is not None
-    assert bool_prop.validate('False') is not None
-    assert bool_prop.validate('true') is not None
-    assert bool_prop.validate('false') is not None
-    assert bool_prop.validate('TRUE') is not None
-    assert bool_prop.validate('FALSE') is not None
-    assert bool_prop.validate('T') is not None
-    assert bool_prop.validate('F') is not None
-    assert bool_prop.validate('t') is not None
-    assert bool_prop.validate('f') is not None
-    assert bool_prop.validate(1) is not None
-    assert bool_prop.validate(0) is not None
-    for invalid in ('abc', ['false'], {'true': 'true'}, 2, -1):
-        print(invalid)
-        with pytest.raises(ValueError):
-            bool_prop.validate(invalid)
+    assert bool_prop.validate(value) is not None
+
+
+@pytest.mark.parametrize("value", [
+    'abc',
+    ['false'],
+    {'true': 'true'},
+    2,
+    -1,
+])
+def test_boolean_property_invalid(value):
+    bool_prop = BooleanProperty()
+    with pytest.raises(ValueError):
+        bool_prop.validate(value)
 
 
 def test_reference_property():
