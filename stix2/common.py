@@ -2,13 +2,13 @@
 
 from .base import _STIXBase
 from .properties import (Property, BooleanProperty, ReferenceProperty,
-                         StringProperty)
+                         StringProperty, TimestampProperty)
 from .utils import NOW
 
 COMMON_PROPERTIES = {
     # 'type' and 'id' should be defined on each individual type
-    'created': Property(default=lambda: NOW),
-    'modified': Property(default=lambda: NOW),
+    'created': TimestampProperty(default=lambda: NOW),
+    'modified': TimestampProperty(default=lambda: NOW),
     'external_references': Property(),
     'revoked': BooleanProperty(),
     'created_by_ref': ReferenceProperty(),

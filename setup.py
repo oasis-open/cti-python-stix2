@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 install_requires = [
     'pytz',
     'six',
+    'python-dateutil',
 ]
 
 setup(

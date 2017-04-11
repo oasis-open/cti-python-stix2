@@ -1,6 +1,9 @@
 import re
 import uuid
 from six import PY2
+import datetime as dt
+import pytz
+from dateutil import parser
 
 
 class Property(object):
@@ -192,6 +195,30 @@ class BooleanProperty(Property):
             return self.clean(value)
         except ValueError:
             raise ValueError("must be a boolean value.")
+
+
+class TimestampProperty(Property):
+
+    def validate(self, value):
+        if isinstance(value, dt.datetime):
+            return value
+        elif isinstance(value, dt.date):
+            return dt.datetime.combine(value, dt.time())
+
+        try:
+            return parser.parse(value).astimezone(pytz.utc)
+        except ValueError:
+            # Doesn't have timezone info in the string
+            try:
+                return pytz.utc.localize(parser.parse(value))
+            except TypeError:
+                # Unknown format
+                raise ValueError("must be a datetime object, date object, or "
+                                 "timestamp string in a recognizable format.")
+        except TypeError:
+            # Isn't a string
+            raise ValueError("must be a datetime object, date object, or "
+                             "timestamp string.")
 
 
 REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"

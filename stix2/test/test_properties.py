@@ -2,7 +2,8 @@ import pytest
 
 from stix2.properties import (Property, BooleanProperty, ListProperty,
                               StringProperty, TypeProperty, IDProperty,
-                              ReferenceProperty)
+                              ReferenceProperty, TimestampProperty)
+from .constants import FAKE_TIME
 
 
 def test_property():
@@ -131,3 +132,21 @@ def test_reference_property():
     assert ref_prop.validate("my-type--3a331bfe-0566-55e1-a4a0-9a2cd355a300")
     with pytest.raises(ValueError):
         ref_prop.validate("foo")
+
+
+@pytest.mark.parametrize("value", [
+    '2017-01-01T12:34:56Z',
+    '2017-01-01 12:34:56',
+    'Jan 1 2017 12:34:56',
+])
+def test_timestamp_property_valid(value):
+    ts_prop = TimestampProperty()
+    assert ts_prop.validate(value) == FAKE_TIME
+
+
+def test_timestamp_property_invalid():
+    ts_prop = TimestampProperty()
+    with pytest.raises(ValueError):
+        ts_prop.validate(1)
+    with pytest.raises(ValueError):
+        ts_prop.validate("someday sometime")
