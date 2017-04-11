@@ -2,8 +2,8 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES, KillChainPhase
-from .properties import (StringProperty, IDProperty, ListProperty,
-                         TypeProperty, Property)
+from .properties import (Property, ListProperty, StringProperty, TypeProperty,
+                         IDProperty, ReferenceProperty)
 from .utils import NOW
 
 
@@ -138,7 +138,7 @@ class Report(_STIXBase):
         'name': Property(required=True),
         'description': Property(),
         'published': Property(),
-        'object_refs': Property(),
+        'object_refs': ListProperty(ReferenceProperty),
     })
 
 

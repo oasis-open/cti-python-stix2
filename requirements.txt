@@ -3,6 +3,7 @@ pre-commit
 pytest
 pytest-cov
 sphinx
+sphinx-prompt
 tox
 
 -e .

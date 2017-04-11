@@ -21,14 +21,24 @@ Setting up a development environment
 We recommend using a `virtualenv <https://virtualenv.pypa.io/en/stable/>`_.
 
 1. Clone the repository. If you're planning to make pull request, you should fork
-the repository on GitHub and clone your fork instead of the main repo::
+the repository on GitHub and clone your fork instead of the main repo:
 
-    $ git clone https://github.com/yourusername/cti-python-stix2.git
+.. prompt:: bash
 
-2. Install develoment-related dependencies::
+    git clone https://github.com/yourusername/cti-python-stix2.git
 
-    $ cd cti-python-stix2
-    $ pip install -r requirements.txt
+2. Install develoment-related dependencies:
+
+.. prompt:: bash
+
+    cd cti-python-stix2
+    pip install -r requirements.txt
+
+3. Install `pre-commit <http://pre-commit.com/#usage>`_ git hooks:
+
+.. prompt:: bash
+
+    pre-commit install
 
 At this point you should be able to make changes to the code.
 
@@ -55,15 +65,19 @@ or implements the features. Any code contributions to python-stix2 should come
 with new or updated tests.
 
 To run the tests in your current Python environment, use the ``pytest`` command
-from the root project directory::
+from the root project directory:
 
-     $ pytest
+.. prompt:: bash
+
+    pytest
 
 This should show all of the tests that ran, along with their status.
 
-You can run a specific test file by passing it on the command line::
+You can run a specific test file by passing it on the command line:
 
-    $ pytest stix2/test/test_<xxx>.py
+.. prompt:: bash
+
+    pytest stix2/test/test_<xxx>.py
 
 To ensure that the test you wrote is running, you can deliberately add an
 ``assert False`` statement at the beginning of the test. This is another benefit
@@ -73,18 +87,22 @@ run) before making it pass.
 `tox <https://tox.readthedocs.io/en/latest/>`_ allows you to test a package
 across multiple versions of Python. Setting up multiple Python environments is
 beyond the scope of this guide, but feel free to ask for help setting them up.
-Tox should be run from the root directory of the project:::
+Tox should be run from the root directory of the project:
 
-   $ tox
+.. prompt:: bash
+
+    tox
 
 We aim for high test coverage, using the `coverage.py
 <http://coverage.readthedocs.io/en/latest/>`_ library. Though it's not an
 absolute requirement to maintain 100% coverage, all code contributions must
 be accompanied by tests. To run coverage and look for untested lines of code,
-run::
+run:
 
-    $ pytest --cov=stix2
-    $ coverage html
+.. prompt:: bash
+
+    pytest --cov=stix2
+    coverage html
 
 then look at the resulting report in ``htmlcov/index.html``.
 

@@ -71,6 +71,11 @@ class _STIXBase(collections.Mapping):
 
         self._inner = kwargs
 
+        if self.granular_markings:
+            for m in self.granular_markings:
+                # TODO: check selectors
+                pass
+
     def __getitem__(self, key):
         return self._inner[key]
 

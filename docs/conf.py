@@ -1,4 +1,6 @@
-extensions = []
+extensions = [
+    'sphinx-prompt',
+]
 templates_path = ['_templates']
 source_suffix = '.rst'
 master_doc = 'index'
