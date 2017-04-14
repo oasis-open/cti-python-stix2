@@ -5,25 +5,25 @@ from .properties import IDProperty, TypeProperty, ListProperty, ReferencePropert
 from .utils import NOW
 
 
+class GranularMarking(_STIXBase):
+    _properties = {
+        'marking_ref': ReferenceProperty(required=True, type="marking-definition"),
+        'selectors': ListProperty(SelectorProperty, required=True),
+    }
+
+
 class MarkingDefinition(_STIXBase):
     _type = 'marking-definition'
     _properties = {
         'created': Property(default=lambda: NOW),
         'external_references': Property(),
         'created_by_ref': ReferenceProperty(type="identity"),
-        'object_marking_refs': ListProperty(ReferenceProperty, element_type="marking-definition"),
-        'granular_marking': ListProperty(Property, element_type="granular-marking"),
+        'object_marking_refs': ListProperty(ReferenceProperty(type="marking-definition")),
+        'granular_marking': ListProperty(GranularMarking),
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
         'definition_type': Property(),
         'definition': Property(),
-    }
-
-
-class GranularMarking(_STIXBase):
-    _properties = {
-        'marking_ref': ReferenceProperty(required=True, type="marking-definition"),
-        'selectors': ListProperty(SelectorProperty, required=True),
     }
 
 

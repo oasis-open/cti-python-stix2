@@ -12,7 +12,7 @@ COMMON_PROPERTIES = {
     'external_references': Property(),
     'revoked': BooleanProperty(),
     'created_by_ref': ReferenceProperty(type="identity"),
-    'object_marking_refs': ListProperty(ReferenceProperty, element_type="marking-definition"),
+    'object_marking_refs': ListProperty(ReferenceProperty(type="marking-definition")),
     'granular_markings': ListProperty(Property)
 }
 

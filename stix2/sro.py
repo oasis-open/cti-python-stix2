@@ -45,8 +45,8 @@ class Sighting(_STIXBase):
         'last_seen': Property(),
         'count': Property(),
         'sighting_of_ref': ReferenceProperty(required=True),
-        'observed_data_refs': ListProperty(ReferenceProperty, element_type="observed-data"),
-        'where_sighted_refs': ListProperty(ReferenceProperty, element_type="identity"),
+        'observed_data_refs': ListProperty(ReferenceProperty(type="observed-data")),
+        'where_sighted_refs': ListProperty(ReferenceProperty(type="identity")),
         'summary': Property(),
     })
 

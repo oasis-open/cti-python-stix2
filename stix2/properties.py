@@ -4,6 +4,7 @@ from six import PY2
 import datetime as dt
 import pytz
 from dateutil import parser
+import inspect
 from .base import _STIXBase
 
 
@@ -77,45 +78,31 @@ class Property(object):
             pass
         return value
 
+    def __call__(self, value=None):
+        if value is not None:
+            return value
+
 
 class ListProperty(Property):
 
-    def __init__(self, contained, element_type=None, **kwargs):
+    def __init__(self, contained, **kwargs):
         """
-        contained should be a type whose constructor creates an object from the value
+        Contained should be a function which returns an object from the value.
         """
         if contained == StringProperty:
             self.contained = StringProperty().string_type
         elif contained == BooleanProperty:
             self.contained = bool
+        elif inspect.isclass(contained) and issubclass(contained, Property):
+            # If it's a class and not an instance, instantiate it so that
+            # validate() can be called on it, and ListProperty.validate() will
+            # use __call__ when it appends the item.
+            self.contained = contained()
         else:
             self.contained = contained
-        self.element_type = element_type
         super(ListProperty, self).__init__(**kwargs)
 
     def validate(self, value):
-        try:
-            list_ = self.clean(value)
-        except ValueError:
-            raise
-
-        # STIX spec forbids empty lists
-        if len(list_) < 1:
-            raise ValueError("must not be empty.")
-
-        try:
-            for item in list_:
-                self.contained.validate(item)
-        except ValueError:
-            raise
-        except AttributeError:
-            # type of list has no validate() function (eg. built in Python types)
-            # TODO Should we raise an error here?
-            pass
-
-        return list_
-
-    def clean(self, value):
         try:
             iter(value)
         except TypeError:
@@ -124,14 +111,23 @@ class ListProperty(Property):
         result = []
         for item in value:
             try:
-                if type(item) is dict:
-                    result.append(self.contained(**item))
-                elif isinstance(item, ReferenceProperty):
-                    result.append(self.contained(type=self.element_type))
-                else:
-                    result.append(self.contained(item))
-            except TypeError:
-                raise ValueError("the type of objects in the list must have a constructor that creates an object from the value.")
+                valid = self.contained.validate(item)
+            except ValueError:
+                raise
+            except AttributeError:
+                # type of list has no validate() function (eg. built in Python types)
+                # TODO Should we raise an error here?
+                valid = item
+
+            if type(valid) is dict:
+                result.append(self.contained(**valid))
+            else:
+                result.append(self.contained(valid))
+
+        # STIX spec forbids empty lists
+        if len(result) < 1:
+            raise ValueError("must not be empty.")
+
         return result
 
 
