@@ -12,10 +12,10 @@ def test_property():
     assert p.required is False
 
 
-def test_basic_validate():
+def test_basic_clean():
     class Prop(Property):
 
-        def validate(self, value):
+        def clean(self, value):
             if value == 42:
                 return value
             else:
@@ -23,9 +23,9 @@ def test_basic_validate():
 
     p = Prop()
 
-    assert p.validate(42) == 42
+    assert p.clean(42) == 42
     with pytest.raises(ValueError):
-        p.validate(41)
+        p.clean(41)
 
 
 def test_default_field():
@@ -42,53 +42,53 @@ def test_default_field():
 def test_fixed_property():
     p = Property(fixed="2.0")
 
-    assert p.validate("2.0")
+    assert p.clean("2.0")
     with pytest.raises(ValueError):
-        assert p.validate("x") is False
+        assert p.clean("x") is False
     with pytest.raises(ValueError):
-        assert p.validate(2.0) is False
+        assert p.clean(2.0) is False
 
     assert p.default() == "2.0"
-    assert p.validate(p.default())
+    assert p.clean(p.default())
 
 
 def test_list_property():
     p = ListProperty(StringProperty)
 
-    assert p.validate(['abc', 'xyz'])
+    assert p.clean(['abc', 'xyz'])
     with pytest.raises(ValueError):
-        p.validate([])
+        p.clean([])
 
 
 def test_string_property():
     prop = StringProperty()
 
-    assert prop.validate('foobar')
-    assert prop.validate(1)
-    assert prop.validate([1, 2, 3])
+    assert prop.clean('foobar')
+    assert prop.clean(1)
+    assert prop.clean([1, 2, 3])
 
 
 def test_type_property():
     prop = TypeProperty('my-type')
 
-    assert prop.validate('my-type')
+    assert prop.clean('my-type')
     with pytest.raises(ValueError):
-        prop.validate('not-my-type')
-    assert prop.validate(prop.default())
+        prop.clean('not-my-type')
+    assert prop.clean(prop.default())
 
 
 def test_id_property():
     idprop = IDProperty('my-type')
 
-    assert idprop.validate('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+    assert idprop.clean('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
     with pytest.raises(ValueError) as excinfo:
-        idprop.validate('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+        idprop.clean('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
     assert str(excinfo.value) == "must start with 'my-type--'."
     with pytest.raises(ValueError) as excinfo:
-        idprop.validate('my-type--foo')
+        idprop.clean('my-type--foo')
     assert str(excinfo.value) == "must have a valid version 4 UUID after the prefix."
 
-    assert idprop.validate(idprop.default())
+    assert idprop.clean(idprop.default())
 
 
 @pytest.mark.parametrize("value", [
@@ -110,7 +110,7 @@ def test_id_property():
 def test_boolean_property_valid(value):
     bool_prop = BooleanProperty()
 
-    assert bool_prop.validate(value) is not None
+    assert bool_prop.clean(value) is not None
 
 
 @pytest.mark.parametrize("value", [
@@ -123,15 +123,15 @@ def test_boolean_property_valid(value):
 def test_boolean_property_invalid(value):
     bool_prop = BooleanProperty()
     with pytest.raises(ValueError):
-        bool_prop.validate(value)
+        bool_prop.clean(value)
 
 
 def test_reference_property():
     ref_prop = ReferenceProperty()
 
-    assert ref_prop.validate("my-type--3a331bfe-0566-55e1-a4a0-9a2cd355a300")
+    assert ref_prop.clean("my-type--3a331bfe-0566-55e1-a4a0-9a2cd355a300")
     with pytest.raises(ValueError):
-        ref_prop.validate("foo")
+        ref_prop.clean("foo")
 
 
 @pytest.mark.parametrize("value", [
@@ -141,12 +141,12 @@ def test_reference_property():
 ])
 def test_timestamp_property_valid(value):
     ts_prop = TimestampProperty()
-    assert ts_prop.validate(value) == FAKE_TIME
+    assert ts_prop.clean(value) == FAKE_TIME
 
 
 def test_timestamp_property_invalid():
     ts_prop = TimestampProperty()
     with pytest.raises(ValueError):
-        ts_prop.validate(1)
+        ts_prop.clean(1)
     with pytest.raises(ValueError):
-        ts_prop.validate("someday sometime")
+        ts_prop.clean("someday sometime")

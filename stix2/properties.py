@@ -22,7 +22,7 @@ class Property(object):
         you to copy *all* values from an existing object to a new object), but
         if the user provides a value other than the `fixed` value, it will raise
         an error. This is semantically equivalent to defining both:
-        - a `validate()` function that checks if the value matches the fixed
+        - a `clean()` function that checks if the value matches the fixed
           value, and
         - a `default()` function that returns the fixed value.
         (Default: `None`)
@@ -30,15 +30,10 @@ class Property(object):
     Subclasses can also define the following functions.
 
     - `def clean(self, value) -> any:`
-        - Transform `value` into a valid value for this property. This should
-          raise a ValueError if such no such transformation is possible.
-    - `def validate(self, value) -> any:`
-        - check that `value` is valid for this property. This should return
-          a valid value (possibly modified) for this property, or raise a
-          ValueError if the value is not valid.
-          (Default: if `clean` is defined, it will attempt to call `clean` and
-          return the result or pass on a ValueError that `clean` raises. If
-          `clean` is not defined, this will return `value` unmodified).
+        - Return a value that is valid for this property. If `value` is not
+          valid for this property, this will attempt to transform it first. If
+          `value` is not valid and no such transformation is possible, it should
+          raise a ValueError.
     - `def default(self):`
         - provide a default value for this property.
         - `default()` can return the special value `NOW` to use the current
@@ -46,36 +41,27 @@ class Property(object):
             to use the same default value, so calling now() for each field--
             likely several microseconds apart-- does not work.
 
-    Subclasses can instead provide lambda functions for `clean`, and `default`
-    as keyword arguments. `validate` should not be provided as a lambda since
-    lambdas cannot raise their own exceptions.
+    Subclasses can instead provide a lambda function for `default as a keyword
+    argument. `clean` should not be provided as a lambda since lambdas cannot
+    raise their own exceptions.
     """
 
-    def _default_validate(self, value):
+    def _default_clean(self, value):
         if value != self._fixed_value:
             raise ValueError("must equal '{0}'.".format(self._fixed_value))
         return value
 
-    def __init__(self, required=False, fixed=None, clean=None, default=None, type=None):
+    def __init__(self, required=False, fixed=None, default=None, type=None):
         self.required = required
         self.type = type
         if fixed:
             self._fixed_value = fixed
-            self.validate = self._default_validate
+            self.clean = self._default_clean
             self.default = lambda: fixed
-        if clean:
-            self.clean = clean
         if default:
             self.default = default
 
     def clean(self, value):
-        raise NotImplementedError
-
-    def validate(self, value):
-        try:
-            value = self.clean(value)
-        except NotImplementedError:
-            pass
         return value
 
     def __call__(self, value=None):
@@ -95,14 +81,14 @@ class ListProperty(Property):
             self.contained = bool
         elif inspect.isclass(contained) and issubclass(contained, Property):
             # If it's a class and not an instance, instantiate it so that
-            # validate() can be called on it, and ListProperty.validate() will
+            # clean() can be called on it, and ListProperty.clean() will
             # use __call__ when it appends the item.
             self.contained = contained()
         else:
             self.contained = contained
         super(ListProperty, self).__init__(**kwargs)
 
-    def validate(self, value):
+    def clean(self, value):
         try:
             iter(value)
         except TypeError:
@@ -111,11 +97,11 @@ class ListProperty(Property):
         result = []
         for item in value:
             try:
-                valid = self.contained.validate(item)
+                valid = self.contained.clean(item)
             except ValueError:
                 raise
             except AttributeError:
-                # type of list has no validate() function (eg. built in Python types)
+                # type of list has no clean() function (eg. built in Python types)
                 # TODO Should we raise an error here?
                 valid = item
 
@@ -140,13 +126,6 @@ class StringProperty(Property):
     def clean(self, value):
         return self.string_type(value)
 
-    def validate(self, value):
-        try:
-            val = self.clean(value)
-        except ValueError:
-            raise
-        return val
-
 
 class TypeProperty(Property):
     def __init__(self, type):
@@ -159,7 +138,7 @@ class IDProperty(Property):
         self.required_prefix = type + "--"
         super(IDProperty, self).__init__()
 
-    def validate(self, value):
+    def clean(self, value):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{0}'.".format(self.required_prefix))
         try:
@@ -191,18 +170,12 @@ class BooleanProperty(Property):
             if value == 0:
                 return False
 
-        raise ValueError("not a coercible boolean value.")
-
-    def validate(self, value):
-        try:
-            return self.clean(value)
-        except ValueError:
-            raise ValueError("must be a boolean value.")
+        raise ValueError("must be a boolean value.")
 
 
 class TimestampProperty(Property):
 
-    def validate(self, value):
+    def clean(self, value):
         if isinstance(value, dt.date):
             if hasattr(value, 'hour'):
                 return value
@@ -236,7 +209,7 @@ class ReferenceProperty(Property):
         self.type = type
         super(ReferenceProperty, self).__init__(required, type=type)
 
-    def validate(self, value):
+    def clean(self, value):
         if isinstance(value, _STIXBase):
             value = value.id
         if self.type:
@@ -255,7 +228,7 @@ class SelectorProperty(Property):
         # ignore type
         super(SelectorProperty, self).__init__()
 
-    def validate(self, value):
+    def clean(self, value):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("values must adhere to selector syntax")
         return value

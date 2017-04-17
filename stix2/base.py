@@ -39,7 +39,7 @@ class _STIXBase(collections.Mapping):
 
         if prop_name in kwargs:
             try:
-                kwargs[prop_name] = prop.validate(kwargs[prop_name])
+                kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
                 msg = "Invalid value for {0} '{1}': {2}"
                 raise ValueError(msg.format(self.__class__.__name__,
