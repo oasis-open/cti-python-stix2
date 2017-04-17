@@ -19,10 +19,10 @@ COMMON_PROPERTIES = {
 
 class ExternalReference(_STIXBase):
     _properties = {
-        'source_name': Property(required=True),
-        'description': Property(),
-        'url': Property(),
-        'external_id': Property(),
+        'source_name': StringProperty(required=True),
+        'description': StringProperty(),
+        'url': StringProperty(),
+        'external_id': StringProperty(),
     }
 
 
