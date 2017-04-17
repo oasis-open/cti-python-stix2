@@ -1,7 +1,8 @@
 """STIX 2.0 Marking Objects"""
 
 from .base import _STIXBase
-from .properties import IDProperty, TypeProperty, ListProperty, ReferenceProperty, Property, SelectorProperty
+from .properties import (IDProperty, TypeProperty, ListProperty, TimestampProperty,
+                         ReferenceProperty, Property, SelectorProperty)
 from .utils import NOW
 
 
@@ -15,7 +16,7 @@ class GranularMarking(_STIXBase):
 class MarkingDefinition(_STIXBase):
     _type = 'marking-definition'
     _properties = {
-        'created': Property(default=lambda: NOW),
+        'created': TimestampProperty(default=lambda: NOW),
         'external_references': Property(),
         'created_by_ref': ReferenceProperty(type="identity"),
         'object_marking_refs': ListProperty(ReferenceProperty(type="marking-definition")),

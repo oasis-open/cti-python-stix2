@@ -3,7 +3,7 @@ from stix2.markings import TLP_WHITE
 import pytest
 
 EXPECTED_TLP_MARKING_DEFINITION = """{
-    "created": "2017-01-20T00:00:00.000Z",
+    "created": "2017-01-20T00:00:00Z",
     "definition": {
         "tlp": "white"
     },
@@ -13,7 +13,7 @@ EXPECTED_TLP_MARKING_DEFINITION = """{
 }"""
 
 EXPECTED_STATEMENT_MARKING_DEFINITION = """{
-    "created": "2017-01-20T00:00:00.000Z",
+    "created": "2017-01-20T00:00:00Z",
     "definition": {
         "statement": "Copyright 2016, Example Corp"
     },
@@ -33,7 +33,7 @@ EXPECTED_GRANULAR_MARKING = """{
 }"""
 
 EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
-    "created": "2016-04-06T20:03:00.000Z",
+    "created": "2016-04-06T20:03:00Z",
     "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
     "description": "Campaign by Green Group against a series of targets in the financial services sector.",
     "granular_markings": [
@@ -45,7 +45,7 @@ EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
         }
     ],
     "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-    "modified": "2016-04-06T20:03:00.000Z",
+    "modified": "2016-04-06T20:03:00Z",
     "name": "Green Group Attacks Against Finance",
     "type": "campaign"
 }"""
@@ -100,8 +100,8 @@ def test_campaign_with_granular_markings_example():
     campaign = stix2.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-        created="2016-04-06T20:03:00.000Z",
-        modified="2016-04-06T20:03:00.000Z",
+        created="2016-04-06T20:03:00Z",
+        modified="2016-04-06T20:03:00Z",
         name="Green Group Attacks Against Finance",
         description="Campaign by Green Group against a series of targets in the financial services sector.",
         granular_markings=[

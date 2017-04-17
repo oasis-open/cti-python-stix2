@@ -206,25 +206,26 @@ class BooleanProperty(Property):
 class TimestampProperty(Property):
 
     def validate(self, value):
-        if isinstance(value, dt.datetime):
-            return value
-        elif isinstance(value, dt.date):
-            return dt.datetime.combine(value, dt.time())
+        if isinstance(value, dt.date):
+            if hasattr(value, 'hour'):
+                return value
+            else:
+                # Add a time component
+                return dt.datetime.combine(value, dt.time(), tzinfo=pytz.timezone('US/Eastern'))
 
+        # value isn't a date or datetime object so assume it's a string
         try:
-            return parser.parse(value).astimezone(pytz.utc)
-        except ValueError:
-            # Doesn't have timezone info in the string
-            try:
-                return pytz.utc.localize(parser.parse(value))
-            except TypeError:
-                # Unknown format
-                raise ValueError("must be a datetime object, date object, or "
-                                 "timestamp string in a recognizable format.")
+            parsed = parser.parse(value)
         except TypeError:
-            # Isn't a string
+            # Unknown format
             raise ValueError("must be a datetime object, date object, or "
-                             "timestamp string.")
+                             "timestamp string in a recognizable format.")
+        if parsed.tzinfo:
+            return parsed.astimezone(pytz.utc)
+        else:
+            # Doesn't have timezone info in the string; assume UTC
+            # TODO Should we default to system local timezone instead?
+            return pytz.utc.localize(parsed)
 
 
 REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"

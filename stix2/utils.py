@@ -1,7 +1,7 @@
 """Utility functions and classes for the stix2 library."""
 
 import datetime as dt
-
+import time
 import pytz
 
 # Sentinel value for fields that should be set to the current time.
@@ -15,12 +15,20 @@ def get_timestamp():
 
 
 def format_datetime(dttm):
-    # TODO: how to handle naive datetime
+    # 1. Convert to timezone-aware
+    # 2. Convert to UTC
+    # 3. Format in ISO format
+    # 4. Add subsecond value if non-zero
+    # 5. Add "Z"
 
-    # 1. Convert to UTC
-    # 2. Format in ISO format
-    # 3. Strip off "+00:00"
-    # 4. Add "Z"
-
-    # TODO: how to handle timestamps with subsecond 0's
-    return dttm.astimezone(pytz.utc).isoformat()[:-6] + "Z"
+    try:
+        zoned = dttm.astimezone(pytz.utc)
+    except ValueError:
+        # dttm is timezone-naive
+        tz_name = time.tzname[time.localtime().tm_isdst]
+        zoned = pytz.timezone(tz_name).localize(dttm).astimezone(pytz.utc)
+    ts = zoned.strftime("%Y-%m-%dT%H:%M:%S")
+    if zoned.microsecond > 0:
+        ms = zoned.strftime("%f")
+        ts = ts + '.' + ms.rstrip("0")
+    return ts + "Z"
