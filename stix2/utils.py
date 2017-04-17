@@ -1,7 +1,6 @@
 """Utility functions and classes for the stix2 library."""
 
 import datetime as dt
-import time
 import pytz
 
 # Sentinel value for fields that should be set to the current time.
@@ -24,9 +23,8 @@ def format_datetime(dttm):
     try:
         zoned = dttm.astimezone(pytz.utc)
     except ValueError:
-        # dttm is timezone-naive
-        tz_name = time.tzname[time.localtime().tm_isdst]
-        zoned = pytz.timezone(tz_name).localize(dttm).astimezone(pytz.utc)
+        # dttm is timezone-naive; assume UTC
+        pytz.utc.localize(dttm)
     ts = zoned.strftime("%Y-%m-%dT%H:%M:%S")
     if zoned.microsecond > 0:
         ms = zoned.strftime("%f")

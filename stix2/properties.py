@@ -1,6 +1,6 @@
 import re
 import uuid
-from six import PY2
+from six import text_type
 import datetime as dt
 import pytz
 from dateutil import parser
@@ -134,10 +134,7 @@ class ListProperty(Property):
 class StringProperty(Property):
 
     def __init__(self, **kwargs):
-        if PY2:
-            self.string_type = unicode
-        else:
-            self.string_type = str
+        self.string_type = text_type
         super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -224,7 +221,6 @@ class TimestampProperty(Property):
             return parsed.astimezone(pytz.utc)
         else:
             # Doesn't have timezone info in the string; assume UTC
-            # TODO Should we default to system local timezone instead?
             return pytz.utc.localize(parsed)
 
 
