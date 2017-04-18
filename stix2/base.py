@@ -4,7 +4,7 @@ import collections
 import datetime as dt
 import json
 
-from .exceptions import InvalidValueError, MissingFieldsError
+from .exceptions import ExtraFieldsError, InvalidValueError, MissingFieldsError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -53,7 +53,7 @@ class _STIXBase(collections.Mapping):
         # Detect any keyword arguments not allowed for a specific type
         extra_kwargs = list(set(kwargs) - set(cls._properties))
         if extra_kwargs:
-            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
+            raise ExtraFieldsError(cls, extra_kwargs)
 
         required_fields = get_required_properties(cls._properties)
         missing_kwargs = set(required_fields) - set(kwargs)

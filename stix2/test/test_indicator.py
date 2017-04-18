@@ -132,9 +132,12 @@ def test_cannot_assign_to_indicator_attributes(indicator):
 
 
 def test_invalid_kwarg_to_indicator():
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
         stix2.Indicator(my_custom_property="foo", **INDICATOR_KWARGS)
-    assert str(excinfo.value) == "unexpected keyword arguments: ['my_custom_property']"
+
+    assert excinfo.value.cls == stix2.Indicator
+    assert excinfo.value.fields == ['my_custom_property']
+    assert str(excinfo.value) == "Unexpected field(s) for Indicator: (my_custom_property)."
 
 
 def test_created_modified_time_are_identical_by_default():

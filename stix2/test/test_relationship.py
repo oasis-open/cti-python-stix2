@@ -105,9 +105,12 @@ def test_cannot_assign_to_relationship_attributes(relationship):
 
 
 def test_invalid_kwarg_to_relationship():
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
         stix2.Relationship(my_custom_property="foo", **RELATIONSHIP_KWARGS)
-    assert str(excinfo.value) == "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
+
+    assert excinfo.value.cls == stix2.Relationship
+    assert excinfo.value.fields == ['my_custom_property']
+    assert str(excinfo.value) == "Unexpected field(s) for Relationship: (my_custom_property)."
 
 
 def test_create_relationship_from_objects_rather_than_ids(indicator, malware):

@@ -17,7 +17,7 @@ class InvalidValueError(STIXError, ValueError):
 
 
 class MissingFieldsError(STIXError, ValueError):
-    """Missing required field(s) when construting STIX object."""
+    """Missing required field(s) when constructing STIX object."""
 
     def __init__(self, cls, fields):
         super(MissingFieldsError, self).__init__()
@@ -26,5 +26,19 @@ class MissingFieldsError(STIXError, ValueError):
 
     def __str__(self):
         msg = "Missing required field(s) for {0}: ({1})."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.fields))
+
+
+class ExtraFieldsError(STIXError, TypeError):
+    """Extra field(s) were provided when constructing STIX object."""
+
+    def __init__(self, cls, fields):
+        super(ExtraFieldsError, self).__init__()
+        self.cls = cls
+        self.fields = sorted(list(fields))
+
+    def __str__(self):
+        msg = "Unexpected field(s) for {0}: ({1})."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.fields))

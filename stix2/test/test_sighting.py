@@ -75,9 +75,12 @@ def test_sighting_type_must_be_sightings():
 
 
 def test_invalid_kwarg_to_sighting():
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
         stix2.Sighting(my_custom_property="foo", **SIGHTING_KWARGS)
-    assert str(excinfo.value) == "unexpected keyword arguments: ['my_custom_property']" in str(excinfo)
+
+    assert excinfo.value.cls == stix2.Sighting
+    assert excinfo.value.fields == ['my_custom_property']
+    assert str(excinfo.value) == "Unexpected field(s) for Sighting: (my_custom_property)."
 
 
 def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
