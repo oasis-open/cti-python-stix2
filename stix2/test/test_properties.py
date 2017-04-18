@@ -2,7 +2,8 @@ import pytest
 
 from stix2.properties import (Property, BooleanProperty, ListProperty,
                               StringProperty, TypeProperty, IDProperty,
-                              ReferenceProperty, TimestampProperty)
+                              IntegerProperty, ReferenceProperty,
+                              TimestampProperty)
 from .constants import FAKE_TIME
 
 
@@ -89,6 +90,27 @@ def test_id_property():
     assert str(excinfo.value) == "must have a valid version 4 UUID after the prefix."
 
     assert idprop.clean(idprop.default())
+
+
+@pytest.mark.parametrize("value", [
+    2,
+    -1,
+    3.14,
+    False,
+])
+def test_integer_property_valid(value):
+    int_prop = IntegerProperty()
+    assert int_prop.clean(value) is not None
+
+
+@pytest.mark.parametrize("value", [
+    "something",
+    StringProperty(),
+])
+def test_integer_property_invalid(value):
+    int_prop = IntegerProperty()
+    with pytest.raises(ValueError):
+        int_prop.clean(value)
 
 
 @pytest.mark.parametrize("value", [

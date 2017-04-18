@@ -151,6 +151,15 @@ class IDProperty(Property):
         return self.required_prefix + str(uuid.uuid4())
 
 
+class IntegerProperty(Property):
+
+    def clean(self, value):
+        try:
+            return int(value)
+        except Exception:
+            raise ValueError("must be an integer.")
+
+
 class BooleanProperty(Property):
 
     def clean(self, value):
