@@ -87,14 +87,20 @@ def test_indicator_id_must_start_with_indicator():
 
 
 def test_indicator_required_fields():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.Indicator()
+
+    assert excinfo.value.cls == stix2.Indicator
+    assert excinfo.value.fields == ["labels", "pattern"]
     assert str(excinfo.value) == "Missing required field(s) for Indicator: (labels, pattern)."
 
 
 def test_indicator_required_field_pattern():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.Indicator(labels=['malicious-activity'])
+
+    assert excinfo.value.cls == stix2.Indicator
+    assert excinfo.value.fields == ["pattern"]
     assert str(excinfo.value) == "Missing required field(s) for Indicator: (pattern)."
 
 

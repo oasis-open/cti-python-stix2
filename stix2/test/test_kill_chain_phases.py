@@ -36,23 +36,29 @@ def test_kill_chain_example():
 
 def test_kill_chain_required_fields():
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.KillChainPhase()
 
+    assert excinfo.value.cls == stix2.KillChainPhase
+    assert excinfo.value.fields == ["kill_chain_name", "phase_name"]
     assert str(excinfo.value) == "Missing required field(s) for KillChainPhase: (kill_chain_name, phase_name)."
 
 
 def test_kill_chain_required_field_chain_name():
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.KillChainPhase(phase_name="weaponization")
 
+    assert excinfo.value.cls == stix2.KillChainPhase
+    assert excinfo.value.fields == ["kill_chain_name"]
     assert str(excinfo.value) == "Missing required field(s) for KillChainPhase: (kill_chain_name)."
 
 
 def test_kill_chain_required_field_phase_name():
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.KillChainPhase(kill_chain_name="lockheed-martin-cyber-kill-chain")
 
+    assert excinfo.value.cls == stix2.KillChainPhase
+    assert excinfo.value.fields == ["phase_name"]
     assert str(excinfo.value) == "Missing required field(s) for KillChainPhase: (phase_name)."

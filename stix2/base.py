@@ -4,7 +4,7 @@ import collections
 import datetime as dt
 import json
 
-from .exceptions import STIXValueError
+from .exceptions import STIXValueError, MissingFieldsError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -46,7 +46,6 @@ class _STIXBase(collections.Mapping):
 
     def __init__(self, **kwargs):
         cls = self.__class__
-        class_name = cls.__name__
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
@@ -59,9 +58,7 @@ class _STIXBase(collections.Mapping):
         required_fields = get_required_properties(cls._properties)
         missing_kwargs = set(required_fields) - set(kwargs)
         if missing_kwargs:
-            msg = "Missing required field(s) for {type}: ({fields})."
-            field_list = ", ".join(x for x in sorted(list(missing_kwargs)))
-            raise ValueError(msg.format(type=class_name, fields=field_list))
+            raise MissingFieldsError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
             self._check_property(prop_name, prop_metadata, kwargs)
