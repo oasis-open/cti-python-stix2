@@ -2,11 +2,11 @@ class STIXError(Exception):
     """Base class for errors generated in the stix2 library."""
 
 
-class STIXValueError(STIXError, ValueError):
+class InvalidValueError(STIXError, ValueError):
     """An invalid value was provided to a STIX object's __init__."""
 
     def __init__(self, cls, prop_name, reason):
-        super(STIXValueError, self).__init__()
+        super(InvalidValueError, self).__init__()
         self.cls = cls
         self.prop_name = prop_name
         self.reason = reason

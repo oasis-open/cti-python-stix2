@@ -51,7 +51,7 @@ def test_empty_bundle():
 
 
 def test_bundle_with_wrong_type():
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.Bundle(type="not-a-bundle")
 
     assert excinfo.value.cls == stix2.Bundle
@@ -61,7 +61,7 @@ def test_bundle_with_wrong_type():
 
 
 def test_bundle_id_must_start_with_bundle():
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.Bundle(id='my-prefix--')
 
     assert excinfo.value.cls == stix2.Bundle
@@ -71,7 +71,7 @@ def test_bundle_id_must_start_with_bundle():
 
 
 def test_bundle_with_wrong_spec_version():
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.Bundle(spec_version="1.2")
 
     assert excinfo.value.cls == stix2.Bundle

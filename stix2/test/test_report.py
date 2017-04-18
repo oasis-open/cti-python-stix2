@@ -63,7 +63,7 @@ def test_report_example_objects_in_object_refs():
 
 
 def test_report_example_objects_in_object_refs_with_bad_id():
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.Report(
             id="report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
             created_by_ref="identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283",

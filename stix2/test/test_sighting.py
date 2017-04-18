@@ -48,7 +48,7 @@ def test_sighting_all_required_fields():
 def test_sighting_bad_where_sighted_refs():
     now = dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
 
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.Sighting(
             type='sighting',
             id=SIGHTING_ID,
@@ -65,7 +65,7 @@ def test_sighting_bad_where_sighted_refs():
 
 
 def test_sighting_type_must_be_sightings():
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.Sighting(type='xxx', **SIGHTING_KWARGS)
 
     assert excinfo.value.cls == stix2.Sighting

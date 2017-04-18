@@ -4,7 +4,7 @@ import collections
 import datetime as dt
 import json
 
-from .exceptions import STIXValueError, MissingFieldsError
+from .exceptions import InvalidValueError, MissingFieldsError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -42,7 +42,7 @@ class _STIXBase(collections.Mapping):
             try:
                 kwargs[prop_name] = prop.validate(kwargs[prop_name])
             except ValueError as exc:
-                raise STIXValueError(self.__class__, prop_name, reason=str(exc))
+                raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
     def __init__(self, **kwargs):
         cls = self.__class__

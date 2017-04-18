@@ -87,7 +87,7 @@ def test_granular_example():
 
 
 def test_granular_example_with_bad_selector():
-    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.GranularMarking(
             marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
             selectors=["abc[0]"]   # missing "."
