@@ -51,23 +51,32 @@ def test_empty_bundle():
 
 
 def test_bundle_with_wrong_type():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
         stix2.Bundle(type="not-a-bundle")
 
+    assert excinfo.value.cls == stix2.Bundle
+    assert excinfo.value.prop_name == "type"
+    assert excinfo.value.reason == "must equal 'bundle'."
     assert str(excinfo.value) == "Invalid value for Bundle 'type': must equal 'bundle'."
 
 
 def test_bundle_id_must_start_with_bundle():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
         stix2.Bundle(id='my-prefix--')
 
+    assert excinfo.value.cls == stix2.Bundle
+    assert excinfo.value.prop_name == "id"
+    assert excinfo.value.reason == "must start with 'bundle--'."
     assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
 
 
 def test_bundle_with_wrong_spec_version():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
         stix2.Bundle(spec_version="1.2")
 
+    assert excinfo.value.cls == stix2.Bundle
+    assert excinfo.value.prop_name == "spec_version"
+    assert excinfo.value.reason == "must equal '2.0'."
     assert str(excinfo.value) == "Invalid value for Bundle 'spec_version': must equal '2.0'."
 
 

@@ -48,7 +48,7 @@ def test_sighting_all_required_fields():
 def test_sighting_bad_where_sighted_refs():
     now = dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
         stix2.Sighting(
             type='sighting',
             id=SIGHTING_ID,
@@ -58,13 +58,19 @@ def test_sighting_bad_where_sighted_refs():
             where_sighted_refs=["malware--8cc7afd6-5455-4d2b-a736-e614ee631d99"]
         )
 
+    assert excinfo.value.cls == stix2.Sighting
+    assert excinfo.value.prop_name == "where_sighted_refs"
+    assert excinfo.value.reason == "must start with 'identity'."
     assert str(excinfo.value) == "Invalid value for Sighting 'where_sighted_refs': must start with 'identity'."
 
 
 def test_sighting_type_must_be_sightings():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
         stix2.Sighting(type='xxx', **SIGHTING_KWARGS)
 
+    assert excinfo.value.cls == stix2.Sighting
+    assert excinfo.value.prop_name == "type"
+    assert excinfo.value.reason == "must equal 'sighting'."
     assert str(excinfo.value) == "Invalid value for Sighting 'type': must equal 'sighting'."
 
 

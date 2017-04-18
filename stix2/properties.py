@@ -158,5 +158,5 @@ class SelectorProperty(Property):
 
     def validate(self, value):
         if not SELECTOR_REGEX.match(value):
-            raise ValueError("values must adhere to selector syntax")
+            raise ValueError("must adhere to selector syntax.")
         return value

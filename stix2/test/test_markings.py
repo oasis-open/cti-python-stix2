@@ -87,13 +87,16 @@ def test_granular_example():
 
 
 def test_granular_example_with_bad_selector():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.STIXValueError) as excinfo:
         stix2.GranularMarking(
             marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
             selectors=["abc[0]"]   # missing "."
         )
 
-    assert str(excinfo.value) == "Invalid value for GranularMarking 'selectors': values must adhere to selector syntax"
+    assert excinfo.value.cls == stix2.GranularMarking
+    assert excinfo.value.prop_name == "selectors"
+    assert excinfo.value.reason == "must adhere to selector syntax."
+    assert str(excinfo.value) == "Invalid value for GranularMarking 'selectors': must adhere to selector syntax."
 
 
 def test_campaign_with_granular_markings_example():
