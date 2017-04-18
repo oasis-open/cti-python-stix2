@@ -42,3 +42,10 @@ class ExtraFieldsError(STIXError, TypeError):
         msg = "Unexpected field(s) for {0}: ({1})."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.fields))
+
+
+class ImmutableError(STIXError, ValueError):
+    """Attempted to modify an object after creation"""
+
+    def __init__(self):
+        super(ImmutableError, self).__init__("Cannot modify properties after creation.")

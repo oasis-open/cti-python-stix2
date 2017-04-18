@@ -98,7 +98,7 @@ def test_relationship_required_field_target_ref():
 
 
 def test_cannot_assign_to_relationship_attributes(relationship):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.ImmutableError) as excinfo:
         relationship.relationship_type = "derived-from"
 
     assert str(excinfo.value) == "Cannot modify properties after creation."

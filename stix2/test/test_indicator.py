@@ -125,7 +125,7 @@ def test_indicator_revoked_invalid():
 
 
 def test_cannot_assign_to_indicator_attributes(indicator):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.ImmutableError) as excinfo:
         indicator.valid_from = dt.datetime.now()
 
     assert str(excinfo.value) == "Cannot modify properties after creation."

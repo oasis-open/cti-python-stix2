@@ -4,7 +4,8 @@ import collections
 import datetime as dt
 import json
 
-from .exceptions import ExtraFieldsError, InvalidValueError, MissingFieldsError
+from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
+                        MissingFieldsError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -85,8 +86,7 @@ class _STIXBase(collections.Mapping):
 
     def __setattr__(self, name, value):
         if name != '_inner' and not name.startswith("_STIXBase__"):
-            print(name)
-            raise ValueError("Cannot modify properties after creation.")
+            raise ImmutableError
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
