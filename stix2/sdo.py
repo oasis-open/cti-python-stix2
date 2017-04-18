@@ -3,7 +3,8 @@
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES, KillChainPhase
 from .properties import (Property, ListProperty, StringProperty, TypeProperty,
-                         IDProperty, ReferenceProperty)
+                         IDProperty, TimestampProperty, ReferenceProperty,
+                         IntegerProperty)
 from .utils import NOW
 
 
@@ -14,9 +15,9 @@ class AttackPattern(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': Property(required=True),
-        'description': Property(),
-        'kill_chain_phases': Property(),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'kill_chain_phases': ListProperty(KillChainPhase),
     })
 
 
@@ -27,12 +28,12 @@ class Campaign(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': Property(required=True),
-        'description': Property(),
-        'aliases': Property(),
-        'first_seen': Property(),
-        'last_seen': Property(),
-        'objective': Property(),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'aliases': ListProperty(StringProperty),
+        'first_seen': TimestampProperty(),
+        'last_seen': TimestampProperty(),
+        'objective': StringProperty(),
     })
 
 
@@ -43,8 +44,8 @@ class CourseOfAction(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': Property(required=True),
-        'description': Property(),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
     })
 
 
@@ -55,11 +56,12 @@ class Identity(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': Property(required=True),
-        'description': Property(),
-        'identity_class': Property(required=True),
-        'sectors': Property(),
-        'contact_information': Property(),
+        'labels': ListProperty(StringProperty),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'identity_class': StringProperty(required=True),
+        'sectors': ListProperty(StringProperty),
+        'contact_information': StringProperty(),
     })
 
 
@@ -70,13 +72,13 @@ class Indicator(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': Property(required=True),
-        'name': Property(),
-        'description': Property(),
-        'pattern': Property(required=True),
-        'valid_from': Property(default=lambda: NOW),
-        'valid_until': Property(),
-        'kill_chain_phases': Property(),
+        'labels': ListProperty(StringProperty, required=True),
+        'name': StringProperty(),
+        'description': StringProperty(),
+        'pattern': StringProperty(required=True),
+        'valid_from': TimestampProperty(default=lambda: NOW),
+        'valid_until': TimestampProperty(),
+        'kill_chain_phases': ListProperty(KillChainPhase),
     })
 
 
@@ -87,15 +89,15 @@ class IntrusionSet(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': Property(required=True),
-        'description': Property(),
-        'aliases': Property(),
-        'first_seen': Property(),
-        'last_seen ': Property(),
-        'goals': Property(),
-        'resource_level': Property(),
-        'primary_motivation': Property(),
-        'secondary_motivations': Property(),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'aliases': ListProperty(StringProperty),
+        'first_seen': TimestampProperty(),
+        'last_seen ': TimestampProperty(),
+        'goals': ListProperty(StringProperty),
+        'resource_level': StringProperty(),
+        'primary_motivation': StringProperty(),
+        'secondary_motivations': ListProperty(StringProperty),
     })
 
 
@@ -120,9 +122,9 @@ class ObservedData(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'first_observed': Property(),
-        'last_observed': Property(),
-        'number_observed': Property(),
+        'first_observed': TimestampProperty(required=True),
+        'last_observed': TimestampProperty(required=True),
+        'number_observed': IntegerProperty(required=True),
         'objects': Property(),
     })
 
@@ -134,10 +136,10 @@ class Report(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': Property(required=True),
-        'name': Property(required=True),
-        'description': Property(),
-        'published': Property(),
+        'labels': ListProperty(StringProperty, required=True),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'published': TimestampProperty(),
         'object_refs': ListProperty(ReferenceProperty),
     })
 
@@ -149,17 +151,17 @@ class ThreatActor(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': Property(required=True),
-        'name': Property(required=True),
-        'description': Property(),
-        'aliases': Property(),
-        'roles': Property(),
-        'goals': Property(),
-        'sophistication': Property(),
-        'resource_level': Property(),
-        'primary_motivation': Property(),
-        'secondary_motivations': Property(),
-        'personal_motivations': Property(),
+        'labels': ListProperty(StringProperty, required=True),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'aliases': ListProperty(StringProperty),
+        'roles': ListProperty(StringProperty),
+        'goals': ListProperty(StringProperty),
+        'sophistication': StringProperty(),
+        'resource_level': StringProperty(),
+        'primary_motivation': StringProperty(),
+        'secondary_motivations': ListProperty(StringProperty),
+        'personal_motivations': ListProperty(StringProperty),
     })
 
 
@@ -170,11 +172,11 @@ class Tool(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': Property(required=True),
-        'name': Property(required=True),
-        'description': Property(),
-        'kill_chain_phases': Property(),
-        'tool_version': Property(),
+        'labels': ListProperty(StringProperty, required=True),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
+        'kill_chain_phases': ListProperty(KillChainPhase),
+        'tool_version': StringProperty(),
     })
 
 
@@ -185,6 +187,6 @@ class Vulnerability(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'name': Property(required=True),
-        'description': Property(),
+        'name': StringProperty(required=True),
+        'description': StringProperty(),
     })

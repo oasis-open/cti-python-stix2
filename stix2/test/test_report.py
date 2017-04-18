@@ -17,7 +17,7 @@ EXPECTED = """{
         "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
         "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a"
     ],
-    "published": "2016-01-201T17:00:00Z",
+    "published": "2016-01-20T17:00:00Z",
     "type": "report"
 }"""
 
@@ -30,7 +30,7 @@ def test_report_example():
         modified="2015-12-21T19:59:11Z",
         name="The Black Vine Cyberespionage Group",
         description="A simple report with an indicator and campaign",
-        published="2016-01-201T17:00:00Z",
+        published="2016-01-20T17:00:00Z",
         labels=["campaign"],
         object_refs=[
             "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
@@ -50,7 +50,7 @@ def test_report_example_objects_in_object_refs():
         modified="2015-12-21T19:59:11.000Z",
         name="The Black Vine Cyberespionage Group",
         description="A simple report with an indicator and campaign",
-        published="2016-01-201T17:00:00Z",
+        published="2016-01-20T17:00:00Z",
         labels=["campaign"],
         object_refs=[
             stix2.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
@@ -71,7 +71,7 @@ def test_report_example_objects_in_object_refs_with_bad_id():
             modified="2015-12-21T19:59:11.000Z",
             name="The Black Vine Cyberespionage Group",
             description="A simple report with an indicator and campaign",
-            published="2016-01-201T17:00:00Z",
+            published="2016-01-20T17:00:00Z",
             labels=["campaign"],
             object_refs=[
                 stix2.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),

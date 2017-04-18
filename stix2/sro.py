@@ -2,7 +2,9 @@
 
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
-from .properties import IDProperty, TypeProperty, ReferenceProperty, ListProperty, Property
+from .properties import (ListProperty, StringProperty, TypeProperty,
+                         IDProperty, TimestampProperty, ReferenceProperty,
+                         IntegerProperty)
 
 
 class Relationship(_STIXBase):
@@ -12,8 +14,8 @@ class Relationship(_STIXBase):
     _properties.update({
         'id': IDProperty(_type),
         'type': TypeProperty(_type),
-        'relationship_type': Property(required=True),
-        'description': Property(),
+        'relationship_type': StringProperty(required=True),
+        'description': StringProperty(),
         'source_ref': ReferenceProperty(required=True),
         'target_ref': ReferenceProperty(required=True),
     })
@@ -41,13 +43,13 @@ class Sighting(_STIXBase):
     _properties.update({
         'id': IDProperty(_type),
         'type': TypeProperty(_type),
-        'first_seen': Property(),
-        'last_seen': Property(),
-        'count': Property(),
+        'first_seen': TimestampProperty(),
+        'last_seen': TimestampProperty(),
+        'count': IntegerProperty(),
         'sighting_of_ref': ReferenceProperty(required=True),
         'observed_data_refs': ListProperty(ReferenceProperty(type="observed-data")),
         'where_sighted_refs': ListProperty(ReferenceProperty(type="identity")),
-        'summary': Property(),
+        'summary': StringProperty(),
     })
 
     # Explicitly define the first kwargs to make readable Sighting declarations.
