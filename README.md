@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/oasis-open/cti-python-stix2.svg?branch=master)](https://travis-ci.org/oasis-open/cti-python-stix2)
+[![codecov](https://codecov.io/gh/oasis-open/cti-python-stix2/branch/master/graph/badge.svg)](https://codecov.io/gh/oasis-open/cti-python-stix2)
+
 # cti-python-stix2
 
 *This is an [OASIS Open Repository](https://www.oasis-open.org/resources/open-repositories/). See the [Governance](#governance) section for more information.*
