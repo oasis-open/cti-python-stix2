@@ -5,6 +5,7 @@ import datetime as dt
 import pytz
 from dateutil import parser
 import inspect
+import collections
 from .base import _STIXBase
 
 
@@ -105,7 +106,7 @@ class ListProperty(Property):
                 # TODO Should we raise an error here?
                 valid = item
 
-            if type(valid) is dict:
+            if isinstance(valid, collections.Mapping):
                 result.append(self.contained(**valid))
             else:
                 result.append(self.contained(valid))

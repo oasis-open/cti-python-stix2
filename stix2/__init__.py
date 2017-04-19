@@ -2,27 +2,20 @@
 
 # flake8: noqa
 
-import json
-
 from .bundle import Bundle
-from .common import ExternalReference, KillChainPhase
+from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
+    GranularMarking, StatementMarking, TLPMarking
 from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
     IntrusionSet, Malware, ObservedData, Report, ThreatActor, Tool, \
     Vulnerability
 from .sro import Relationship, Sighting
-from .markings import MarkingDefinition, GranularMarking, StatementMarking, TLPMarking
+from .utils import get_dict
 
 
 def parse(data):
     """Deserialize a string or file-like object into a STIX object"""
 
-    if type(data) is dict:
-        obj = data
-    else:
-        try:
-            obj = json.loads(data)
-        except TypeError:
-            obj = json.load(data)
+    obj = get_dict(data)
 
     obj_map = {
         'attack-pattern': AttackPattern,

@@ -2,6 +2,7 @@
 
 import datetime as dt
 import pytz
+import json
 
 # Sentinel value for fields that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
@@ -30,3 +31,19 @@ def format_datetime(dttm):
         ms = zoned.strftime("%f")
         ts = ts + '.' + ms.rstrip("0")
     return ts + "Z"
+
+
+def get_dict(data):
+    """Return data as a dictionary.
+    Input can be a dictionary, string, or file-like object.
+    """
+
+    if type(data) is dict:
+        obj = data
+    else:
+        try:
+            obj = json.loads(data)
+        except TypeError:
+            obj = json.load(data)
+
+    return obj

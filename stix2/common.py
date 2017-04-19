@@ -1,33 +1,17 @@
 """STIX 2 Common Data Types and Properties"""
 
-from .base import _STIXBase
-from .properties import (Property, ListProperty, StringProperty, BooleanProperty,
+from .properties import (ListProperty, BooleanProperty,
                          ReferenceProperty, TimestampProperty)
+from .other import ExternalReference, GranularMarking
 from .utils import NOW
 
 COMMON_PROPERTIES = {
     # 'type' and 'id' should be defined on each individual type
     'created': TimestampProperty(default=lambda: NOW),
     'modified': TimestampProperty(default=lambda: NOW),
-    'external_references': Property(),
+    'external_references': ListProperty(ExternalReference),
     'revoked': BooleanProperty(),
     'created_by_ref': ReferenceProperty(type="identity"),
     'object_marking_refs': ListProperty(ReferenceProperty(type="marking-definition")),
-    'granular_markings': ListProperty(Property)
+    'granular_markings': ListProperty(GranularMarking),
 }
-
-
-class ExternalReference(_STIXBase):
-    _properties = {
-        'source_name': StringProperty(required=True),
-        'description': StringProperty(),
-        'url': StringProperty(),
-        'external_id': StringProperty(),
-    }
-
-
-class KillChainPhase(_STIXBase):
-    _properties = {
-        'kill_chain_name': StringProperty(required=True),
-        'phase_name': StringProperty(required=True),
-    }

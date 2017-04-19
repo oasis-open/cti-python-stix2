@@ -1,6 +1,10 @@
 import stix2
-from stix2.markings import TLP_WHITE
+from stix2.other import TLP_WHITE
 import pytest
+import pytz
+import datetime as dt
+
+from .constants import MARKING_DEFINITION_ID
 
 EXPECTED_TLP_MARKING_DEFINITION = """{
     "created": "2017-01-20T00:00:00Z",
@@ -111,5 +115,28 @@ def test_campaign_with_granular_markings_example():
             ])
     print(str(campaign))
     assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS
+
+
+@pytest.mark.parametrize("data", [
+    EXPECTED_TLP_MARKING_DEFINITION,
+    {
+        "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        "type": "marking-definition",
+        "created": "2017-01-20T00:00:00Z",
+        "definition": {
+            "tlp": "white"
+        },
+        "definition_type": "tlp",
+    },
+])
+def test_parse_marking_definition(data):
+    gm = stix2.parse(data)
+
+    assert gm.type == 'marking-definition'
+    assert gm.id == MARKING_DEFINITION_ID
+    assert gm.created == dt.datetime(2017, 1, 20, 0, 0, 0, tzinfo=pytz.utc)
+    assert gm.definition.tlp == "white"
+    assert gm.definition_type == "tlp"
+
 
 # TODO: Add other examples

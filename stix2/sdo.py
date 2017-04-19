@@ -1,7 +1,8 @@
 """STIX 2.0 Domain Objects"""
 
 from .base import _STIXBase
-from .common import COMMON_PROPERTIES, KillChainPhase
+from .common import COMMON_PROPERTIES
+from .other import KillChainPhase
 from .properties import (Property, ListProperty, StringProperty, TypeProperty,
                          IDProperty, TimestampProperty, ReferenceProperty,
                          IntegerProperty)

@@ -10,7 +10,7 @@ EXPECTED = """{
     "description": "...",
     "external_references": [
         {
-            "id": "CAPEC-163",
+            "external_id": "CAPEC-163",
             "source_name": "capec"
         }
     ],
@@ -29,7 +29,7 @@ def test_attack_pattern_example():
         name="Spear Phishing",
         external_references=[{
             "source_name": "capec",
-            "id": "CAPEC-163"
+            "external_id": "CAPEC-163"
         }],
         description="...",
     )
@@ -47,7 +47,7 @@ def test_attack_pattern_example():
         "description": "...",
         "external_references": [
             {
-                "id": "CAPEC-163",
+                "external_id": "CAPEC-163",
                 "source_name": "capec"
             }
         ],
@@ -62,8 +62,8 @@ def test_parse_attack_pattern(data):
     assert ap.created == dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
     assert ap.modified == dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
     assert ap.description == "..."
-    assert ap.external_references[0].id == ['CAPEC-163']
-    assert ap.external_references[0].source_name == ['capec']
+    assert ap.external_references[0].external_id == 'CAPEC-163'
+    assert ap.external_references[0].source_name == 'capec'
     assert ap.name == "Spear Phishing"
 
 # TODO: Add other examples
