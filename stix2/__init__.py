@@ -10,6 +10,7 @@ from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
     Vulnerability
 from .sro import Relationship, Sighting
 from .utils import get_dict
+from . import exceptions
 
 
 def parse(data):

@@ -4,6 +4,8 @@ import collections
 import datetime as dt
 import json
 
+from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
+                        MissingFieldsError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -41,14 +43,10 @@ class _STIXBase(collections.Mapping):
             try:
                 kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
-                msg = "Invalid value for {0} '{1}': {2}"
-                raise ValueError(msg.format(self.__class__.__name__,
-                                            prop_name,
-                                            exc))
+                raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
     def __init__(self, **kwargs):
         cls = self.__class__
-        class_name = cls.__name__
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
@@ -56,15 +54,13 @@ class _STIXBase(collections.Mapping):
         # Detect any keyword arguments not allowed for a specific type
         extra_kwargs = list(set(kwargs) - set(cls._properties))
         if extra_kwargs:
-            raise TypeError("unexpected keyword arguments: " + str(extra_kwargs))
+            raise ExtraFieldsError(cls, extra_kwargs)
 
         # Detect any missing required fields
         required_fields = get_required_properties(cls._properties)
         missing_kwargs = set(required_fields) - set(kwargs)
         if missing_kwargs:
-            msg = "Missing required field(s) for {type}: ({fields})."
-            field_list = ", ".join(x for x in sorted(list(missing_kwargs)))
-            raise ValueError(msg.format(type=class_name, fields=field_list))
+            raise MissingFieldsError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
             self._check_property(prop_name, prop_metadata, kwargs)
@@ -91,8 +87,7 @@ class _STIXBase(collections.Mapping):
 
     def __setattr__(self, name, value):
         if name != '_inner' and not name.startswith("_STIXBase__"):
-            print(name)
-            raise ValueError("Cannot modify properties after creation.")
+            raise ImmutableError
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
