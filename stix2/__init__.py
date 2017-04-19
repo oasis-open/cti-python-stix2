@@ -24,10 +24,33 @@ def parse(data):
         except TypeError:
             obj = json.load(data)
 
+    obj_map = {
+        'attack-pattern': AttackPattern,
+        'campaign': Campaign,
+        'course-of-action': CourseOfAction,
+        'identity': Identity,
+        'indicator': Indicator,
+        'intrusion-set': IntrusionSet,
+        'malware': Malware,
+        'marking-definition': MarkingDefinition,
+        'observed-data': ObservedData,
+        'report': Report,
+        'relationship': Relationship,
+        'threat-actor': ThreatActor,
+        'tool': Tool,
+        'sighting': Sighting,
+        'vulnerability': Vulnerability,
+    }
+
     if 'type' not in obj:
         # TODO parse external references, kill chain phases, and granular markings
         pass
-    elif obj['type'] == 'malware':
-        return sdo.Malware(**obj)
+    else:
+        try:
+            obj_class = obj_map[obj['type']]
+            return obj_class(**obj)
+        except KeyError:
+            # TODO handle custom objects
+            raise ValueError("Can't parse unknown object type!")
 
     return obj

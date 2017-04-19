@@ -124,3 +124,29 @@ def test_created_modified_time_are_identical_by_default():
     ind = stix2.Indicator(**INDICATOR_KWARGS)
 
     assert ind.created == ind.modified
+
+
+@pytest.mark.parametrize("data", [
+    EXPECTED_INDICATOR,
+    {
+        "type": "indicator",
+        "id": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+        "created": "2017-01-01T00:00:01Z",
+        "modified": "2017-01-01T00:00:01Z",
+        "labels": [
+            "malicious-activity"
+        ],
+        "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+        "valid_from": "1970-01-01T00:00:01Z"
+    },
+])
+def test_parse_indicator(data):
+    idctr = stix2.parse(data)
+
+    assert idctr.type == 'indicator'
+    assert idctr.id == INDICATOR_ID
+    assert idctr.created == dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    assert idctr.modified == dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    assert idctr.valid_from == dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    assert idctr.labels[0] == "malicious-activity"
+    assert idctr.pattern == "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']"

@@ -121,3 +121,27 @@ def test_create_relationship_with_positional_args(indicator, malware):
     assert rel.source_ref == 'indicator--00000000-0000-0000-0000-000000000001'
     assert rel.target_ref == 'malware--00000000-0000-0000-0000-000000000002'
     assert rel.id == 'relationship--00000000-0000-0000-0000-000000000003'
+
+
+@pytest.mark.parametrize("data", [
+    EXPECTED_RELATIONSHIP,
+    {
+        "created": "2016-04-06T20:06:37Z",
+        "id": "relationship--00000000-1111-2222-3333-444444444444",
+        "modified": "2016-04-06T20:06:37Z",
+        "relationship_type": "indicates",
+        "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+        "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+        "type": "relationship"
+    },
+])
+def test_parse_relationship(data):
+    rel = stix2.parse(data)
+
+    assert rel.type == 'relationship'
+    assert rel.id == RELATIONSHIP_ID
+    assert rel.created == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
+    assert rel.modified == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
+    assert rel.relationship_type == "indicates"
+    assert rel.source_ref == "indicator--01234567-89ab-cdef-0123-456789abcdef"
+    assert rel.target_ref == "malware--fedcba98-7654-3210-fedc-ba9876543210"
