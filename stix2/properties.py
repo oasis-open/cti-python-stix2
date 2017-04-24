@@ -42,9 +42,15 @@ class Property(object):
             to use the same default value, so calling now() for each field--
             likely several microseconds apart-- does not work.
 
-    Subclasses can instead provide a lambda function for `default as a keyword
+    Subclasses can instead provide a lambda function for `default` as a keyword
     argument. `clean` should not be provided as a lambda since lambdas cannot
     raise their own exceptions.
+
+    When instantiating Properties, `required` and `default` should not be used
+    together. `default` implies that the field is required in the specification
+    so this function will be used to supply a value if none is provided.
+    `required` means that the user must provide this; it is required in the
+    specification and we can't or don't want to create a default value.
     """
 
     def _default_clean(self, value):
@@ -66,8 +72,10 @@ class Property(object):
         return value
 
     def __call__(self, value=None):
-        if value is not None:
-            return value
+        """Used by ListProperty to handle lists that have been defined with
+        either a class or an instance.
+        """
+        return value
 
 
 class ListProperty(Property):
@@ -76,11 +84,7 @@ class ListProperty(Property):
         """
         Contained should be a function which returns an object from the value.
         """
-        if contained == StringProperty:
-            self.contained = StringProperty().string_type
-        elif contained == BooleanProperty:
-            self.contained = bool
-        elif inspect.isclass(contained) and issubclass(contained, Property):
+        if inspect.isclass(contained) and issubclass(contained, Property):
             # If it's a class and not an instance, instantiate it so that
             # clean() can be called on it, and ListProperty.clean() will
             # use __call__ when it appends the item.
@@ -191,7 +195,7 @@ class TimestampProperty(Property):
                 return value
             else:
                 # Add a time component
-                return dt.datetime.combine(value, dt.time(), tzinfo=pytz.timezone('US/Eastern'))
+                return dt.datetime.combine(value, dt.time(), tzinfo=pytz.utc)
 
         # value isn't a date or datetime object so assume it's a string
         try:

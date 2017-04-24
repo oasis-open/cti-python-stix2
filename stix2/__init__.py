@@ -13,35 +13,36 @@ from .utils import get_dict
 from . import exceptions
 
 
+OBJ_MAP = {
+    'attack-pattern': AttackPattern,
+    'campaign': Campaign,
+    'course-of-action': CourseOfAction,
+    'identity': Identity,
+    'indicator': Indicator,
+    'intrusion-set': IntrusionSet,
+    'malware': Malware,
+    'marking-definition': MarkingDefinition,
+    'observed-data': ObservedData,
+    'report': Report,
+    'relationship': Relationship,
+    'threat-actor': ThreatActor,
+    'tool': Tool,
+    'sighting': Sighting,
+    'vulnerability': Vulnerability,
+}
+
+
 def parse(data):
     """Deserialize a string or file-like object into a STIX object"""
 
     obj = get_dict(data)
-
-    obj_map = {
-        'attack-pattern': AttackPattern,
-        'campaign': Campaign,
-        'course-of-action': CourseOfAction,
-        'identity': Identity,
-        'indicator': Indicator,
-        'intrusion-set': IntrusionSet,
-        'malware': Malware,
-        'marking-definition': MarkingDefinition,
-        'observed-data': ObservedData,
-        'report': Report,
-        'relationship': Relationship,
-        'threat-actor': ThreatActor,
-        'tool': Tool,
-        'sighting': Sighting,
-        'vulnerability': Vulnerability,
-    }
 
     if 'type' not in obj:
         # TODO parse external references, kill chain phases, and granular markings
         pass
     else:
         try:
-            obj_class = obj_map[obj['type']]
+            obj_class = OBJ_MAP[obj['type']]
             return obj_class(**obj)
         except KeyError:
             # TODO handle custom objects

@@ -39,7 +39,7 @@ class TLPMarking(_STIXBase):
 
 class StatementMarking(_STIXBase):
     _properties = {
-        'statement': Property(required=True)
+        'statement': StringProperty(required=True)
     }
 
     def __init__(self, statement=None, **kwargs):
