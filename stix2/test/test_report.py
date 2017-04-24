@@ -1,7 +1,9 @@
-import stix2
+import datetime as dt
+
 import pytest
 import pytz
-import datetime as dt
+import stix2
+
 from .constants import INDICATOR_KWARGS, REPORT_ID
 
 EXPECTED = """{

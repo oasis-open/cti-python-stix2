@@ -1,9 +1,8 @@
 import datetime as dt
+import re
 
 import pytest
 import pytz
-import re
-
 import stix2
 
 from .constants import FAKE_TIME, INDICATOR_ID, INDICATOR_KWARGS

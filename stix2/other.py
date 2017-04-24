@@ -1,10 +1,10 @@
 """STIX 2.0 Objects that are neither SDOs nor SROs"""
 
 from .base import _STIXBase
-from .properties import (IDProperty, TypeProperty, ListProperty, TimestampProperty,
-                         ReferenceProperty, Property, SelectorProperty,
-                         StringProperty)
-from .utils import NOW, get_dict
+from .properties import (IDProperty, ListProperty, Property, ReferenceProperty,
+                         SelectorProperty, StringProperty, TimestampProperty,
+                         TypeProperty)
+from .utils import get_dict, NOW
 
 
 class ExternalReference(_STIXBase):

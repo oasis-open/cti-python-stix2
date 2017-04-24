@@ -1,11 +1,13 @@
+import collections
+import datetime as dt
+import inspect
 import re
 import uuid
-from six import text_type
-import datetime as dt
-import pytz
+
 from dateutil import parser
-import inspect
-import collections
+import pytz
+from six import text_type
+
 from .base import _STIXBase
 
 

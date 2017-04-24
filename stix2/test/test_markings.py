@@ -1,8 +1,9 @@
-import stix2
-from stix2.other import TLP_WHITE
+import datetime as dt
+
 import pytest
 import pytz
-import datetime as dt
+import stix2
+from stix2.other import TLP_WHITE
 
 from .constants import MARKING_DEFINITION_ID
 

@@ -1,7 +1,7 @@
 """STIX 2 Bundle object"""
 
 from .base import _STIXBase
-from .properties import IDProperty, TypeProperty, Property
+from .properties import IDProperty, Property, TypeProperty
 
 
 class Bundle(_STIXBase):

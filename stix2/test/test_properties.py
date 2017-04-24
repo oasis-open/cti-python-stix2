@@ -1,9 +1,8 @@
 import pytest
 
-from stix2.properties import (Property, BooleanProperty, ListProperty,
-                              StringProperty, TypeProperty, IDProperty,
-                              IntegerProperty, ReferenceProperty,
-                              TimestampProperty)
+from stix2.properties import (BooleanProperty, IDProperty, IntegerProperty,
+                              ListProperty, Property, ReferenceProperty,
+                              StringProperty, TimestampProperty, TypeProperty)
 from .constants import FAKE_TIME
 
 

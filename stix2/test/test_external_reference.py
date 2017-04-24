@@ -1,8 +1,8 @@
 """Tests for stix.ExternalReference"""
 
-import pytest
 import re
 
+import pytest
 import stix2
 
 VERIS = """{

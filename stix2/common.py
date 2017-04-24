@@ -1,8 +1,8 @@
 """STIX 2 Common Data Types and Properties"""
 
-from .properties import (ListProperty, BooleanProperty,
-                         ReferenceProperty, TimestampProperty)
 from .other import ExternalReference, GranularMarking
+from .properties import (BooleanProperty, ListProperty, ReferenceProperty,
+                         TimestampProperty)
 from .utils import NOW
 
 COMMON_PROPERTIES = {

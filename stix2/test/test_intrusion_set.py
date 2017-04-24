@@ -1,6 +1,7 @@
+import datetime as dt
+
 import pytest
 import pytz
-import datetime as dt
 import stix2
 
 from .constants import INTRUSION_SET_ID

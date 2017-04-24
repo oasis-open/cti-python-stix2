@@ -3,9 +3,9 @@
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
 from .other import KillChainPhase
-from .properties import (Property, ListProperty, StringProperty, TypeProperty,
-                         IDProperty, TimestampProperty, ReferenceProperty,
-                         IntegerProperty)
+from .properties import (IDProperty, IntegerProperty, ListProperty, Property,
+                         ReferenceProperty, StringProperty, TimestampProperty,
+                         TypeProperty)
 from .utils import NOW
 
 

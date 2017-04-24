@@ -1,8 +1,9 @@
 """Utility functions and classes for the stix2 library."""
 
 import datetime as dt
-import pytz
 import json
+
+import pytz
 
 # Sentinel value for fields that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
