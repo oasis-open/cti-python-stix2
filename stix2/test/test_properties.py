@@ -86,7 +86,7 @@ def test_id_property():
     assert str(excinfo.value) == "must start with 'my-type--'."
     with pytest.raises(ValueError) as excinfo:
         idprop.clean('my-type--foo')
-    assert str(excinfo.value) == "must have a valid version 4 UUID after the prefix."
+    assert str(excinfo.value) == "must have a valid UUID after the prefix."
 
     assert idprop.clean(idprop.default())
 
