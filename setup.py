@@ -1,8 +1,10 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 install_requires = [
     'pytz',
+    'six',
+    'python-dateutil',
 ]
 
 setup(

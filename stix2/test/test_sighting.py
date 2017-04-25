@@ -88,3 +88,27 @@ def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
 
     assert rel.sighting_of_ref == 'malware--00000000-0000-0000-0000-000000000001'
     assert rel.id == 'sighting--00000000-0000-0000-0000-000000000002'
+
+
+@pytest.mark.parametrize("data", [
+    EXPECTED_SIGHTING,
+    {
+        "created": "2016-04-06T20:06:37Z",
+        "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",
+        "modified": "2016-04-06T20:06:37Z",
+        "sighting_of_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+        "type": "sighting",
+        "where_sighted_refs": [
+            "identity--8cc7afd6-5455-4d2b-a736-e614ee631d99"
+        ]
+    },
+])
+def test_parse_sighting(data):
+    sighting = stix2.parse(data)
+
+    assert sighting.type == 'sighting'
+    assert sighting.id == SIGHTING_ID
+    assert sighting.created == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
+    assert sighting.modified == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
+    assert sighting.sighting_of_ref == "indicator--01234567-89ab-cdef-0123-456789abcdef"
+    assert sighting.where_sighted_refs == ["identity--8cc7afd6-5455-4d2b-a736-e614ee631d99"]

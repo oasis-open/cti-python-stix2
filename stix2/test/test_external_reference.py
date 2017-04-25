@@ -1,7 +1,8 @@
 """Tests for stix.ExternalReference"""
 
-import pytest
+import re
 
+import pytest
 import stix2
 
 VERIS = """{
@@ -34,7 +35,7 @@ def test_external_reference_capec():
     )
 
     assert str(ref) == CAPEC
-    assert repr(ref) == "ExternalReference(external_id='CAPEC-550', source_name='capec')"
+    assert re.match("ExternalReference\(external_id=u?'CAPEC-550', source_name=u?'capec'\)", repr(ref))
 
 
 CAPEC_URL = """{
@@ -101,7 +102,7 @@ def test_external_reference_offline():
     )
 
     assert str(ref) == OFFLINE
-    assert repr(ref) == "ExternalReference(description='Threat report', source_name='ACME Threat Intel')"
+    assert re.match("ExternalReference\(description=u?'Threat report', source_name=u?'ACME Threat Intel'\)", repr(ref))
     # Yikes! This works
     assert eval("stix2." + repr(ref)) == ref
 

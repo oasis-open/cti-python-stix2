@@ -41,7 +41,7 @@ class _STIXBase(collections.Mapping):
 
         if prop_name in kwargs:
             try:
-                kwargs[prop_name] = prop.validate(kwargs[prop_name])
+                kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
@@ -56,6 +56,7 @@ class _STIXBase(collections.Mapping):
         if extra_kwargs:
             raise ExtraFieldsError(cls, extra_kwargs)
 
+        # Detect any missing required fields
         required_fields = get_required_properties(cls._properties)
         missing_kwargs = set(required_fields) - set(kwargs)
         if missing_kwargs:
