@@ -66,7 +66,7 @@ def test_versioning_error_invalid_property():
     )
 
     with pytest.raises(stix2.exceptions.VersioningError) as excinfo:
-        campaign_v2 = campaign_v1.new_version(type="threat-actor")
+        campaign_v2 = campaign_v1.new_version(type="threat-actor")   # noqa
 
     str(excinfo.value) == "These properties cannot be changed when making a new version: type"
 
@@ -84,7 +84,7 @@ def test_versioning_error_new_version_of_revoked():
     campaign_v2 = campaign_v1.revoke()
 
     with pytest.raises(stix2.exceptions.VersioningError) as excinfo:
-        campaign_v3 = campaign_v2.new_version(name="barney")
+        campaign_v3 = campaign_v2.new_version(name="barney")   # noqa
 
     str(excinfo.value) == "Cannot create a new version of a revoked object"
 
@@ -102,6 +102,6 @@ def test_versioning_error_revoke_of_revoked():
     campaign_v2 = campaign_v1.revoke()
 
     with pytest.raises(stix2.exceptions.VersioningError) as excinfo:
-        campaign_v3 = campaign_v2.revoke()
+        campaign_v3 = campaign_v2.revoke()   # noqa
 
     str(excinfo.value) == "Cannot revoke an already revoked object"
