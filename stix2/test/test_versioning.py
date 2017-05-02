@@ -1,5 +1,6 @@
-import stix2
 import pytest
+import stix2
+
 
 EXPECTED = """{
     "created": "2016-04-06T20:03:00.000Z",

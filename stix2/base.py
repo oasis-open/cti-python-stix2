@@ -2,8 +2,9 @@
 
 import collections
 import datetime as dt
-import json
 import copy
+import json
+
 
 from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
                         MissingFieldsError, VersioningError
