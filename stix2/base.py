@@ -1,8 +1,8 @@
 """Base class for type definitions in the stix2 library."""
 
 import collections
-import datetime as dt
 import copy
+import datetime as dt
 import json
 
 
