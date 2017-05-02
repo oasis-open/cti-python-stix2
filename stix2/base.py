@@ -3,9 +3,10 @@
 import collections
 import datetime as dt
 import json
+import copy
 
 from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
-                        MissingFieldsError
+                        MissingFieldsError, VersioningError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -99,3 +100,33 @@ class _STIXBase(collections.Mapping):
         props = [(k, self[k]) for k in sorted(self._properties) if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
+
+#  Versioning API
+
+    def new_version(self, **kwargs):
+        unchangable_properties = []
+        if self.revoked:
+            raise VersioningError("Cannot create a new version of a revoked object")
+        new_obj_inner = copy.deepcopy(self._inner)
+        properties_to_change = kwargs.keys()
+        if "type" in properties_to_change:
+            unchangable_properties.append("type")
+        if "id" in properties_to_change:
+            unchangable_properties.append("id")
+        if "created" in properties_to_change:
+            unchangable_properties.append("created")
+        if "created_by_ref" in properties_to_change:
+            unchangable_properties.append("created_by_ref")
+        if unchangable_properties:
+            raise VersioningError("These properties cannot be changed when making a new version: " + ", ".join(unchangable_properties))
+        if 'modified' not in kwargs:
+            kwargs['modified'] = get_timestamp()
+        new_obj_inner.update(kwargs)
+
+        cls = type(self)
+        return cls(**new_obj_inner)
+
+    def revoke(self):
+        if self.revoked:
+            raise VersioningError("Cannot revoke an already revoked object")
+        return self.new_version(revoked=True)

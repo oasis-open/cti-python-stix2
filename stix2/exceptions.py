@@ -49,3 +49,10 @@ class ImmutableError(STIXError, ValueError):
 
     def __init__(self):
         super(ImmutableError, self).__init__("Cannot modify properties after creation.")
+
+
+class VersioningError(STIXError, ValueError):
+    """Execption while using the Versioning API"""
+
+    def __init__(self, msg):
+        super(VersioningError, self).__init__(msg)
