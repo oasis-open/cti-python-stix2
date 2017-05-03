@@ -99,3 +99,7 @@ class _STIXBase(collections.Mapping):
         props = [(k, self[k]) for k in sorted(self._properties) if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
+
+
+class Observable(_STIXBase):
+    pass

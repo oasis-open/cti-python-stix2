@@ -1,8 +1,12 @@
 import pytest
 
-from stix2.properties import (BooleanProperty, IDProperty, IntegerProperty,
-                              ListProperty, Property, ReferenceProperty,
-                              StringProperty, TimestampProperty, TypeProperty)
+from stix2.exceptions import DictionaryKeyError
+from stix2.properties import (BinaryProperty, BooleanProperty,
+                              DictionaryProperty, HashesProperty, HexProperty,
+                              IDProperty, IntegerProperty, ListProperty,
+                              Property, ReferenceProperty, StringProperty,
+                              TimestampProperty, TypeProperty)
+
 from .constants import FAKE_TIME
 
 
@@ -171,3 +175,60 @@ def test_timestamp_property_invalid():
         ts_prop.clean(1)
     with pytest.raises(ValueError):
         ts_prop.clean("someday sometime")
+
+
+def test_binary_property():
+    bin_prop = BinaryProperty()
+
+    assert bin_prop.clean("TG9yZW0gSXBzdW0=")
+    with pytest.raises(ValueError):
+        bin_prop.clean("foobar")
+
+
+def test_hex_property():
+    hex_prop = HexProperty()
+
+    assert hex_prop.clean("4c6f72656d20497073756d")
+    with pytest.raises(ValueError):
+        hex_prop.clean("foobar")
+
+
+@pytest.mark.parametrize("d", [
+    {'description': 'something'},
+    [('abc', 1), ('bcd', 2), ('cde', 3)],
+])
+def test_dictionary_property_valid(d):
+    dict_prop = DictionaryProperty()
+    assert dict_prop.clean(d)
+
+
+@pytest.mark.parametrize("d", [
+    {'a': 'something'},
+    {'a'*300: 'something'},
+    {'Hey!': 'something'},
+])
+def test_dictionary_property_invalid(d):
+    dict_prop = DictionaryProperty()
+
+    with pytest.raises(DictionaryKeyError):
+        dict_prop.clean(d)
+
+
+@pytest.mark.parametrize("value", [
+    {"sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b"},
+    [('MD5', '2dfb1bcc980200c6706feee399d41b3f'), ('RIPEMD-160', 'b3a8cd8a27c90af79b3c81754f267780f443dfef')],
+])
+def test_hashes_property_valid(value):
+    hash_prop = HashesProperty()
+    assert hash_prop.clean(value)
+
+
+@pytest.mark.parametrize("value", [
+    {"MD5": "a"},
+    {"SHA-256": "2dfb1bcc980200c6706feee399d41b3f"},
+])
+def test_hashes_property_invalid(value):
+    hash_prop = HashesProperty()
+
+    with pytest.raises(ValueError):
+        hash_prop.clean(value)

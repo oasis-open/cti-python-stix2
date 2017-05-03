@@ -49,3 +49,16 @@ class ImmutableError(STIXError, ValueError):
 
     def __init__(self):
         super(ImmutableError, self).__init__("Cannot modify properties after creation.")
+
+
+class DictionaryKeyError(STIXError, ValueError):
+    """Dictionary key does not conform to the correct format."""
+
+    def __init__(self, key, reason):
+        super(DictionaryKeyError, self).__init__()
+        self.key = key
+        self.reason = reason
+
+    def __str__(self):
+        msg = "Invliad dictionary key {0.key}: ({0.reason})."
+        return msg.format(self)
