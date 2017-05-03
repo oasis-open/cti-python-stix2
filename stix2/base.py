@@ -7,7 +7,7 @@ import json
 
 
 from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
-                        MissingFieldsError, VersioningError
+                        MissingFieldsError, RevokeError, UnmodifiablePropertyError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -102,32 +102,32 @@ class _STIXBase(collections.Mapping):
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 
+    def __deepcopy__(self, memo):
+        # Assumption: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
+        new_inner = copy.deepcopy(self._inner, memo)
+        cls = type(self)
+        return cls(**new_inner)
+
 #  Versioning API
 
     def new_version(self, **kwargs):
         unchangable_properties = []
         if self.revoked:
-            raise VersioningError("Cannot create a new version of a revoked object")
+            raise RevokeError("new_version")
         new_obj_inner = copy.deepcopy(self._inner)
         properties_to_change = kwargs.keys()
-        if "type" in properties_to_change:
-            unchangable_properties.append("type")
-        if "id" in properties_to_change:
-            unchangable_properties.append("id")
-        if "created" in properties_to_change:
-            unchangable_properties.append("created")
-        if "created_by_ref" in properties_to_change:
-            unchangable_properties.append("created_by_ref")
+        for prop in ["created", "created_by_ref", "id", "type"]:
+            if prop in properties_to_change:
+                unchangable_properties.append(prop)
         if unchangable_properties:
-            raise VersioningError("These properties cannot be changed when making a new version: " + ", ".join(unchangable_properties))
+            raise UnmodifiablePropertyError(unchangable_properties)
         if 'modified' not in kwargs:
             kwargs['modified'] = get_timestamp()
         new_obj_inner.update(kwargs)
-
         cls = type(self)
         return cls(**new_obj_inner)
 
     def revoke(self):
         if self.revoked:
-            raise VersioningError("Cannot revoke an already revoked object")
+            raise RevokeError("revoke")
         return self.new_version(revoked=True)

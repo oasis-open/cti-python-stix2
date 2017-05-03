@@ -51,8 +51,27 @@ class ImmutableError(STIXError, ValueError):
         super(ImmutableError, self).__init__("Cannot modify properties after creation.")
 
 
-class VersioningError(STIXError, ValueError):
-    """Execption while using the Versioning API"""
+class UnmodifiablePropertyError(STIXError, ValueError):
+    """Attempted to modify an unmodifiable property of object when creating a new version"""
 
-    def __init__(self, msg):
-        super(VersioningError, self).__init__(msg)
+    def __init__(self, unchangable_properties):
+        super(UnmodifiablePropertyError, self).__init__()
+        self.unchangable_properties = unchangable_properties
+
+    def __str__(self):
+        msg = "These properties cannot be changed when making a new version: {0}."
+        return msg.format(", ".join(self.unchangable_properties))
+
+
+class RevokeError(STIXError, ValueError):
+    """Attempted to an operation on a revoked object"""
+
+    def __init__(self, called_by):
+        super(RevokeError, self).__init__()
+        self.called_by = called_by
+
+    def __str__(self):
+        if self.called_by == "revoke":
+            return "Cannot revoke an already revoked object."
+        else:
+            return "Cannot create a new version of a revoked object."
