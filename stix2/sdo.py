@@ -3,9 +3,9 @@
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
 from .other import KillChainPhase
-from .properties import (IDProperty, IntegerProperty, ListProperty, Property,
-                         ReferenceProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
+from .properties import (IDProperty, IntegerProperty, ListProperty,
+                         ObservableProperty, ReferenceProperty,
+                         StringProperty, TimestampProperty, TypeProperty)
 from .utils import NOW
 
 
@@ -126,7 +126,7 @@ class ObservedData(_STIXBase):
         'first_observed': TimestampProperty(required=True),
         'last_observed': TimestampProperty(required=True),
         'number_observed': IntegerProperty(required=True),
-        'objects': Property(),
+        'objects': ObservableProperty(),
     })
 
 

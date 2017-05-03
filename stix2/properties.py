@@ -220,10 +220,14 @@ class ObservableProperty(Property):
 
     def clean(self, value):
         dictified = dict(value)
-        for obj in dictified:
-            if not issubclass(type(obj), Observable):
+        from .__init__ import parse  # avoid circular import
+        for key, obj in dictified.items():
+            parsed_obj = parse(obj, observable=True)
+            if not issubclass(type(parsed_obj), Observable):
                 raise ValueError("Objects in an observable property must be "
                                  "Cyber Observable Objects")
+            dictified[key] = parsed_obj
+
         return dictified
 
 

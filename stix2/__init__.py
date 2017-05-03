@@ -3,6 +3,7 @@
 # flake8: noqa
 
 from .bundle import Bundle
+from .observables import Artifact, File
 from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
     GranularMarking, StatementMarking, TLPMarking
 from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
@@ -31,8 +32,13 @@ OBJ_MAP = {
     'vulnerability': Vulnerability,
 }
 
+OBJ_MAP_OBSERVABLE = {
+    'artifact': Artifact,
+    'file': File,
+}
 
-def parse(data):
+
+def parse(data, observable=False):
     """Deserialize a string or file-like object into a STIX object"""
 
     obj = get_dict(data)
@@ -42,10 +48,13 @@ def parse(data):
         pass
     else:
         try:
-            obj_class = OBJ_MAP[obj['type']]
-            return obj_class(**obj)
+            if observable:
+                obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
+            else:
+                obj_class = OBJ_MAP[obj['type']]
         except KeyError:
             # TODO handle custom objects
-            raise ValueError("Can't parse unknown object type!")
+            raise ValueError("Can't parse unknown object type '%s'!" % obj['type'])
+        return obj_class(**obj)
 
     return obj
