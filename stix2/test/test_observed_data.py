@@ -115,4 +115,22 @@ def test_parse_artifact_invalid(data):
     with pytest.raises(ValueError):
         stix2.parse(odata_str)
 
+
+@pytest.mark.parametrize("data", [
+    """"0": {
+        "type": "autonomous-system",
+        "number": 15139,
+        "name": "Slime Industries",
+        "rir": "ARIN"
+    }""",
+])
+def test_parse_autonomous_system_valid(data):
+    odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
+    odata = stix2.parse(odata_str)
+    assert odata.objects["0"].type == "autonomous-system"
+    assert odata.objects["0"].number == 15139
+    assert odata.objects["0"].name == "Slime Industries"
+    assert odata.objects["0"].rir == "ARIN"
+
+
 # TODO: Add other examples

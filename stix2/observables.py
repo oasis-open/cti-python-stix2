@@ -5,7 +5,7 @@ from .base import Observable
 #                          HashesProperty, HexProperty, IDProperty,
 #                          IntegerProperty, ListProperty, ReferenceProperty,
 #                          StringProperty, TimestampProperty, TypeProperty)
-from .properties import BinaryProperty, HashesProperty, StringProperty, TypeProperty
+from .properties import BinaryProperty, HashesProperty, IntegerProperty, StringProperty, TypeProperty
 
 
 class Artifact(Observable):
@@ -16,6 +16,16 @@ class Artifact(Observable):
         'payload_bin': BinaryProperty(),
         'url': StringProperty(),
         'hashes': HashesProperty(),
+    }
+
+
+class AutonomousSystem(Observable):
+    _type = 'autonomous-system'
+    _properties = {
+        'type': TypeProperty(_type),
+        'number': IntegerProperty(),
+        'name': StringProperty(),
+        'rir': StringProperty(),
     }
 
 

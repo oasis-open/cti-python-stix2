@@ -335,3 +335,14 @@ class SelectorProperty(Property):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("must adhere to selector syntax.")
         return value
+
+
+class ObjectReferenceProperty(Property):
+    def _init(self, valid_refs=None):
+        self.valid_refs = valid_refs
+        super(ObjectReferenceProperty, self).__init__()
+
+    def clean(self, value):
+        if value not in self.valid_refs:
+            raise ValueError("must refer to observable objects in the same "
+                             "Observable Objects container.")
