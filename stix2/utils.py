@@ -1,6 +1,7 @@
 """Utility functions and classes for the stix2 library."""
 
 import datetime as dt
+from dateutil import parser
 import json
 
 import pytz
@@ -32,6 +33,28 @@ def format_datetime(dttm):
         ms = zoned.strftime("%f")
         ts = ts + '.' + ms.rstrip("0")
     return ts + "Z"
+
+
+def parse_into_datetime(value):
+    if isinstance(value, dt.date):
+        if hasattr(value, 'hour'):
+            return value
+        else:
+            # Add a time component
+            return dt.datetime.combine(value, dt.time(), tzinfo=pytz.utc)
+
+    # value isn't a date or datetime object so assume it's a string
+    try:
+        parsed = parser.parse(value)
+    except TypeError:
+        # Unknown format
+        raise ValueError("must be a datetime object, date object, or "
+                         "timestamp string in a recognizable format.")
+    if parsed.tzinfo:
+        return parsed.astimezone(pytz.utc)
+    else:
+        # Doesn't have timezone info in the string; assume UTC
+        return pytz.utc.localize(parsed)
 
 
 def get_dict(data):

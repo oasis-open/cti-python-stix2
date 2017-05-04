@@ -25,7 +25,7 @@ class MissingFieldsError(STIXError, ValueError):
         self.fields = sorted(list(fields))
 
     def __str__(self):
-        msg = "Missing required field(s) for {0}: ({1})."
+        msg = "No values for required field(s) for {0}: ({1})."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.fields))
 

@@ -23,6 +23,26 @@ def test_making_new_version():
     assert campaign_v1.modified < campaign_v2.modified
 
 
+def test_making_new_version_with_unset():
+    campaign_v1 = stix2.Campaign(
+        id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created="2016-04-06T20:03:00.000Z",
+        modified="2016-04-06T20:03:00.000Z",
+        name="Green Group Attacks Against Finance",
+        description="Campaign by Green Group against a series of targets in the financial services sector."
+    )
+
+    campaign_v2 = campaign_v1.new_version(description=None)
+
+    assert campaign_v1.id == campaign_v2.id
+    assert campaign_v1.created_by_ref == campaign_v2.created_by_ref
+    assert campaign_v1.created == campaign_v2.created
+    assert campaign_v1.name == campaign_v2.name
+    assert campaign_v2.description == None
+    assert campaign_v1.modified < campaign_v2.modified
+
+
 def test_making_new_version_with_embedded_object():
     campaign_v1 = stix2.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
@@ -86,7 +106,42 @@ def test_versioning_error_invalid_property():
     with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as excinfo:
         campaign_v1.new_version(type="threat-actor")
 
-    str(excinfo.value) == "These properties cannot be changed when making a new version: type"
+    assert str(excinfo.value) == "These properties cannot be changed when making a new version: type."
+
+
+def test_versioning_error_bad_modified_value():
+    campaign_v1 = stix2.Campaign(
+        id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created="2016-04-06T20:03:00.000Z",
+        modified="2016-04-06T20:03:00.000Z",
+        name="Green Group Attacks Against Finance",
+        description="Campaign by Green Group against a series of targets in the financial services sector."
+    )
+
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        campaign_v1.new_version(modified="2015-04-06T20:03:00.000Z")
+
+    assert excinfo.value.cls == stix2.Campaign
+    assert excinfo.value.prop_name == "modified"
+    assert excinfo.value.reason == "The new modified datetime cannot be before the current modified datatime."
+
+
+def test_versioning_error_usetting_required_property():
+    campaign_v1 = stix2.Campaign(
+        id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created="2016-04-06T20:03:00.000Z",
+        modified="2016-04-06T20:03:00.000Z",
+        name="Green Group Attacks Against Finance",
+        description="Campaign by Green Group against a series of targets in the financial services sector."
+    )
+
+    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+        campaign_v1.new_version(name=None)
+
+    assert excinfo.value.cls == stix2.Campaign
+    assert excinfo.value.fields == [ "name" ]
 
 
 def test_versioning_error_new_version_of_revoked():
@@ -104,7 +159,7 @@ def test_versioning_error_new_version_of_revoked():
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
         campaign_v2.new_version(name="barney")
 
-    str(excinfo.value) == "Cannot create a new version of a revoked object"
+    assert excinfo.value.called_by == "new_version"
 
 
 def test_versioning_error_revoke_of_revoked():
@@ -122,4 +177,4 @@ def test_versioning_error_revoke_of_revoked():
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
         campaign_v2.revoke()
 
-    str(excinfo.value) == "Cannot revoke an already revoked object"
+    assert excinfo.value.called_by == "revoke"
