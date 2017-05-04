@@ -43,5 +43,3 @@ RELATIONSHIP_KWARGS = dict(
 SIGHTING_KWARGS = dict(
     sighting_of_ref=INDICATOR_ID,
 )
-
-

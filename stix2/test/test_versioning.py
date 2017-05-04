@@ -39,7 +39,7 @@ def test_making_new_version_with_unset():
     assert campaign_v1.created_by_ref == campaign_v2.created_by_ref
     assert campaign_v1.created == campaign_v2.created
     assert campaign_v1.name == campaign_v2.name
-    assert campaign_v2.description == None
+    assert campaign_v2.description is None
     assert campaign_v1.modified < campaign_v2.modified
 
 
@@ -141,7 +141,7 @@ def test_versioning_error_usetting_required_property():
         campaign_v1.new_version(name=None)
 
     assert excinfo.value.cls == stix2.Campaign
-    assert excinfo.value.fields == [ "name" ]
+    assert excinfo.value.fields == ["name"]
 
 
 def test_versioning_error_new_version_of_revoked():
