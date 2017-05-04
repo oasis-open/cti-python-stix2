@@ -1,9 +1,8 @@
 """Utility functions and classes for the stix2 library."""
 
+import json
 import datetime as dt
 from dateutil import parser
-import json
-
 import pytz
 
 # Sentinel value for fields that should be set to the current time.
