@@ -5,7 +5,7 @@ from .base import Observable
 #                          HashesProperty, HexProperty, IDProperty,
 #                          IntegerProperty, ListProperty, ReferenceProperty,
 #                          StringProperty, TimestampProperty, TypeProperty)
-from .properties import BinaryProperty, HashesProperty, IntegerProperty, StringProperty, TypeProperty
+from .properties import BinaryProperty, HashesProperty, IntegerProperty, ObjectReferenceProperty, StringProperty, TypeProperty
 
 
 class Artifact(Observable):
@@ -26,6 +26,16 @@ class AutonomousSystem(Observable):
         'number': IntegerProperty(),
         'name': StringProperty(),
         'rir': StringProperty(),
+    }
+
+
+class EmailAddress(Observable):
+    _type = 'email-address'
+    _properties = {
+        'type': TypeProperty(_type),
+        'value': StringProperty(required=True),
+        'display_name': StringProperty(),
+        'belongs_to_ref': ObjectReferenceProperty(),
     }
 
 

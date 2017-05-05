@@ -3,7 +3,7 @@
 # flake8: noqa
 
 from .bundle import Bundle
-from .observables import Artifact, AutonomousSystem, File
+from .observables import Artifact, AutonomousSystem, EmailAddress, File
 from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
     GranularMarking, StatementMarking, TLPMarking
 from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
@@ -35,11 +35,12 @@ OBJ_MAP = {
 OBJ_MAP_OBSERVABLE = {
     'artifact': Artifact,
     'autonomous-system': AutonomousSystem,
+    'email-address': EmailAddress,
     'file': File,
 }
 
 
-def parse(data, observable=False):
+def parse(data):
     """Deserialize a string or file-like object into a STIX object"""
 
     obj = get_dict(data)
@@ -49,13 +50,28 @@ def parse(data, observable=False):
         pass
     else:
         try:
-            if observable:
-                obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
-            else:
-                obj_class = OBJ_MAP[obj['type']]
+            obj_class = OBJ_MAP[obj['type']]
         except KeyError:
             # TODO handle custom objects
             raise ValueError("Can't parse unknown object type '%s'!" % obj['type'])
         return obj_class(**obj)
 
     return obj
+
+
+def parse_observable(data, _valid_refs):
+    """Deserialize a string or file-like object into a STIX Cyber Observable
+    object.
+    """
+
+    obj = get_dict(data)
+    obj['_valid_refs'] = _valid_refs
+
+    if 'type' not in obj:
+        raise ValueError("'type' is a required field!")
+    try:
+        obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
+    except KeyError:
+        # TODO handle custom objects
+        raise ValueError("Can't parse unknown object type '%s'!" % obj['type'])
+    return obj_class(**obj)

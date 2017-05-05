@@ -5,7 +5,7 @@ import datetime as dt
 import json
 
 from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
-                        MissingFieldsError
+                        InvalidObjRefError, MissingFieldsError
 from .utils import format_datetime, get_timestamp, NOW
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -102,4 +102,20 @@ class _STIXBase(collections.Mapping):
 
 
 class Observable(_STIXBase):
-    pass
+
+    def __init__(self, **kwargs):
+        self._STIXBase__valid_refs = kwargs.pop('_valid_refs')
+        super(Observable, self).__init__(**kwargs)
+
+    def _check_property(self, prop_name, prop, kwargs):
+        super(Observable, self)._check_property(prop_name, prop, kwargs)
+        if prop_name.endswith('_ref'):
+            ref = kwargs[prop_name].split('--', 1)[0]
+            if ref not in self._STIXBase__valid_refs:
+                raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+        if prop_name.endswith('_refs'):
+            for r in kwargs[prop_name]:
+                ref = r.split('--', 1)[0]
+                if ref not in self._STIXBase__valid_refs:
+                    raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+        # TODO also check the type of the object referenced, not just that the key exists

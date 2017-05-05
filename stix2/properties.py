@@ -220,9 +220,9 @@ class ObservableProperty(Property):
 
     def clean(self, value):
         dictified = dict(value)
-        from .__init__ import parse  # avoid circular import
+        from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
-            parsed_obj = parse(obj, observable=True)
+            parsed_obj = parse_observable(obj, dictified.keys())
             if not issubclass(type(parsed_obj), Observable):
                 raise ValueError("Objects in an observable property must be "
                                  "Cyber Observable Objects")
@@ -337,12 +337,5 @@ class SelectorProperty(Property):
         return value
 
 
-class ObjectReferenceProperty(Property):
-    def _init(self, valid_refs=None):
-        self.valid_refs = valid_refs
-        super(ObjectReferenceProperty, self).__init__()
-
-    def clean(self, value):
-        if value not in self.valid_refs:
-            raise ValueError("must refer to observable objects in the same "
-                             "Observable Objects container.")
+class ObjectReferenceProperty(StringProperty):
+    pass

@@ -6,6 +6,7 @@ import pytz
 import stix2
 
 from .constants import OBSERVED_DATA_ID
+from ..exceptions import InvalidValueError
 
 EXPECTED = """{
     "created": "2016-04-06T19:58:16Z",
@@ -131,6 +132,24 @@ def test_parse_autonomous_system_valid(data):
     assert odata.objects["0"].number == 15139
     assert odata.objects["0"].name == "Slime Industries"
     assert odata.objects["0"].rir == "ARIN"
+
+
+@pytest.mark.parametrize("data", [
+    """"1": {
+        "type": "email-address",
+        "value": "john@example.com",
+        "display_name": "John Doe",
+        "belongs_to_ref": "0"
+    }""",
+])
+def test_parse_email_address(data):
+    odata_str = re.compile('\}.+\},', re.DOTALL).sub('}, %s},' % data, EXPECTED)
+    odata = stix2.parse(odata_str)
+    assert odata.objects["1"].type == "email-address"
+
+    odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', odata_str)
+    with pytest.raises(InvalidValueError):
+        stix2.parse(odata_str)
 
 
 # TODO: Add other examples
