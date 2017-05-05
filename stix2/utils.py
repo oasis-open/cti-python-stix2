@@ -1,7 +1,8 @@
 """Utility functions and classes for the stix2 library."""
 
-import json
 import datetime as dt
+import json
+
 from dateutil import parser
 import pytz
 
