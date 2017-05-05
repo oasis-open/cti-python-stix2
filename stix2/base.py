@@ -1,12 +1,15 @@
 """Base class for type definitions in the stix2 library."""
 
 import collections
+import copy
 import datetime as dt
+
 import json
 
+
 from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
-                        MissingFieldsError
-from .utils import format_datetime, get_timestamp, NOW
+                        MissingFieldsError, RevokeError, UnmodifiablePropertyError
+from .utils import format_datetime, get_timestamp, NOW, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
@@ -56,16 +59,22 @@ class _STIXBase(collections.Mapping):
         if extra_kwargs:
             raise ExtraFieldsError(cls, extra_kwargs)
 
+        # Remove any keyword arguments whose value is None
+        setting_kwargs = {}
+        for prop_name, prop_value in kwargs.items():
+            if prop_value:
+                setting_kwargs[prop_name] = prop_value
+
         # Detect any missing required fields
         required_fields = get_required_properties(cls._properties)
-        missing_kwargs = set(required_fields) - set(kwargs)
+        missing_kwargs = set(required_fields) - set(setting_kwargs)
         if missing_kwargs:
             raise MissingFieldsError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
-            self._check_property(prop_name, prop_metadata, kwargs)
+            self._check_property(prop_name, prop_metadata, setting_kwargs)
 
-        self._inner = kwargs
+        self._inner = setting_kwargs
 
         if self.granular_markings:
             for m in self.granular_markings:
@@ -99,3 +108,37 @@ class _STIXBase(collections.Mapping):
         props = [(k, self[k]) for k in sorted(self._properties) if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
+
+    def __deepcopy__(self, memo):
+        # Assumption: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
+        new_inner = copy.deepcopy(self._inner, memo)
+        cls = type(self)
+        return cls(**new_inner)
+
+#  Versioning API
+
+    def new_version(self, **kwargs):
+        unchangable_properties = []
+        if self.revoked:
+            raise RevokeError("new_version")
+        new_obj_inner = copy.deepcopy(self._inner)
+        properties_to_change = kwargs.keys()
+        for prop in ["created", "created_by_ref", "id", "type"]:
+            if prop in properties_to_change:
+                unchangable_properties.append(prop)
+        if unchangable_properties:
+            raise UnmodifiablePropertyError(unchangable_properties)
+        cls = type(self)
+        if 'modified' not in kwargs:
+            kwargs['modified'] = get_timestamp()
+        else:
+            new_modified_property = parse_into_datetime(kwargs['modified'])
+            if new_modified_property < self.modified:
+                raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
+        new_obj_inner.update(kwargs)
+        return cls(**new_obj_inner)
+
+    def revoke(self):
+        if self.revoked:
+            raise RevokeError("revoke")
+        return self.new_version(revoked=True)

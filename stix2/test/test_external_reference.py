@@ -113,4 +113,3 @@ def test_external_reference_source_required():
 
     assert excinfo.value.cls == stix2.ExternalReference
     assert excinfo.value.fields == ["source_name"]
-    assert str(excinfo.value) == "Missing required field(s) for ExternalReference: (source_name)."

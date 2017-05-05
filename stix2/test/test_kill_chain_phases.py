@@ -41,7 +41,6 @@ def test_kill_chain_required_fields():
 
     assert excinfo.value.cls == stix2.KillChainPhase
     assert excinfo.value.fields == ["kill_chain_name", "phase_name"]
-    assert str(excinfo.value) == "Missing required field(s) for KillChainPhase: (kill_chain_name, phase_name)."
 
 
 def test_kill_chain_required_field_chain_name():
@@ -51,7 +50,6 @@ def test_kill_chain_required_field_chain_name():
 
     assert excinfo.value.cls == stix2.KillChainPhase
     assert excinfo.value.fields == ["kill_chain_name"]
-    assert str(excinfo.value) == "Missing required field(s) for KillChainPhase: (kill_chain_name)."
 
 
 def test_kill_chain_required_field_phase_name():
@@ -61,4 +59,3 @@ def test_kill_chain_required_field_phase_name():
 
     assert excinfo.value.cls == stix2.KillChainPhase
     assert excinfo.value.fields == ["phase_name"]
-    assert str(excinfo.value) == "Missing required field(s) for KillChainPhase: (phase_name)."
