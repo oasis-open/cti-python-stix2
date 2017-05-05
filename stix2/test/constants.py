@@ -39,6 +39,7 @@ RELATIONSHIP_KWARGS = dict(
     target_ref=MALWARE_ID,
 )
 
+# Minimum required args for a Sighting instance
 SIGHTING_KWARGS = dict(
     sighting_of_ref=INDICATOR_ID,
 )

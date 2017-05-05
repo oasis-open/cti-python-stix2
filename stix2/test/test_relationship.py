@@ -76,13 +76,16 @@ def test_relationship_id_must_start_with_relationship():
 def test_relationship_required_field_relationship_type():
     with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.Relationship()
-    assert str(excinfo.value) == "Missing required field(s) for Relationship: (relationship_type, source_ref, target_ref)."
+    assert excinfo.value.cls == stix2.Relationship
+    assert excinfo.value.fields == ["relationship_type", "source_ref", "target_ref"]
 
 
 def test_relationship_missing_some_required_fields():
     with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.Relationship(relationship_type='indicates')
-    assert str(excinfo.value) == "Missing required field(s) for Relationship: (source_ref, target_ref)."
+
+    assert excinfo.value.cls == stix2.Relationship
+    assert excinfo.value.fields == ["source_ref", "target_ref"]
 
 
 def test_relationship_required_field_target_ref():
@@ -94,7 +97,6 @@ def test_relationship_required_field_target_ref():
 
     assert excinfo.value.cls == stix2.Relationship
     assert excinfo.value.fields == ["target_ref"]
-    assert str(excinfo.value) == "Missing required field(s) for Relationship: (target_ref)."
 
 
 def test_cannot_assign_to_relationship_attributes(relationship):
