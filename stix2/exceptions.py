@@ -25,7 +25,7 @@ class MissingFieldsError(STIXError, ValueError):
         self.fields = sorted(list(fields))
 
     def __str__(self):
-        msg = "Missing required field(s) for {0}: ({1})."
+        msg = "No values for required field(s) for {0}: ({1})."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.fields))
 
@@ -76,3 +76,29 @@ class InvalidObjRefError(STIXError, ValueError):
     def __str__(self):
         msg = "Invalid object reference for '{0.cls.__name__}:{0.prop_name}': {0.reason}"
         return msg.format(self)
+
+
+class UnmodifiablePropertyError(STIXError, ValueError):
+    """Attempted to modify an unmodifiable property of object when creating a new version"""
+
+    def __init__(self, unchangable_properties):
+        super(UnmodifiablePropertyError, self).__init__()
+        self.unchangable_properties = unchangable_properties
+
+    def __str__(self):
+        msg = "These properties cannot be changed when making a new version: {0}."
+        return msg.format(", ".join(self.unchangable_properties))
+
+
+class RevokeError(STIXError, ValueError):
+    """Attempted to an operation on a revoked object"""
+
+    def __init__(self, called_by):
+        super(RevokeError, self).__init__()
+        self.called_by = called_by
+
+    def __str__(self):
+        if self.called_by == "revoke":
+            return "Cannot revoke an already revoked object."
+        else:
+            return "Cannot create a new version of a revoked object."

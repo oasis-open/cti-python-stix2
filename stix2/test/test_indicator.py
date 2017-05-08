@@ -93,7 +93,7 @@ def test_indicator_required_fields():
 
     assert excinfo.value.cls == stix2.Indicator
     assert excinfo.value.fields == ["labels", "pattern"]
-    assert str(excinfo.value) == "Missing required field(s) for Indicator: (labels, pattern)."
+    assert str(excinfo.value) == "No values for required field(s) for Indicator: (labels, pattern)."
 
 
 def test_indicator_required_field_pattern():
@@ -102,7 +102,6 @@ def test_indicator_required_field_pattern():
 
     assert excinfo.value.cls == stix2.Indicator
     assert excinfo.value.fields == ["pattern"]
-    assert str(excinfo.value) == "Missing required field(s) for Indicator: (pattern)."
 
 
 def test_indicator_created_ref_invalid_format():
