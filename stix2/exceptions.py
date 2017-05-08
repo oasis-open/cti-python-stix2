@@ -51,6 +51,33 @@ class ImmutableError(STIXError, ValueError):
         super(ImmutableError, self).__init__("Cannot modify properties after creation.")
 
 
+class DictionaryKeyError(STIXError, ValueError):
+    """Dictionary key does not conform to the correct format."""
+
+    def __init__(self, key, reason):
+        super(DictionaryKeyError, self).__init__()
+        self.key = key
+        self.reason = reason
+
+    def __str__(self):
+        msg = "Invliad dictionary key {0.key}: ({0.reason})."
+        return msg.format(self)
+
+
+class InvalidObjRefError(STIXError, ValueError):
+    """A STIX Cyber Observable Object contains an invalid object reference."""
+
+    def __init__(self, cls, prop_name, reason):
+        super(InvalidObjRefError, self).__init__()
+        self.cls = cls
+        self.prop_name = prop_name
+        self.reason = reason
+
+    def __str__(self):
+        msg = "Invalid object reference for '{0.cls.__name__}:{0.prop_name}': {0.reason}"
+        return msg.format(self)
+
+
 class UnmodifiablePropertyError(STIXError, ValueError):
     """Attempted to modify an unmodifiable property of object when creating a new version"""
 

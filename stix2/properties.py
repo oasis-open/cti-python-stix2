@@ -1,3 +1,5 @@
+import base64
+import binascii
 import collections
 import datetime as dt
 import inspect
@@ -8,7 +10,8 @@ from dateutil import parser
 import pytz
 from six import text_type
 
-from .base import _STIXBase
+from .base import _STIXBase, Observable
+from .exceptions import DictionaryKeyError
 
 
 class Property(object):
@@ -213,6 +216,90 @@ class TimestampProperty(Property):
             return pytz.utc.localize(parsed)
 
 
+class ObservableProperty(Property):
+
+    def clean(self, value):
+        dictified = dict(value)
+        from .__init__ import parse_observable  # avoid circular import
+        for key, obj in dictified.items():
+            parsed_obj = parse_observable(obj, dictified.keys())
+            if not issubclass(type(parsed_obj), Observable):
+                raise ValueError("Objects in an observable property must be "
+                                 "Cyber Observable Objects")
+            dictified[key] = parsed_obj
+
+        return dictified
+
+
+class DictionaryProperty(Property):
+
+    def clean(self, value):
+        dictified = dict(value)
+        for k in dictified.keys():
+            if len(k) < 3:
+                raise DictionaryKeyError(k, "shorter than 3 characters")
+            elif len(k) > 256:
+                raise DictionaryKeyError(k, "longer than 256 characters")
+            if not re.match('^[a-zA-Z0-9_-]+$', k):
+                raise DictionaryKeyError(k, "contains characters other than"
+                                         "lowercase a-z, uppercase A-Z, "
+                                         "numerals 0-9, hyphen (-), or "
+                                         "underscore (_)")
+        return dictified
+
+
+HASHES_REGEX = {
+    "MD5": ("^[a-fA-F0-9]{32}$", "MD5"),
+    "MD6": ("^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
+    "RIPEMD160": ("^[a-fA-F0-9]{40}$", "RIPEMD-160"),
+    "SHA1": ("^[a-fA-F0-9]{40}$", "SHA-1"),
+    "SHA224": ("^[a-fA-F0-9]{56}$", "SHA-224"),
+    "SHA256": ("^[a-fA-F0-9]{64}$", "SHA-256"),
+    "SHA384": ("^[a-fA-F0-9]{96}$", "SHA-384"),
+    "SHA512": ("^[a-fA-F0-9]{128}$", "SHA-512"),
+    "SHA3224": ("^[a-fA-F0-9]{56}$", "SHA3-224"),
+    "SHA3256": ("^[a-fA-F0-9]{64}$", "SHA3-256"),
+    "SHA3384": ("^[a-fA-F0-9]{96}$", "SHA3-384"),
+    "SHA3512": ("^[a-fA-F0-9]{128}$", "SHA3-512"),
+    "SSDEEP": ("^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
+    "WHIRLPOOL": ("^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+}
+
+
+class HashesProperty(DictionaryProperty):
+
+    def clean(self, value):
+        clean_dict = super(HashesProperty, self).clean(value)
+        for k, v in clean_dict.items():
+            key = k.upper().replace('-', '')
+            if key in HASHES_REGEX:
+                vocab_key = HASHES_REGEX[key][1]
+                if not re.match(HASHES_REGEX[key][0], v):
+                    raise ValueError("'%s' is not a valid %s hash" % (v, vocab_key))
+                if k != vocab_key:
+                    clean_dict[vocab_key] = clean_dict[k]
+                    del clean_dict[k]
+        return clean_dict
+
+
+class BinaryProperty(Property):
+
+    def clean(self, value):
+        try:
+            base64.b64decode(value)
+        except (binascii.Error, TypeError):
+            raise ValueError("must contain a base64 encoded string")
+        return value
+
+
+class HexProperty(Property):
+
+    def clean(self, value):
+        if not re.match('^([a-fA-F0-9]{2})+$', value):
+            raise ValueError("must contain an even number of hexadecimal characters")
+        return value
+
+
 REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"
                        "-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
@@ -248,3 +335,7 @@ class SelectorProperty(Property):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("must adhere to selector syntax.")
         return value
+
+
+class ObjectReferenceProperty(StringProperty):
+    pass
