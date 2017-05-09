@@ -1,13 +1,12 @@
 """STIX 2.0 Cyber Observable Objects"""
 
-from .base import Observable, _STIXBase
+from .base import _STIXBase, Observable
 # from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
 #                          HashesProperty, HexProperty, IDProperty,
 #                          IntegerProperty, ListProperty, ReferenceProperty,
 #                          StringProperty, TimestampProperty, TypeProperty)
-from .properties import BinaryProperty, HashesProperty, IntegerProperty, ObjectReferenceProperty, StringProperty, \
-                        TypeProperty, HexProperty, TimestampProperty, BooleanProperty, ListProperty, \
-                        DictionaryProperty, Property
+from .properties import BinaryProperty, BooleanProperty, DictionaryProperty, HashesProperty, HexProperty, \
+    IntegerProperty, ListProperty, ObjectReferenceProperty, Property, StringProperty, TimestampProperty, TypeProperty
 
 
 class Artifact(Observable):
