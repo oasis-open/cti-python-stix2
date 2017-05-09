@@ -4,6 +4,7 @@ import pytest
 
 import stix2
 
+
 LMCO_RECON = """{
     "kill_chain_name": "lockheed-martin-cyber-kill-chain",
     "phase_name": "reconnaissance"

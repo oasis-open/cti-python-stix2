@@ -5,11 +5,12 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-from .base import _STIXBase, Observable
-from .properties import BinaryProperty, BooleanProperty, DictionaryProperty, \
-    EmbeddedObjectProperty, HashesProperty, HexProperty, IntegerProperty, \
-    ListProperty, ObjectReferenceProperty, Property, StringProperty, \
-    TimestampProperty, TypeProperty
+from .base import Observable, _STIXBase
+from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
+                         EmbeddedObjectProperty, HashesProperty, HexProperty,
+                         IntegerProperty, ListProperty,
+                         ObjectReferenceProperty, Property, StringProperty,
+                         TimestampProperty, TypeProperty)
 
 
 class Artifact(Observable):

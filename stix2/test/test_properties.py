@@ -4,9 +4,9 @@ from stix2.exceptions import DictionaryKeyError
 from stix2.observables import EmailMIMEComponent
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
-                              HashesProperty, HexProperty,
-                              IDProperty, IntegerProperty, ListProperty,
-                              Property, ReferenceProperty, StringProperty,
+                              HashesProperty, HexProperty, IDProperty,
+                              IntegerProperty, ListProperty, Property,
+                              ReferenceProperty, StringProperty,
                               TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME

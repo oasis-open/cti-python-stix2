@@ -2,9 +2,11 @@ import datetime as dt
 
 import pytest
 import pytz
+
 import stix2
 
 from .constants import INTRUSION_SET_ID
+
 
 EXPECTED = """{
     "aliases": [

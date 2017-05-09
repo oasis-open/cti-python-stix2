@@ -5,8 +5,8 @@ import pytz
 
 import stix2
 
-from .constants import FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID
-from .constants import RELATIONSHIP_KWARGS
+from .constants import (FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID,
+                        RELATIONSHIP_KWARGS)
 
 
 EXPECTED_RELATIONSHIP = """{

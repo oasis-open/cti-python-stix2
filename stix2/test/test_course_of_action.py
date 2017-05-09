@@ -2,9 +2,11 @@ import datetime as dt
 
 import pytest
 import pytz
+
 import stix2
 
 from .constants import COURSE_OF_ACTION_ID
+
 
 EXPECTED = """{
     "created": "2016-04-06T20:03:48Z",

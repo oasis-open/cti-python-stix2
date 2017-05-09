@@ -5,8 +5,8 @@ import pytest
 
 import stix2
 
-from .constants import FAKE_TIME
-from .constants import INDICATOR_KWARGS, MALWARE_KWARGS, RELATIONSHIP_KWARGS
+from .constants import (FAKE_TIME, INDICATOR_KWARGS, MALWARE_KWARGS,
+                        RELATIONSHIP_KWARGS)
 
 
 # Inspired by: http://stackoverflow.com/a/24006251
