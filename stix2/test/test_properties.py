@@ -1,8 +1,10 @@
 import pytest
 
 from stix2.exceptions import DictionaryKeyError
+from stix2.observables import EmailMIMEComponent
 from stix2.properties import (BinaryProperty, BooleanProperty,
-                              DictionaryProperty, HashesProperty, HexProperty,
+                              DictionaryProperty, EmbeddedObjectProperty,
+                              HashesProperty, HexProperty,
                               IDProperty, IntegerProperty, ListProperty,
                               Property, ReferenceProperty, StringProperty,
                               TimestampProperty, TypeProperty)
@@ -232,3 +234,16 @@ def test_hashes_property_invalid(value):
 
     with pytest.raises(ValueError):
         hash_prop.clean(value)
+
+
+def test_embedded_property():
+    emb_prop = EmbeddedObjectProperty(type=EmailMIMEComponent)
+    mime = EmailMIMEComponent(
+        content_type="text/plain; charset=utf-8",
+        content_disposition="inline",
+        body="Cats are funny!"
+    )
+    assert emb_prop.clean(mime)
+
+    with pytest.raises(ValueError):
+        emb_prop.clean("string")

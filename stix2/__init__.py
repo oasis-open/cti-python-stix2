@@ -3,7 +3,8 @@
 # flake8: noqa
 
 from .bundle import Bundle
-from .observables import Artifact, AutonomousSystem, EmailAddress, File
+from .observables import Artifact, AutonomousSystem, EmailAddress, \
+    EmailMessage, File
 from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
     GranularMarking, StatementMarking, TLPMarking
 from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
@@ -36,6 +37,7 @@ OBJ_MAP_OBSERVABLE = {
     'artifact': Artifact,
     'autonomous-system': AutonomousSystem,
     'email-address': EmailAddress,
+    'email-message': EmailMessage,
     'file': File,
 }
 

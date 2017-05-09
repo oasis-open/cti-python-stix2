@@ -152,4 +152,50 @@ def test_parse_email_address(data):
         stix2.parse(odata_str)
 
 
+@pytest.mark.parametrize("data", [
+    """
+    {
+        "type": "email-message",
+        "is_multipart": true,
+        "content_type": "multipart/mixed",
+        "date": "2016-06-19T14:20:40.000Z",
+        "from_ref": "1",
+        "to_refs": [
+          "2"
+        ],
+        "cc_refs": [
+          "3"
+        ],
+        "subject": "Check out this picture of a cat!",
+        "additional_header_fields": {
+          "Content-Disposition": "inline",
+          "X-Mailer": "Mutt/1.5.23",
+          "X-Originating-IP": "198.51.100.3"
+        },
+        "body_multipart": [
+          {
+            "content_type": "text/plain; charset=utf-8",
+            "content_disposition": "inline",
+            "body": "Cats are funny!"
+          },
+          {
+            "content_type": "image/png",
+            "content_disposition": "attachment; filename=\\"tabby.png\\"",
+            "body_raw_ref": "4"
+          },
+          {
+            "content_type": "application/zip",
+            "content_disposition": "attachment; filename=\\"tabby_pics.zip\\"",
+            "body_raw_ref": "5"
+          }
+        ]
+    }
+    """
+])
+def test_parse_email_message(data):
+    odata = stix2.parse_observable(data, [str(i) for i in range(1, 6)])
+    assert odata.type == "email-message"
+    assert odata.body_multipart[0].content_disposition == "inline"
+
+
 # TODO: Add other examples
