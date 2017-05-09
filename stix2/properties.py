@@ -5,12 +5,10 @@ import datetime as dt
 import inspect
 import re
 import uuid
-
-from dateutil import parser
-import pytz
 from six import text_type
-
-from .base import _STIXBase, Observable
+import pytz
+from dateutil import parser
+from .base import Observable, _STIXBase
 from .exceptions import DictionaryKeyError
 
 

@@ -3,8 +3,8 @@
 import datetime as dt
 import json
 
-from dateutil import parser
 import pytz
+from dateutil import parser
 
 # Sentinel value for fields that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple

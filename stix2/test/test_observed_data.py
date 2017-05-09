@@ -3,10 +3,12 @@ import re
 
 import pytest
 import pytz
+
 import stix2
 
-from .constants import OBSERVED_DATA_ID
 from ..exceptions import InvalidValueError
+from .constants import OBSERVED_DATA_ID
+
 
 EXPECTED = """{
     "created": "2016-04-06T19:58:16Z",

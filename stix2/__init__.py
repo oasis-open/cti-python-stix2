@@ -2,20 +2,20 @@
 
 # flake8: noqa
 
+from . import exceptions
 from .bundle import Bundle
-from .observables import Artifact, AutonomousSystem, Directory, DomainName, \
-    EmailAddress, EmailMessage, File, IPv4Address, IPv6Address, MACAddress, \
-    Mutex, NetworkTraffic, Process, Software, URL, UserAccount, WindowsRegistryKey, \
-    X509Certificate
-from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
-    GranularMarking, StatementMarking, TLPMarking
-from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
-    IntrusionSet, Malware, ObservedData, Report, ThreatActor, Tool, \
-    Vulnerability
+from .observables import (URL, Artifact, AutonomousSystem, Directory,
+                          DomainName, EmailAddress, EmailMessage, File,
+                          IPv4Address, IPv6Address, MACAddress, Mutex,
+                          NetworkTraffic, Process, Software, UserAccount,
+                          WindowsRegistryKey, X509Certificate)
+from .other import (ExternalReference, GranularMarking, KillChainPhase,
+                    MarkingDefinition, StatementMarking, TLPMarking)
+from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
+                  IntrusionSet, Malware, ObservedData, Report, ThreatActor,
+                  Tool, Vulnerability)
 from .sro import Relationship, Sighting
 from .utils import get_dict
-from . import exceptions
-
 
 OBJ_MAP = {
     'attack-pattern': AttackPattern,
