@@ -3,8 +3,10 @@
 # flake8: noqa
 
 from .bundle import Bundle
-from .observables import Artifact, AutonomousSystem, EmailAddress, \
-    EmailMessage, File
+from .observables import Artifact, AutonomousSystem, Directory, DomainName, \
+    EmailAddress, EmailMessage, File, IPv4Address, IPv6Address, MACAddress, \
+    Mutex, NetworkTraffic, Process, Software, URL, UserAccount, WindowsRegistryKey, \
+    X509Certificate
 from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
     GranularMarking, StatementMarking, TLPMarking
 from .sdo import AttackPattern, Campaign, CourseOfAction, Identity, Indicator, \
@@ -36,9 +38,22 @@ OBJ_MAP = {
 OBJ_MAP_OBSERVABLE = {
     'artifact': Artifact,
     'autonomous-system': AutonomousSystem,
+    'directory': Directory,
+    'domain-name': DomainName,
     'email-address': EmailAddress,
     'email-message': EmailMessage,
     'file': File,
+    'ipv4-addr': IPv4Address,
+    'ipv6-addr': IPv6Address,
+    'mac-addr': MACAddress,
+    'mutex': Mutex,
+    'network-traffic': NetworkTraffic,
+    'process': Process,
+    'software': Software,
+    'url': URL,
+    'user-account': UserAccount,
+    'windows-registry-key': WindowsRegistryKey,
+    'x509-certificate': X509Certificate,
 }
 
 
