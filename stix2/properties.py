@@ -115,10 +115,15 @@ class ListProperty(Property):
                 # TODO Should we raise an error here?
                 valid = item
 
-            if isinstance(valid, collections.Mapping):
-                result.append(self.contained(**valid))
+            if type(self.contained) is EmbeddedObjectProperty:
+                obj_type = self.contained.type
             else:
-                result.append(self.contained(valid))
+                obj_type = self.contained
+
+            if isinstance(valid, collections.Mapping):
+                result.append(obj_type(**valid))
+            else:
+                result.append(obj_type(valid))
 
         # STIX spec forbids empty lists
         if len(result) < 1:
@@ -339,3 +344,16 @@ class SelectorProperty(Property):
 
 class ObjectReferenceProperty(StringProperty):
     pass
+
+
+class EmbeddedObjectProperty(Property):
+    def __init__(self, type, required=False):
+        self.type = type
+        super(EmbeddedObjectProperty, self).__init__(required, type=type)
+
+    def clean(self, value):
+        if type(value) is dict:
+            value = self.type(**value)
+        elif not isinstance(value, self.type):
+            raise ValueError("must be of type %s." % self.type.__name__)
+        return value

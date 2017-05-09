@@ -161,7 +161,7 @@ class Observable(_STIXBase):
             ref = kwargs[prop_name]
             if ref not in self._STIXBase__valid_refs:
                 raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
-        if prop_name.endswith('_refs') and prop_name in kwargs:
+        elif prop_name.endswith('_refs') and prop_name in kwargs:
             for ref in kwargs[prop_name]:
                 if ref not in self._STIXBase__valid_refs:
                     raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)

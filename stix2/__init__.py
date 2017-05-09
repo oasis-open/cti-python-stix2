@@ -3,8 +3,9 @@
 # flake8: noqa
 
 from .bundle import Bundle
-from .observables import Artifact, AutonomousSystem, Directory, DomainName, EmailAddress, File, IPv4Address, \
-    IPv6Address, MACAddress, Mutex, NetworkTraffic, Process, Software, URL, UserAccount, WindowsRegistryKey, \
+from .observables import Artifact, AutonomousSystem, Directory, DomainName, \
+    EmailAddress, EmailMessage, File, IPv4Address, IPv6Address, MACAddress, \
+    Mutex, NetworkTraffic, Process, Software, URL, UserAccount, WindowsRegistryKey, \
     X509Certificate
 from .other import ExternalReference, KillChainPhase, MarkingDefinition, \
     GranularMarking, StatementMarking, TLPMarking
@@ -40,6 +41,7 @@ OBJ_MAP_OBSERVABLE = {
     'directory': Directory,
     'domain-name': DomainName,
     'email-address': EmailAddress,
+    'email-message': EmailMessage,
     'file': File,
     'ipv4-addr': IPv4Address,
     'ipv6-addr': IPv6Address,
