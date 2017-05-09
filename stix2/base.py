@@ -3,14 +3,12 @@
 import collections
 import copy
 import datetime as dt
-
 import json
 
-
-from .exceptions import ExtraFieldsError, ImmutableError, InvalidObjRefError, \
-                        InvalidValueError, MissingFieldsError, RevokeError, \
-                        UnmodifiablePropertyError
-from .utils import format_datetime, get_timestamp, NOW, parse_into_datetime
+from .exceptions import (ExtraFieldsError, ImmutableError, InvalidObjRefError,
+                         InvalidValueError, MissingFieldsError, RevokeError,
+                         UnmodifiablePropertyError)
+from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 

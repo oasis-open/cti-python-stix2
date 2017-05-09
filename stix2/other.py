@@ -4,7 +4,7 @@ from .base import _STIXBase
 from .properties import (IDProperty, ListProperty, Property, ReferenceProperty,
                          SelectorProperty, StringProperty, TimestampProperty,
                          TypeProperty)
-from .utils import get_dict, NOW
+from .utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):

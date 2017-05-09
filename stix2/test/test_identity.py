@@ -2,9 +2,11 @@ import datetime as dt
 
 import pytest
 import pytz
+
 import stix2
 
 from .constants import IDENTITY_ID
+
 
 EXPECTED = """{
     "created": "2015-12-21T19:59:11Z",

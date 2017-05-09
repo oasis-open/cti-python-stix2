@@ -2,9 +2,11 @@ import datetime as dt
 
 import pytest
 import pytz
+
 import stix2
 
 from .constants import ATTACK_PATTERN_ID
+
 
 EXPECTED = """{
     "created": "2016-05-12T08:17:27Z",

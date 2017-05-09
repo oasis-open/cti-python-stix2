@@ -3,9 +3,11 @@ import re
 
 import pytest
 import pytz
+
 import stix2
 
 from .constants import FAKE_TIME, INDICATOR_ID, INDICATOR_KWARGS
+
 
 EXPECTED_INDICATOR = """{
     "created": "2017-01-01T00:00:01Z",
