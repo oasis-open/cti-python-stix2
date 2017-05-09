@@ -5,7 +5,7 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-from .base import _STIXBase, Observable
+from .base import Observable, _STIXBase
 from .exceptions import ObjectConstraintError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, HashesProperty, HexProperty,
