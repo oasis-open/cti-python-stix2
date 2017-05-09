@@ -7,10 +7,11 @@ and do not have a '_type' attribute.
 
 from .base import _STIXBase, Observable
 from .exceptions import ObjectConstraintError
-from .properties import BinaryProperty, BooleanProperty, DictionaryProperty, \
-    EmbeddedObjectProperty, HashesProperty, HexProperty, IntegerProperty, \
-    ListProperty, ObjectReferenceProperty, Property, StringProperty, \
-    TimestampProperty, TypeProperty
+from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
+                         EmbeddedObjectProperty, HashesProperty, HexProperty,
+                         IntegerProperty, ListProperty,
+                         ObjectReferenceProperty, Property, StringProperty,
+                         TimestampProperty, TypeProperty)
 
 
 class Artifact(Observable):
