@@ -148,18 +148,21 @@ class _STIXBase(collections.Mapping):
 class Observable(_STIXBase):
 
     def __init__(self, **kwargs):
-        self._STIXBase__valid_refs = kwargs.pop('_valid_refs')
+        # the constructor might be called independently of an observed data object
+        if '_valid_refs' in kwargs:
+            self._STIXBase__valid_refs = kwargs.pop('_valid_refs')
+        else:
+            self._STIXBase__valid_refs = []
         super(Observable, self).__init__(**kwargs)
 
     def _check_property(self, prop_name, prop, kwargs):
         super(Observable, self)._check_property(prop_name, prop, kwargs)
-        if prop_name.endswith('_ref'):
-            ref = kwargs[prop_name].split('--', 1)[0]
+        if prop_name.endswith('_ref') and prop_name in kwargs:
+            ref = kwargs[prop_name]
             if ref not in self._STIXBase__valid_refs:
                 raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
-        if prop_name.endswith('_refs'):
-            for r in kwargs[prop_name]:
-                ref = r.split('--', 1)[0]
+        if prop_name.endswith('_refs') and prop_name in kwargs:
+            for ref in kwargs[prop_name]:
                 if ref not in self._STIXBase__valid_refs:
                     raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
         # TODO also check the type of the object referenced, not just that the key exists
