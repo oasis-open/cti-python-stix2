@@ -5,7 +5,7 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-from .base import Observable, _STIXBase
+from .base import _Observable, _STIXBase
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, HashesProperty, HexProperty,
                          IntegerProperty, ListProperty,
@@ -13,7 +13,7 @@ from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          TimestampProperty, TypeProperty)
 
 
-class Artifact(Observable):
+class Artifact(_Observable):
     _type = 'artifact'
     _properties = {
         'type': TypeProperty(_type),
@@ -24,7 +24,7 @@ class Artifact(Observable):
     }
 
 
-class AutonomousSystem(Observable):
+class AutonomousSystem(_Observable):
     _type = 'autonomous-system'
     _properties = {
         'type': TypeProperty(_type),
@@ -34,7 +34,7 @@ class AutonomousSystem(Observable):
     }
 
 
-class Directory(Observable):
+class Directory(_Observable):
     _type = 'directory'
     _properties = {
         'type': TypeProperty(_type),
@@ -48,7 +48,7 @@ class Directory(Observable):
     }
 
 
-class DomainName(Observable):
+class DomainName(_Observable):
     _type = 'domain-name'
     _properties = {
         'type': TypeProperty(_type),
@@ -57,7 +57,7 @@ class DomainName(Observable):
     }
 
 
-class EmailAddress(Observable):
+class EmailAddress(_Observable):
     _type = 'email-address'
     _properties = {
         'type': TypeProperty(_type),
@@ -76,7 +76,7 @@ class EmailMIMEComponent(_STIXBase):
     }
 
 
-class EmailMessage(Observable):
+class EmailMessage(_Observable):
     _type = 'email-message'
     _properties = {
         'type': TypeProperty(_type),
@@ -97,7 +97,7 @@ class EmailMessage(Observable):
     }
 
 
-class File(Observable):
+class File(_Observable):
     _type = 'file'
     _properties = {
         'type': TypeProperty(_type),
@@ -121,7 +121,7 @@ class File(Observable):
     }
 
 
-class IPv4Address(Observable):
+class IPv4Address(_Observable):
     _type = 'ipv4-addr'
     _properties = {
         'type': TypeProperty(_type),
@@ -131,7 +131,7 @@ class IPv4Address(Observable):
     }
 
 
-class IPv6Address(Observable):
+class IPv6Address(_Observable):
     _type = 'ipv6-addr'
     _properties = {
         'type': TypeProperty(_type),
@@ -141,7 +141,7 @@ class IPv6Address(Observable):
     }
 
 
-class MACAddress(Observable):
+class MACAddress(_Observable):
     _type = 'mac-addr'
     _properties = {
         'type': TypeProperty(_type),
@@ -149,7 +149,7 @@ class MACAddress(Observable):
     }
 
 
-class Mutex(Observable):
+class Mutex(_Observable):
     _type = 'mutex'
     _properties = {
         'type': TypeProperty(_type),
@@ -157,7 +157,7 @@ class Mutex(Observable):
     }
 
 
-class NetworkTraffic(Observable):
+class NetworkTraffic(_Observable):
     _type = 'network-traffic'
     _properties = {
         'type': TypeProperty(_type),
@@ -182,7 +182,7 @@ class NetworkTraffic(Observable):
     }
 
 
-class Process(Observable):
+class Process(_Observable):
     _type = 'process'
     _properties = {
         'type': TypeProperty(_type),
@@ -204,7 +204,7 @@ class Process(Observable):
     }
 
 
-class Software(Observable):
+class Software(_Observable):
     _type = 'software'
     _properties = {
         'type': TypeProperty(_type),
@@ -216,7 +216,7 @@ class Software(Observable):
     }
 
 
-class URL(Observable):
+class URL(_Observable):
     _type = 'url'
     _properties = {
         'type': TypeProperty(_type),
@@ -224,7 +224,7 @@ class URL(Observable):
     }
 
 
-class UserAccount(Observable):
+class UserAccount(_Observable):
     _type = 'user-account'
     _properties = {
         'type': TypeProperty(_type),
@@ -254,7 +254,7 @@ class WindowsRegistryValueType(_STIXBase):
     }
 
 
-class WindowsRegistryKey(Observable):
+class WindowsRegistryKey(_Observable):
     _type = 'windows-registry-key'
     _properties = {
         'type': TypeProperty(_type),
@@ -267,7 +267,7 @@ class WindowsRegistryKey(Observable):
     }
 
 
-class X509Certificate(Observable):
+class X509Certificate(_Observable):
     _type = 'x509-certificate'
     _properties = {
         'type': TypeProperty(_type),

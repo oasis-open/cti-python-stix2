@@ -143,7 +143,7 @@ class _STIXBase(collections.Mapping):
         return self.new_version(revoked=True)
 
 
-class Observable(_STIXBase):
+class _Observable(_STIXBase):
 
     def __init__(self, **kwargs):
         # the constructor might be called independently of an observed data object
@@ -151,10 +151,10 @@ class Observable(_STIXBase):
             self._STIXBase__valid_refs = kwargs.pop('_valid_refs')
         else:
             self._STIXBase__valid_refs = []
-        super(Observable, self).__init__(**kwargs)
+        super(_Observable, self).__init__(**kwargs)
 
     def _check_property(self, prop_name, prop, kwargs):
-        super(Observable, self)._check_property(prop_name, prop, kwargs)
+        super(_Observable, self)._check_property(prop_name, prop, kwargs)
         if prop_name.endswith('_ref') and prop_name in kwargs:
             ref = kwargs[prop_name]
             if ref not in self._STIXBase__valid_refs:

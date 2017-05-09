@@ -4,8 +4,8 @@ from .base import _STIXBase
 from .common import COMMON_PROPERTIES
 from .other import KillChainPhase
 from .properties import (IDProperty, IntegerProperty, ListProperty,
-                         ObservableProperty, ReferenceProperty,
-                         StringProperty, TimestampProperty, TypeProperty)
+                         ObservableProperty, ReferenceProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from .utils import NOW
 
 

@@ -5,10 +5,12 @@ import datetime as dt
 import inspect
 import re
 import uuid
-from six import text_type
-import pytz
+
 from dateutil import parser
-from .base import Observable, _STIXBase
+import pytz
+from six import text_type
+
+from .base import _Observable, _STIXBase
 from .exceptions import DictionaryKeyError
 
 
@@ -226,7 +228,7 @@ class ObservableProperty(Property):
         from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
             parsed_obj = parse_observable(obj, dictified.keys())
-            if not issubclass(type(parsed_obj), Observable):
+            if not issubclass(type(parsed_obj), _Observable):
                 raise ValueError("Objects in an observable property must be "
                                  "Cyber Observable Objects")
             dictified[key] = parsed_obj
