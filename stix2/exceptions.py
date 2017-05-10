@@ -60,7 +60,7 @@ class DictionaryKeyError(STIXError, ValueError):
         self.reason = reason
 
     def __str__(self):
-        msg = "Invliad dictionary key {0.key}: ({0.reason})."
+        msg = "Invalid dictionary key {0.key}: ({0.reason})."
         return msg.format(self)
 
 
@@ -88,6 +88,20 @@ class UnmodifiablePropertyError(STIXError, ValueError):
     def __str__(self):
         msg = "These properties cannot be changed when making a new version: {0}."
         return msg.format(", ".join(self.unchangable_properties))
+
+
+class ObjectConstraintError(STIXError, TypeError):
+    """Violating some interproperty constraint of a STIX object type."""
+
+    def __init__(self, cls, fields):
+        super(ObjectConstraintError, self).__init__()
+        self.cls = cls
+        self.fields = sorted(list(fields))
+
+    def __str__(self):
+        msg = "The field(s) for {0}: ({1}) are not consistent."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.fields))
 
 
 class RevokeError(STIXError, ValueError):

@@ -47,6 +47,12 @@ class _STIXBase(collections.Mapping):
             except ValueError as exc:
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
+    def _check_object_constaints(self):
+        if self.granular_markings:
+            for m in self.granular_markings:
+                # TODO: check selectors
+                pass
+
     def __init__(self, **kwargs):
         cls = self.__class__
 
@@ -75,10 +81,7 @@ class _STIXBase(collections.Mapping):
 
         self._inner = setting_kwargs
 
-        if self.granular_markings:
-            for m in self.granular_markings:
-                # TODO: check selectors
-                pass
+        self._check_object_constaints()
 
     def __getitem__(self, key):
         return self._inner[key]
@@ -113,6 +116,9 @@ class _STIXBase(collections.Mapping):
         new_inner = copy.deepcopy(self._inner, memo)
         cls = type(self)
         return cls(**new_inner)
+
+    def properties_populated(self):
+        return list(self._inner.keys())
 
 #  Versioning API
 

@@ -6,6 +6,7 @@ and do not have a '_type' attribute.
 """
 
 from .base import _Observable, _STIXBase
+from .exceptions import ObjectConstraintError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, HashesProperty, HexProperty,
                          IntegerProperty, ListProperty,
@@ -114,11 +115,23 @@ class File(_Observable):
         'accessed': TimestampProperty(),
         'parent_directory_ref': ObjectReferenceProperty(),
         'is_encrypted': BooleanProperty(),
-        'encyption_algorithm': StringProperty(),
+        'encryption_algorithm': StringProperty(),
         'decryption_key': StringProperty(),
         'contains_refs': ListProperty(ObjectReferenceProperty),
         'content_ref': ObjectReferenceProperty(),
     }
+
+    def _check_object_constaints(self):
+        super(File, self)._check_object_constaints()
+        illegal_properties = []
+        current_properties = self.properties_populated()
+        if not self.is_encrypted:
+            for p in ["encryption_algorithm", "decryption_key"]:
+                if p in current_properties:
+                    illegal_properties.append(p)
+        if illegal_properties:
+            illegal_properties.append("is_encrypted")
+            raise ObjectConstraintError(self.__class__, illegal_properties)
 
 
 class IPv4Address(_Observable):
@@ -259,7 +272,7 @@ class WindowsRegistryKey(_Observable):
     _properties = {
         'type': TypeProperty(_type),
         'key': StringProperty(required=True),
-        'values': ListProperty(WindowsRegistryValueType),
+        'values': ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType)),
         # this is not the modified timestamps of the object itself
         'modified': TimestampProperty(),
         'creator_user_ref': ObjectReferenceProperty(),
