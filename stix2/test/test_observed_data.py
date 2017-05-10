@@ -399,3 +399,20 @@ def test_software_example():
     assert s.cpe == "cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*"
     assert s.version == "2002"
     assert s.vendor == "Microsoft"
+
+
+def test_windows_registry_key_example():
+    with pytest.raises(ValueError):
+        v = stix2.WindowsRegistryValueType(name="Foo",
+                                           data="qwerty",
+                                           data_type="string")
+
+    v = stix2.WindowsRegistryValueType(name="Foo",
+                                       data="qwerty",
+                                       data_type="REG_SZ")
+    w = stix2.WindowsRegistryKey(key="hkey_local_machine\\system\\bar\\foo",
+                                 values=[v])
+    assert w.key == "hkey_local_machine\\system\\bar\\foo"
+    assert w.values[0].name == "Foo"
+    assert w.values[0].data == "qwerty"
+    assert w.values[0].data_type == "REG_SZ"

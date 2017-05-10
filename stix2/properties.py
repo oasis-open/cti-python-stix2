@@ -143,6 +143,7 @@ class StringProperty(Property):
 
 
 class TypeProperty(Property):
+
     def __init__(self, type):
         super(TypeProperty, self).__init__(fixed=type)
 
@@ -310,6 +311,7 @@ REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"
 
 
 class ReferenceProperty(Property):
+
     def __init__(self, required=False, type=None):
         """
         references sometimes must be to a specific object type
@@ -332,6 +334,7 @@ SELECTOR_REGEX = re.compile("^[a-z0-9_-]{3,250}(\\.(\\[\\d+\\]|[a-z0-9_-]{1,250}
 
 
 class SelectorProperty(Property):
+
     def __init__(self, type=None):
         # ignore type
         super(SelectorProperty, self).__init__()
@@ -347,6 +350,7 @@ class ObjectReferenceProperty(StringProperty):
 
 
 class EmbeddedObjectProperty(Property):
+
     def __init__(self, type, required=False):
         self.type = type
         super(EmbeddedObjectProperty, self).__init__(required, type=type)
@@ -357,3 +361,18 @@ class EmbeddedObjectProperty(Property):
         elif not isinstance(value, self.type):
             raise ValueError("must be of type %s." % self.type.__name__)
         return value
+
+
+class EnumProperty(StringProperty):
+
+    def __init__(self, allowed, **kwargs):
+        if type(allowed) is not list:
+            allowed = list(allowed)
+        self.allowed = allowed
+        super(EnumProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        value = super(EnumProperty, self).clean(value)
+        if value not in self.allowed:
+            raise ValueError("value '%s' is not valid for this enumeration." % value)
+        return self.string_type(value)

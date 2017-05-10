@@ -8,8 +8,8 @@ and do not have a '_type' attribute.
 from .base import _Observable, _STIXBase
 from .exceptions import ObjectConstraintError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, HashesProperty, HexProperty,
-                         IntegerProperty, ListProperty,
+                         EmbeddedObjectProperty, EnumProperty, HashesProperty,
+                         HexProperty, IntegerProperty, ListProperty,
                          ObjectReferenceProperty, Property, StringProperty,
                          TimestampProperty, TypeProperty)
 
@@ -263,7 +263,21 @@ class WindowsRegistryValueType(_STIXBase):
     _properties = {
         'name': StringProperty(required=True),
         'data': StringProperty(),
-        'data_type': Property()
+        'data_type': EnumProperty([
+            'REG_NONE',
+            'REG_SZ',
+            'REG_EXPAND_SZ',
+            'REG_BINARY',
+            'REG_DWORD',
+            'REG_DWORD_BIG_ENDIAN',
+            'REG_LINK',
+            'REG_MULTI_SZ',
+            'REG_RESOURCE_LIST',
+            'REG_FULL_RESOURCE_DESCRIPTION',
+            'REG_RESOURCE_REQUIREMENTS_LIST',
+            'REG_QWORD',
+            'REG_INVALID_TYPE',
+        ]),
     }
 
 
@@ -278,6 +292,11 @@ class WindowsRegistryKey(_Observable):
         'creator_user_ref': ObjectReferenceProperty(),
         'number_of_subkeys': IntegerProperty(),
     }
+
+    @property
+    def values(self):
+        # Needed because 'values' is a property on collections.Mapping objects
+        return self._inner['values']
 
 
 class X509Certificate(_Observable):

@@ -4,9 +4,9 @@ from stix2.exceptions import DictionaryKeyError
 from stix2.observables import EmailMIMEComponent
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
-                              HashesProperty, HexProperty, IDProperty,
-                              IntegerProperty, ListProperty, Property,
-                              ReferenceProperty, StringProperty,
+                              EnumProperty, HashesProperty, HexProperty,
+                              IDProperty, IntegerProperty, ListProperty,
+                              Property, ReferenceProperty, StringProperty,
                               TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME
@@ -247,3 +247,11 @@ def test_embedded_property():
 
     with pytest.raises(ValueError):
         emb_prop.clean("string")
+
+
+def test_enum_property():
+    enum_prop = EnumProperty(['a', 'b', 'c'])
+    assert enum_prop.clean('b')
+
+    with pytest.raises(ValueError):
+        enum_prop.clean('z')
