@@ -328,7 +328,7 @@ def test_file_example():
                    modified="2016-12-24T19:00:00Z",
                    accessed="2016-12-21T20:00:00Z",
                    is_encrypted=True,
-                   encyption_algorithm="AES128-CBC",
+                   encryption_algorithm="AES128-CBC",
                    decryption_key="fred"
                    )
 
@@ -341,19 +341,19 @@ def test_file_example():
     assert f.modified == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
     assert f.accessed == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
     assert f.is_encrypted
-    assert f.encyption_algorithm == "AES128-CBC"
+    assert f.encryption_algorithm == "AES128-CBC"
     assert f.decryption_key == "fred"   # does the key have a format we can test for?
 
 
-# def test_file_example_encyption_error():
-#     f = stix2.File(name="qwerty.dll",
-#                    is_encrypted=False,
-#                    encyption_algorithm="AES128-CBC"
-#                    )
-#
-#     assert f.name == "qwerty.dll"
-#     assert f.is_encrypted == False
-#     assert f.encyption_algorithm == "AES128-CBC"
+def test_file_example_encryption_error():
+    with pytest.raises(stix2.exceptions.ObjectConstraintError) as excinfo:
+        stix2.File(name="qwerty.dll",
+                   is_encrypted=False,
+                   encryption_algorithm="AES128-CBC"
+                   )
+
+    assert excinfo.value.cls == stix2.File
+    assert excinfo.value.fields == ["encryption_algorithm", "is_encrypted"]
 
 
 def test_ip4_address_example():
