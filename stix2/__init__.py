@@ -8,7 +8,7 @@ from .observables import (URL, Artifact, AutonomousSystem, Directory,
                           DomainName, EmailAddress, EmailMessage, EmailMIMEComponent, File,
                           IPv4Address, IPv6Address, MACAddress, Mutex,
                           NetworkTraffic, Process, Software, UserAccount,
-                          WindowsRegistryKey, X509Certificate)
+                          WindowsRegistryKey, WindowsRegistryValueType, X509Certificate)
 from .other import (ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
