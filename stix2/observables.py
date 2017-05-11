@@ -9,7 +9,7 @@ from .base import _Observable, _STIXBase
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, EnumProperty, HashesProperty,
                          HexProperty, IntegerProperty, ListProperty,
-                         ObjectReferenceProperty, Property, StringProperty,
+                         ObjectReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
 
 
@@ -305,9 +305,9 @@ class WindowsRegistryKey(_Observable):
 
     @property
     def values(self):
-      # Needed because 'values' is a property on collections.Mapping objects
+        # Needed because 'values' is a property on collections.Mapping objects
         return self._inner['values']
-      
+
 
 class X509V3ExtenstionsType(_STIXBase):
     _type = 'x509-v3-extensions-type'
@@ -329,7 +329,7 @@ class X509V3ExtenstionsType(_STIXBase):
         'certificate_policies': StringProperty(),
         'policy_mappings': StringProperty(),
     }
-    
+
 
 class X509Certificate(_Observable):
     _type = 'x509-certificate'

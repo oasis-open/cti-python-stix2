@@ -587,7 +587,7 @@ def test_software_example():
     assert s.version == "2002"
     assert s.vendor == "Microsoft"
 
-    
+
 def test_url_example():
     s = stix2.URL(value="https://example.com/research/index.html")
 
@@ -619,8 +619,8 @@ def test_user_account_example():
     assert a.password_last_changed == dt.datetime(2016, 1, 20, 14, 27, 43, tzinfo=pytz.utc)
     assert a.account_first_login == dt.datetime(2016, 1, 20, 14, 26, 7, tzinfo=pytz.utc)
     assert a.account_last_login == dt.datetime(2016, 7, 22, 16, 8, 28, tzinfo=pytz.utc)
-    
-    
+
+
 def test_windows_registry_key_example():
     with pytest.raises(ValueError):
         v = stix2.WindowsRegistryValueType(name="Foo",
@@ -648,4 +648,3 @@ def test_x509_certificate_example():
     assert x509.type == "x509-certificate"
     assert x509.issuer == "C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com"  # noqa
     assert x509.subject == "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org"  # noqa
-
