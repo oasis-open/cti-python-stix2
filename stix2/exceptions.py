@@ -90,16 +90,44 @@ class UnmodifiablePropertyError(STIXError, ValueError):
         return msg.format(", ".join(self.unchangable_properties))
 
 
-class ObjectConstraintError(STIXError, TypeError):
-    """Violating some interproperty constraint of a STIX object type."""
+class MutuallyExclusivePropertiesError(STIXError, TypeError):
+    """Violating interproperty mutually exclusive constraint of a STIX object type."""
 
     def __init__(self, cls, fields):
-        super(ObjectConstraintError, self).__init__()
+        super(MutuallyExclusivePropertiesError, self).__init__()
         self.cls = cls
         self.fields = sorted(list(fields))
 
     def __str__(self):
-        msg = "The field(s) for {0}: ({1}) are not consistent."
+        msg = "The field(s) for {0}: ({1}) are mutually exclusive."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.fields))
+
+
+class DependentPropertiestError(STIXError, TypeError):
+    """Violating interproperty dependency constraint of a STIX object type."""
+
+    def __init__(self, cls, dependencies):
+        super(DependentPropertiestError, self).__init__()
+        self.cls = cls
+        self.dependencies = dependencies
+
+    def __str__(self):
+        msg = "The property dependencies for {0}: ({1}) are not met."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.dependencies))
+
+
+class AtLeastOnePropertyError(STIXError, TypeError):
+    """Violating a constraint of a STIX object type that at least one of the given properties must be populated."""
+
+    def __init__(self, cls, fields):
+        super(AtLeastOnePropertyError, self).__init__()
+        self.cls = cls
+        self.fields = sorted(list(fields))
+
+    def __str__(self):
+        msg = "At least one of the field(s) for {0}: ({1}) must be populated."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.fields))
 

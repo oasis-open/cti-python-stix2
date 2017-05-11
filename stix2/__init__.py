@@ -5,7 +5,7 @@
 from . import exceptions
 from .bundle import Bundle
 from .observables import (URL, Artifact, AutonomousSystem, Directory,
-                          DomainName, EmailAddress, EmailMessage, File,
+                          DomainName, EmailAddress, EmailMessage, EmailMIMEComponent, File,
                           IPv4Address, IPv6Address, MACAddress, Mutex,
                           NetworkTraffic, Process, Software, UserAccount,
                           WindowsRegistryKey, X509Certificate)
