@@ -5,15 +5,15 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-from .base import Observable, _STIXBase
+from .base import _Observable, _STIXBase
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, HashesProperty, HexProperty,
-                         IntegerProperty, ListProperty,
+                         EmbeddedObjectProperty, EnumProperty, HashesProperty,
+                         HexProperty, IntegerProperty, ListProperty,
                          ObjectReferenceProperty, Property, StringProperty,
                          TimestampProperty, TypeProperty)
 
 
-class Artifact(Observable):
+class Artifact(_Observable):
     _type = 'artifact'
     _properties = {
         'type': TypeProperty(_type),
@@ -29,7 +29,7 @@ class Artifact(Observable):
         self._check_properties_dependency(["hashes"], ["url"])
 
 
-class AutonomousSystem(Observable):
+class AutonomousSystem(_Observable):
     _type = 'autonomous-system'
     _properties = {
         'type': TypeProperty(_type),
@@ -39,7 +39,7 @@ class AutonomousSystem(Observable):
     }
 
 
-class Directory(Observable):
+class Directory(_Observable):
     _type = 'directory'
     _properties = {
         'type': TypeProperty(_type),
@@ -53,7 +53,7 @@ class Directory(Observable):
     }
 
 
-class DomainName(Observable):
+class DomainName(_Observable):
     _type = 'domain-name'
     _properties = {
         'type': TypeProperty(_type),
@@ -62,7 +62,7 @@ class DomainName(Observable):
     }
 
 
-class EmailAddress(Observable):
+class EmailAddress(_Observable):
     _type = 'email-address'
     _properties = {
         'type': TypeProperty(_type),
@@ -85,7 +85,7 @@ class EmailMIMEComponent(_STIXBase):
         self._check_at_least_one_property(["body", "body_raw_ref"])
 
 
-class EmailMessage(Observable):
+class EmailMessage(_Observable):
     _type = 'email-message'
     _properties = {
         'type': TypeProperty(_type),
@@ -111,7 +111,7 @@ class EmailMessage(Observable):
         # self._dependency(["is_multipart"], ["body"], [False])
 
 
-class File(Observable):
+class File(_Observable):
     _type = 'file'
     _properties = {
         'type': TypeProperty(_type),
@@ -140,7 +140,7 @@ class File(Observable):
         self._check_at_least_one_property(["hashes", "name"])
 
 
-class IPv4Address(Observable):
+class IPv4Address(_Observable):
     _type = 'ipv4-addr'
     _properties = {
         'type': TypeProperty(_type),
@@ -150,7 +150,7 @@ class IPv4Address(Observable):
     }
 
 
-class IPv6Address(Observable):
+class IPv6Address(_Observable):
     _type = 'ipv6-addr'
     _properties = {
         'type': TypeProperty(_type),
@@ -160,7 +160,7 @@ class IPv6Address(Observable):
     }
 
 
-class MACAddress(Observable):
+class MACAddress(_Observable):
     _type = 'mac-addr'
     _properties = {
         'type': TypeProperty(_type),
@@ -168,7 +168,7 @@ class MACAddress(Observable):
     }
 
 
-class Mutex(Observable):
+class Mutex(_Observable):
     _type = 'mutex'
     _properties = {
         'type': TypeProperty(_type),
@@ -176,7 +176,7 @@ class Mutex(Observable):
     }
 
 
-class NetworkTraffic(Observable):
+class NetworkTraffic(_Observable):
     _type = 'network-traffic'
     _properties = {
         'type': TypeProperty(_type),
@@ -205,7 +205,7 @@ class NetworkTraffic(Observable):
         self._check_at_least_one_property(["src_ref", "dst_ref"])
 
 
-class Process(Observable):
+class Process(_Observable):
     _type = 'process'
     _properties = {
         'type': TypeProperty(_type),
@@ -227,7 +227,7 @@ class Process(Observable):
     }
 
 
-class Software(Observable):
+class Software(_Observable):
     _type = 'software'
     _properties = {
         'type': TypeProperty(_type),
@@ -239,7 +239,7 @@ class Software(Observable):
     }
 
 
-class URL(Observable):
+class URL(_Observable):
     _type = 'url'
     _properties = {
         'type': TypeProperty(_type),
@@ -247,7 +247,7 @@ class URL(Observable):
     }
 
 
-class UserAccount(Observable):
+class UserAccount(_Observable):
     _type = 'user-account'
     _properties = {
         'type': TypeProperty(_type),
@@ -273,11 +273,25 @@ class WindowsRegistryValueType(_STIXBase):
     _properties = {
         'name': StringProperty(required=True),
         'data': StringProperty(),
-        'data_type': Property()
+        'data_type': EnumProperty([
+            'REG_NONE',
+            'REG_SZ',
+            'REG_EXPAND_SZ',
+            'REG_BINARY',
+            'REG_DWORD',
+            'REG_DWORD_BIG_ENDIAN',
+            'REG_LINK',
+            'REG_MULTI_SZ',
+            'REG_RESOURCE_LIST',
+            'REG_FULL_RESOURCE_DESCRIPTION',
+            'REG_RESOURCE_REQUIREMENTS_LIST',
+            'REG_QWORD',
+            'REG_INVALID_TYPE',
+        ]),
     }
 
 
-class WindowsRegistryKey(Observable):
+class WindowsRegistryKey(_Observable):
     _type = 'windows-registry-key'
     _properties = {
         'type': TypeProperty(_type),
@@ -291,8 +305,9 @@ class WindowsRegistryKey(Observable):
 
     @property
     def values(self):
+      # Needed because 'values' is a property on collections.Mapping objects
         return self._inner['values']
-
+      
 
 class X509V3ExtenstionsType(_STIXBase):
     _type = 'x509-v3-extensions-type'
@@ -314,9 +329,9 @@ class X509V3ExtenstionsType(_STIXBase):
         'certificate_policies': StringProperty(),
         'policy_mappings': StringProperty(),
     }
+    
 
-
-class X509Certificate(Observable):
+class X509Certificate(_Observable):
     _type = 'x509-certificate'
     _properties = {
         'type': TypeProperty(_type),

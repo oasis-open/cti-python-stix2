@@ -587,7 +587,7 @@ def test_software_example():
     assert s.version == "2002"
     assert s.vendor == "Microsoft"
 
-
+    
 def test_url_example():
     s = stix2.URL(value="https://example.com/research/index.html")
 
@@ -619,26 +619,23 @@ def test_user_account_example():
     assert a.password_last_changed == dt.datetime(2016, 1, 20, 14, 27, 43, tzinfo=pytz.utc)
     assert a.account_first_login == dt.datetime(2016, 1, 20, 14, 26, 7, tzinfo=pytz.utc)
     assert a.account_last_login == dt.datetime(2016, 7, 22, 16, 8, 28, tzinfo=pytz.utc)
-
-
+    
+    
 def test_windows_registry_key_example():
-    rk = stix2.WindowsRegistryKey(key="hkey_local_machine\\system\\bar\\foo",
-                                  values=[{
-                                            "name": "Foo",
-                                            "data": "qwerty",
-                                            "data_type": "REG_SZ"
-                                          },
-                                          {
-                                            "name": "Bar",
-                                            "data": "42",
-                                            "data_type": "REG_DWORD"
-                                          }])
+    with pytest.raises(ValueError):
+        v = stix2.WindowsRegistryValueType(name="Foo",
+                                           data="qwerty",
+                                           data_type="string")
 
-    assert rk.type == "windows-registry-key"
-    assert rk.key == "hkey_local_machine\\system\\bar\\foo"
-    assert rk.values[0].name == "Foo"
-    assert rk.values[0].data == "qwerty"
-    assert rk.values[0].data_type == "REG_SZ"
+    v = stix2.WindowsRegistryValueType(name="Foo",
+                                       data="qwerty",
+                                       data_type="REG_SZ")
+    w = stix2.WindowsRegistryKey(key="hkey_local_machine\\system\\bar\\foo",
+                                 values=[v])
+    assert w.key == "hkey_local_machine\\system\\bar\\foo"
+    assert w.values[0].name == "Foo"
+    assert w.values[0].data == "qwerty"
+    assert w.values[0].data_type == "REG_SZ"
 
 
 def test_x509_certificate_example():
@@ -651,3 +648,4 @@ def test_x509_certificate_example():
     assert x509.type == "x509-certificate"
     assert x509.issuer == "C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com"  # noqa
     assert x509.subject == "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org"  # noqa
+
