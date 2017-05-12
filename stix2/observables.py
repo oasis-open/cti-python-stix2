@@ -6,11 +6,10 @@ and do not have a '_type' attribute.
 """
 
 from .base import _Observable, _STIXBase
-from .exceptions import ObjectConstraintError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, HashesProperty,
                          HexProperty, IntegerProperty, ListProperty,
-                         ObjectReferenceProperty, Property, StringProperty,
+                         ObjectReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
 
 
@@ -23,6 +22,11 @@ class Artifact(_Observable):
         'url': StringProperty(),
         'hashes': HashesProperty(),
     }
+
+    def _check_object_constaints(self):
+        super(Artifact, self)._check_object_constaints()
+        self._check_mutually_exclusive_properties(["payload_bin", "url"])
+        self._check_properties_dependency(["hashes"], ["url"])
 
 
 class AutonomousSystem(_Observable):
@@ -76,6 +80,10 @@ class EmailMIMEComponent(_STIXBase):
         'content_disposition': StringProperty(),
     }
 
+    def _check_object_constaints(self):
+        super(EmailMIMEComponent, self)._check_object_constaints()
+        self._check_at_least_one_property(["body", "body_raw_ref"])
+
 
 class EmailMessage(_Observable):
     _type = 'email-message'
@@ -96,6 +104,11 @@ class EmailMessage(_Observable):
         'body_multipart': ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent)),
         'raw_email_ref': ObjectReferenceProperty(),
     }
+
+    def _check_object_constaints(self):
+        super(EmailMessage, self)._check_object_constaints()
+        self._check_properties_dependency(["is_multipart"], ["body_multipart"])
+        # self._dependency(["is_multipart"], ["body"], [False])
 
 
 class ArchiveExt(_STIXBase):
@@ -131,15 +144,8 @@ class File(_Observable):
 
     def _check_object_constaints(self):
         super(File, self)._check_object_constaints()
-        illegal_properties = []
-        current_properties = self.properties_populated()
-        if not self.is_encrypted:
-            for p in ["encryption_algorithm", "decryption_key"]:
-                if p in current_properties:
-                    illegal_properties.append(p)
-        if illegal_properties:
-            illegal_properties.append("is_encrypted")
-            raise ObjectConstraintError(self.__class__, illegal_properties)
+        self._check_properties_dependency(["is_encrypted"], ["encryption_algorithm", "decryption_key"])
+        self._check_at_least_one_property(["hashes", "name"])
 
 
 class IPv4Address(_Observable):
@@ -190,7 +196,7 @@ class NetworkTraffic(_Observable):
         'dst_ref': ObjectReferenceProperty(),
         'src_port': IntegerProperty(),
         'dst_port': IntegerProperty(),
-        'protocols': ListProperty(StringProperty),
+        'protocols': ListProperty(StringProperty, required=True),
         'src_byte_count': IntegerProperty(),
         'dst_byte_count': IntegerProperty(),
         'src_packets': IntegerProperty(),
@@ -201,6 +207,10 @@ class NetworkTraffic(_Observable):
         'encapsulates_refs': ListProperty(ObjectReferenceProperty),
         'encapsulates_by_ref': ObjectReferenceProperty(),
     }
+
+    def _check_object_constaints(self):
+        super(NetworkTraffic, self)._check_object_constaints()
+        self._check_at_least_one_property(["src_ref", "dst_ref"])
 
 
 class Process(_Observable):
@@ -307,6 +317,28 @@ class WindowsRegistryKey(_Observable):
         return self._inner['values']
 
 
+class X509V3ExtenstionsType(_STIXBase):
+    _type = 'x509-v3-extensions-type'
+    _properties = {
+        'basic_constraints': StringProperty(),
+        'name_constraints': StringProperty(),
+        'policy_constraints': StringProperty(),
+        'key_usage': StringProperty(),
+        'extended_key_usage': StringProperty(),
+        'subject_key_identifier': StringProperty(),
+        'authority_key_identifier': StringProperty(),
+        'subject_alternative_name': StringProperty(),
+        'issuer_alternative_name': StringProperty(),
+        'subject_directory_attributes': StringProperty(),
+        'crl_distribution_points': StringProperty(),
+        'inhibit_any_policy': StringProperty(),
+        'private_key_usage_period_not_before': TimestampProperty(),
+        'private_key_usage_period_not_after': TimestampProperty(),
+        'certificate_policies': StringProperty(),
+        'policy_mappings': StringProperty(),
+    }
+
+
 class X509Certificate(_Observable):
     _type = 'x509-certificate'
     _properties = {
@@ -323,5 +355,5 @@ class X509Certificate(_Observable):
         'subject_public_key_algorithm': StringProperty(),
         'subject_public_key_modulus': StringProperty(),
         'subject_public_key_exponent': IntegerProperty(),
-        'x509_v3_extensions': Property(),
+        'x509_v3_extensions': EmbeddedObjectProperty(type=X509V3ExtenstionsType),
     }
