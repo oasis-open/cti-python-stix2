@@ -4,8 +4,8 @@
 
 from . import exceptions
 from .bundle import Bundle
-from .observables import (URL, Artifact, AutonomousSystem, Directory,
-                          DomainName, EmailAddress, EmailMessage,
+from .observables import (URL, ArchiveExt, Artifact, AutonomousSystem,
+                          Directory, DomainName, EmailAddress, EmailMessage,
                           EmailMIMEComponent, File, IPv4Address, IPv6Address,
                           MACAddress, Mutex, NetworkTraffic, Process, Software,
                           UserAccount, WindowsRegistryKey,
@@ -57,6 +57,14 @@ OBJ_MAP_OBSERVABLE = {
     'x509-certificate': X509Certificate,
 }
 
+EXT_MAP_FILE = {
+    'archive-ext': ArchiveExt,
+}
+
+EXT_MAP = {
+    'file': EXT_MAP_FILE,
+}
+
 
 def parse(data):
     """Deserialize a string or file-like object into a STIX object"""
@@ -90,6 +98,14 @@ def parse_observable(data, _valid_refs):
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        # TODO handle custom objects
+        # TODO handle custom observable objects
         raise ValueError("Can't parse unknown object type '%s'!" % obj['type'])
+
+    if 'extensions' in obj and obj['type'] in EXT_MAP:
+        for name, ext in obj['extensions'].items():
+            if name not in EXT_MAP[obj['type']]:
+                raise ValueError("Can't parse Unknown extension type '%s' for object type '%s'!" % (name, obj['type']))
+            ext_class = EXT_MAP[obj['type']][name]
+            obj['extensions'][name] = ext_class(**obj['extensions'][name])
+
     return obj_class(**obj)

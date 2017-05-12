@@ -278,6 +278,50 @@ def test_parse_email_message(data):
     assert odata.body_multipart[0].content_disposition == "inline"
 
 
+@pytest.mark.parametrize("data", [
+    """"0": {
+            "type": "file",
+            "hashes": {
+                "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+            }
+        },
+        "1": {
+            "type": "file",
+            "hashes": {
+                "SHA-256": "19c549ec2628b989382f6b280cbd7bb836a0b461332c0fe53511ce7d584b89d3"
+            }
+        },
+        "2": {
+            "type": "file",
+            "hashes": {
+                "SHA-256": "0969de02ecf8a5f003e3f6d063d848c8a193aada092623f8ce408c15bcb5f038"
+            }
+        },
+        "3": {
+            "type": "file",
+            "name": "foo.zip",
+            "hashes": {
+                "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+            },
+            "mime_type": "application/zip",
+            "extensions": {
+                "archive-ext": {
+                    "contains_refs": [
+                        "0",
+                        "1",
+                        "2"
+                    ],
+                    "version": "5.0"
+                }
+            }
+        }""",
+])
+def test_parse_file_address(data):
+    odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
+    odata = stix2.parse(odata_str)
+    assert odata.objects["3"].extensions['archive-ext'].version == "5.0"
+
+
 #  creating cyber observables directly
 
 def test_directory_example():

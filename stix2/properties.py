@@ -376,3 +376,7 @@ class EnumProperty(StringProperty):
         if value not in self.allowed:
             raise ValueError("value '%s' is not valid for this enumeration." % value)
         return self.string_type(value)
+
+
+class ExtensionsProperty(DictionaryProperty):
+    pass
