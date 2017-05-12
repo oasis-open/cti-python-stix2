@@ -15,6 +15,10 @@ class ExternalReference(_STIXBase):
         'external_id': StringProperty(),
     }
 
+    def _check_object_constaints(self):
+        super(ExternalReference, self)._check_object_constaints()
+        self._check_at_least_one_property(["description", "external_id", "url"])
+
 
 class KillChainPhase(_STIXBase):
     _properties = {
