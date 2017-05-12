@@ -5,9 +5,9 @@ import copy
 import datetime as dt
 import json
 
-from .exceptions import (ExtraFieldsError, ImmutableError, InvalidObjRefError,
-                         InvalidValueError, MissingFieldsError, RevokeError,
-                         UnmodifiablePropertyError)
+from .exceptions import (AtLeastOnePropertyError, DependentPropertiestError, ExtraFieldsError, ImmutableError,
+                         InvalidObjRefError, InvalidValueError, MissingFieldsError, MutuallyExclusivePropertiesError,
+                         RevokeError, UnmodifiablePropertyError)
 from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -46,6 +46,36 @@ class _STIXBase(collections.Mapping):
                 kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
+
+    # interproperty constraint methods
+
+    def _check_mutually_exclusive_properties(self, list_of_properties, at_least_one=True):
+        count = 0
+        current_properties = self.properties_populated()
+        for x in list_of_properties:
+            if x in current_properties:
+                count += 1
+        # at_least_one allows for xor to be checked
+        if count > 1 or (at_least_one and count == 0):
+            raise MutuallyExclusivePropertiesError(self.__class__, list_of_properties)
+
+    def _check_at_least_one_property(self, list_of_properties):
+        current_properties = self.properties_populated()
+        for x in list_of_properties:
+            if x in current_properties:
+                return
+        raise AtLeastOnePropertyError(self.__class__, list_of_properties)
+
+    def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
+        failed_dependency_pairs = []
+        current_properties = self.properties_populated()
+        for p in list_of_properties:
+            v = values.pop() if values else None
+            for dp in list_of_dependent_properties:
+                if dp in current_properties and (p not in current_properties or (v and not current_properties(p) == v)):
+                    failed_dependency_pairs.append((p, dp))
+        if failed_dependency_pairs:
+            raise DependentPropertiestError(self.__class__, failed_dependency_pairs)
 
     def _check_object_constaints(self):
         if self.granular_markings:
