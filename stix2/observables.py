@@ -7,7 +7,7 @@ and do not have a '_type' attribute.
 
 from .base import _Observable, _STIXBase
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty, HashesProperty,
+                         EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, HashesProperty,
                          HexProperty, IntegerProperty, ListProperty,
                          ObjectReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
@@ -111,11 +111,19 @@ class EmailMessage(_Observable):
         # self._dependency(["is_multipart"], ["body"], [False])
 
 
+class ArchiveExt(_STIXBase):
+    _properties = {
+        'contains_refs': ListProperty(ObjectReferenceProperty, required=True),
+        'version': StringProperty(),
+        'comment': StringProperty(),
+    }
+
+
 class File(_Observable):
     _type = 'file'
     _properties = {
         'type': TypeProperty(_type),
-        # extensions
+        'extensions': ExtensionsProperty(),
         'hashes': HashesProperty(),
         'size': IntegerProperty(),
         'name': StringProperty(),
