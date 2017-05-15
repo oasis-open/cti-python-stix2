@@ -57,7 +57,6 @@ class Identity(_STIXBase):
     _properties.update({
         'type': TypeProperty(_type),
         'id': IDProperty(_type),
-        'labels': ListProperty(StringProperty),
         'name': StringProperty(required=True),
         'description': StringProperty(),
         'identity_class': StringProperty(required=True),
