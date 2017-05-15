@@ -4,12 +4,17 @@
 
 from . import exceptions
 from .bundle import Bundle
-from .observables import (URL, ArchiveExt, Artifact, AutonomousSystem,
-                          Directory, DomainName, EmailAddress, EmailMessage,
-                          EmailMIMEComponent, File, IPv4Address, IPv6Address,
-                          MACAddress, Mutex, NetworkTraffic, Process, Software,
-                          UserAccount, WindowsRegistryKey,
-                          WindowsRegistryValueType, X509Certificate)
+from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
+                          AutonomousSystem, Directory, DomainName,
+                          EmailAddress, EmailMessage, EmailMIMEComponent, File,
+                          HTTPRequestExt, ICMPExt, IPv4Address, IPv6Address,
+                          MACAddress, Mutex, NetworkTraffic, NTFSExt, PDFExt,
+                          Process, RasterImageExt, SocketExt, Software, TCPExt,
+                          UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
+                          WindowsPEOptionalHeaderType, WindowsPESection,
+                          WindowsProcessExt, WindowsRegistryKey,
+                          WindowsRegistryValueType, WindowsServiceExt,
+                          X509Certificate, X509V3ExtenstionsType)
 from .other import (ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
@@ -59,10 +64,34 @@ OBJ_MAP_OBSERVABLE = {
 
 EXT_MAP_FILE = {
     'archive-ext': ArchiveExt,
+    'ntfs-ext': NTFSExt,
+    'pdf-ext': PDFExt,
+    'raster-image-ext': RasterImageExt,
+    'windows-pebinary-ext': WindowsPEBinaryExt
+}
+
+EXT_MAP_NETWORK_TRAFFIC = {
+    'http-request-ext': HTTPRequestExt,
+    'icmp-ext': ICMPExt,
+    'socket-ext': SocketExt,
+    'tcp-ext': TCPExt,
+}
+
+EXT_MAP_PROCESS = {
+    'windows-process-ext': WindowsProcessExt,
+    'windows-service-ext': WindowsServiceExt,
+}
+
+EXT_MAP_USER_ACCOUNT = {
+    'unix-account-ext': UNIXAccountExt,
 }
 
 EXT_MAP = {
     'file': EXT_MAP_FILE,
+    'network-traffic': EXT_MAP_NETWORK_TRAFFIC,
+    'process': EXT_MAP_PROCESS,
+    'user-account': EXT_MAP_USER_ACCOUNT,
+
 }
 
 

@@ -576,6 +576,28 @@ def test_file_example():
     assert f.decryption_key == "fred"   # does the key have a format we can test for?
 
 
+def test_file_example_with_PDFExt():
+    f = stix2.File(name="qwerty.dll",
+                   extensions={
+                       "pdf-ext": {
+                           "version": "1.7",
+                           "document_info_dict": {
+                               "Title": "Sample document",
+                               "Author": "Adobe Systems Incorporated",
+                               "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+                               "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+                               "CreationDate": "20070412090123-02"
+                           },
+                           "pdfid0": "DFCE52BD827ECF765649852119D",
+                           "pdfid1": "57A1E0F9ED2AE523E313C"
+                       }
+                   })
+
+    assert f.name == "qwerty.dll"
+    assert f.extensions["pdf-ext"].version == "1.7"
+    assert f.extensions["pdf-ext"].document_info_dict["Title"] == "Sample document"
+
+
 def test_file_example_encryption_error():
     with pytest.raises(stix2.exceptions.DependentPropertiestError) as excinfo:
         stix2.File(name="qwerty.dll",

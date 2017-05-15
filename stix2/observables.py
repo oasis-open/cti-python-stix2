@@ -7,8 +7,8 @@ and do not have a '_type' attribute.
 
 from .base import _Observable, _STIXBase
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, HashesProperty,
-                         HexProperty, IntegerProperty, ListProperty,
+                         EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+                         HashesProperty, HexProperty, IntegerProperty, ListProperty,
                          ObjectReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
 
@@ -119,11 +119,108 @@ class ArchiveExt(_STIXBase):
     }
 
 
+class AlternateDataStream(_STIXBase):
+    _properties = {
+        'name': StringProperty(required=True),
+        'hashes': HashesProperty(),
+        'size': IntegerProperty(),
+    }
+
+
+class NTFSExt(_STIXBase):
+    _properties = {
+        'sid': StringProperty(),
+        'alternate_data_streams': ListProperty(EmbeddedObjectProperty(type=AlternateDataStream)),
+    }
+
+
+class PDFExt(_STIXBase):
+    _properties = {
+        'version': StringProperty(),
+        'is_optimized': BooleanProperty(),
+        'document_info_dict': DictionaryProperty(),
+        'pdfid0': StringProperty(),
+        'pdfid1': StringProperty(),
+    }
+
+
+class RasterImageExt(_STIXBase):
+    _properties = {
+        'image_height': IntegerProperty(),
+        'image_weight': IntegerProperty(),
+        'bits_per_pixel': IntegerProperty(),
+        'image_compression_algorithm': StringProperty(),
+        'exif_tags': DictionaryProperty(),
+    }
+
+
+class WindowsPEOptionalHeaderType(_STIXBase):
+    _properties = {
+        'magic_hex': HexProperty(),
+        'major_linker_version': IntegerProperty(),
+        'minor_linker_version': IntegerProperty(),
+        'size_of_code': IntegerProperty(),
+        'size_of_initialized_data': IntegerProperty(),
+        'size_of_uninitialized_data': IntegerProperty(),
+        'address_of_entry_point': IntegerProperty(),
+        'base_of_code': IntegerProperty(),
+        'base_of_data': IntegerProperty(),
+        'image_base': IntegerProperty(),
+        'section_alignment': IntegerProperty(),
+        'file_alignment': IntegerProperty(),
+        'major_os_version': IntegerProperty(),
+        'minor_os_version': IntegerProperty(),
+        'major_image_version': IntegerProperty(),
+        'minor_image_version': IntegerProperty(),
+        'major_subsystem_version': IntegerProperty(),
+        'minor_subsystem_version': IntegerProperty(),
+        'win32_version_value_hex': HexProperty(),
+        'size_of_image': IntegerProperty(),
+        'size_of_headers': IntegerProperty(),
+        'checksum_hex': HexProperty(),
+        'subsystem_hex': HexProperty(),
+        'dll_characteristics_hex': HexProperty(),
+        'size_of_stack_reserve': IntegerProperty(),
+        'size_of_stack_commit': IntegerProperty(),
+        'size_of_heap_reserve': IntegerProperty(),
+        'size_of_heap_commit': IntegerProperty(),
+        'loader_fkags_hex': HexProperty(),
+        'number_of_rva_and_sizes': IntegerProperty(),
+        'hashes': HashesProperty(),
+    }
+
+
+class WindowsPESection(_STIXBase):
+    _properties = {
+        'name': StringProperty(required=True),
+        'size': IntegerProperty(),
+        'entropy': FloatProperty(),
+        'hashes': HashesProperty(),
+    }
+
+
+class WindowsPEBinaryExt(_STIXBase):
+    _properties = {
+        'pe_type': StringProperty(required=True),  # open_vocab
+        'imphash': StringProperty(),
+        'machine_hex': HexProperty(),
+        'number_of_sections': IntegerProperty(),
+        'time_date_stamp': TimestampProperty(),
+        'pointer_to_symbol_table_hex': HexProperty(),
+        'number_of_symbols': IntegerProperty(),
+        'size_of_optional_header': IntegerProperty(),
+        'characteristics_hex': HexProperty(),
+        'file_header_hashes': HashesProperty(),
+        'optional_header': EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType),
+        'sections': ListProperty(EmbeddedObjectProperty(type=WindowsPESection)),
+    }
+
+
 class File(_Observable):
     _type = 'file'
     _properties = {
         'type': TypeProperty(_type),
-        'extensions': ExtensionsProperty(),
+        'extensions': ExtensionsProperty(enclosing_type=_type),
         'hashes': HashesProperty(),
         'size': IntegerProperty(),
         'name': StringProperty(),
@@ -184,11 +281,69 @@ class Mutex(_Observable):
     }
 
 
+class HTTPRequestExt(_STIXBase):
+    _properties = {
+        'request_method': StringProperty(),
+        'request_value': StringProperty(),
+        'request_version': StringProperty(),
+        'request_header': DictionaryProperty(),
+        'message_body_length': IntegerProperty(),
+        'message_body_data_ref': ObjectReferenceProperty(),
+    }
+
+
+class ICMPExt(_STIXBase):
+    _properties = {
+        'icmp_type_hex': HexProperty(),
+        'icmp_code_hex': HexProperty(),
+    }
+
+
+class SocketExt(_STIXBase):
+    _properties = {
+        'address_family': EnumProperty([
+            "AF_UNSPEC",
+            "AF_INET",
+            "AF_IPX",
+            "AF_APPLETALK",
+            "AF_NETBIOS",
+            "AF_INET6",
+            "AF_IRDA",
+            "AF_BTH",
+        ]),
+        'is_blocking': BooleanProperty(),
+        'is_listening': BooleanProperty(),
+        'protocol_family': EnumProperty([
+            "PF_INET",
+            "PF_IPX",
+            "PF_APPLETALK",
+            "PF_INET6",
+            "PF_AX25",
+            "PF_NETROM"
+        ]),
+        'options': DictionaryProperty(),
+        'socket_type': EnumProperty([
+            "SOCK_STREAM",
+            "SOCK_DGRAM",
+            "SOCK_RAW",
+            "SOCK_RDM",
+            "SOCK_SEQPACKET",
+        ]),
+    }
+
+
+class TCPExt(_STIXBase):
+    _properties = {
+        'src_flags_hex': HexProperty(),
+        'dst_flags_hex': HexProperty(),
+    }
+
+
 class NetworkTraffic(_Observable):
     _type = 'network-traffic'
     _properties = {
         'type': TypeProperty(_type),
-        # extensions
+        'extensions': ExtensionsProperty(enclosing_type=_type),
         'start': TimestampProperty(),
         'end': TimestampProperty(),
         'is_active': BooleanProperty(),
@@ -213,11 +368,54 @@ class NetworkTraffic(_Observable):
         self._check_at_least_one_property(["src_ref", "dst_ref"])
 
 
+class WindowsProcessExt(_STIXBase):
+    _properties = {
+        'aslr_enabled': BooleanProperty(),
+        'dep_enabled': BooleanProperty(),
+        'priority': StringProperty(),
+        'owner_sid': StringProperty(),
+        'window_title': StringProperty(),
+        'startup_info': DictionaryProperty(),
+    }
+
+
+class WindowsServiceExt(_STIXBase):
+    _properties = {
+        'service_name': StringProperty(),
+        'descriptions': ListProperty(StringProperty),
+        'display_name': StringProperty(),
+        'group_name': StringProperty(),
+        'start_type': EnumProperty([
+            "SERVICE_AUTO_START",
+            "SERVICE_BOOT_START",
+            "SERVICE_DEMAND_START",
+            "SERVICE_DISABLED",
+            "SERVICE_SYSTEM_ALERT",
+        ]),
+        'service_dll_refs': ListProperty(ObjectReferenceProperty),
+        'service_type': EnumProperty([
+            "SERVICE_KERNEL_DRIVER",
+            "SERVICE_FILE_SYSTEM_DRIVER",
+            "SERVICE_WIN32_OWN_PROCESS",
+            "SERVICE_WIN32_SHARE_PROCESS",
+        ]),
+        'service_status': EnumProperty([
+            "SERVICE_CONTINUE_PENDING",
+            "SERVICE_PAUSE_PENDING",
+            "SERVICE_PAUSED",
+            "SERVICE_RUNNING",
+            "SERVICE_START_PENDING",
+            "SERVICE_STOP_PENDING",
+            "SERVICE_STOPPED",
+        ]),
+    }
+
+
 class Process(_Observable):
     _type = 'process'
     _properties = {
         'type': TypeProperty(_type),
-        # extensions
+        'extensions': ExtensionsProperty(enclosing_type=_type),
         'is_hidden': BooleanProperty(),
         'pid': IntegerProperty(),
         'name': StringProperty(),
@@ -255,14 +453,23 @@ class URL(_Observable):
     }
 
 
+class UNIXAccountExt(_STIXBase):
+    _properties = {
+        'gid': IntegerProperty(),
+        'groups': ListProperty(StringProperty),
+        'home_dir': StringProperty(),
+        'shell': StringProperty(),
+    }
+
+
 class UserAccount(_Observable):
     _type = 'user-account'
     _properties = {
         'type': TypeProperty(_type),
-        # extensions
+        'extensions': ExtensionsProperty(enclosing_type=_type),
         'user_id': StringProperty(required=True),
         'account_login': StringProperty(),
-        'account_type': StringProperty(),
+        'account_type': StringProperty(),   # open vocab
         'display_name': StringProperty(),
         'is_service_account': BooleanProperty(),
         'is_privileged': BooleanProperty(),
