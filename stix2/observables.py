@@ -283,8 +283,8 @@ class Mutex(_Observable):
 
 class HTTPRequestExt(_STIXBase):
     _properties = {
-        'request_method': StringProperty(),
-        'request_value': StringProperty(),
+        'request_method': StringProperty(required=True),
+        'request_value': StringProperty(required=True),
         'request_version': StringProperty(),
         'request_header': DictionaryProperty(),
         'message_body_length': IntegerProperty(),
@@ -294,8 +294,8 @@ class HTTPRequestExt(_STIXBase):
 
 class ICMPExt(_STIXBase):
     _properties = {
-        'icmp_type_hex': HexProperty(),
-        'icmp_code_hex': HexProperty(),
+        'icmp_type_hex': HexProperty(required=True),
+        'icmp_code_hex': HexProperty(required=True),
     }
 
 
@@ -310,7 +310,7 @@ class SocketExt(_STIXBase):
             "AF_INET6",
             "AF_IRDA",
             "AF_BTH",
-        ]),
+        ], required=True),
         'is_blocking': BooleanProperty(),
         'is_listening': BooleanProperty(),
         'protocol_family': EnumProperty([
@@ -381,7 +381,7 @@ class WindowsProcessExt(_STIXBase):
 
 class WindowsServiceExt(_STIXBase):
     _properties = {
-        'service_name': StringProperty(),
+        'service_name': StringProperty(required=True),
         'descriptions': ListProperty(StringProperty),
         'display_name': StringProperty(),
         'group_name': StringProperty(),
