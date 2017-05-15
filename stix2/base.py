@@ -50,21 +50,16 @@ class _STIXBase(collections.Mapping):
     # interproperty constraint methods
 
     def _check_mutually_exclusive_properties(self, list_of_properties, at_least_one=True):
-        count = 0
         current_properties = self.properties_populated()
-        for x in list_of_properties:
-            if x in current_properties:
-                count += 1
+        count = len(set(list_of_properties).intersection(current_properties))
         # at_least_one allows for xor to be checked
         if count > 1 or (at_least_one and count == 0):
             raise MutuallyExclusivePropertiesError(self.__class__, list_of_properties)
 
     def _check_at_least_one_property(self, list_of_properties):
         current_properties = self.properties_populated()
-        for x in list_of_properties:
-            if x in current_properties:
-                return
-        raise AtLeastOnePropertyError(self.__class__, list_of_properties)
+        if not set(list_of_properties).intersection(current_properties):
+            raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
         failed_dependency_pairs = []
