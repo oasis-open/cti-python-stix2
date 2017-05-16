@@ -114,4 +114,4 @@ def test_external_reference_source_required():
         stix2.ExternalReference()
 
     assert excinfo.value.cls == stix2.ExternalReference
-    assert excinfo.value.fields == ["source_name"]
+    assert excinfo.value.properties == ["source_name"]

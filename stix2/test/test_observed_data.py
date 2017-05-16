@@ -369,7 +369,7 @@ def test_parse_email_message_with_at_least_one_error(data):
         stix2.parse_observable(data, [str(i) for i in range(1, 6)])
 
     assert excinfo.value.cls == stix2.EmailMIMEComponent
-    assert excinfo.value.fields == ["body", "body_raw_ref"]
+    assert excinfo.value.properties == ["body", "body_raw_ref"]
 
 
 @pytest.mark.parametrize("data", [
@@ -416,7 +416,7 @@ def test_parse_basic_tcp_traffic_with_error(data):
         stix2.parse_observable(data, ["4"])
 
     assert excinfo.value.cls == stix2.NetworkTraffic
-    assert excinfo.value.fields == ["dst_ref", "src_ref"]
+    assert excinfo.value.properties == ["dst_ref", "src_ref"]
 
 
 EXPECTED_PROCESS_OD = """{
@@ -508,7 +508,7 @@ def test_artifact_mutual_exclusion_error():
                        payload_bin="VBORw0KGgoAAAANSUhEUgAAADI==")
 
     assert excinfo.value.cls == stix2.Artifact
-    assert excinfo.value.fields == ["payload_bin", "url"]
+    assert excinfo.value.properties == ["payload_bin", "url"]
 
 
 def test_directory_example():

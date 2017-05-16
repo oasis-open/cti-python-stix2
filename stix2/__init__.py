@@ -123,7 +123,7 @@ def parse_observable(data, _valid_refs):
     obj['_valid_refs'] = _valid_refs
 
     if 'type' not in obj:
-        raise ValueError("'type' is a required field!")
+        raise ValueError("'type' is a required property!")
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:

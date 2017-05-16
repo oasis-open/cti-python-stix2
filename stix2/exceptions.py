@@ -17,31 +17,31 @@ class InvalidValueError(STIXError, ValueError):
 
 
 class MissingFieldsError(STIXError, ValueError):
-    """Missing required field(s) when constructing STIX object."""
+    """Missing one or more required properties when constructing STIX object."""
 
-    def __init__(self, cls, fields):
+    def __init__(self, cls, properties):
         super(MissingFieldsError, self).__init__()
         self.cls = cls
-        self.fields = sorted(list(fields))
+        self.properties = sorted(list(properties))
 
     def __str__(self):
-        msg = "No values for required field(s) for {0}: ({1})."
+        msg = "No values for required properties for {0}: ({1})."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.fields))
+                          ", ".join(x for x in self.properties))
 
 
 class ExtraFieldsError(STIXError, TypeError):
-    """Extra field(s) were provided when constructing STIX object."""
+    """One or more extra properties were provided when constructing STIX object."""
 
-    def __init__(self, cls, fields):
+    def __init__(self, cls, properties):
         super(ExtraFieldsError, self).__init__()
         self.cls = cls
-        self.fields = sorted(list(fields))
+        self.properties = sorted(list(properties))
 
     def __str__(self):
-        msg = "Unexpected field(s) for {0}: ({1})."
+        msg = "Unexpected properties for {0}: ({1})."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.fields))
+                          ", ".join(x for x in self.properties))
 
 
 class ImmutableError(STIXError, ValueError):
@@ -93,15 +93,15 @@ class UnmodifiablePropertyError(STIXError, ValueError):
 class MutuallyExclusivePropertiesError(STIXError, TypeError):
     """Violating interproperty mutually exclusive constraint of a STIX object type."""
 
-    def __init__(self, cls, fields):
+    def __init__(self, cls, properties):
         super(MutuallyExclusivePropertiesError, self).__init__()
         self.cls = cls
-        self.fields = sorted(list(fields))
+        self.properties = sorted(list(properties))
 
     def __str__(self):
         msg = "The field(s) for {0}: ({1}) are mutually exclusive."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.fields))
+                          ", ".join(x for x in self.properties))
 
 
 class DependentPropertiestError(STIXError, TypeError):
@@ -121,15 +121,15 @@ class DependentPropertiestError(STIXError, TypeError):
 class AtLeastOnePropertyError(STIXError, TypeError):
     """Violating a constraint of a STIX object type that at least one of the given properties must be populated."""
 
-    def __init__(self, cls, fields):
+    def __init__(self, cls, properties):
         super(AtLeastOnePropertyError, self).__init__()
         self.cls = cls
-        self.fields = sorted(list(fields))
+        self.properties = sorted(list(properties))
 
     def __str__(self):
         msg = "At least one of the field(s) for {0}: ({1}) must be populated."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.fields))
+                          ", ".join(x for x in self.properties))
 
 
 class RevokeError(STIXError, ValueError):

@@ -45,7 +45,7 @@ class Property(object):
         - provide a default value for this property.
         - `default()` can return the special value `NOW` to use the current
             time. This is useful when several timestamps in the same object need
-            to use the same default value, so calling now() for each field--
+            to use the same default value, so calling now() for each property--
             likely several microseconds apart-- does not work.
 
     Subclasses can instead provide a lambda function for `default` as a keyword
@@ -53,7 +53,7 @@ class Property(object):
     raise their own exceptions.
 
     When instantiating Properties, `required` and `default` should not be used
-    together. `default` implies that the field is required in the specification
+    together. `default` implies that the property is required in the specification
     so this function will be used to supply a value if none is provided.
     `required` means that the user must provide this; it is required in the
     specification and we can't or don't want to create a default value.

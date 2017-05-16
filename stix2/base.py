@@ -12,7 +12,7 @@ from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
-DEFAULT_ERROR = "{type} must have {field}='{expected}'."
+DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 
 
 class STIXJSONEncoder(json.JSONEncoder):
@@ -95,9 +95,9 @@ class _STIXBase(collections.Mapping):
             if prop_value:
                 setting_kwargs[prop_name] = prop_value
 
-        # Detect any missing required fields
-        required_fields = get_required_properties(cls._properties)
-        missing_kwargs = set(required_fields) - set(setting_kwargs)
+        # Detect any missing required properties
+        required_properties = get_required_properties(cls._properties)
+        missing_kwargs = set(required_properties) - set(setting_kwargs)
         if missing_kwargs:
             raise MissingFieldsError(cls, missing_kwargs)
 
