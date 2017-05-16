@@ -184,7 +184,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         'size_of_stack_commit': IntegerProperty(),
         'size_of_heap_reserve': IntegerProperty(),
         'size_of_heap_commit': IntegerProperty(),
-        'loader_fkags_hex': HexProperty(),
+        'loader_flags_hex': HexProperty(),
         'number_of_rva_and_sizes': IntegerProperty(),
         'hashes': HashesProperty(),
     }

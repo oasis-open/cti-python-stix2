@@ -598,6 +598,115 @@ def test_file_example_with_PDFExt():
     assert f.extensions["pdf-ext"].document_info_dict["Title"] == "Sample document"
 
 
+def test_file_example_with_PDFExt_Object():
+    f = stix2.File(name="qwerty.dll",
+                   extensions={
+                       "pdf-ext":
+                           stix2.PDFExt(version="1.7",
+                                        document_info_dict={
+                                                    "Title": "Sample document",
+                                                    "Author": "Adobe Systems Incorporated",
+                                                    "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+                                                    "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+                                                    "CreationDate": "20070412090123-02"
+                                        },
+                                        pdfid0="DFCE52BD827ECF765649852119D",
+                                        pdfid1="57A1E0F9ED2AE523E313C")
+
+                   })
+
+    assert f.name == "qwerty.dll"
+    assert f.extensions["pdf-ext"].version == "1.7"
+    assert f.extensions["pdf-ext"].document_info_dict["Title"] == "Sample document"
+
+
+def test_file_example_with_RasterImageExt_Object():
+    f = stix2.File(name="qwerty.jpeg",
+                   extensions={
+                        "raster-image-ext": {
+                                "bits_per_pixel": 123,
+                                "exif_tags": {
+                                    "Make": "Nikon",
+                                    "Model": "D7000",
+                                    "XResolution": 4928,
+                                    "YResolution": 3264
+                                }
+                        }
+                   })
+    assert f.name == "qwerty.jpeg"
+    assert f.extensions["raster-image-ext"].bits_per_pixel == 123
+    assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
+
+
+def test_file_example_with_WindowsPEBinaryExt():
+    f = stix2.File(name="qwerty.dll",
+                   extensions={
+                       "windows-pebinary-ext": {
+                            "pe_type": "exe",
+                            "machine_hex": "014c",
+                            "number_of_sections": 4,
+                            "time_date_stamp": "2016-01-22T12:31:12Z",
+                            "pointer_to_symbol_table_hex": "74726144",
+                            "number_of_symbols": 4542568,
+                            "size_of_optional_header": 224,
+                            "characteristics_hex": "818f",
+                            "optional_header": {
+                              "magic_hex": "010b",
+                              "major_linker_version": 2,
+                              "minor_linker_version": 25,
+                              "size_of_code": 512,
+                              "size_of_initialized_data": 283648,
+                              "size_of_uninitialized_data": 0,
+                              "address_of_entry_point": 4096,
+                              "base_of_code": 4096,
+                              "base_of_data": 8192,
+                              "image_base": 14548992,
+                              "section_alignment": 4096,
+                              "file_alignment": 4096,
+                              "major_os_version": 1,
+                              "minor_os_version": 0,
+                              "major_image_version": 0,
+                              "minor_image_version": 0,
+                              "major_subsystem_version": 4,
+                              "minor_subsystem_version": 0,
+                              "win32_version_value_hex": "00",
+                              "size_of_image": 299008,
+                              "size_of_headers": 4096,
+                              "checksum_hex": "00",
+                              "subsystem_hex": "03",
+                              "dll_characteristics_hex": "00",
+                              "size_of_stack_reserve": 100000,
+                              "size_of_stack_commit": 8192,
+                              "size_of_heap_reserve": 100000,
+                              "size_of_heap_commit": 4096,
+                              "loader_flags_hex": "abdbffde",
+                              "number_of_rva_and_sizes": 3758087646
+                            },
+                            "sections": [
+                              {
+                                "name": "CODE",
+                                "entropy": 0.061089
+                              },
+                              {
+                                "name": "DATA",
+                                "entropy": 7.980693
+                              },
+                              {
+                                "name": "NicolasB",
+                                "entropy": 0.607433
+                              },
+                              {
+                                "name": ".idata",
+                                "entropy": 0.607433
+                              }
+                            ]
+                        }
+
+                   })
+    assert f.name == "qwerty.dll"
+    assert f.extensions["windows-pebinary-ext"].sections[2].entropy == 0.607433
+
+
 def test_file_example_encryption_error():
     with pytest.raises(stix2.exceptions.DependentPropertiestError) as excinfo:
         stix2.File(name="qwerty.dll",
@@ -640,6 +749,56 @@ def test_mutex_example():
     m = stix2.Mutex(name="barney")
 
     assert m.name == "barney"
+
+
+def test_process_example_with_WindowsProcessExt_Object():
+    f = stix2.Process(extensions={
+                        "windows-process-ext": stix2.WindowsProcessExt(aslr_enabled=True,
+                                                                       dep_enabled=True,
+                                                                       priority="HIGH_PRIORITY_CLASS",
+                                                                       owner_sid="S-1-5-21-186985262-1144665072-74031268-1309")   # noqa
+                   })
+
+    assert f.extensions["windows-process-ext"].dep_enabled
+    assert f.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
+
+
+def test_process_example_with_WindowsServiceExt():
+    f = stix2.Process(extensions={
+                        "windows-service-ext": {
+                            "service_name": "sirvizio",
+                            "display_name": "Sirvizio",
+                            "start_type": "SERVICE_AUTO_START",
+                            "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                            "service_status": "SERVICE_RUNNING"
+                        }
+    })
+
+    assert f.extensions["windows-service-ext"].service_name == "sirvizio"
+    assert f.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
+
+
+def test_process_example_with_WindowsProcessServiceExt():
+    f = stix2.Process(extensions={
+        "windows-service-ext": {
+            "service_name": "sirvizio",
+            "display_name": "Sirvizio",
+            "start_type": "SERVICE_AUTO_START",
+            "service_type": "SERVICE_WIN32_OWN_PROCESS",
+            "service_status": "SERVICE_RUNNING"
+        },
+        "windows-process-ext": {
+            "aslr_enabled": True,
+            "dep_enabled": True,
+            "priority": "HIGH_PRIORITY_CLASS",
+            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
+        }
+    })
+
+    assert f.extensions["windows-service-ext"].service_name == "sirvizio"
+    assert f.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
+    assert f.extensions["windows-process-ext"].dep_enabled
+    assert f.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_software_example():
