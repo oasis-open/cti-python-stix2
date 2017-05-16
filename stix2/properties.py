@@ -104,6 +104,12 @@ class ListProperty(Property):
             iter(value)
         except TypeError:
             raise ValueError("must be an iterable.")
+        try:
+            if isinstance(value, basestring):
+                value = [value]
+        except NameError:
+            if isinstance(value, str):
+                value = [value]
 
         result = []
         for item in value:

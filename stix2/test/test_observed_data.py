@@ -636,6 +636,72 @@ def test_mac_address_example():
     assert ip6.value == "d2:fb:49:24:37:18"
 
 
+def test_network_traffic_example():
+    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+                              protocols="tcp",
+                              src_ref="0",
+                              dst_ref="1")
+    assert nt.protocols == ["tcp"]
+    assert nt.src_ref == "0"
+    assert nt.dst_ref == "1"
+
+
+def test_network_traffic_http_request_example():
+    h = stix2.HTTPRequestExt(request_method="get",
+                             request_value="/download.html",
+                             request_version="http/1.1",
+                             request_header={
+                                 "Accept-Encoding": "gzip,deflate",
+                                 "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
+                                 "Host": "www.example.com"
+                             })
+    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+                              protocols="tcp",
+                              src_ref="0",
+                              extensions={'http-request-ext': h})
+    assert nt.extensions['http-request-ext'].request_method == "get"
+    assert nt.extensions['http-request-ext'].request_value == "/download.html"
+    assert nt.extensions['http-request-ext'].request_version == "http/1.1"
+    assert nt.extensions['http-request-ext'].request_header['Accept-Encoding'] == "gzip,deflate"
+    assert nt.extensions['http-request-ext'].request_header['User-Agent'] == "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113"
+    assert nt.extensions['http-request-ext'].request_header['Host'] == "www.example.com"
+
+
+def test_network_traffic_icmp_example():
+    h = stix2.ICMPExt(icmp_type_hex="08",
+                      icmp_code_hex="00")
+    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+                              protocols="tcp",
+                              src_ref="0",
+                              extensions={'icmp-ext': h})
+    assert nt.extensions['icmp-ext'].icmp_type_hex == "08"
+    assert nt.extensions['icmp-ext'].icmp_code_hex == "00"
+
+
+def test_network_traffic_socket_example():
+    h = stix2.SocketExt(is_listening=True,
+                        address_family="AF_INET",
+                        protocol_family="PF_INET",
+                        socket_type="SOCK_STREAM")
+    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+                              protocols="tcp",
+                              src_ref="0",
+                              extensions={'socket-ext': h})
+    assert nt.extensions['socket-ext'].is_listening
+    assert nt.extensions['socket-ext'].address_family == "AF_INET"
+    assert nt.extensions['socket-ext'].protocol_family == "PF_INET"
+    assert nt.extensions['socket-ext'].socket_type == "SOCK_STREAM"
+
+
+def test_network_traffic_tcp_example():
+    h = stix2.TCPExt(src_flags_hex="00000002")
+    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+                              protocols="tcp",
+                              src_ref="0",
+                              extensions={'tcp-ext': h})
+    assert nt.extensions['tcp-ext'].src_flags_hex == "00000002"
+
+
 def test_mutex_example():
     m = stix2.Mutex(name="barney")
 
@@ -685,6 +751,21 @@ def test_user_account_example():
     assert a.password_last_changed == dt.datetime(2016, 1, 20, 14, 27, 43, tzinfo=pytz.utc)
     assert a.account_first_login == dt.datetime(2016, 1, 20, 14, 26, 7, tzinfo=pytz.utc)
     assert a.account_last_login == dt.datetime(2016, 7, 22, 16, 8, 28, tzinfo=pytz.utc)
+
+
+def test_user_account_unix_account_ext_example():
+    u = stix2.UNIXAccountExt(gid=1001,
+                             groups=["wheel"],
+                             home_dir="/home/jdoe",
+                             shell="/bin/bash")
+    a = stix2.UserAccount(user_id="1001",
+                          account_login="jdoe",
+                          account_type="unix",
+                          extensions={'unix-account-ext': u})
+    assert a.extensions['unix-account-ext'].gid == 1001
+    assert a.extensions['unix-account-ext'].groups == ["wheel"]
+    assert a.extensions['unix-account-ext'].home_dir == "/home/jdoe"
+    assert a.extensions['unix-account-ext'].shell == "/bin/bash"
 
 
 def test_windows_registry_key_example():
