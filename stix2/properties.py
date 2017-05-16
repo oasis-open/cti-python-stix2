@@ -12,6 +12,7 @@ from six import text_type
 
 from .base import _Observable, _STIXBase
 from .exceptions import DictionaryKeyError
+from .utils import get_dict
 
 
 class Property(object):
@@ -181,7 +182,7 @@ class FloatProperty(Property):
         try:
             return float(value)
         except Exception:
-            raise ValueError("must be an float.")
+            raise ValueError("must be a float.")
 
 
 class BooleanProperty(Property):
@@ -233,7 +234,11 @@ class TimestampProperty(Property):
 class ObservableProperty(Property):
 
     def clean(self, value):
-        dictified = dict(value)
+        try:
+            dictified = get_dict(value)
+        except ValueError:
+            raise ValueError("The observable property must contain a dictionary")
+
         from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
             parsed_obj = parse_observable(obj, dictified.keys())
@@ -248,7 +253,11 @@ class ObservableProperty(Property):
 class DictionaryProperty(Property):
 
     def clean(self, value):
-        dictified = dict(value)
+        try:
+            dictified = get_dict(value)
+        except ValueError:
+            raise ValueError("The dictionary property must contain a dictionary")
+
         for k in dictified.keys():
             if len(k) < 3:
                 raise DictionaryKeyError(k, "shorter than 3 characters")
@@ -392,23 +401,25 @@ class ExtensionsProperty(DictionaryProperty):
         super(ExtensionsProperty, self).__init__(required)
 
     def clean(self, value):
-        if type(value) is dict:
-            from .__init__ import EXT_MAP  # avoid circular import
-            if self.enclosing_type in EXT_MAP:
-                specific_type_map = EXT_MAP[self.enclosing_type]
-                for key, subvalue in value.items():
-                    if key in specific_type_map:
-                        cls = specific_type_map[key]
-                        if type(subvalue) is dict:
-                            value[key] = cls(**subvalue)
-                        elif type(subvalue) is cls:
-                            value[key] = subvalue
-                        else:
-                            raise ValueError("Cannot determine extension type.")
-                    else:
-                        raise ValueError("The key used in the extensions dictionary is not an extension type name")
-            else:
-                raise ValueError("The enclosing type has no extensions defined")
-        else:
+        try:
+            dictified = get_dict(value)
+        except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
-        return value
+
+        from .__init__ import EXT_MAP  # avoid circular import
+        if self.enclosing_type in EXT_MAP:
+            specific_type_map = EXT_MAP[self.enclosing_type]
+            for key, subvalue in dictified.items():
+                if key in specific_type_map:
+                    cls = specific_type_map[key]
+                    if type(subvalue) is dict:
+                        dictified[key] = cls(**subvalue)
+                    elif type(subvalue) is cls:
+                        dictified[key] = subvalue
+                    else:
+                        raise ValueError("Cannot determine extension type.")
+                else:
+                    raise ValueError("The key used in the extensions dictionary is not an extension type name")
+        else:
+            raise ValueError("The enclosing type has no extensions defined")
+        return dictified

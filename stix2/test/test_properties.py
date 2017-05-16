@@ -1,13 +1,14 @@
 import pytest
 
+from stix2 import TCPExt
 from stix2.exceptions import DictionaryKeyError
 from stix2.observables import EmailMIMEComponent
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
-                              EnumProperty, HashesProperty, HexProperty,
-                              IDProperty, IntegerProperty, ListProperty,
-                              Property, ReferenceProperty, StringProperty,
-                              TimestampProperty, TypeProperty)
+                              EnumProperty, ExtensionsProperty, HashesProperty,
+                              HexProperty, IDProperty, IntegerProperty,
+                              ListProperty, Property, ReferenceProperty,
+                              StringProperty, TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME
 
@@ -255,3 +256,36 @@ def test_enum_property():
 
     with pytest.raises(ValueError):
         enum_prop.clean('z')
+
+
+def test_extension_property_valid():
+    ext_prop = ExtensionsProperty(enclosing_type='file')
+    assert ext_prop({
+        'windows-pebinary-ext': {
+            'pe_type': 'exe'
+        },
+    })
+
+
+@pytest.mark.parametrize("data", [
+    1,
+    {'foobar-ext': {
+        'pe_type': 'exe'
+    }},
+    {'windows-pebinary-ext': TCPExt()},
+])
+def test_extension_property_invalid(data):
+    ext_prop = ExtensionsProperty(enclosing_type='file')
+    with pytest.raises(ValueError):
+        ext_prop.clean(data)
+
+
+def test_extension_property_invalid_type():
+    ext_prop = ExtensionsProperty(enclosing_type='indicator')
+    with pytest.raises(ValueError) as excinfo:
+        ext_prop.clean({
+            'windows-pebinary-ext': {
+                'pe_type': 'exe'
+            }}
+        )
+    assert 'no extensions defined' in str(excinfo.value)

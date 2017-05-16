@@ -1,4 +1,5 @@
 import datetime as dt
+from io import StringIO
 
 import pytest
 import pytz
@@ -17,3 +18,24 @@ eastern = pytz.timezone('US/Eastern')
 ])
 def test_timestamp_formatting(dttm, timestamp):
     assert stix2.utils.format_datetime(dttm) == timestamp
+
+
+@pytest.mark.parametrize('data', [
+    {"a": 1},
+    '{"a": 1}',
+    StringIO(u'{"a": 1}'),
+    [("a", 1,)],
+])
+def test_get_dict(data):
+    assert stix2.utils.get_dict(data)
+
+
+@pytest.mark.parametrize('data', [
+    1,
+    [1],
+    ['a', 1],
+    "foobar",
+])
+def test_get_dict_invalid(data):
+    with pytest.raises(ValueError):
+        stix2.utils.get_dict(data)
