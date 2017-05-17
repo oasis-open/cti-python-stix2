@@ -6,9 +6,11 @@ and do not have a '_type' attribute.
 """
 
 from .base import _Observable, _STIXBase
+from .exceptions import AtLeastOnePropertyError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
-                         HashesProperty, HexProperty, IntegerProperty, ListProperty,
+                         EmbeddedObjectProperty, EnumProperty,
+                         ExtensionsProperty, FloatProperty, HashesProperty,
+                         HexProperty, IntegerProperty, ListProperty,
                          ObjectReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
 
@@ -133,6 +135,10 @@ class NTFSExt(_STIXBase):
         'alternate_data_streams': ListProperty(EmbeddedObjectProperty(type=AlternateDataStream)),
     }
 
+    def _check_object_constaints(self):
+        super(NTFSExt, self)._check_object_constaints()
+        self._check_at_least_one_property()
+
 
 class PDFExt(_STIXBase):
     _properties = {
@@ -143,6 +149,10 @@ class PDFExt(_STIXBase):
         'pdfid1': StringProperty(),
     }
 
+    def _check_object_constaints(self):
+        super(PDFExt, self)._check_object_constaints()
+        self._check_at_least_one_property()
+
 
 class RasterImageExt(_STIXBase):
     _properties = {
@@ -152,6 +162,10 @@ class RasterImageExt(_STIXBase):
         'image_compression_algorithm': StringProperty(),
         'exif_tags': DictionaryProperty(),
     }
+
+    def _check_object_constaints(self):
+        super(RasterImageExt, self)._check_object_constaints()
+        self._check_at_least_one_property()
 
 
 class WindowsPEOptionalHeaderType(_STIXBase):
@@ -188,6 +202,10 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         'number_of_rva_and_sizes': IntegerProperty(),
         'hashes': HashesProperty(),
     }
+
+    def _check_object_constaints(self):
+        super(WindowsPEOptionalHeaderType, self)._check_object_constaints()
+        self._check_at_least_one_property()
 
 
 class WindowsPESection(_STIXBase):
@@ -338,6 +356,10 @@ class TCPExt(_STIXBase):
         'dst_flags_hex': HexProperty(),
     }
 
+    def _check_object_constaints(self):
+        super(TCPExt, self)._check_object_constaints()
+        self._check_at_least_one_property()
+
 
 class NetworkTraffic(_Observable):
     _type = 'network-traffic'
@@ -431,6 +453,19 @@ class Process(_Observable):
         'parent_ref': ObjectReferenceProperty(),
         'child_refs': ListProperty(ObjectReferenceProperty),
     }
+
+    def _check_object_constaints(self):
+        super(Process, self)._check_object_constaints()
+        try:
+            self._check_at_least_one_property()
+            if self.extensions and "windows-process-ext" in self.extensions:
+                self.extensions["windows-process-ext"]._check_at_least_one_property()
+        except AtLeastOnePropertyError as enclosing_exc:
+            if not self.extensions:
+                raise enclosing_exc
+            else:
+                if "windows-process-ext" in self.extensions:
+                    self.extensions["windows-process-ext"]._check_at_least_one_property()
 
 
 class Software(_Observable):

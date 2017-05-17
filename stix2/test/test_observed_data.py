@@ -576,6 +576,35 @@ def test_file_example():
     assert f.decryption_key == "fred"   # does the key have a format we can test for?
 
 
+def test_file_example_with_NTFSExt():
+    f = stix2.File(name="abc.txt",
+                   extensions={
+                       "ntfs-ext": {
+                           "alternate_data_streams": [
+                                {
+                                    "name": "second.stream",
+                                    "size": 25536
+                                }
+                            ]
+                        }
+                   })
+
+    assert f.name == "abc.txt"
+    assert f.extensions["ntfs-ext"].alternate_data_streams[0].size == 25536
+
+
+def test_file_example_with_empty_NTFSExt():
+    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+        stix2.File(name="abc.txt",
+                   extensions={
+                       "ntfs-ext": {
+                        }
+                   })
+
+    assert excinfo.value.cls == stix2.NTFSExt
+    assert excinfo.value.fields == sorted(list(stix2.NTFSExt._properties.keys()))
+
+
 def test_file_example_with_PDFExt():
     f = stix2.File(name="qwerty.dll",
                    extensions={
@@ -751,20 +780,77 @@ def test_mutex_example():
     assert m.name == "barney"
 
 
+def test_process_example():
+    p = stix2.Process(_valid_refs=["0"],
+                      pid=1221,
+                      name="gedit-bin",
+                      created="2016-01-20T14:11:25.55Z",
+                      arguments=["--new-window"],
+                      binary_ref="0")
+
+    assert p.name == "gedit-bin"
+    assert p.arguments == ["--new-window"]
+
+
+def test_process_example_empty_error():
+    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+        stix2.Process()
+
+    assert excinfo.value.cls == stix2.Process
+    properties_of_process = list(stix2.Process._properties.keys())
+    properties_of_process.remove("type")
+    assert excinfo.value.fields == sorted(properties_of_process)
+
+
+def test_process_example_empty_with_extensions():
+    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+            stix2.Process(extensions={
+                            "windows-process-ext": {}
+                        })
+
+    assert excinfo.value.cls == stix2.WindowsProcessExt
+    properties_of_extension = list(stix2.WindowsProcessExt._properties.keys())
+    assert excinfo.value.fields == sorted(properties_of_extension)
+
+
+def test_process_example_windows_process_ext_empty():
+    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+            stix2.Process(pid=1221,
+                          name="gedit-bin",
+                          extensions={
+                            "windows-process-ext": {}
+                          })
+
+    assert excinfo.value.cls == stix2.WindowsProcessExt
+    properties_of_extension = list(stix2.WindowsProcessExt._properties.keys())
+    assert excinfo.value.fields == sorted(properties_of_extension)
+
+
+def test_process_example_extensions_empty():
+    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+            stix2.Process(extensions={
+                          })
+
+    assert excinfo.value.cls == stix2.Process
+    properties_of_process = list(stix2.Process._properties.keys())
+    properties_of_process.remove("type")
+    assert excinfo.value.fields == sorted(properties_of_process)
+
+
 def test_process_example_with_WindowsProcessExt_Object():
-    f = stix2.Process(extensions={
+    p = stix2.Process(extensions={
                         "windows-process-ext": stix2.WindowsProcessExt(aslr_enabled=True,
                                                                        dep_enabled=True,
                                                                        priority="HIGH_PRIORITY_CLASS",
                                                                        owner_sid="S-1-5-21-186985262-1144665072-74031268-1309")   # noqa
                    })
 
-    assert f.extensions["windows-process-ext"].dep_enabled
-    assert f.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
+    assert p.extensions["windows-process-ext"].dep_enabled
+    assert p.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_process_example_with_WindowsServiceExt():
-    f = stix2.Process(extensions={
+    p = stix2.Process(extensions={
                         "windows-service-ext": {
                             "service_name": "sirvizio",
                             "display_name": "Sirvizio",
@@ -774,12 +860,12 @@ def test_process_example_with_WindowsServiceExt():
                         }
     })
 
-    assert f.extensions["windows-service-ext"].service_name == "sirvizio"
-    assert f.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
+    assert p.extensions["windows-service-ext"].service_name == "sirvizio"
+    assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
 
 
 def test_process_example_with_WindowsProcessServiceExt():
-    f = stix2.Process(extensions={
+    p = stix2.Process(extensions={
         "windows-service-ext": {
             "service_name": "sirvizio",
             "display_name": "Sirvizio",
@@ -795,10 +881,10 @@ def test_process_example_with_WindowsProcessServiceExt():
         }
     })
 
-    assert f.extensions["windows-service-ext"].service_name == "sirvizio"
-    assert f.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
-    assert f.extensions["windows-process-ext"].dep_enabled
-    assert f.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
+    assert p.extensions["windows-service-ext"].service_name == "sirvizio"
+    assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
+    assert p.extensions["windows-process-ext"].dep_enabled
+    assert p.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_software_example():
