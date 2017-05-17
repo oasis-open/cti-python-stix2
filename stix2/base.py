@@ -63,7 +63,7 @@ class _STIXBase(collections.Mapping):
                 list_of_properties.remove("type")
         current_properties = self.properties_populated()
         list_of_properties_populated = set(list_of_properties).intersection(current_properties)
-        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == {"extensions"}):
+        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(["extensions"])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
