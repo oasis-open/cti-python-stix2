@@ -184,14 +184,36 @@ class _Observable(_STIXBase):
             self._STIXBase__valid_refs = []
         super(_Observable, self).__init__(**kwargs)
 
+    def _check_ref(self, ref, prop, prop_name):
+        if ref not in self._STIXBase__valid_refs:
+            raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+
+        try:
+            allowed_types = prop.contained.valid_types
+        except AttributeError:
+            try:
+                allowed_types = prop.valid_types
+            except AttributeError:
+                raise ValueError("'%s' is named like an object reference property but "
+                                 "is not an ObjectReferenceProperty or a ListProperty "
+                                 "containing ObjectReferenceProperty." % prop_name)
+
+        if allowed_types:
+            try:
+                ref_type = self._STIXBase__valid_refs[ref]
+            except TypeError:
+                raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
+            if ref_type not in allowed_types:
+                raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
+
     def _check_property(self, prop_name, prop, kwargs):
         super(_Observable, self)._check_property(prop_name, prop, kwargs)
-        if prop_name.endswith('_ref') and prop_name in kwargs:
+        if prop_name not in kwargs:
+            return
+
+        if prop_name.endswith('_ref'):
             ref = kwargs[prop_name]
-            if ref not in self._STIXBase__valid_refs:
-                raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
-        elif prop_name.endswith('_refs') and prop_name in kwargs:
+            self._check_ref(ref, prop, prop_name)
+        elif prop_name.endswith('_refs'):
             for ref in kwargs[prop_name]:
-                if ref not in self._STIXBase__valid_refs:
-                    raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
-        # TODO also check the type of the object referenced, not just that the key exists
+                self._check_ref(ref, prop, prop_name)

@@ -6,7 +6,6 @@ import pytz
 
 import stix2
 
-from ..exceptions import InvalidValueError
 from .constants import OBSERVED_DATA_ID
 
 
@@ -218,7 +217,7 @@ def test_parse_autonomous_system_valid(data):
 
 
 @pytest.mark.parametrize("data", [
-    """"1": {
+    """{
         "type": "email-address",
         "value": "john@example.com",
         "display_name": "John Doe",
@@ -226,13 +225,12 @@ def test_parse_autonomous_system_valid(data):
     }""",
 ])
 def test_parse_email_address(data):
-    odata_str = re.compile('\}.+\},', re.DOTALL).sub('}, %s},' % data, EXPECTED)
-    odata = stix2.parse(odata_str)
-    assert odata.objects["1"].type == "email-address"
+    odata = stix2.parse_observable(data, {"0": "user-account"})
+    assert odata.type == "email-address"
 
-    odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', odata_str)
-    with pytest.raises(InvalidValueError):
-        stix2.parse(odata_str)
+    odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', data)
+    with pytest.raises(stix2.exceptions.InvalidObjRefError):
+        stix2.parse_observable(odata_str, {"0": "user-account"})
 
 
 @pytest.mark.parametrize("data", [
@@ -276,7 +274,15 @@ def test_parse_email_address(data):
     """
 ])
 def test_parse_email_message(data):
-    odata = stix2.parse_observable(data, [str(i) for i in range(1, 6)])
+    valid_refs = {
+        "0": "email-message",
+        "1": "email-addr",
+        "2": "email-addr",
+        "3": "email-addr",
+        "4": "artifact",
+        "5": "file",
+    }
+    odata = stix2.parse_observable(data, valid_refs)
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
 
@@ -365,8 +371,16 @@ def test_parse_file_archive(data):
     """
 ])
 def test_parse_email_message_with_at_least_one_error(data):
+    valid_refs = {
+        "0": "email-message",
+        "1": "email-addr",
+        "2": "email-addr",
+        "3": "email-addr",
+        "4": "artifact",
+        "5": "file",
+    }
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, [str(i) for i in range(1, 6)])
+        stix2.parse_observable(data, valid_refs)
 
     assert excinfo.value.cls == stix2.EmailMIMEComponent
     assert excinfo.value.properties == ["body", "body_raw_ref"]
@@ -385,7 +399,7 @@ def test_parse_email_message_with_at_least_one_error(data):
     """
 ])
 def test_parse_basic_tcp_traffic(data):
-    odata = stix2.parse_observable(data, ["0", "1"])
+    odata = stix2.parse_observable(data, {"0": "ipv4-addr", "1": "ipv4-addr"})
 
     assert odata.type == "network-traffic"
     assert odata.src_ref == "0"
@@ -413,7 +427,7 @@ def test_parse_basic_tcp_traffic(data):
 ])
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, ["4"])
+        stix2.parse_observable(data, {"4": "network-traffic"})
 
     assert excinfo.value.cls == stix2.NetworkTraffic
     assert excinfo.value.properties == ["dst_ref", "src_ref"]
@@ -512,7 +526,7 @@ def test_artifact_mutual_exclusion_error():
 
 
 def test_directory_example():
-    dir = stix2.Directory(_valid_refs=["1"],
+    dir = stix2.Directory(_valid_refs={"1": "file"},
                           path='/usr/lib',
                           created="2015-12-21T19:00:00Z",
                           modified="2015-12-24T19:00:00Z",
@@ -540,12 +554,22 @@ def test_directory_example_ref_error():
 
 
 def test_domain_name_example():
-    dn = stix2.DomainName(_valid_refs=["1"],
+    dn = stix2.DomainName(_valid_refs={"1": 'domain-name'},
                           value="example.com",
                           resolves_to_refs=["1"])
 
     assert dn.value == "example.com"
     assert dn.resolves_to_refs == ["1"]
+
+
+def test_domain_name_example_invalid_ref_type():
+    with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
+        stix2.DomainName(_valid_refs={"1": "file"},
+                         value="example.com",
+                         resolves_to_refs=["1"])
+
+    assert excinfo.value.cls == stix2.DomainName
+    assert excinfo.value.prop_name == "resolves_to_refs"
 
 
 def test_file_example():
@@ -610,7 +634,7 @@ def test_file_example_encryption_error():
 
 
 def test_ip4_address_example():
-    ip4 = stix2.IPv4Address(_valid_refs=["1", "4", "5"],
+    ip4 = stix2.IPv4Address(_valid_refs={"4": "mac-addr", "5": "mac-addr"},
                             value="198.51.100.3",
                             resolves_to_refs=["4", "5"])
 
@@ -637,7 +661,7 @@ def test_mac_address_example():
 
 
 def test_network_traffic_example():
-    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+    nt = stix2.NetworkTraffic(_valid_refs={"0": "ipv4-addr", "1": "ipv4-addr"},
                               protocols="tcp",
                               src_ref="0",
                               dst_ref="1")
@@ -655,7 +679,7 @@ def test_network_traffic_http_request_example():
                                  "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
                                  "Host": "www.example.com"
                              })
-    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+    nt = stix2.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
                               protocols="tcp",
                               src_ref="0",
                               extensions={'http-request-ext': h})
@@ -670,7 +694,7 @@ def test_network_traffic_http_request_example():
 def test_network_traffic_icmp_example():
     h = stix2.ICMPExt(icmp_type_hex="08",
                       icmp_code_hex="00")
-    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+    nt = stix2.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
                               protocols="tcp",
                               src_ref="0",
                               extensions={'icmp-ext': h})
@@ -683,7 +707,7 @@ def test_network_traffic_socket_example():
                         address_family="AF_INET",
                         protocol_family="PF_INET",
                         socket_type="SOCK_STREAM")
-    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+    nt = stix2.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
                               protocols="tcp",
                               src_ref="0",
                               extensions={'socket-ext': h})
@@ -695,7 +719,7 @@ def test_network_traffic_socket_example():
 
 def test_network_traffic_tcp_example():
     h = stix2.TCPExt(src_flags_hex="00000002")
-    nt = stix2.NetworkTraffic(_valid_refs=["0", "1"],
+    nt = stix2.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
                               protocols="tcp",
                               src_ref="0",
                               extensions={'tcp-ext': h})

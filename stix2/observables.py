@@ -49,7 +49,7 @@ class Directory(_Observable):
         'created': TimestampProperty(),
         'modified': TimestampProperty(),
         'accessed': TimestampProperty(),
-        'contains_refs': ListProperty(ObjectReferenceProperty),
+        'contains_refs': ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory'])),
     }
 
 
@@ -58,7 +58,7 @@ class DomainName(_Observable):
     _properties = {
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),
-        'resolves_to_refs': ListProperty(ObjectReferenceProperty),
+        'resolves_to_refs': ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name'])),
     }
 
 
@@ -68,14 +68,14 @@ class EmailAddress(_Observable):
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),
         'display_name': StringProperty(),
-        'belongs_to_ref': ObjectReferenceProperty(),
+        'belongs_to_ref': ObjectReferenceProperty(valid_types='user-account'),
     }
 
 
 class EmailMIMEComponent(_STIXBase):
     _properties = {
         'body': StringProperty(),
-        'body_raw_ref': ObjectReferenceProperty(),
+        'body_raw_ref': ObjectReferenceProperty(valid_types=['artifact', 'file']),
         'content_type': StringProperty(),
         'content_disposition': StringProperty(),
     }
@@ -92,17 +92,17 @@ class EmailMessage(_Observable):
         'is_multipart': BooleanProperty(required=True),
         'date': TimestampProperty(),
         'content_type': StringProperty(),
-        'from_ref': ObjectReferenceProperty(),
-        'sender_ref': ObjectReferenceProperty(),
-        'to_refs': ListProperty(ObjectReferenceProperty),
-        'cc_refs': ListProperty(ObjectReferenceProperty),
-        'bcc_refs': ListProperty(ObjectReferenceProperty),
+        'from_ref': ObjectReferenceProperty(valid_types='email-addr'),
+        'sender_ref': ObjectReferenceProperty(valid_types='email-addr'),
+        'to_refs': ListProperty(ObjectReferenceProperty(valid_types='email-addr')),
+        'cc_refs': ListProperty(ObjectReferenceProperty(valid_types='email-addr')),
+        'bcc_refs': ListProperty(ObjectReferenceProperty(valid_types='email-addr')),
         'subject': StringProperty(),
         'received_lines': ListProperty(StringProperty),
         'additional_header_fields': DictionaryProperty(),
         'body': StringProperty(),
         'body_multipart': ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent)),
-        'raw_email_ref': ObjectReferenceProperty(),
+        'raw_email_ref': ObjectReferenceProperty(valid_types='artifact'),
     }
 
     def _check_object_constaints(self):
@@ -113,7 +113,7 @@ class EmailMessage(_Observable):
 
 class ArchiveExt(_STIXBase):
     _properties = {
-        'contains_refs': ListProperty(ObjectReferenceProperty, required=True),
+        'contains_refs': ListProperty(ObjectReferenceProperty(valid_types='file'), required=True),
         'version': StringProperty(),
         'comment': StringProperty(),
     }
@@ -231,12 +231,12 @@ class File(_Observable):
         'created': TimestampProperty(),
         'modified': TimestampProperty(),
         'accessed': TimestampProperty(),
-        'parent_directory_ref': ObjectReferenceProperty(),
+        'parent_directory_ref': ObjectReferenceProperty(valid_types='directory'),
         'is_encrypted': BooleanProperty(),
         'encryption_algorithm': StringProperty(),
         'decryption_key': StringProperty(),
         'contains_refs': ListProperty(ObjectReferenceProperty),
-        'content_ref': ObjectReferenceProperty(),
+        'content_ref': ObjectReferenceProperty(valid_types='artifact'),
     }
 
     def _check_object_constaints(self):
@@ -250,8 +250,8 @@ class IPv4Address(_Observable):
     _properties = {
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),
-        'resolves_to_refs': ListProperty(ObjectReferenceProperty),
-        'belongs_to_refs': ListProperty(ObjectReferenceProperty),
+        'resolves_to_refs': ListProperty(ObjectReferenceProperty(valid_types='mac-addr')),
+        'belongs_to_refs': ListProperty(ObjectReferenceProperty(valid_types='autonomous-system')),
     }
 
 
@@ -260,8 +260,8 @@ class IPv6Address(_Observable):
     _properties = {
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),
-        'resolves_to_refs': ListProperty(ObjectReferenceProperty),
-        'belongs_to_refs': ListProperty(ObjectReferenceProperty),
+        'resolves_to_refs': ListProperty(ObjectReferenceProperty(valid_types='mac-addr')),
+        'belongs_to_refs': ListProperty(ObjectReferenceProperty(valid_types='autonomous-system')),
     }
 
 
@@ -288,7 +288,7 @@ class HTTPRequestExt(_STIXBase):
         'request_version': StringProperty(),
         'request_header': DictionaryProperty(),
         'message_body_length': IntegerProperty(),
-        'message_body_data_ref': ObjectReferenceProperty(),
+        'message_body_data_ref': ObjectReferenceProperty(valid_types='artifact'),
     }
 
 
@@ -347,8 +347,8 @@ class NetworkTraffic(_Observable):
         'start': TimestampProperty(),
         'end': TimestampProperty(),
         'is_active': BooleanProperty(),
-        'src_ref': ObjectReferenceProperty(),
-        'dst_ref': ObjectReferenceProperty(),
+        'src_ref': ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name']),
+        'dst_ref': ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name']),
         'src_port': IntegerProperty(),
         'dst_port': IntegerProperty(),
         'protocols': ListProperty(StringProperty, required=True),
@@ -357,10 +357,10 @@ class NetworkTraffic(_Observable):
         'src_packets': IntegerProperty(),
         'dst_packets': IntegerProperty(),
         'ipfix': DictionaryProperty(),
-        'src_payload_ref': ObjectReferenceProperty(),
-        'dst_payload_ref': ObjectReferenceProperty(),
-        'encapsulates_refs': ListProperty(ObjectReferenceProperty),
-        'encapsulates_by_ref': ObjectReferenceProperty(),
+        'src_payload_ref': ObjectReferenceProperty(valid_types='artifact'),
+        'dst_payload_ref': ObjectReferenceProperty(valid_types='artifact'),
+        'encapsulates_refs': ListProperty(ObjectReferenceProperty(valid_types='network-traffic')),
+        'encapsulates_by_ref': ObjectReferenceProperty(valid_types='network-traffic'),
     }
 
     def _check_object_constaints(self):
@@ -392,7 +392,7 @@ class WindowsServiceExt(_STIXBase):
             "SERVICE_DISABLED",
             "SERVICE_SYSTEM_ALERT",
         ]),
-        'service_dll_refs': ListProperty(ObjectReferenceProperty),
+        'service_dll_refs': ListProperty(ObjectReferenceProperty(valid_types='file')),
         'service_type': EnumProperty([
             "SERVICE_KERNEL_DRIVER",
             "SERVICE_FILE_SYSTEM_DRIVER",
@@ -425,11 +425,11 @@ class Process(_Observable):
         'arguments': ListProperty(StringProperty),
         'command_line': StringProperty(),
         'environment_variables': DictionaryProperty(),
-        'opened_connection_refs': ListProperty(ObjectReferenceProperty),
-        'creator_user_ref': ObjectReferenceProperty(),
-        'binary_ref': ObjectReferenceProperty(),
-        'parent_ref': ObjectReferenceProperty(),
-        'child_refs': ListProperty(ObjectReferenceProperty),
+        'opened_connection_refs': ListProperty(ObjectReferenceProperty(valid_types='network-traffic')),
+        'creator_user_ref': ObjectReferenceProperty(valid_types='user-account'),
+        'binary_ref': ObjectReferenceProperty(valid_types='file'),
+        'parent_ref': ObjectReferenceProperty(valid_types='process'),
+        'child_refs': ListProperty(ObjectReferenceProperty('process')),
     }
 
 
@@ -514,7 +514,7 @@ class WindowsRegistryKey(_Observable):
         'values': ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType)),
         # this is not the modified timestamps of the object itself
         'modified': TimestampProperty(),
-        'creator_user_ref': ObjectReferenceProperty(),
+        'creator_user_ref': ObjectReferenceProperty(valid_types='user-account'),
         'number_of_subkeys': IntegerProperty(),
     }
 

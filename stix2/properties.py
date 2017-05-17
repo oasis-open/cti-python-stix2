@@ -245,9 +245,11 @@ class ObservableProperty(Property):
         except ValueError:
             raise ValueError("The observable property must contain a dictionary")
 
+        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
+
         from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
-            parsed_obj = parse_observable(obj, dictified.keys())
+            parsed_obj = parse_observable(obj, valid_refs)
             if not issubclass(type(parsed_obj), _Observable):
                 raise ValueError("Objects in an observable property must be "
                                  "Cyber Observable Objects")
@@ -369,7 +371,12 @@ class SelectorProperty(Property):
 
 
 class ObjectReferenceProperty(StringProperty):
-    pass
+
+    def __init__(self, valid_types=None, **kwargs):
+        if valid_types and type(valid_types) is not list:
+            valid_types = [valid_types]
+        self.valid_types = valid_types
+        super(ObjectReferenceProperty, self).__init__(**kwargs)
 
 
 class EmbeddedObjectProperty(Property):
