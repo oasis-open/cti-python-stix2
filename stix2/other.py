@@ -15,8 +15,8 @@ class ExternalReference(_STIXBase):
         'external_id': StringProperty(),
     }
 
-    def _check_object_constaints(self):
-        super(ExternalReference, self)._check_object_constaints()
+    def _check_object_constraints(self):
+        super(ExternalReference, self)._check_object_constraints()
         self._check_at_least_one_property(["description", "external_id", "url"])
 
 

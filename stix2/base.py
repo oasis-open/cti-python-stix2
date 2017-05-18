@@ -56,9 +56,14 @@ class _STIXBase(collections.Mapping):
         if count > 1 or (at_least_one and count == 0):
             raise MutuallyExclusivePropertiesError(self.__class__, list_of_properties)
 
-    def _check_at_least_one_property(self, list_of_properties):
+    def _check_at_least_one_property(self, list_of_properties=None):
+        if not list_of_properties:
+            list_of_properties = sorted(list(self.__class__._properties.keys()))
+            if "type" in list_of_properties:
+                list_of_properties.remove("type")
         current_properties = self.properties_populated()
-        if not set(list_of_properties).intersection(current_properties):
+        list_of_properties_populated = set(list_of_properties).intersection(current_properties)
+        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(["extensions"])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
@@ -72,7 +77,7 @@ class _STIXBase(collections.Mapping):
         if failed_dependency_pairs:
             raise DependentPropertiestError(self.__class__, failed_dependency_pairs)
 
-    def _check_object_constaints(self):
+    def _check_object_constraints(self):
         if self.granular_markings:
             for m in self.granular_markings:
                 # TODO: check selectors
@@ -106,7 +111,7 @@ class _STIXBase(collections.Mapping):
 
         self._inner = setting_kwargs
 
-        self._check_object_constaints()
+        self._check_object_constraints()
 
     def __getitem__(self, key):
         return self._inner[key]

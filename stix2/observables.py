@@ -6,9 +6,11 @@ and do not have a '_type' attribute.
 """
 
 from .base import _Observable, _STIXBase
+from .exceptions import AtLeastOnePropertyError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
-                         HashesProperty, HexProperty, IntegerProperty, ListProperty,
+                         EmbeddedObjectProperty, EnumProperty,
+                         ExtensionsProperty, FloatProperty, HashesProperty,
+                         HexProperty, IntegerProperty, ListProperty,
                          ObjectReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
 
@@ -23,8 +25,8 @@ class Artifact(_Observable):
         'hashes': HashesProperty(),
     }
 
-    def _check_object_constaints(self):
-        super(Artifact, self)._check_object_constaints()
+    def _check_object_constraints(self):
+        super(Artifact, self)._check_object_constraints()
         self._check_mutually_exclusive_properties(["payload_bin", "url"])
         self._check_properties_dependency(["hashes"], ["url"])
 
@@ -80,8 +82,8 @@ class EmailMIMEComponent(_STIXBase):
         'content_disposition': StringProperty(),
     }
 
-    def _check_object_constaints(self):
-        super(EmailMIMEComponent, self)._check_object_constaints()
+    def _check_object_constraints(self):
+        super(EmailMIMEComponent, self)._check_object_constraints()
         self._check_at_least_one_property(["body", "body_raw_ref"])
 
 
@@ -105,8 +107,8 @@ class EmailMessage(_Observable):
         'raw_email_ref': ObjectReferenceProperty(),
     }
 
-    def _check_object_constaints(self):
-        super(EmailMessage, self)._check_object_constaints()
+    def _check_object_constraints(self):
+        super(EmailMessage, self)._check_object_constraints()
         self._check_properties_dependency(["is_multipart"], ["body_multipart"])
         # self._dependency(["is_multipart"], ["body"], [False])
 
@@ -133,6 +135,10 @@ class NTFSExt(_STIXBase):
         'alternate_data_streams': ListProperty(EmbeddedObjectProperty(type=AlternateDataStream)),
     }
 
+    def _check_object_constraints(self):
+        super(NTFSExt, self)._check_object_constraints()
+        self._check_at_least_one_property()
+
 
 class PDFExt(_STIXBase):
     _properties = {
@@ -143,6 +149,10 @@ class PDFExt(_STIXBase):
         'pdfid1': StringProperty(),
     }
 
+    def _check_object_constraints(self):
+        super(PDFExt, self)._check_object_constraints()
+        self._check_at_least_one_property()
+
 
 class RasterImageExt(_STIXBase):
     _properties = {
@@ -152,6 +162,10 @@ class RasterImageExt(_STIXBase):
         'image_compression_algorithm': StringProperty(),
         'exif_tags': DictionaryProperty(),
     }
+
+    def _check_object_constraints(self):
+        super(RasterImageExt, self)._check_object_constraints()
+        self._check_at_least_one_property()
 
 
 class WindowsPEOptionalHeaderType(_STIXBase):
@@ -184,10 +198,14 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         'size_of_stack_commit': IntegerProperty(),
         'size_of_heap_reserve': IntegerProperty(),
         'size_of_heap_commit': IntegerProperty(),
-        'loader_fkags_hex': HexProperty(),
+        'loader_flags_hex': HexProperty(),
         'number_of_rva_and_sizes': IntegerProperty(),
         'hashes': HashesProperty(),
     }
+
+    def _check_object_constraints(self):
+        super(WindowsPEOptionalHeaderType, self)._check_object_constraints()
+        self._check_at_least_one_property()
 
 
 class WindowsPESection(_STIXBase):
@@ -239,8 +257,8 @@ class File(_Observable):
         'content_ref': ObjectReferenceProperty(),
     }
 
-    def _check_object_constaints(self):
-        super(File, self)._check_object_constaints()
+    def _check_object_constraints(self):
+        super(File, self)._check_object_constraints()
         self._check_properties_dependency(["is_encrypted"], ["encryption_algorithm", "decryption_key"])
         self._check_at_least_one_property(["hashes", "name"])
 
@@ -338,6 +356,10 @@ class TCPExt(_STIXBase):
         'dst_flags_hex': HexProperty(),
     }
 
+    def _check_object_constraints(self):
+        super(TCPExt, self)._check_object_constraints()
+        self._check_at_least_one_property()
+
 
 class NetworkTraffic(_Observable):
     _type = 'network-traffic'
@@ -363,8 +385,8 @@ class NetworkTraffic(_Observable):
         'encapsulates_by_ref': ObjectReferenceProperty(),
     }
 
-    def _check_object_constaints(self):
-        super(NetworkTraffic, self)._check_object_constaints()
+    def _check_object_constraints(self):
+        super(NetworkTraffic, self)._check_object_constraints()
         self._check_at_least_one_property(["src_ref", "dst_ref"])
 
 
@@ -431,6 +453,20 @@ class Process(_Observable):
         'parent_ref': ObjectReferenceProperty(),
         'child_refs': ListProperty(ObjectReferenceProperty),
     }
+
+    def _check_object_constraints(self):
+        # no need to check windows-service-ext, since it has a required property
+        super(Process, self)._check_object_constraints()
+        try:
+            self._check_at_least_one_property()
+            if self.extensions and "windows-process-ext" in self.extensions:
+                self.extensions["windows-process-ext"]._check_at_least_one_property()
+        except AtLeastOnePropertyError as enclosing_exc:
+            if not self.extensions:
+                raise enclosing_exc
+            else:
+                if "windows-process-ext" in self.extensions:
+                    self.extensions["windows-process-ext"]._check_at_least_one_property()
 
 
 class Software(_Observable):
