@@ -77,7 +77,7 @@ class _STIXBase(collections.Mapping):
         if failed_dependency_pairs:
             raise DependentPropertiestError(self.__class__, failed_dependency_pairs)
 
-    def _check_object_constaints(self):
+    def _check_object_constraints(self):
         if self.granular_markings:
             for m in self.granular_markings:
                 # TODO: check selectors
@@ -111,7 +111,7 @@ class _STIXBase(collections.Mapping):
 
         self._inner = setting_kwargs
 
-        self._check_object_constaints()
+        self._check_object_constraints()
 
     def __getitem__(self, key):
         return self._inner[key]
