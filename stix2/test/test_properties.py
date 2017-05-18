@@ -1,7 +1,7 @@
 import pytest
 
 from stix2 import TCPExt
-from stix2.exceptions import DictionaryKeyError
+from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
 from stix2.observables import EmailMIMEComponent
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
@@ -272,7 +272,6 @@ def test_extension_property_valid():
     {'foobar-ext': {
         'pe_type': 'exe'
     }},
-    {'windows-pebinary-ext': TCPExt()},
 ])
 def test_extension_property_invalid(data):
     ext_prop = ExtensionsProperty(enclosing_type='file')
@@ -289,3 +288,8 @@ def test_extension_property_invalid_type():
             }}
         )
     assert 'no extensions defined' in str(excinfo.value)
+
+
+def test_extension_at_least_one_property_constraint():
+    with pytest.raises(AtLeastOnePropertyError):
+        TCPExt()

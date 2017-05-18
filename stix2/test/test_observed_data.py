@@ -626,7 +626,7 @@ def test_file_example_with_empty_NTFSExt():
                    })
 
     assert excinfo.value.cls == stix2.NTFSExt
-    assert excinfo.value.fields == sorted(list(stix2.NTFSExt._properties.keys()))
+    assert excinfo.value.properties == sorted(list(stix2.NTFSExt._properties.keys()))
 
 
 def test_file_example_with_PDFExt():
@@ -871,7 +871,7 @@ def test_mutex_example():
 
 
 def test_process_example():
-    p = stix2.Process(_valid_refs=["0"],
+    p = stix2.Process(_valid_refs={"0": "file"},
                       pid=1221,
                       name="gedit-bin",
                       created="2016-01-20T14:11:25.55Z",
@@ -889,7 +889,7 @@ def test_process_example_empty_error():
     assert excinfo.value.cls == stix2.Process
     properties_of_process = list(stix2.Process._properties.keys())
     properties_of_process.remove("type")
-    assert excinfo.value.fields == sorted(properties_of_process)
+    assert excinfo.value.properties == sorted(properties_of_process)
 
 
 def test_process_example_empty_with_extensions():
@@ -900,7 +900,7 @@ def test_process_example_empty_with_extensions():
 
     assert excinfo.value.cls == stix2.WindowsProcessExt
     properties_of_extension = list(stix2.WindowsProcessExt._properties.keys())
-    assert excinfo.value.fields == sorted(properties_of_extension)
+    assert excinfo.value.properties == sorted(properties_of_extension)
 
 
 def test_process_example_windows_process_ext_empty():
@@ -913,7 +913,7 @@ def test_process_example_windows_process_ext_empty():
 
     assert excinfo.value.cls == stix2.WindowsProcessExt
     properties_of_extension = list(stix2.WindowsProcessExt._properties.keys())
-    assert excinfo.value.fields == sorted(properties_of_extension)
+    assert excinfo.value.properties == sorted(properties_of_extension)
 
 
 def test_process_example_extensions_empty():
@@ -924,7 +924,7 @@ def test_process_example_extensions_empty():
     assert excinfo.value.cls == stix2.Process
     properties_of_process = list(stix2.Process._properties.keys())
     properties_of_process.remove("type")
-    assert excinfo.value.fields == sorted(properties_of_process)
+    assert excinfo.value.properties == sorted(properties_of_process)
 
 
 def test_process_example_with_WindowsProcessExt_Object():
