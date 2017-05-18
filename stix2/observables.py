@@ -5,7 +5,7 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-from .base import _Observable, _STIXBase
+from .base import _Extension, _Observable, _STIXBase
 from .exceptions import AtLeastOnePropertyError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, EnumProperty,
@@ -113,7 +113,7 @@ class EmailMessage(_Observable):
         # self._dependency(["is_multipart"], ["body"], [False])
 
 
-class ArchiveExt(_STIXBase):
+class ArchiveExt(_Extension):
     _properties = {
         'contains_refs': ListProperty(ObjectReferenceProperty(valid_types='file'), required=True),
         'version': StringProperty(),
@@ -129,18 +129,14 @@ class AlternateDataStream(_STIXBase):
     }
 
 
-class NTFSExt(_STIXBase):
+class NTFSExt(_Extension):
     _properties = {
         'sid': StringProperty(),
         'alternate_data_streams': ListProperty(EmbeddedObjectProperty(type=AlternateDataStream)),
     }
 
-    def _check_object_constraints(self):
-        super(NTFSExt, self)._check_object_constraints()
-        self._check_at_least_one_property()
 
-
-class PDFExt(_STIXBase):
+class PDFExt(_Extension):
     _properties = {
         'version': StringProperty(),
         'is_optimized': BooleanProperty(),
@@ -149,12 +145,8 @@ class PDFExt(_STIXBase):
         'pdfid1': StringProperty(),
     }
 
-    def _check_object_constraints(self):
-        super(PDFExt, self)._check_object_constraints()
-        self._check_at_least_one_property()
 
-
-class RasterImageExt(_STIXBase):
+class RasterImageExt(_Extension):
     _properties = {
         'image_height': IntegerProperty(),
         'image_weight': IntegerProperty(),
@@ -162,10 +154,6 @@ class RasterImageExt(_STIXBase):
         'image_compression_algorithm': StringProperty(),
         'exif_tags': DictionaryProperty(),
     }
-
-    def _check_object_constraints(self):
-        super(RasterImageExt, self)._check_object_constraints()
-        self._check_at_least_one_property()
 
 
 class WindowsPEOptionalHeaderType(_STIXBase):
@@ -217,7 +205,7 @@ class WindowsPESection(_STIXBase):
     }
 
 
-class WindowsPEBinaryExt(_STIXBase):
+class WindowsPEBinaryExt(_Extension):
     _properties = {
         'pe_type': StringProperty(required=True),  # open_vocab
         'imphash': StringProperty(),
@@ -299,7 +287,7 @@ class Mutex(_Observable):
     }
 
 
-class HTTPRequestExt(_STIXBase):
+class HTTPRequestExt(_Extension):
     _properties = {
         'request_method': StringProperty(required=True),
         'request_value': StringProperty(required=True),
@@ -310,14 +298,14 @@ class HTTPRequestExt(_STIXBase):
     }
 
 
-class ICMPExt(_STIXBase):
+class ICMPExt(_Extension):
     _properties = {
         'icmp_type_hex': HexProperty(required=True),
         'icmp_code_hex': HexProperty(required=True),
     }
 
 
-class SocketExt(_STIXBase):
+class SocketExt(_Extension):
     _properties = {
         'address_family': EnumProperty([
             "AF_UNSPEC",
@@ -350,15 +338,11 @@ class SocketExt(_STIXBase):
     }
 
 
-class TCPExt(_STIXBase):
+class TCPExt(_Extension):
     _properties = {
         'src_flags_hex': HexProperty(),
         'dst_flags_hex': HexProperty(),
     }
-
-    def _check_object_constraints(self):
-        super(TCPExt, self)._check_object_constraints()
-        self._check_at_least_one_property()
 
 
 class NetworkTraffic(_Observable):
@@ -390,7 +374,7 @@ class NetworkTraffic(_Observable):
         self._check_at_least_one_property(["src_ref", "dst_ref"])
 
 
-class WindowsProcessExt(_STIXBase):
+class WindowsProcessExt(_Extension):
     _properties = {
         'aslr_enabled': BooleanProperty(),
         'dep_enabled': BooleanProperty(),
@@ -401,7 +385,7 @@ class WindowsProcessExt(_STIXBase):
     }
 
 
-class WindowsServiceExt(_STIXBase):
+class WindowsServiceExt(_Extension):
     _properties = {
         'service_name': StringProperty(required=True),
         'descriptions': ListProperty(StringProperty),
@@ -489,7 +473,7 @@ class URL(_Observable):
     }
 
 
-class UNIXAccountExt(_STIXBase):
+class UNIXAccountExt(_Extension):
     _properties = {
         'gid': IntegerProperty(),
         'groups': ListProperty(StringProperty),

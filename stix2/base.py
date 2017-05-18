@@ -222,3 +222,10 @@ class _Observable(_STIXBase):
         elif prop_name.endswith('_refs'):
             for ref in kwargs[prop_name]:
                 self._check_ref(ref, prop, prop_name)
+
+
+class _Extension(_STIXBase):
+
+    def _check_object_constraints(self):
+        super(_Extension, self)._check_object_constraints()
+        self._check_at_least_one_property()
