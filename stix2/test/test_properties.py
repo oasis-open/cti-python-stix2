@@ -35,7 +35,7 @@ def test_basic_clean():
         p.clean(41)
 
 
-def test_default_field():
+def test_property_default():
     class Prop(Property):
 
         def default(self):

@@ -75,7 +75,7 @@ def test_sighting_type_must_be_sightings():
 
 
 def test_invalid_kwarg_to_sighting():
-    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.Sighting(my_custom_property="foo", **SIGHTING_KWARGS)
 
     assert excinfo.value.cls == stix2.Sighting

@@ -74,14 +74,14 @@ def test_relationship_id_must_start_with_relationship():
 
 
 def test_relationship_required_property_relationship_type():
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.Relationship()
     assert excinfo.value.cls == stix2.Relationship
     assert excinfo.value.properties == ["relationship_type", "source_ref", "target_ref"]
 
 
 def test_relationship_missing_some_required_properties():
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.Relationship(relationship_type='indicates')
 
     assert excinfo.value.cls == stix2.Relationship
@@ -89,7 +89,7 @@ def test_relationship_missing_some_required_properties():
 
 
 def test_relationship_required_properties_target_ref():
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.Relationship(
             relationship_type='indicates',
             source_ref=INDICATOR_ID
@@ -107,7 +107,7 @@ def test_cannot_assign_to_relationship_attributes(relationship):
 
 
 def test_invalid_kwarg_to_relationship():
-    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.Relationship(my_custom_property="foo", **RELATIONSHIP_KWARGS)
 
     assert excinfo.value.cls == stix2.Relationship

@@ -5,8 +5,8 @@ import copy
 import datetime as dt
 import json
 
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiestError, ExtraFieldsError, ImmutableError,
-                         InvalidObjRefError, InvalidValueError, MissingFieldsError, MutuallyExclusivePropertiesError,
+from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError, ExtraPropertiesError, ImmutableError,
+                         InvalidObjRefError, InvalidValueError, MissingPropertiesError, MutuallyExclusivePropertiesError,
                          RevokeError, UnmodifiablePropertyError)
 from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
@@ -75,7 +75,7 @@ class _STIXBase(collections.Mapping):
                 if dp in current_properties and (p not in current_properties or (v and not current_properties(p) == v)):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
-            raise DependentPropertiestError(self.__class__, failed_dependency_pairs)
+            raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
 
     def _check_object_constraints(self):
         if self.granular_markings:
@@ -92,7 +92,7 @@ class _STIXBase(collections.Mapping):
         # Detect any keyword arguments not allowed for a specific type
         extra_kwargs = list(set(kwargs) - set(cls._properties))
         if extra_kwargs:
-            raise ExtraFieldsError(cls, extra_kwargs)
+            raise ExtraPropertiesError(cls, extra_kwargs)
 
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
@@ -104,7 +104,7 @@ class _STIXBase(collections.Mapping):
         required_properties = get_required_properties(cls._properties)
         missing_kwargs = set(required_properties) - set(setting_kwargs)
         if missing_kwargs:
-            raise MissingFieldsError(cls, missing_kwargs)
+            raise MissingPropertiesError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
             self._check_property(prop_name, prop_metadata, setting_kwargs)

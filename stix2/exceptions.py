@@ -16,11 +16,11 @@ class InvalidValueError(STIXError, ValueError):
         return msg.format(self)
 
 
-class MissingFieldsError(STIXError, ValueError):
+class MissingPropertiesError(STIXError, ValueError):
     """Missing one or more required properties when constructing STIX object."""
 
     def __init__(self, cls, properties):
-        super(MissingFieldsError, self).__init__()
+        super(MissingPropertiesError, self).__init__()
         self.cls = cls
         self.properties = sorted(list(properties))
 
@@ -30,11 +30,11 @@ class MissingFieldsError(STIXError, ValueError):
                           ", ".join(x for x in self.properties))
 
 
-class ExtraFieldsError(STIXError, TypeError):
+class ExtraPropertiesError(STIXError, TypeError):
     """One or more extra properties were provided when constructing STIX object."""
 
     def __init__(self, cls, properties):
-        super(ExtraFieldsError, self).__init__()
+        super(ExtraPropertiesError, self).__init__()
         self.cls = cls
         self.properties = sorted(list(properties))
 
@@ -99,16 +99,16 @@ class MutuallyExclusivePropertiesError(STIXError, TypeError):
         self.properties = sorted(list(properties))
 
     def __str__(self):
-        msg = "The field(s) for {0}: ({1}) are mutually exclusive."
+        msg = "The ({1}) properties for {0} are mutually exclusive."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.properties))
 
 
-class DependentPropertiestError(STIXError, TypeError):
+class DependentPropertiesError(STIXError, TypeError):
     """Violating interproperty dependency constraint of a STIX object type."""
 
     def __init__(self, cls, dependencies):
-        super(DependentPropertiestError, self).__init__()
+        super(DependentPropertiesError, self).__init__()
         self.cls = cls
         self.dependencies = dependencies
 
@@ -127,7 +127,7 @@ class AtLeastOnePropertyError(STIXError, TypeError):
         self.properties = sorted(list(properties))
 
     def __str__(self):
-        msg = "At least one of the field(s) for {0}: ({1}) must be populated."
+        msg = "At least one of the ({1}) properties for {0} must be populated."
         return msg.format(self.cls.__name__,
                           ", ".join(x for x in self.properties))
 

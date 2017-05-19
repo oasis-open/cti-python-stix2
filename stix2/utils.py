@@ -6,7 +6,7 @@ import json
 from dateutil import parser
 import pytz
 
-# Sentinel value for fields that should be set to the current time.
+# Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
 # timestamps in a single object, the timestamps will vary by a few microseconds.
 NOW = object()

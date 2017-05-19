@@ -90,7 +90,7 @@ def test_indicator_id_must_start_with_indicator():
 
 
 def test_indicator_required_properties():
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.Indicator()
 
     assert excinfo.value.cls == stix2.Indicator
@@ -99,7 +99,7 @@ def test_indicator_required_properties():
 
 
 def test_indicator_required_property_pattern():
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.Indicator(labels=['malicious-activity'])
 
     assert excinfo.value.cls == stix2.Indicator
@@ -133,7 +133,7 @@ def test_cannot_assign_to_indicator_attributes(indicator):
 
 
 def test_invalid_kwarg_to_indicator():
-    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.Indicator(my_custom_property="foo", **INDICATOR_KWARGS)
 
     assert excinfo.value.cls == stix2.Indicator

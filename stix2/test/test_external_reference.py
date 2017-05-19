@@ -110,7 +110,7 @@ def test_external_reference_offline():
 
 
 def test_external_reference_source_required():
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.ExternalReference()
 
     assert excinfo.value.cls == stix2.ExternalReference

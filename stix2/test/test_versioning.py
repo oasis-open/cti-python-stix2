@@ -138,7 +138,7 @@ def test_versioning_error_usetting_required_property():
         description="Campaign by Green Group against a series of targets in the financial services sector."
     )
 
-    with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         campaign_v1.new_version(name=None)
 
     assert excinfo.value.cls == stix2.Campaign
