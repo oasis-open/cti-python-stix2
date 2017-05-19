@@ -3,7 +3,9 @@
 import re
 
 import pytest
+
 import stix2
+
 
 VERIS = """{
     "external_id": "0001AA7F-C601-424A-B2B8-BE6C9F5164E7",
@@ -112,4 +114,4 @@ def test_external_reference_source_required():
         stix2.ExternalReference()
 
     assert excinfo.value.cls == stix2.ExternalReference
-    assert excinfo.value.fields == ["source_name"]
+    assert excinfo.value.properties == ["source_name"]

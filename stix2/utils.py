@@ -63,11 +63,17 @@ def get_dict(data):
     """
 
     if type(data) is dict:
-        obj = data
+        return data
     else:
         try:
-            obj = json.loads(data)
+            return json.loads(data)
         except TypeError:
-            obj = json.load(data)
-
-    return obj
+            pass
+        try:
+            return json.load(data)
+        except AttributeError:
+            pass
+        try:
+            return dict(data)
+        except (ValueError, TypeError):
+            raise ValueError("Cannot convert '%s' to dictionary." % str(data))

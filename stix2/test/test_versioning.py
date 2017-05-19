@@ -1,4 +1,5 @@
 import pytest
+
 import stix2
 
 
@@ -141,7 +142,7 @@ def test_versioning_error_usetting_required_property():
         campaign_v1.new_version(name=None)
 
     assert excinfo.value.cls == stix2.Campaign
-    assert excinfo.value.fields == ["name"]
+    assert excinfo.value.properties == ["name"]
 
 
 def test_versioning_error_new_version_of_revoked():

@@ -4,6 +4,7 @@ import pytest
 
 import stix2
 
+
 LMCO_RECON = """{
     "kill_chain_name": "lockheed-martin-cyber-kill-chain",
     "phase_name": "reconnaissance"
@@ -34,28 +35,28 @@ def test_kill_chain_example():
     assert str(preattack) == FOO_PRE_ATTACK
 
 
-def test_kill_chain_required_fields():
+def test_kill_chain_required_properties():
 
     with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.KillChainPhase()
 
     assert excinfo.value.cls == stix2.KillChainPhase
-    assert excinfo.value.fields == ["kill_chain_name", "phase_name"]
+    assert excinfo.value.properties == ["kill_chain_name", "phase_name"]
 
 
-def test_kill_chain_required_field_chain_name():
+def test_kill_chain_required_property_chain_name():
 
     with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.KillChainPhase(phase_name="weaponization")
 
     assert excinfo.value.cls == stix2.KillChainPhase
-    assert excinfo.value.fields == ["kill_chain_name"]
+    assert excinfo.value.properties == ["kill_chain_name"]
 
 
-def test_kill_chain_required_field_phase_name():
+def test_kill_chain_required_property_phase_name():
 
     with pytest.raises(stix2.exceptions.MissingFieldsError) as excinfo:
         stix2.KillChainPhase(kill_chain_name="lockheed-martin-cyber-kill-chain")
 
     assert excinfo.value.cls == stix2.KillChainPhase
-    assert excinfo.value.fields == ["phase_name"]
+    assert excinfo.value.properties == ["phase_name"]
