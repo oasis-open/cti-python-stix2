@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+0.1.0 - 2017-05-22
+
+* Include support for serializing/deserializing all STIX objects and Cyber
+  Observable objects.
+* Markings are supported but not validated.
+
 0.0.1 - 2017-02-24
 
 * First packaged version
