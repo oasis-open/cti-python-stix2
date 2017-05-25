@@ -401,9 +401,7 @@ class DataSource(object):
             stix_obj (dictionary): the STIX object to be returned
 
         '''
-        stix_obj = None
-
-        return stix_obj
+        raise NotImplementedError
 
     @abc.abstractmethod
     def all_versions(self, id_, _composite_filters=None):
