@@ -1,4 +1,4 @@
-'''
+"""
 Python STIX 2.0 Composite Data Source and Data Source (classes)
 
 
@@ -6,24 +6,28 @@ Python STIX 2.0 Composite Data Source and Data Source (classes)
 
     -Test everything
 
-    -add_filter(), remove_filter(), deduplicate() - if these functions remain the exact same for
-    both CompositeDataSource and DataSource, they just inherit/have module access to
+    -add_filter(), remove_filter(), deduplicate() - if these functions remain
+    the exact same for both CompositeDataSource and DataSource, they just
+    inherit/have module access to
 
-'''
+"""
 
 import abc
 import copy
 import uuid
 
+from six import iteritems
+
 
 def make_id():
-    str(uuid.uuid4())
+    return str(uuid.uuid4())
 
 
 # STIX 2.0 fields used to denote object version
 STIX_VERSION_FIELDS = ['id', 'modified']
 
-# currently, only STIX 2.0 common SDO fields (that are not compex objects) are supported for filtering on
+# Currently, only STIX 2.0 common SDO fields (that are not compex objects)
+# are supported for filtering on
 STIX_COMMON_FIELDS = [
     'type',
     'id',
@@ -32,11 +36,11 @@ STIX_COMMON_FIELDS = [
     'modified',
     'revoked',
     'labels',
-    # 'external_references',  #list of external references object type - not supported for filtering
+    # 'external_references',  # list of external references object type - not supported for filtering
     'object_references',
     'object_marking_refs',
     'granular_marking_refs',
-    # 'granular_markings'      #list of granular-marking type - not supported for filtering
+    # 'granular_markings'  # list of granular-marking type - not supported for filtering
 ]
 
 
@@ -51,28 +55,26 @@ FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
 
 
 class CompositeDataSource(object):
-    '''Composite Data Source
+    """Composite Data Source
 
     Acts as a controller for all the defined/configured STIX Data Sources
     e.g. a user can defined n Data Sources - creating Data Source (objects)
-    for each. There is only one instance of this for any python STIX 2.0 application
+    for each. There is only one instance of this for any python STIX 2.0
+    application
 
-    '''
+    """
 
     def __init__(self, name="CompositeDataSource"):
-        '''
+        """
         Creates a new STIX Data Source.
 
         Args:
-            'data_sources' (dict): a dict of DataSource objects; to be controlled and used by
-                the Data Source Controller object
+            'data_sources' (dict): a dict of DataSource objects; to be
+                controlled and used by the Data Source Controller object
 
             filters :
             name :
-
-        Returns:
-
-        '''
+        """
         self.id_ = make_id()
         self.name = name
         self.data_sources = {}
@@ -80,7 +82,7 @@ class CompositeDataSource(object):
         self.filter_allowed = {}
 
     def get(self, id_):
-        '''retrieve STIX object by 'id'
+        """Retrieve STIX object by 'id'
 
         federated retrieve method-iterates through all STIX data sources
         defined in the "data_sources" parameter. Each data source has a
@@ -97,12 +99,12 @@ class CompositeDataSource(object):
         Returns:
             stix_obj (dict): the STIX object to be returned
 
-        '''
+        """
 
         all_data = []
 
         # for every configured Data Source, call its retrieve handler
-        for ds_id, ds in self.data_sources.iteritems():
+        for ds_id, ds in iteritems(self.data_sources):
             data = ds.get(id_=id_, _composite_filters=self.filters.values())
             all_data += data
 
@@ -116,7 +118,7 @@ class CompositeDataSource(object):
         return stix_obj
 
     def all_versions(self, id_):
-        '''retrieve STIX objects by 'id'
+        """Retrieve STIX objects by 'id'
 
         Federated all_versions retrieve method - iterates through all STIX data
         sources defined in "data_sources"
@@ -129,22 +131,23 @@ class CompositeDataSource(object):
 
         Returns:
             all_data (list): list of STIX objects that have the specified id
-        '''
+        """
         all_data = []
 
         # retrieve STIX objects from all configured data sources
-        for ds_id, ds in self.data_sources.iteritems():
+        for ds_id, ds in iteritems(self.data_sources):
             data = ds.all_versions(id_=id_, _composite_filters=self.filters.values())
             all_data += data
 
-        # remove exact duplicates (where duplicates are STIX 2.0 objects with the same 'id' and 'modified' values)
+        # remove exact duplicates (where duplicates are STIX 2.0 objects
+        # with the same 'id' and 'modified' values)
         if len(all_data) > 0:
             all_data = self.deduplicate(all_data)
 
         return all_data
 
     def query(self, query=None):
-        '''composite data source query
+        """composite data source query
 
         Federate the query to all Data Sources attached
         to the Composite Data Source
@@ -155,32 +158,35 @@ class CompositeDataSource(object):
         Returns:
             all_data (list): list of STIX objects to be returned
 
-        '''
+        """
         if not query:
             query = []
 
         all_data = []
 
-        # federate query to all attached data sources, pass composite filters to them
-        for ds_id, ds in self.data_sources.iteritems():
+        # federate query to all attached data sources,
+        # pass composite filters to them
+        for ds_id, ds in iteritems(self.data_sources):
             data = ds.query(query=query, _composite_filters=self.filters.values())
             all_data += data
 
-        # remove exact duplicates (where duplicates are STIX 2.0 objects with the same 'id' and 'modified' values)
+        # remove exact duplicates (where duplicates are STIX 2.0
+        # objects with the same 'id' and 'modified' values)
         if len(all_data) > 0:
             all_data = self.deduplicate(all_data)
 
         return all_data
 
     def add_data_source(self, data_sources):
-        '''add/attach Data Source to the Composite Data Source instance
+        """add/attach Data Source to the Composite Data Source instance
 
         Args:
-            data_sources (list): a list of Data Source objects to attach to the Composite Data Source
+            data_sources (list): a list of Data Source objects to attach
+                to the Composite Data Source
 
         Returns:
 
-        '''
+        """
 
         for ds in data_sources:
             if issubclass(ds, DataSource):
@@ -188,37 +194,40 @@ class CompositeDataSource(object):
                     # data source already attached to Composite Data Source
                     continue
 
-                # add data source to Composite Data Source (its id will be its key identifier)
+                # add data source to Composite Data Source
+                # (its id will be its key identifier)
                 self.data_sources[ds['id']] = ds
             else:
-                # the Data Source object is not a proper subclass of DataSource Abstract Class
+                # the Data Source object is not a proper subclass
+                # of DataSource Abstract Class
                 # TODO: maybe log error?
                 continue
 
         return
 
     def remove_data_source(self, data_source_ids):
-        '''remove/detach Data Source from the Composite Data Source instance
+        """remove/detach Data Source from the Composite Data Source instance
 
         Args:
-            data_source_ids (list): a list of Data Source id's( which are strings )
+            data_source_ids (list): a list of Data Source
+                id's(which are strings)
 
         Returns:
 
-
-        '''
+        """
 
         for id_ in data_source_ids:
             try:
                 if self.data_sources[id_]:
                     del self.data_sources[id_]
             except KeyError:
-                # Data Source 'id' was not found in CompositeDataSource's list of data sources
+                # Data Source 'id' was not found in CompositeDataSource's
+                # list of data sources
                 pass
         return
 
     def get_data_sources(self):
-        '''return all attached Data Sources
+        """return all attached Data Sources
 
         TODO: Make this a property?
 
@@ -226,11 +235,11 @@ class CompositeDataSource(object):
 
         Returns:
 
-        '''
+        """
         return copy.deepcopy(self.data_sources.values())
 
     def add_filter(self, filters):
-        '''add/attach a filter to the Composite Data Source instance
+        """add/attach a filter to the Composite Data Source instance
 
         Args:
             filters (list): list of filters (dict) to add to the Data Source
@@ -238,7 +247,7 @@ class CompositeDataSource(object):
         Returns:
             status (list): list of status/error messages
 
-        '''
+        """
 
         status = []
         errors = []
@@ -268,12 +277,11 @@ class CompositeDataSource(object):
                 allowed = False
                 errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
-            '''
-            Filter is added regardless of whether it fits requirements
-            to be a common filter. This is done because some filters
-            may be added and used by third party Data Sources, where
-            the filtering may be conducted within those plugins, just not here
-            '''
+            # Filter is added regardless of whether it fits requirements
+            # to be a common filter. This is done because some filters
+            # may be added and used by third party Data Sources, where the
+            # filtering may be conducted within those plugins, just not here
+
             id_ = make_id()
             filter_['id'] = id_
             self.filters['id_'] = filter_
@@ -302,7 +310,7 @@ class CompositeDataSource(object):
         return ids, status
 
     def remove_filter(self, filter_ids):
-        '''remove/detach a filter from the Data Source instance
+        """Remove/detach a filter from the Data Source instance
 
         Args:
             filter_ids (list): list of filter id's (which are strings)
@@ -310,7 +318,7 @@ class CompositeDataSource(object):
 
         Returns:
 
-        '''
+        """
 
         for filter_id in filter_ids:
             try:
@@ -318,35 +326,36 @@ class CompositeDataSource(object):
                     del self.filters[filter_id]
                     del self.filter_allowed[filter_id]
             except KeyError:
-                # filter id not found in list of filters attached to the Composite Data Source
+                # filter id not found in list of filters
+                # attached to the Composite Data Source
                 pass
 
         return
 
     def get_filters(self):
-        '''return filters attached to Composite Data Source
+        """return filters attached to Composite Data Source
 
         Args:
 
         Returns:
             (list): the list of filters currently attached to the Data Source
 
-        '''
+        """
         return copy.deepcopy(list(self.filters.values()))
 
     def deduplicate(self, stix_obj_list):
-        '''deduplicate a list fo STIX objects to a unique set
+        """deduplicate a list fo STIX objects to a unique set
 
         Reduces a set of STIX objects to unique set by looking
-        at 'id' and 'modified' fields - as a unique object version is determined
-        by the combination of those fields
+        at 'id' and 'modified' fields - as a unique object version
+        is determined by the combination of those fields
 
         Args:
             stix_obj_list (list): list of STIX objects (dicts)
 
         Returns:
                 (list): unique set of the passed list of STIX objects
-        '''
+        """
 
         unique = []
         dont_have = False
@@ -363,7 +372,7 @@ class CompositeDataSource(object):
 
 
 class DataSource(object):
-    '''
+    """
     Abstract Data Source class for STIX 2.0
 
     An implementer will create a concrete subclass from
@@ -373,7 +382,7 @@ class DataSource(object):
     supply them to a Composite Data Source which calls
     the subclass methods when conducting STIX 2.0
     data retrievals.
-    '''
+    """
 
     __metaclass__ = abc.ABCMeta
 
@@ -385,85 +394,91 @@ class DataSource(object):
 
     @abc.abstractmethod
     def get(self, id_, _composite_filters=None):
-        '''
+        """
         Fill:
-            -implement the specific data source API calls, processing, functionality
-            requried for retrieving data from the data source
+            -implement the specific data source API calls, processing,
+            functionality required for retrieving data from the data source
 
         Args:
 
-            id (str): the id of the STIX 2.0 object to retrieve. Should return a single object,
-            the most recent version of the object specified by the "id".
+            id_ (str): the id of the STIX 2.0 object to retrieve. Should
+                return a single object, the most recent version of the object
+                specified by the "id".
 
-            _composite_filters (list): list of filters passed along from the Composite Data Filter
+            _composite_filters (list): list of filters passed along from
+                the Composite Data Filter.
 
         Returns:
             stix_obj (dictionary): the STIX object to be returned
 
-        '''
-        raise NotImplementedError
+        """
+        raise NotImplementedError()
 
     @abc.abstractmethod
     def all_versions(self, id_, _composite_filters=None):
-        '''
+        """
         Fill:
-            -Similar to get() except returns list of all object versions of the specified "id".
+            -Similar to get() except returns list of all object versions of
+                the specified "id".
 
-            -implement the specific data source API calls, processing, functionality
-            requried for retrieving data from the data source
-
+            -implement the specific data source API calls, processing,
+            functionality required for retrieving data from the data source
 
         Args:
-            id (str): The id of the STIX 2.0 object to retrieve. Should return a list of objects,
-            all the versions of the object specified by the "id".
+            id_ (str): The id of the STIX 2.0 object to retrieve. Should
+                return a list of objects, all the versions of the object
+                specified by the "id".
 
-            _composite_filters (list): list of filters passed from the Composite Data Source
+            _composite_filters (list): list of filters passed from the
+                Composite Data Source
 
         Returns:
-            stix_objs (list): a list of STIX objects(where each object is a STIX object)
-
-        '''
+            stix_objs (list): a list of STIX objects (where each object is a
+                STIX object)
+        """
         stix_objs = []
 
         return stix_objs
 
     @abc.abstractmethod
     def query(self, query, _composite_filters=None):
-        '''
+        """
         Fill:
-            -implement the specific data source API calls, processing, functionality
-            requried for retrieving query from the data source
+            -implement the specific data source API calls, processing,
+            functionality required for retrieving query from the data source
 
         Args:
-            query (list): a list of filters (which collectively are the query) to conduct search on
+            query (list): a list of filters (which collectively are the query)
+                to conduct search on
 
-            _composite_filters (list): a list of filters passed from the Composite Data Source
+            _composite_filters (list): a list of filters passed from the
+                Composite Data Source
 
         Returns:
 
 
-        '''
+        """
         stix_objs = []
 
         return stix_objs
 
     @abc.abstractmethod
     def close(self):
-        '''
+        """
         Fill:
             Close, release, shutdown any objects, contexts, variables
         Args:
 
         Returns:
             (list): list of status/error messages
-        '''
+        """
 
         status = []
 
         return status
 
     def add_filter(self, filters):
-        '''add/attach a filter to the Data Source instance
+        """add/attach a filter to the Data Source instance
 
         Args:
             filters (list): list of filters (dict) to add to the Data Source
@@ -471,7 +486,7 @@ class DataSource(object):
         Returns:
             status (list): list of status/error messages
 
-        '''
+        """
 
         status = []
         errors = []
@@ -501,12 +516,11 @@ class DataSource(object):
                 allowed = False
                 errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
-            '''
-            Filter is added regardless of whether it fits requirements
-            to be a common filter. This is done because some filters
-            may be added and used by third party Data Sources, where
-            the filtering may be conducted within those plugins, just not here
-            '''
+            # Filter is added regardless of whether it fits requirements
+            # to be a common filter. This is done because some filters
+            # may be added and used by third party Data Sources, where the
+            # filtering may be conducted within those plugins, just not here
+
             id_ = make_id()
             filter_['id'] = id_
             self.filters[id_] = filter_
@@ -536,15 +550,16 @@ class DataSource(object):
         return ids, status
 
     def remove_filter(self, filter_ids):
-        '''remove/detach a filter from the Data Source instance
+        """remove/detach a filter from the Data Source instance
 
         Args:
-            filter_ids (list): list of filter ids to dettach/remove from Data Source
+            filter_ids (list): list of filter ids to dettach/remove
+                from Data Source
 
         Returns:
 
 
-        '''
+        """
         for filter_id in filter_ids:
             try:
                 if filter_id in self.filters:
@@ -557,18 +572,19 @@ class DataSource(object):
         return
 
     def get_filters(self):
-        '''return copy of all filters currently attached to Data Source
+        """return copy of all filters currently attached to Data Source
 
         TODO: make this a property?
 
         Returns:
-            (list): a copy of all the filters(dict) which are attached to Data Source
+            (list): a copy of all the filters(dict) which are attached
+                to Data Source
 
-        '''
+        """
         return copy.deepcopy(list(self.filters.values()))
 
     def apply_common_filters(self, stix_objs, query):
-        '''evaluates filters against a set of STIX 2.0 objects
+        """evaluates filters against a set of STIX 2.0 objects
 
         Supports only STIX 2.0 common property fields
 
@@ -577,9 +593,10 @@ class DataSource(object):
             query (list): list of filters (combined form complete query)
 
         Returns:
-            (list): list of STIX objects that successfully evaluate against the query
+            (list): list of STIX objects that successfully evaluate against
+                the query
 
-        '''
+        """
 
         filtered_stix_objs = []
 
@@ -588,12 +605,14 @@ class DataSource(object):
             clean = True
             for filter_ in query:
 
-                # skip filter as filter was identified (when added) as not a common filter
+                # skip filter as filter was identified (when added) as
+                # not a common filter
                 if 'id' in filter_ and self.filter_allowed[filter_['id']] is False:
                     continue
 
-                # check filter "field" is in STIX object - if cant be applied due to STIX object,
-                # STIX object is discarded (i.e. did not make it through the filter)
+                # check filter "field" is in STIX object - if cant be applied
+                # due to STIX object, STIX object is discarded (i.e. did not
+                # make it through the filter)
                 if filter_['field'] not in stix_obj.keys():
                     break
 
@@ -614,34 +633,34 @@ class DataSource(object):
                     else:
                         # filter operation not supported
                         continue
-                    '''
-                    #TODO: I think the rest of the operations only
-                    #apply to timestamps, in which case I dont think
-                    #simple operator usage (like below) works
 
-                    elif filter_['op'] == ">":
-                        if not stix_obj[filter_['field']] > filter_['value']:
-                            clean = False
-                            break
+                    # TODO: I think the rest of the operations only
+                    # apply to timestamps, in which case I don't think
+                    # simple operator usage (like below) works
 
-                    elif filter_['op'] == "<":
-                        if not stix_obj[filter_['field']] < filter_['value']:
-                            clean = False
-                            break
-
-                    elif filter_['op'] == ">=":
-                        if not stix_obj[filter_['field']] >= filter_['value']:
-                            clean = False
-                            break
-
-                    elif filter_['op'] == "<=":
-                        if not stix_obj[filter_['field']] <= filter_['value']:
-                            clean = False
-                            break
-                    '''
+                    # elif filter_['op'] == ">":
+                    #     if not stix_obj[filter_['field']] > filter_['value']:
+                    #         clean = False
+                    #         break
+                    #
+                    # elif filter_['op'] == "<":
+                    #     if not stix_obj[filter_['field']] < filter_['value']:
+                    #         clean = False
+                    #         break
+                    #
+                    # elif filter_['op'] == ">=":
+                    #     if not stix_obj[filter_['field']] >= filter_['value']:
+                    #         clean = False
+                    #         break
+                    #
+                    # elif filter_['op'] == "<=":
+                    #     if not stix_obj[filter_['field']] <= filter_['value']:
+                    #         clean = False
+                    #         break
 
                 except TypeError:
-                    # type mismatch of comparison operands - ignore filter, no error raised for now
+                    # type mismatch of comparison operands - ignore filter,
+                    # no error raised for now
                     pass
 
             # if object unmarked after all filter, add it
@@ -653,7 +672,7 @@ class DataSource(object):
         return filtered_stix_objs
 
     def deduplicate(self, stix_obj_list):
-        '''deduplicate a list of STIX objects into a unique set
+        """deduplicate a list of STIX objects into a unique set
 
         reduces a set of STIX objects to unique set by looking
         at 'id' and 'modified' fields - as a unique object version
@@ -666,7 +685,7 @@ class DataSource(object):
             (list): a unique set of the passed STIX object list
 
 
-        '''
+        """
         unique = []
         have = False
         for i in stix_obj_list:
