@@ -253,20 +253,23 @@ class CompositeDataSource(object):
                     errors.append("Filter was missing a required field(key). Each filter requires 'field', 'op', 'value' keys.")
                     break
 
-            # check filter field is a supported STIX 2.0 common field
-            if filter_['field'] not in STIX_COMMON_FIELDS:
-                allowed = False
-                errors.append("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
+            if allowed:
+                #no need for further checks if filter is missing parameters
+    
+                # check filter field is a supported STIX 2.0 common field
+                if filter_['field'] not in STIX_COMMON_FIELDS:
+                    allowed = False
+                    errors.append("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
 
-            # check filter operator is supported
-            if filter_['op'] not in FILTER_OPS:
-                allowed = False
-                errors.append("Filter operation(from 'op' field) not supported")
+                # check filter operator is supported
+                if filter_['op'] not in FILTER_OPS:
+                    allowed = False
+                    errors.append("Filter operation(from 'op' field) not supported")
 
-            # check filter value type is supported
-            if type(filter_['value']) not in FILTER_VALUE_TYPES:
-                allowed = False
-                errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
+                # check filter value type is supported
+                if type(filter_['value']) not in FILTER_VALUE_TYPES:
+                    allowed = False
+                    errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
             '''
             Filter is added regardless of whether it fits requirements
@@ -292,6 +295,7 @@ class CompositeDataSource(object):
                 status.append({
                     "status": "added but is not a common filter",
                     "filter": filter_,
+                    "errors": errors,
                     "data_source_name": self.name,
                     "data_source_id": self.id_
                 })
@@ -485,21 +489,23 @@ class DataSource(object):
                     allowed = False
                     errors.append("Filter was missing a required field(key). Each filter requires 'field', 'op', 'value' keys.")
                     break
+            if allowed:
+                #no reason for further checks if missing filter parameters
 
-            # check filter field is a supported STIX 2.0 common field
-            if filter_['field'] not in STIX_COMMON_FIELDS:
-                allowed = False
-                errors.append("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
+                # check filter field is a supported STIX 2.0 common field
+                if filter_['field'] not in STIX_COMMON_FIELDS:
+                    allowed = False
+                    errors.append("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
 
-            # check filter operator is supported
-            if filter_['op'] not in FILTER_OPS:
-                allowed = False
-                errors.append("Filter operation(from 'op' field) not supported")
+                # check filter operator is supported
+                if filter_['op'] not in FILTER_OPS:
+                    allowed = False
+                    errors.append("Filter operation(from 'op' field) not supported")
 
-            # check filter value type is supported
-            if type(filter_['value']) not in FILTER_VALUE_TYPES:
-                allowed = False
-                errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
+                # check filter value type is supported
+                if type(filter_['value']) not in FILTER_VALUE_TYPES:
+                    allowed = False
+                    errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
             '''
             Filter is added regardless of whether it fits requirements

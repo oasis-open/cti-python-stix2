@@ -10,7 +10,9 @@ TODO:
 that are found in "self.taxii_info"
 '''
 
-TAXII_FILTERS = ['added_after', 'match[id]', 'match[type]', 'match[version]']
+TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
+
+test = True
 
 
 class TAXIIDataSource(DataSource):
@@ -20,12 +22,20 @@ class TAXIIDataSource(DataSource):
 
         super(TAXIIDataSource, self).__init__(name=name)
 
+        if not api_root:
+            api_root = "http://localhost:5000"
+        if not auth:
+            auth = {"user":"admin", "pass":"taxii"}
+
         self.taxii_info = {
             "api_root": {
                             "url": api_root
                         },
             "auth": auth
         }
+
+        if test:
+            return
 
         try:
             # check api-root is reachable/exists and grab api collections
@@ -230,7 +240,11 @@ class TAXIIDataSource(DataSource):
 
         for q in query:
             if q['field'] in TAXII_FILTERS:
-                params[q['field']] = q['value']
+                if q['field'] == 'added_after':
+                    params[q['field']] = q['value']
+                else:
+                    taxii_field = 'match[' + q['field'] + ']'
+                    params[taxii_field] = q['value']
         return params
 
     def close(self):
