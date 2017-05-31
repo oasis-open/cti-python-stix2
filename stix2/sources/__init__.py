@@ -489,6 +489,7 @@ class DataSource(object):
                     allowed = False
                     errors.append("Filter was missing a required field(key). Each filter requires 'field', 'op', 'value' keys.")
                     break
+
             if allowed:
                 #no reason for further checks if missing filter parameters
 
