@@ -16,32 +16,32 @@ class InvalidValueError(STIXError, ValueError):
         return msg.format(self)
 
 
-class MissingFieldsError(STIXError, ValueError):
-    """Missing required field(s) when constructing STIX object."""
+class MissingPropertiesError(STIXError, ValueError):
+    """Missing one or more required properties when constructing STIX object."""
 
-    def __init__(self, cls, fields):
-        super(MissingFieldsError, self).__init__()
+    def __init__(self, cls, properties):
+        super(MissingPropertiesError, self).__init__()
         self.cls = cls
-        self.fields = sorted(list(fields))
+        self.properties = sorted(list(properties))
 
     def __str__(self):
-        msg = "No values for required field(s) for {0}: ({1})."
+        msg = "No values for required properties for {0}: ({1})."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.fields))
+                          ", ".join(x for x in self.properties))
 
 
-class ExtraFieldsError(STIXError, TypeError):
-    """Extra field(s) were provided when constructing STIX object."""
+class ExtraPropertiesError(STIXError, TypeError):
+    """One or more extra properties were provided when constructing STIX object."""
 
-    def __init__(self, cls, fields):
-        super(ExtraFieldsError, self).__init__()
+    def __init__(self, cls, properties):
+        super(ExtraPropertiesError, self).__init__()
         self.cls = cls
-        self.fields = sorted(list(fields))
+        self.properties = sorted(list(properties))
 
     def __str__(self):
-        msg = "Unexpected field(s) for {0}: ({1})."
+        msg = "Unexpected properties for {0}: ({1})."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.fields))
+                          ", ".join(x for x in self.properties))
 
 
 class ImmutableError(STIXError, ValueError):
@@ -49,6 +49,33 @@ class ImmutableError(STIXError, ValueError):
 
     def __init__(self):
         super(ImmutableError, self).__init__("Cannot modify properties after creation.")
+
+
+class DictionaryKeyError(STIXError, ValueError):
+    """Dictionary key does not conform to the correct format."""
+
+    def __init__(self, key, reason):
+        super(DictionaryKeyError, self).__init__()
+        self.key = key
+        self.reason = reason
+
+    def __str__(self):
+        msg = "Invalid dictionary key {0.key}: ({0.reason})."
+        return msg.format(self)
+
+
+class InvalidObjRefError(STIXError, ValueError):
+    """A STIX Cyber Observable Object contains an invalid object reference."""
+
+    def __init__(self, cls, prop_name, reason):
+        super(InvalidObjRefError, self).__init__()
+        self.cls = cls
+        self.prop_name = prop_name
+        self.reason = reason
+
+    def __str__(self):
+        msg = "Invalid object reference for '{0.cls.__name__}:{0.prop_name}': {0.reason}"
+        return msg.format(self)
 
 
 class UnmodifiablePropertyError(STIXError, ValueError):
@@ -61,6 +88,48 @@ class UnmodifiablePropertyError(STIXError, ValueError):
     def __str__(self):
         msg = "These properties cannot be changed when making a new version: {0}."
         return msg.format(", ".join(self.unchangable_properties))
+
+
+class MutuallyExclusivePropertiesError(STIXError, TypeError):
+    """Violating interproperty mutually exclusive constraint of a STIX object type."""
+
+    def __init__(self, cls, properties):
+        super(MutuallyExclusivePropertiesError, self).__init__()
+        self.cls = cls
+        self.properties = sorted(list(properties))
+
+    def __str__(self):
+        msg = "The ({1}) properties for {0} are mutually exclusive."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.properties))
+
+
+class DependentPropertiesError(STIXError, TypeError):
+    """Violating interproperty dependency constraint of a STIX object type."""
+
+    def __init__(self, cls, dependencies):
+        super(DependentPropertiesError, self).__init__()
+        self.cls = cls
+        self.dependencies = dependencies
+
+    def __str__(self):
+        msg = "The property dependencies for {0}: ({1}) are not met."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.dependencies))
+
+
+class AtLeastOnePropertyError(STIXError, TypeError):
+    """Violating a constraint of a STIX object type that at least one of the given properties must be populated."""
+
+    def __init__(self, cls, properties):
+        super(AtLeastOnePropertyError, self).__init__()
+        self.cls = cls
+        self.properties = sorted(list(properties))
+
+    def __str__(self):
+        msg = "At least one of the ({1}) properties for {0} must be populated."
+        return msg.format(self.cls.__name__,
+                          ", ".join(x for x in self.properties))
 
 
 class RevokeError(STIXError, ValueError):

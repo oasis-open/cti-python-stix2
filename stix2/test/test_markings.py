@@ -2,10 +2,12 @@ import datetime as dt
 
 import pytest
 import pytz
+
 import stix2
 from stix2.other import TLP_WHITE
 
 from .constants import MARKING_DEFINITION_ID
+
 
 EXPECTED_TLP_MARKING_DEFINITION = """{
     "created": "2017-01-20T00:00:00Z",

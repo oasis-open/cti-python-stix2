@@ -45,7 +45,7 @@ provided as keyword arguments:
 
   ```python
   >>> indicator = Indicator(type='xxx', ...)
-  ValueError: Indicators must have type='indicator'
+  stix2.exceptions.InvalidValueError: Invalid value for Indicator 'type': must equal 'indicator'.
   ```
 
 - If not provided, `id` will be generated randomly. If you provide an `id`
@@ -53,19 +53,19 @@ provided as keyword arguments:
 
   ```python
   >>> indicator = Indicator(id="campaign--63ce9068-b5ab-47fa-a2cf-a602ea01f21a")
-  ValueError: Invalid value for Indicator 'id': must start with 'indicator--'.
+  stix2.exceptions.InvalidValueError: Invalid value for Indicator 'id': must start with 'indicator--'.
   ```
 
 - If not provided, `created` and `modified` will be set to the (same) current
   time.
 
 For indicators, `labels` and `pattern` are required and cannot be set
-automatically. Trying to create an indicator that is missing one of these fields
-will result in an error:
+automatically. Trying to create an indicator that is missing one of these
+properties will result in an error:
 
 ```python
 >>> indicator = Indicator()
-ValueError: Missing required field(s) for Indicator: (labels, pattern).
+stix2.exceptions.MissingPropertiesError: No values for required properties for Indicator: (labels, pattern).
 ```
 
 However, the required `valid_from` attribute on Indicators will be set to the
@@ -89,8 +89,10 @@ TBD: Should we allow property access using the standard Python attribute syntax?
 Attempting to modify any attributes will raise an error:
 
 ```python
->>>indicator['name'] = "This is a revised name"
-ValueError: Cannot modify properties after creation.
+>>> indicator['name'] = "This is a revised name"
+TypeError: 'Indicator' object does not support item assignment
+>>> indicator.name = "This is a revised name"
+stix2.exceptions.ImmutableError: Cannot modify properties after creation.
 ```
 
 To update the properties of an object, see [Versioning](#versioning) below.

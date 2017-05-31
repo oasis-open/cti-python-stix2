@@ -6,7 +6,7 @@ import json
 from dateutil import parser
 import pytz
 
-# Sentinel value for fields that should be set to the current time.
+# Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
 # timestamps in a single object, the timestamps will vary by a few microseconds.
 NOW = object()
@@ -23,11 +23,11 @@ def format_datetime(dttm):
     # 4. Add subsecond value if non-zero
     # 5. Add "Z"
 
-    try:
-        zoned = dttm.astimezone(pytz.utc)
-    except ValueError:
+    if dttm.tzinfo is None or dttm.tzinfo.utcoffset(dttm) is None:
         # dttm is timezone-naive; assume UTC
-        pytz.utc.localize(dttm)
+        zoned = pytz.utc.localize(dttm)
+    else:
+        zoned = dttm.astimezone(pytz.utc)
     ts = zoned.strftime("%Y-%m-%dT%H:%M:%S")
     if zoned.microsecond > 0:
         ms = zoned.strftime("%f")
@@ -41,12 +41,12 @@ def parse_into_datetime(value):
             return value
         else:
             # Add a time component
-            return dt.datetime.combine(value, dt.time(), tzinfo=pytz.utc)
+            return dt.datetime.combine(value, dt.time(0, 0, tzinfo=pytz.utc))
 
     # value isn't a date or datetime object so assume it's a string
     try:
         parsed = parser.parse(value)
-    except TypeError:
+    except (TypeError, ValueError):
         # Unknown format
         raise ValueError("must be a datetime object, date object, or "
                          "timestamp string in a recognizable format.")
@@ -63,11 +63,17 @@ def get_dict(data):
     """
 
     if type(data) is dict:
-        obj = data
+        return data
     else:
         try:
-            obj = json.loads(data)
+            return json.loads(data)
         except TypeError:
-            obj = json.load(data)
-
-    return obj
+            pass
+        try:
+            return json.load(data)
+        except AttributeError:
+            pass
+        try:
+            return dict(data)
+        except (ValueError, TypeError):
+            raise ValueError("Cannot convert '%s' to dictionary." % str(data))

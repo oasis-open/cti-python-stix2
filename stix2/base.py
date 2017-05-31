@@ -3,17 +3,16 @@
 import collections
 import copy
 import datetime as dt
-
 import json
 
-
-from .exceptions import ExtraFieldsError, ImmutableError, InvalidValueError, \
-                        MissingFieldsError, RevokeError, UnmodifiablePropertyError
-from .utils import format_datetime, get_timestamp, NOW, parse_into_datetime
+from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError, ExtraPropertiesError, ImmutableError,
+                         InvalidObjRefError, InvalidValueError, MissingPropertiesError, MutuallyExclusivePropertiesError,
+                         RevokeError, UnmodifiablePropertyError)
+from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
-DEFAULT_ERROR = "{type} must have {field}='{expected}'."
+DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 
 
 class STIXJSONEncoder(json.JSONEncoder):
@@ -48,6 +47,42 @@ class _STIXBase(collections.Mapping):
             except ValueError as exc:
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
+    # interproperty constraint methods
+
+    def _check_mutually_exclusive_properties(self, list_of_properties, at_least_one=True):
+        current_properties = self.properties_populated()
+        count = len(set(list_of_properties).intersection(current_properties))
+        # at_least_one allows for xor to be checked
+        if count > 1 or (at_least_one and count == 0):
+            raise MutuallyExclusivePropertiesError(self.__class__, list_of_properties)
+
+    def _check_at_least_one_property(self, list_of_properties=None):
+        if not list_of_properties:
+            list_of_properties = sorted(list(self.__class__._properties.keys()))
+            if "type" in list_of_properties:
+                list_of_properties.remove("type")
+        current_properties = self.properties_populated()
+        list_of_properties_populated = set(list_of_properties).intersection(current_properties)
+        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(["extensions"])):
+            raise AtLeastOnePropertyError(self.__class__, list_of_properties)
+
+    def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
+        failed_dependency_pairs = []
+        current_properties = self.properties_populated()
+        for p in list_of_properties:
+            v = values.pop() if values else None
+            for dp in list_of_dependent_properties:
+                if dp in current_properties and (p not in current_properties or (v and not current_properties(p) == v)):
+                    failed_dependency_pairs.append((p, dp))
+        if failed_dependency_pairs:
+            raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
+
+    def _check_object_constraints(self):
+        if self.granular_markings:
+            for m in self.granular_markings:
+                # TODO: check selectors
+                pass
+
     def __init__(self, **kwargs):
         cls = self.__class__
 
@@ -57,7 +92,7 @@ class _STIXBase(collections.Mapping):
         # Detect any keyword arguments not allowed for a specific type
         extra_kwargs = list(set(kwargs) - set(cls._properties))
         if extra_kwargs:
-            raise ExtraFieldsError(cls, extra_kwargs)
+            raise ExtraPropertiesError(cls, extra_kwargs)
 
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
@@ -65,21 +100,18 @@ class _STIXBase(collections.Mapping):
             if prop_value:
                 setting_kwargs[prop_name] = prop_value
 
-        # Detect any missing required fields
-        required_fields = get_required_properties(cls._properties)
-        missing_kwargs = set(required_fields) - set(setting_kwargs)
+        # Detect any missing required properties
+        required_properties = get_required_properties(cls._properties)
+        missing_kwargs = set(required_properties) - set(setting_kwargs)
         if missing_kwargs:
-            raise MissingFieldsError(cls, missing_kwargs)
+            raise MissingPropertiesError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
             self._check_property(prop_name, prop_metadata, setting_kwargs)
 
         self._inner = setting_kwargs
 
-        if self.granular_markings:
-            for m in self.granular_markings:
-                # TODO: check selectors
-                pass
+        self._check_object_constraints()
 
     def __getitem__(self, key):
         return self._inner[key]
@@ -115,6 +147,9 @@ class _STIXBase(collections.Mapping):
         cls = type(self)
         return cls(**new_inner)
 
+    def properties_populated(self):
+        return list(self._inner.keys())
+
 #  Versioning API
 
     def new_version(self, **kwargs):
@@ -142,3 +177,55 @@ class _STIXBase(collections.Mapping):
         if self.revoked:
             raise RevokeError("revoke")
         return self.new_version(revoked=True)
+
+
+class _Observable(_STIXBase):
+
+    def __init__(self, **kwargs):
+        # the constructor might be called independently of an observed data object
+        if '_valid_refs' in kwargs:
+            self._STIXBase__valid_refs = kwargs.pop('_valid_refs')
+        else:
+            self._STIXBase__valid_refs = []
+        super(_Observable, self).__init__(**kwargs)
+
+    def _check_ref(self, ref, prop, prop_name):
+        if ref not in self._STIXBase__valid_refs:
+            raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+
+        try:
+            allowed_types = prop.contained.valid_types
+        except AttributeError:
+            try:
+                allowed_types = prop.valid_types
+            except AttributeError:
+                raise ValueError("'%s' is named like an object reference property but "
+                                 "is not an ObjectReferenceProperty or a ListProperty "
+                                 "containing ObjectReferenceProperty." % prop_name)
+
+        if allowed_types:
+            try:
+                ref_type = self._STIXBase__valid_refs[ref]
+            except TypeError:
+                raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
+            if ref_type not in allowed_types:
+                raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
+
+    def _check_property(self, prop_name, prop, kwargs):
+        super(_Observable, self)._check_property(prop_name, prop, kwargs)
+        if prop_name not in kwargs:
+            return
+
+        if prop_name.endswith('_ref'):
+            ref = kwargs[prop_name]
+            self._check_ref(ref, prop, prop_name)
+        elif prop_name.endswith('_refs'):
+            for ref in kwargs[prop_name]:
+                self._check_ref(ref, prop, prop_name)
+
+
+class _Extension(_STIXBase):
+
+    def _check_object_constraints(self):
+        super(_Extension, self)._check_object_constraints()
+        self._check_at_least_one_property()

@@ -31,7 +31,7 @@ BAD_SIGHTING = """{
 }"""
 
 
-def test_sighting_all_required_fields():
+def test_sighting_all_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
 
     s = stix2.Sighting(
@@ -75,12 +75,12 @@ def test_sighting_type_must_be_sightings():
 
 
 def test_invalid_kwarg_to_sighting():
-    with pytest.raises(stix2.exceptions.ExtraFieldsError) as excinfo:
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.Sighting(my_custom_property="foo", **SIGHTING_KWARGS)
 
     assert excinfo.value.cls == stix2.Sighting
-    assert excinfo.value.fields == ['my_custom_property']
-    assert str(excinfo.value) == "Unexpected field(s) for Sighting: (my_custom_property)."
+    assert excinfo.value.properties == ['my_custom_property']
+    assert str(excinfo.value) == "Unexpected properties for Sighting: (my_custom_property)."
 
 
 def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811

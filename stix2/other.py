@@ -4,7 +4,7 @@ from .base import _STIXBase
 from .properties import (IDProperty, ListProperty, Property, ReferenceProperty,
                          SelectorProperty, StringProperty, TimestampProperty,
                          TypeProperty)
-from .utils import get_dict, NOW
+from .utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):
@@ -14,6 +14,10 @@ class ExternalReference(_STIXBase):
         'url': StringProperty(),
         'external_id': StringProperty(),
     }
+
+    def _check_object_constraints(self):
+        super(ExternalReference, self)._check_object_constraints()
+        self._check_at_least_one_property(["description", "external_id", "url"])
 
 
 class KillChainPhase(_STIXBase):

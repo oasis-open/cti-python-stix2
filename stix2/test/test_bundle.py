@@ -2,6 +2,7 @@ import pytest
 
 import stix2
 
+
 EXPECTED_BUNDLE = """{
     "id": "bundle--00000000-0000-0000-0000-000000000004",
     "objects": [

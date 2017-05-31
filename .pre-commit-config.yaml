@@ -6,3 +6,8 @@
         args:
         - --max-line-length=160
     -   id: check-merge-conflict
+
+- repo: https://github.com/FalconSocial/pre-commit-python-sorter
+  sha: 1.0.4
+  hooks:
+  - id: python-import-sorter
