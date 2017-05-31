@@ -61,8 +61,8 @@ def test_parse_taxii_filters():
 
     assert taxii_filters == expected_params
 
-
 def test_add_get_remove_filter():
+
     class dummy(object):
         x = 4
 
@@ -129,6 +129,178 @@ def test_add_get_remove_filter():
     assert statuses[4]['errors'][0] == expected_errors[1]
     assert statuses[5]['errors'][0] == expected_errors[2]
     assert statuses[6]['errors'][0] == expected_errors[3]
+
+    #get
+    ds_filters = ds.get_filters()
+
+    for idx,flt in enumerate(filters):
+        assert flt['value'] == filters[idx]['value']
+
+    #remove
+    ds.remove_filter([ids[3]])
+    ds.remove_filter([ids[4]])
+    ds.remove_filter([ids[5]])
+    ds.remove_filter([ids[6]])
+
+    rem_filters = ds.get_filters()
+
+    assert len(rem_filters) == 3
+
+    #check remaining filters
+    rem_ids = [f['id'] for f in rem_filters]
+
+    #check remaining
+    for id_ in rem_ids:
+        assert id_ in ids[:3]
+
+def test_apply_common_filters():
+    stix_objs = [
+        {
+            "created": "2017-01-27T13:49:53.997Z",
+            "description": "\n\nTITLE:\n\tPoison Ivy",
+            "id": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
+            "labels": [
+                "remote-access-trojan"
+            ],
+            "modified": "2017-01-27T13:49:53.997Z",
+            "name": "Poison Ivy",
+            "type": "malware"
+        },
+        {
+            "created": "2014-05-08T09:00:00.000Z",
+            "id": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
+            "labels": [
+                "file-hash-watchlist"
+            ],
+            "modified": "2014-05-08T09:00:00.000Z",
+            "name": "File hash for Poison Ivy variant",
+            "pattern": "[file:hashes.'SHA-256' = 'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c']",
+            "type": "indicator",
+            "valid_from": "2014-05-08T09:00:00.000000Z"
+        },
+        {
+            "created": "2014-05-08T09:00:00.000Z",
+            "id": "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463",
+            "modified": "2014-05-08T09:00:00.000Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
+            "target_ref": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
+            "type": "relationship"
+        }
+    ]
+
+    filters = [
+        {
+            "field": "type",
+            "op": "!=",
+            "value": "relationship"
+        },
+        {
+            "field": "id",
+            "op": "=",
+            "value": "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"
+        },
+        {
+            "field": "labels",
+            "op": "in",
+            "value": "trojan"
+        }
+    ]
+
+    ds = taxii.TAXIIDataSource()
+
+    resp = ds.apply_common_filters(stix_objs, [filters[0]])
+    ids = [r['id'] for r in resp]
+    assert stix_objs[0]['id'] in ids
+    assert stix_objs[1]['id'] in ids
+
+    resp = ds.apply_common_filters(stix_objs, [filters[1]])
+    assert resp[0]['id'] == stix_objs[2]['id']
+
+    resp = ds.apply_common_filters(stix_objs, [filters[2]])
+    assert resp[0]['id'] == stix_objs[0]['id']
+
+def test_deduplicate():
+    stix_objs = [
+        {
+            "created": "2017-01-27T13:49:53.935Z",
+            "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+            "labels": [
+                "url-watchlist"
+            ],
+            "modified": "2017-01-27T13:49:53.935Z",
+            "name": "Malicious site hosting downloader",
+            "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+            "type": "indicator",
+            "valid_from": "2017-01-27T13:49:53.935382Z"
+        },
+        {
+            "created": "2017-01-27T13:49:53.935Z",
+            "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+            "labels": [
+                "url-watchlist"
+            ],
+            "modified": "2017-01-27T13:49:53.935Z",
+            "name": "Malicious site hosting downloader",
+            "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+            "type": "indicator",
+            "valid_from": "2017-01-27T13:49:53.935382Z"
+        },
+        {
+            "created": "2017-01-27T13:49:53.935Z",
+            "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+            "labels": [
+                "url-watchlist"
+            ],
+            "modified": "2017-01-27T13:49:53.936Z",
+            "name": "Malicious site hosting downloader",
+            "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+            "type": "indicator",
+            "valid_from": "2017-01-27T13:49:53.935382Z"
+        },
+        {
+            "created": "2017-01-27T13:49:53.935Z",
+            "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+            "labels": [
+                "url-watchlist"
+            ],
+            "modified": "2017-01-27T13:49:53.935Z",
+            "name": "Malicious site hosting downloader",
+            "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+            "type": "indicator",
+            "valid_from": "2017-01-27T13:49:53.935382Z"
+        },
+        {
+            "created": "2017-01-27T13:49:53.935Z",
+            "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+            "labels": [
+                "url-watchlist"
+            ],
+            "modified": "2017-01-27T13:49:53.935Z",
+            "name": "Malicious site hosting downloader",
+            "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+            "type": "indicator",
+            "valid_from": "2017-01-27T13:49:53.935382Z"
+        }
+    ]
+
+    ds = taxii.TAXIIDataSource()
+    unique = ds.deduplicate(stix_objs)
+
+    #Only 3 objects are unique
+    #2 id's vary
+    #2 modified times vary for a particular id
+
+    assert len(unique) == 3
+
+    ids = [obj['id'] for obj in unique]
+    mods = [obj['modified'] for obj in unique]
+
+    assert "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f" in ids
+    assert "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f" in ids
+    assert "2017-01-27T13:49:53.935Z" in mods
+    assert "2017-01-27T13:49:53.936Z" in mods
+
 
 
 # def test_data_source_file():
