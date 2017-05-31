@@ -9,8 +9,8 @@ project = 'stix2'
 copyright = '2017, OASIS Open'
 author = 'OASIS Open'
 
-version = '0.1.0'
-release = '0.1.0'
+version = '0.2.0'
+release = '0.2.0'
 
 language = None
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
