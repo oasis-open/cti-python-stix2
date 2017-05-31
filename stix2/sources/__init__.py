@@ -263,8 +263,8 @@ class CompositeDataSource(object):
                     break
 
             if allowed:
-                #no need for further checks if filter is missing parameters
-    
+                # no need for further checks if filter is missing parameters
+
                 # check filter field is a supported STIX 2.0 common field
                 if filter_['field'] not in STIX_COMMON_FIELDS:
                     allowed = False
@@ -506,7 +506,7 @@ class DataSource(object):
                     break
 
             if allowed:
-                #no reason for further checks if missing filter parameters
+                # no reason for further checks if missing filter parameters
 
                 # check filter field is a supported STIX 2.0 common field
                 if filter_['field'] not in STIX_COMMON_FIELDS:

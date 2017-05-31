@@ -21,7 +21,7 @@ class TAXIIDataSource(DataSource):
         if not api_root:
             api_root = "http://localhost:5000"
         if not auth:
-            auth = {"user":"admin", "pass":"taxii"}
+            auth = {"user": "admin", "pass": "taxii"}
 
         self.taxii_info = {
             "api_root": {
@@ -117,7 +117,7 @@ class TAXIIDataSource(DataSource):
                 Source (if this data source is attached to one)
 
         Returns:
-            The query results with filters applied. 
+            The query results with filters applied.
         """
 
         # make query in TAXII query format since 'id' is TAXII field
