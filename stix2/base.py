@@ -97,7 +97,7 @@ class _STIXBase(collections.Mapping):
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
         for prop_name, prop_value in kwargs.items():
-            if prop_value:
+            if prop_value is not None:
                 setting_kwargs[prop_name] = prop_value
 
         # Detect any missing required properties
