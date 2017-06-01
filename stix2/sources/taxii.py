@@ -206,7 +206,7 @@ class TAXIIDataSource(DataSource):
                     all_data.append(stix_obj)
 
             except requests.exceptions.RequestException as e:
-                raise
+                raise e
                 # raise type(e), type(e)(e.message +
                 # "Attempting to connect to %s" % coll_url)
 
