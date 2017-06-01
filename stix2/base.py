@@ -128,7 +128,7 @@ class _STIXBase(collections.Mapping):
 
     def __setattr__(self, name, value):
         if name != '_inner' and not name.startswith("_STIXBase__"):
-            raise ImmutableError
+            raise ImmutableError(self.__class__, name)
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
