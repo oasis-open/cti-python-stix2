@@ -761,14 +761,13 @@ def test_file_example_with_WindowsPEBinaryExt():
 
 
 def test_file_example_encryption_error():
-    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.File(name="qwerty.dll",
-                   is_encrypted=False,
-                   encryption_algorithm="AES128-CBC"
-                   )
+    file_ = stix2.File(name="qwerty.dll", is_encrypted=False,
+                       encryption_algorithm="AES128-CBC")
 
-    assert excinfo.value.cls == stix2.File
-    assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
+    assert file_.__class__ == stix2.File
+    assert file_.name == "qwerty.dll"
+    assert file_.is_encrypted is False
+    assert file_.encryption_algorithm == "AES128-CBC"
 
 
 def test_ip4_address_example():
