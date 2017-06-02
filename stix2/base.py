@@ -133,7 +133,7 @@ class _STIXBase(collections.Mapping):
             # If attribute not found, check if its a property of the object.
             if name in self._properties:
                 return None
-            
+
             raise AttributeError("'%s' object has no attribute '%s'" %
                                  (self.__class__.__name__, name))
 
