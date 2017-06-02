@@ -1,4 +1,5 @@
 import json
+
 from stix2.sources.taxii import TAXIIDataSource
 
 # Flask TAXII server - developmental

@@ -5,9 +5,12 @@ import copy
 import datetime as dt
 import json
 
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError, ExtraPropertiesError, ImmutableError,
-                         InvalidObjRefError, InvalidValueError, MissingPropertiesError, MutuallyExclusivePropertiesError,
-                         RevokeError, UnmodifiablePropertyError)
+from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
+                         ExtraPropertiesError, ImmutableError,
+                         InvalidObjRefError, InvalidValueError,
+                         MissingPropertiesError,
+                         MutuallyExclusivePropertiesError, RevokeError,
+                         UnmodifiablePropertyError)
 from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']

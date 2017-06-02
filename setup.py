@@ -5,6 +5,7 @@ install_requires = [
     'pytz',
     'six',
     'python-dateutil',
+    'requests',
 ]
 
 setup(
