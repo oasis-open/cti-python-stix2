@@ -129,7 +129,7 @@ def test_cannot_assign_to_indicator_attributes(indicator):
     with pytest.raises(stix2.exceptions.ImmutableError) as excinfo:
         indicator.valid_from = dt.datetime.now()
 
-    assert str(excinfo.value) == "Cannot modify 'valid_from' property in <class 'stix2.sdo.Indicator'> after creation."
+    assert str(excinfo.value) == "Cannot modify 'valid_from' property in 'Indicator' after creation."
 
 
 def test_invalid_kwarg_to_indicator():
