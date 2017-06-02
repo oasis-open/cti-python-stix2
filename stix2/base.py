@@ -69,13 +69,11 @@ class _STIXBase(collections.Mapping):
         if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(["extensions"])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
-    def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
+    def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties):
         failed_dependency_pairs = []
-        current_properties = self.properties_populated()
         for p in list_of_properties:
-            v = values.pop() if values else None
             for dp in list_of_dependent_properties:
-                if dp in current_properties and (p not in current_properties or (v and not current_properties(p) == v)):
+                if not self.__getattr__(p) and self.__getattr__(dp):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
