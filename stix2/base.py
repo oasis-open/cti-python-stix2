@@ -81,10 +81,9 @@ class _STIXBase(collections.Mapping):
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
 
     def _check_object_constraints(self):
-        if hasattr(self, "granular_markings") and self.granular_markings:
-            for m in self.granular_markings:
-                # TODO: check selectors
-                pass
+        for m in self.get("granular_markings", []):
+            # TODO: check selectors
+            pass
 
     def __init__(self, **kwargs):
         cls = self.__class__
@@ -127,16 +126,16 @@ class _STIXBase(collections.Mapping):
 
     # Handle attribute access just like key access
     def __getattr__(self, name):
-        # If the requested attribute is not None return its value
-        if self.get(name) is not None:
-            return self.get(name)
-        # Otherwise check the attribute exists inside object. If it exists
-        # return None. If not raise the AttributeError.
-        elif name in self._properties:
-            return None
-
-        raise AttributeError("'%s' object has no attribute '%s'" %
-                             (self.__class__.__name__, name))
+        try:
+            # Return attribute value.
+            return self.__getitem__(name)
+        except KeyError:
+            # If attribute not found, check if its a property of the object.
+            if name in self._properties:
+                return None
+            
+            raise AttributeError("'%s' object has no attribute '%s'" %
+                                 (self.__class__.__name__, name))
 
     def __setattr__(self, name, value):
         if name != '_inner' and not name.startswith("_STIXBase__"):
