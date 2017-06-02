@@ -53,7 +53,7 @@ class ImmutableError(STIXError, ValueError):
         self.key = key
 
     def __str__(self):
-        msg = "Cannot modify '{0.key}' property in {0.cls} after creation."
+        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
         return msg.format(self)
 
 
