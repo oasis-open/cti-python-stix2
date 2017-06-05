@@ -764,8 +764,7 @@ def test_file_example_encryption_error():
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
         stix2.File(name="qwerty.dll",
                    is_encrypted=False,
-                   encryption_algorithm="AES128-CBC"
-                   )
+                   encryption_algorithm="AES128-CBC")
 
     assert excinfo.value.cls == stix2.File
     assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]

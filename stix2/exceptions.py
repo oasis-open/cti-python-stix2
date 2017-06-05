@@ -47,8 +47,14 @@ class ExtraPropertiesError(STIXError, TypeError):
 class ImmutableError(STIXError, ValueError):
     """Attempted to modify an object after creation"""
 
-    def __init__(self):
-        super(ImmutableError, self).__init__("Cannot modify properties after creation.")
+    def __init__(self, cls, key):
+        super(ImmutableError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
+        return msg.format(self)
 
 
 class DictionaryKeyError(STIXError, ValueError):
