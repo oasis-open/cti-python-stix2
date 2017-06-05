@@ -103,7 +103,7 @@ def test_cannot_assign_to_relationship_attributes(relationship):
     with pytest.raises(stix2.exceptions.ImmutableError) as excinfo:
         relationship.relationship_type = "derived-from"
 
-    assert str(excinfo.value) == "Cannot modify properties after creation."
+    assert str(excinfo.value) == "Cannot modify 'relationship_type' property in 'Relationship' after creation."
 
 
 def test_invalid_kwarg_to_relationship():

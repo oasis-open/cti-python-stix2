@@ -5,9 +5,12 @@ import copy
 import datetime as dt
 import json
 
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError, ExtraPropertiesError, ImmutableError,
-                         InvalidObjRefError, InvalidValueError, MissingPropertiesError, MutuallyExclusivePropertiesError,
-                         RevokeError, UnmodifiablePropertyError)
+from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
+                         ExtraPropertiesError, ImmutableError,
+                         InvalidObjRefError, InvalidValueError,
+                         MissingPropertiesError,
+                         MutuallyExclusivePropertiesError, RevokeError,
+                         UnmodifiablePropertyError)
 from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -66,22 +69,19 @@ class _STIXBase(collections.Mapping):
         if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(["extensions"])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
-    def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties, values=[]):
+    def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties):
         failed_dependency_pairs = []
-        current_properties = self.properties_populated()
         for p in list_of_properties:
-            v = values.pop() if values else None
             for dp in list_of_dependent_properties:
-                if dp in current_properties and (p not in current_properties or (v and not current_properties(p) == v)):
+                if not self.__getattr__(p) and self.__getattr__(dp):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
 
     def _check_object_constraints(self):
-        if self.granular_markings:
-            for m in self.granular_markings:
-                # TODO: check selectors
-                pass
+        for m in self.get("granular_markings", []):
+            # TODO: check selectors
+            pass
 
     def __init__(self, **kwargs):
         cls = self.__class__
@@ -97,7 +97,7 @@ class _STIXBase(collections.Mapping):
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
         for prop_name, prop_value in kwargs.items():
-            if prop_value:
+            if prop_value is not None:
                 setting_kwargs[prop_name] = prop_value
 
         # Detect any missing required properties
@@ -124,11 +124,20 @@ class _STIXBase(collections.Mapping):
 
     # Handle attribute access just like key access
     def __getattr__(self, name):
-        return self.get(name)
+        try:
+            # Return attribute value.
+            return self.__getitem__(name)
+        except KeyError:
+            # If attribute not found, check if its a property of the object.
+            if name in self._properties:
+                return None
+
+            raise AttributeError("'%s' object has no attribute '%s'" %
+                                 (self.__class__.__name__, name))
 
     def __setattr__(self, name, value):
         if name != '_inner' and not name.startswith("_STIXBase__"):
-            raise ImmutableError
+            raise ImmutableError(self.__class__, name)
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
