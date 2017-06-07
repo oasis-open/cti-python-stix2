@@ -443,10 +443,10 @@ class Process(_Observable):
         super(Process, self)._check_object_constraints()
         try:
             self._check_at_least_one_property()
-            if self.extensions and "windows-process-ext" in self.extensions:
+            if hasattr(self, 'extensions') and "windows-process-ext" in self.extensions:
                 self.extensions["windows-process-ext"]._check_at_least_one_property()
         except AtLeastOnePropertyError as enclosing_exc:
-            if not self.extensions:
+            if not hasattr(self, 'extensions'):
                 raise enclosing_exc
             else:
                 if "windows-process-ext" in self.extensions:

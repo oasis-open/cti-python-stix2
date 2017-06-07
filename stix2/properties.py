@@ -244,6 +244,8 @@ class ObservableProperty(Property):
             dictified = get_dict(value)
         except ValueError:
             raise ValueError("The observable property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
@@ -265,6 +267,8 @@ class DictionaryProperty(Property):
             dictified = get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         for k in dictified.keys():
             if len(k) < 3:
@@ -418,6 +422,8 @@ class ExtensionsProperty(DictionaryProperty):
             dictified = get_dict(value)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         from .__init__ import EXT_MAP  # avoid circular import
         if self.enclosing_type in EXT_MAP:

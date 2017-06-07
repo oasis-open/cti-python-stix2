@@ -199,6 +199,13 @@ def test_parse_artifact_invalid(data):
         stix2.parse(odata_str)
 
 
+def test_artifact_example_dependency_error():
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.Artifact(url="http://example.com/sirvizio.exe")
+
+    assert excinfo.value.dependencies == [("hashes", "url")]
+
+
 @pytest.mark.parametrize("data", [
     """"0": {
         "type": "autonomous-system",
@@ -769,6 +776,10 @@ def test_file_example_encryption_error():
     assert excinfo.value.cls == stix2.File
     assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
 
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.File(name="qwerty.dll",
+                   encryption_algorithm="AES128-CBC")
+
 
 def test_ip4_address_example():
     ip4 = stix2.IPv4Address(_valid_refs={"4": "mac-addr", "5": "mac-addr"},
@@ -916,14 +927,12 @@ def test_process_example_windows_process_ext_empty():
 
 
 def test_process_example_extensions_empty():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-            stix2.Process(extensions={
-                          })
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+            stix2.Process(extensions={})
 
     assert excinfo.value.cls == stix2.Process
-    properties_of_process = list(stix2.Process._properties.keys())
-    properties_of_process.remove("type")
-    assert excinfo.value.properties == sorted(properties_of_process)
+    assert excinfo.value.prop_name == 'extensions'
+    assert 'non-empty dictionary' in excinfo.value.reason
 
 
 def test_process_example_with_WindowsProcessExt_Object():

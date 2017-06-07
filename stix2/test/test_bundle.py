@@ -48,7 +48,8 @@ def test_empty_bundle():
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
     assert bundle.spec_version == "2.0"
-    assert bundle.objects is None
+    with pytest.raises(AttributeError):
+        assert bundle.objects
 
 
 def test_bundle_with_wrong_type():

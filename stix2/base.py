@@ -73,7 +73,8 @@ class _STIXBase(collections.Mapping):
         failed_dependency_pairs = []
         for p in list_of_properties:
             for dp in list_of_dependent_properties:
-                if not self.__getattr__(p) and self.__getattr__(dp):
+                if ((not hasattr(self, p) or (hasattr(self, p) and not self.__getattr__(p))) and
+                        hasattr(self, dp) and self.__getattr__(dp)):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
@@ -128,10 +129,6 @@ class _STIXBase(collections.Mapping):
             # Return attribute value.
             return self.__getitem__(name)
         except KeyError:
-            # If attribute not found, check if its a property of the object.
-            if name in self._properties:
-                return None
-
             raise AttributeError("'%s' object has no attribute '%s'" %
                                  (self.__class__.__name__, name))
 
@@ -163,7 +160,7 @@ class _STIXBase(collections.Mapping):
 
     def new_version(self, **kwargs):
         unchangable_properties = []
-        if self.revoked:
+        if hasattr(self, 'revoked') and self.revoked:
             raise RevokeError("new_version")
         new_obj_inner = copy.deepcopy(self._inner)
         properties_to_change = kwargs.keys()
@@ -183,7 +180,7 @@ class _STIXBase(collections.Mapping):
         return cls(**new_obj_inner)
 
     def revoke(self):
-        if self.revoked:
+        if hasattr(self, 'revoked') and self.revoked:
             raise RevokeError("revoke")
         return self.new_version(revoked=True)
 
