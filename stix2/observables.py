@@ -6,7 +6,7 @@ and do not have a '_type' attribute.
 """
 
 from .base import _Extension, _Observable, _STIXBase
-from .exceptions import AtLeastOnePropertyError
+from .exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, EnumProperty,
                          ExtensionsProperty, FloatProperty, HashesProperty,
@@ -110,7 +110,9 @@ class EmailMessage(_Observable):
     def _check_object_constraints(self):
         super(EmailMessage, self)._check_object_constraints()
         self._check_properties_dependency(["is_multipart"], ["body_multipart"])
-        # self._dependency(["is_multipart"], ["body"], [False])
+        if self.get("is_multipart") is True and self.get("body"):
+            # 'body' MAY only be used if is_multipart is false.
+            raise DependentPropertiesError(self.__class__, [("is_multipart", "body")])
 
 
 class ArchiveExt(_Extension):
@@ -443,13 +445,13 @@ class Process(_Observable):
         super(Process, self)._check_object_constraints()
         try:
             self._check_at_least_one_property()
-            if hasattr(self, 'extensions') and "windows-process-ext" in self.extensions:
+            if "windows-process-ext" in self.get('extensions', {}):
                 self.extensions["windows-process-ext"]._check_at_least_one_property()
         except AtLeastOnePropertyError as enclosing_exc:
-            if not hasattr(self, 'extensions'):
+            if 'extensions' not in self:
                 raise enclosing_exc
             else:
-                if "windows-process-ext" in self.extensions:
+                if "windows-process-ext" in self.get('extensions', {}):
                     self.extensions["windows-process-ext"]._check_at_least_one_property()
 
 

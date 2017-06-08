@@ -295,6 +295,31 @@ def test_parse_email_message(data):
 
 
 @pytest.mark.parametrize("data", [
+    """
+    {
+         "type": "email-message",
+         "from_ref": "0",
+         "to_refs": ["1"],
+         "is_multipart": true,
+         "date": "1997-11-21T15:55:06.000Z",
+         "subject": "Saying Hello",
+         "body": "Cats are funny!"
+    }
+    """
+])
+def test_parse_email_message_not_multipart(data):
+    valid_refs = {
+        "0": "email-addr",
+        "1": "email-addr",
+    }
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.parse_observable(data, valid_refs)
+
+    assert excinfo.value.cls == stix2.EmailMessage
+    assert excinfo.value.dependencies == [("is_multipart", "body")]
+
+
+@pytest.mark.parametrize("data", [
     """"0": {
             "type": "file",
             "hashes": {
@@ -911,6 +936,23 @@ def test_process_example_empty_with_extensions():
     assert excinfo.value.cls == stix2.WindowsProcessExt
     properties_of_extension = list(stix2.WindowsProcessExt._properties.keys())
     assert excinfo.value.properties == sorted(properties_of_extension)
+
+
+def test_process_example_windows_process_ext():
+    proc = stix2.Process(pid=314,
+                         name="foobar.exe",
+                         extensions={
+                             "windows-process-ext": {
+                                 "aslr_enabled": True,
+                                 "dep_enabled": True,
+                                 "priority": "HIGH_PRIORITY_CLASS",
+                                 "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
+                             }
+                         })
+    assert proc.extensions["windows-process-ext"].aslr_enabled
+    assert proc.extensions["windows-process-ext"].dep_enabled
+    assert proc.extensions["windows-process-ext"].priority == "HIGH_PRIORITY_CLASS"
+    assert proc.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_process_example_windows_process_ext_empty():
