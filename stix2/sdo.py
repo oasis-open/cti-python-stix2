@@ -1,5 +1,7 @@
 """STIX 2.0 Domain Objects"""
 
+import stix2
+
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
 from .other import KillChainPhase
@@ -190,3 +192,22 @@ class Vulnerability(_STIXBase):
         'name': StringProperty(required=True),
         'description': StringProperty(),
     })
+
+
+def CustomObject(type='x-custom-type', properties={}):
+    """Custom STIX Object type decorator"""
+
+    def custom_builder(cls):
+
+        class _Custom(_STIXBase):
+            _type = type
+            _properties = COMMON_PROPERTIES.copy()
+            _properties.update({
+                'id': IDProperty(_type),
+                'type': TypeProperty(_type),
+            })
+            _properties.update(properties)
+        stix2._register_type(_Custom)
+        return _Custom
+
+    return custom_builder
