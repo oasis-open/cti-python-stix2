@@ -52,6 +52,16 @@ def test_parse_identity(data):
 
 
 def test_identity_custom_property():
+    with pytest.raises(ValueError):
+        stix2.Identity(
+            id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            created="2015-12-21T19:59:11Z",
+            modified="2015-12-21T19:59:11Z",
+            name="John Smith",
+            identity_class="individual",
+            custom_properties="foobar",
+        )
+
     identity = stix2.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
@@ -76,5 +86,49 @@ def test_identity_custom_property_invalid():
             identity_class="individual",
             x_foo="bar",
         )
+
+
+def test_identity_custom_property_allowed():
+    identity = stix2.Identity(
+        id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+        created="2015-12-21T19:59:11Z",
+        modified="2015-12-21T19:59:11Z",
+        name="John Smith",
+        identity_class="individual",
+        x_foo="bar",
+        allow_custom=True,
+    )
+    assert identity.x_foo == "bar"
+
+
+@pytest.mark.parametrize("data", [
+    """{
+        "type": "identity",
+        "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+        "created": "2015-12-21T19:59:11Z",
+        "modified": "2015-12-21T19:59:11Z",
+        "name": "John Smith",
+        "identity_class": "individual",
+        "foo": "bar"
+    }""",
+])
+def test_parse_identity_custom_property(data):
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        identity = stix2.parse(data)
+
+    identity = stix2.parse(data, allow_custom=True)
+    assert identity.foo == "bar"
+
+
+def test_parse_no_type():
+    with pytest.raises(stix2.exceptions.ParseError):
+        stix2.parse("""
+        {
+            "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            "created": "2015-12-21T19:59:11Z",
+            "modified": "2015-12-21T19:59:11Z",
+            "name": "John Smith",
+            "identity_class": "individual"
+        }""")
 
 # TODO: Add other examples

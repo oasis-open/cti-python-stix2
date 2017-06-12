@@ -83,7 +83,7 @@ class _STIXBase(collections.Mapping):
             # TODO: check selectors
             pass
 
-    def __init__(self, **kwargs):
+    def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
 
         # Use the same timestamp for any auto-generated datetimes
@@ -93,9 +93,10 @@ class _STIXBase(collections.Mapping):
         custom_props = kwargs.pop('custom_properties', {})
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
-        extra_kwargs = list(set(kwargs) - set(cls._properties))
-        if extra_kwargs:
-            raise ExtraPropertiesError(cls, extra_kwargs)
+        if not allow_custom:
+            extra_kwargs = list(set(kwargs) - set(cls._properties))
+            if extra_kwargs:
+                raise ExtraPropertiesError(cls, extra_kwargs)
 
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
