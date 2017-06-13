@@ -78,7 +78,7 @@ def test_parse_identity_custom_property(data):
 })
 class NewType():
     def __init__(self, property2=None, **kwargs):
-        if property2 < 10:
+        if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
 
 
@@ -90,7 +90,7 @@ def test_custom_object_type():
         NewType(property2=42)
 
     with pytest.raises(ValueError):
-        NewType(property2=4)
+        NewType(property1='something', property2=4)
 
 
 def test_parse_custom_object_type():
