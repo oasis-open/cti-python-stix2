@@ -199,7 +199,7 @@ def CustomObject(type='x-custom-type', properties={}):
 
     Example 1:
 
-    @CustomObject('type-name', {
+    @CustomObject('x-type-name', {
         'property1': StringProperty(required=True),
         'property2': IntegerProperty(),
     })
@@ -211,7 +211,7 @@ def CustomObject(type='x-custom-type', properties={}):
 
     Example 2:
 
-    @CustomObject('type-name', {
+    @CustomObject('x-type-name', {
         'property1': StringProperty(required=True),
         'property2': IntegerProperty(),
     })

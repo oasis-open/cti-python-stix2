@@ -114,12 +114,11 @@ def parse(data, allow_custom=False):
     try:
         obj_class = OBJ_MAP[obj['type']]
     except KeyError:
-        # TODO handle custom objects
-        raise exceptions.ParseError("Can't parse unknown object type '%s'!" % obj['type'])
+        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % obj['type'])
     return obj_class(allow_custom=allow_custom, **obj)
 
 
-def parse_observable(data, _valid_refs, allow_custom=False):
+def parse_observable(data, _valid_refs=[], allow_custom=False):
     """Deserialize a string or file-like object into a STIX Cyber Observable object.
 
     Args:
@@ -139,8 +138,7 @@ def parse_observable(data, _valid_refs, allow_custom=False):
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        # TODO handle custom observable objects
-        raise exceptions.ParseError("Can't parse unknown object type '%s'!" % obj['type'])
+        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom observables, use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
@@ -157,3 +155,10 @@ def _register_type(new_type):
     """
 
     OBJ_MAP[new_type._type] = new_type
+
+
+def _register_observable(new_observable):
+    """Register a custom STIX Cyber Observable type.
+    """
+
+    OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
