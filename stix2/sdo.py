@@ -1,5 +1,7 @@
 """STIX 2.0 Domain Objects"""
 
+import stix2
+
 from .base import _STIXBase
 from .common import COMMON_PROPERTIES
 from .other import KillChainPhase
@@ -190,3 +192,51 @@ class Vulnerability(_STIXBase):
         'name': StringProperty(required=True),
         'description': StringProperty(),
     })
+
+
+def CustomObject(type='x-custom-type', properties={}):
+    """Custom STIX Object type decorator
+
+    Example 1:
+
+    @CustomObject('x-type-name', {
+        'property1': StringProperty(required=True),
+        'property2': IntegerProperty(),
+    })
+    class MyNewObjectType():
+        pass
+
+    Supply an __init__() function to add any special validations to the custom
+    type. Don't call super().__init() though - doing so will cause an error.
+
+    Example 2:
+
+    @CustomObject('x-type-name', {
+        'property1': StringProperty(required=True),
+        'property2': IntegerProperty(),
+    })
+    class MyNewObjectType():
+        def __init__(self, property2=None, **kwargs):
+            if property2 and property2 < 10:
+                raise ValueError("'property2' is too small.")
+    """
+
+    def custom_builder(cls):
+
+        class _Custom(cls, _STIXBase):
+            _type = type
+            _properties = COMMON_PROPERTIES.copy()
+            _properties.update({
+                'id': IDProperty(_type),
+                'type': TypeProperty(_type),
+            })
+            _properties.update(properties)
+
+            def __init__(self, **kwargs):
+                _STIXBase.__init__(self, **kwargs)
+                cls.__init__(self, **kwargs)
+
+        stix2._register_type(_Custom)
+        return _Custom
+
+    return custom_builder

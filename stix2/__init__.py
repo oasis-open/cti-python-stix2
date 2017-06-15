@@ -95,46 +95,70 @@ EXT_MAP = {
 }
 
 
-def parse(data):
-    """Deserialize a string or file-like object into a STIX object"""
+def parse(data, allow_custom=False):
+    """Deserialize a string or file-like object into a STIX object.
+
+    Args:
+        data: The STIX 2 string to be parsed.
+        allow_custom (bool): Whether to allow custom properties or not. Default: False.
+
+    Returns:
+        An instantiated Python STIX object.
+    """
 
     obj = get_dict(data)
 
     if 'type' not in obj:
-        # TODO parse external references, kill chain phases, and granular markings
-        pass
-    else:
-        try:
-            obj_class = OBJ_MAP[obj['type']]
-        except KeyError:
-            # TODO handle custom objects
-            raise ValueError("Can't parse unknown object type '%s'!" % obj['type'])
-        return obj_class(**obj)
+        raise exceptions.ParseError("Can't parse object with no 'type' property: %s" % str(obj))
 
-    return obj
+    try:
+        obj_class = OBJ_MAP[obj['type']]
+    except KeyError:
+        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % obj['type'])
+    return obj_class(allow_custom=allow_custom, **obj)
 
 
-def parse_observable(data, _valid_refs):
-    """Deserialize a string or file-like object into a STIX Cyber Observable
-    object.
+def parse_observable(data, _valid_refs=[], allow_custom=False):
+    """Deserialize a string or file-like object into a STIX Cyber Observable object.
+
+    Args:
+        data: The STIX 2 string to be parsed.
+        _valid_refs: A list of object references valid for the scope of the object being parsed.
+        allow_custom: Whether to allow custom properties or not. Default: False.
+
+    Returns:
+        An instantiated Python STIX Cyber Observable object.
     """
 
     obj = get_dict(data)
     obj['_valid_refs'] = _valid_refs
 
     if 'type' not in obj:
-        raise ValueError("'type' is a required property!")
+        raise exceptions.ParseError("Can't parse object with no 'type' property: %s" % str(obj))
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        # TODO handle custom observable objects
-        raise ValueError("Can't parse unknown object type '%s'!" % obj['type'])
+        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom observables, use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
             if name not in EXT_MAP[obj['type']]:
-                raise ValueError("Can't parse Unknown extension type '%s' for object type '%s'!" % (name, obj['type']))
+                raise exceptions.ParseError("Can't parse Unknown extension type '%s' for object type '%s'!" % (name, obj['type']))
             ext_class = EXT_MAP[obj['type']][name]
-            obj['extensions'][name] = ext_class(**obj['extensions'][name])
+            obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
 
-    return obj_class(**obj)
+    return obj_class(allow_custom=allow_custom, **obj)
+
+
+def _register_type(new_type):
+    """Register a custom STIX Object type.
+    """
+
+    OBJ_MAP[new_type._type] = new_type
+
+
+def _register_observable(new_observable):
+    """Register a custom STIX Cyber Observable type.
+    """
+
+    OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable

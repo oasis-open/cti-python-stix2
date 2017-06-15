@@ -150,3 +150,10 @@ class RevokeError(STIXError, ValueError):
             return "Cannot revoke an already revoked object."
         else:
             return "Cannot create a new version of a revoked object."
+
+
+class ParseError(STIXError, ValueError):
+    """Could not parse object"""
+
+    def __init__(self, msg):
+        super(ParseError, self).__init__(msg)

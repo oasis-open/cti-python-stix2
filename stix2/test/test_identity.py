@@ -19,7 +19,7 @@ EXPECTED = """{
 
 
 def test_identity_example():
-    report = stix2.Identity(
+    identity = stix2.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
         modified="2015-12-21T19:59:11Z",
@@ -27,7 +27,7 @@ def test_identity_example():
         identity_class="individual",
     )
 
-    assert str(report) == EXPECTED
+    assert str(identity) == EXPECTED
 
 
 @pytest.mark.parametrize("data", [
@@ -49,5 +49,17 @@ def test_parse_identity(data):
     assert identity.created == dt.datetime(2015, 12, 21, 19, 59, 11, tzinfo=pytz.utc)
     assert identity.modified == dt.datetime(2015, 12, 21, 19, 59, 11, tzinfo=pytz.utc)
     assert identity.name == "John Smith"
+
+
+def test_parse_no_type():
+    with pytest.raises(stix2.exceptions.ParseError):
+        stix2.parse("""
+        {
+            "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            "created": "2015-12-21T19:59:11Z",
+            "modified": "2015-12-21T19:59:11Z",
+            "name": "John Smith",
+            "identity_class": "individual"
+        }""")
 
 # TODO: Add other examples

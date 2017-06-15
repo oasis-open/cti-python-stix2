@@ -5,6 +5,8 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
+import stix2
+
 from .base import _Extension, _Observable, _STIXBase
 from .exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -586,3 +588,27 @@ class X509Certificate(_Observable):
         'subject_public_key_exponent': IntegerProperty(),
         'x509_v3_extensions': EmbeddedObjectProperty(type=X509V3ExtenstionsType),
     }
+
+
+def CustomObservable(type='x-custom-observable', properties={}):
+    """Custom STIX Cyber Observable type decorator
+
+    """
+
+    def custom_builder(cls):
+
+        class _Custom(cls, _Observable):
+            _type = type
+            _properties = {
+                'type': TypeProperty(_type),
+            }
+            _properties.update(properties)
+
+            def __init__(self, **kwargs):
+                _Observable.__init__(self, **kwargs)
+                cls.__init__(self, **kwargs)
+
+        stix2._register_observable(_Custom)
+        return _Custom
+
+    return custom_builder
