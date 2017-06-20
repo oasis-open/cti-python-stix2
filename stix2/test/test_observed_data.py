@@ -525,6 +525,15 @@ def test_artifact_mutual_exclusion_error():
     assert excinfo.value.properties == ["payload_bin", "url"]
 
 
+def test_artifact_dependency_error():
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.Artifact(mime_type="image/jpeg",
+                       url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg")
+
+    assert excinfo.value.cls == stix2.Artifact
+    assert excinfo.value.dependencies == [("hashes", "url")]
+
+
 def test_directory_example():
     dir = stix2.Directory(_valid_refs={"1": "file"},
                           path='/usr/lib',
