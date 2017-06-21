@@ -20,7 +20,7 @@ class TAXIIDataSink(DataSink):
         self.taxii_client.populate_available_information()
 
         if not api_root_name:
-            raise ValueError("No api_root specified.\n")
+            raise ValueError("No api_root specified.")
         else:
             self.api_root = None
             for a_r in self.taxii_client.api_roots:
@@ -30,7 +30,7 @@ class TAXIIDataSink(DataSink):
             if not self.api_root:
                 raise ValueError("The api_root %s is not found on this taxii server" % api_root_name)
         if not collection_id:
-            raise ValueError("No collection specified.\n")
+            raise ValueError("No collection specified.")
         else:
             self.collection = None
             for c in self.api_root.collections:
