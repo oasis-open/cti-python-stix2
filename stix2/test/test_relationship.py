@@ -10,9 +10,9 @@ from .constants import (FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID,
 
 
 EXPECTED_RELATIONSHIP = """{
-    "created": "2016-04-06T20:06:37Z",
+    "created": "2016-04-06T20:06:37.000Z",
     "id": "relationship--00000000-1111-2222-3333-444444444444",
-    "modified": "2016-04-06T20:06:37Z",
+    "modified": "2016-04-06T20:06:37.000Z",
     "relationship_type": "indicates",
     "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
     "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210",

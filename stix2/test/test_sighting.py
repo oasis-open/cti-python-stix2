@@ -9,9 +9,9 @@ from .constants import INDICATOR_ID, SIGHTING_ID, SIGHTING_KWARGS
 
 
 EXPECTED_SIGHTING = """{
-    "created": "2016-04-06T20:06:37Z",
+    "created": "2016-04-06T20:06:37.000Z",
     "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",
-    "modified": "2016-04-06T20:06:37Z",
+    "modified": "2016-04-06T20:06:37.000Z",
     "sighting_of_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
     "type": "sighting",
     "where_sighted_refs": [
@@ -20,9 +20,9 @@ EXPECTED_SIGHTING = """{
 }"""
 
 BAD_SIGHTING = """{
-    "created": "2016-04-06T20:06:37Z",
+    "created": "2016-04-06T20:06:37.000Z",
     "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",
-    "modified": "2016-04-06T20:06:37Z",
+    "modified": "2016-04-06T20:06:37.000Z",
     "sighting_of_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
     "type": "sighting",
     "where_sighted_refs": [

@@ -176,7 +176,7 @@ class _STIXBase(collections.Mapping):
         if 'modified' not in kwargs:
             kwargs['modified'] = get_timestamp()
         else:
-            new_modified_property = parse_into_datetime(kwargs['modified'])
+            new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
             if new_modified_property < self.modified:
                 raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
         new_obj_inner.update(kwargs)

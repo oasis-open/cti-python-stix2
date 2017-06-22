@@ -12,15 +12,34 @@ import pytz
 NOW = object()
 
 
+class STIXdatetime(dt.datetime):
+    def __new__(cls, *args, **kwargs):
+        precision = kwargs.pop('precision', None)
+        if isinstance(args[0], dt.datetime):  # Allow passing in a datetime object
+            dttm = args[0]
+            args = (dttm.year,)
+            kwargs['month'] = dttm.month
+            kwargs['day'] = dttm.day
+            kwargs['hour'] = dttm.hour
+            kwargs['minute'] = dttm.minute
+            kwargs['second'] = dttm.second
+            kwargs['microsecond'] = dttm.microsecond
+            kwargs['tzinfo'] = dttm.tzinfo
+        self = dt.datetime.__new__(cls, *args, **kwargs)
+        self.precision = precision
+        return self
+
+
 def get_timestamp():
-    return dt.datetime.now(tz=pytz.UTC)
+    return STIXdatetime.now(tz=pytz.UTC)
 
 
 def format_datetime(dttm):
     # 1. Convert to timezone-aware
     # 2. Convert to UTC
     # 3. Format in ISO format
-    # 4. Add subsecond value if non-zero
+    # 4. Ensure correct precision
+    # 4a. Add subsecond value if non-zero and precision not defined
     # 5. Add "Z"
 
     if dttm.tzinfo is None or dttm.tzinfo.utcoffset(dttm) is None:
@@ -29,32 +48,47 @@ def format_datetime(dttm):
     else:
         zoned = dttm.astimezone(pytz.utc)
     ts = zoned.strftime("%Y-%m-%dT%H:%M:%S")
-    if zoned.microsecond > 0:
-        ms = zoned.strftime("%f")
+    ms = zoned.strftime("%f")
+    precision = getattr(dttm, "precision", None)
+    if precision:
+        if precision == "millisecond":
+            ts = ts + '.' + ms[:3]
+    elif zoned.microsecond > 0:
         ts = ts + '.' + ms.rstrip("0")
     return ts + "Z"
 
 
-def parse_into_datetime(value):
+def parse_into_datetime(value, precision=None):
     if isinstance(value, dt.date):
         if hasattr(value, 'hour'):
-            return value
+            ts = value
         else:
             # Add a time component
-            return dt.datetime.combine(value, dt.time(0, 0, tzinfo=pytz.utc))
-
-    # value isn't a date or datetime object so assume it's a string
-    try:
-        parsed = parser.parse(value)
-    except (TypeError, ValueError):
-        # Unknown format
-        raise ValueError("must be a datetime object, date object, or "
-                         "timestamp string in a recognizable format.")
-    if parsed.tzinfo:
-        return parsed.astimezone(pytz.utc)
+            ts = dt.datetime.combine(value, dt.time(0, 0, tzinfo=pytz.utc))
     else:
-        # Doesn't have timezone info in the string; assume UTC
-        return pytz.utc.localize(parsed)
+        # value isn't a date or datetime object so assume it's a string
+        try:
+            parsed = parser.parse(value)
+        except (TypeError, ValueError):
+            # Unknown format
+            raise ValueError("must be a datetime object, date object, or "
+                             "timestamp string in a recognizable format.")
+        if parsed.tzinfo:
+            ts = parsed.astimezone(pytz.utc)
+        else:
+            # Doesn't have timezone info in the string; assume UTC
+            ts = pytz.utc.localize(parsed)
+
+    # Ensure correct precision
+    if not precision:
+        return ts
+    ms = ts.microsecond
+    if precision == 'millisecond':
+        ms_len = len(str(ms))
+        if ms_len > 3:
+            # Truncate to millisecond precision
+            return ts.replace(microsecond=(ts.microsecond // (10 ** (ms_len - 3))))
+    return STIXdatetime(ts, precision=precision)
 
 
 def get_dict(data):

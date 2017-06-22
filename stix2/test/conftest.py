@@ -1,4 +1,3 @@
-import datetime as dt
 import uuid
 
 import pytest
@@ -13,12 +12,12 @@ from .constants import (FAKE_TIME, INDICATOR_KWARGS, MALWARE_KWARGS,
 @pytest.fixture
 def clock(monkeypatch):
 
-    class mydatetime(dt.datetime):
+    class mydatetime(stix2.utils.STIXdatetime):
         @classmethod
         def now(cls, tz=None):
             return FAKE_TIME
 
-    monkeypatch.setattr(dt, 'datetime', mydatetime)
+    monkeypatch.setattr(stix2.utils, 'STIXdatetime', mydatetime)
 
 
 @pytest.fixture
