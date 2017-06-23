@@ -8,14 +8,14 @@ from taxii2_client import TAXII2Client
 class TAXIIDataSink(DataSink):
     """STIX 2.0 Data Source - TAXII 2.0 module"""
 
-    def __init__(self, taxii_client=None, server_uri=None, api_root_name=None, collection_id=None, auth=None, name="TAXII"):
+    def __init__(self, taxii_client=None, server_uri=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXII"):
 
         if taxii_client and server_uri:
             raise ValueError("TAXIIDataSink takes either a taxii_client or a server_uri, but not both")
         if taxii_client:
             self.taxii_client = taxii_client
         elif server_uri:
-            self.taxii_client = TAXII2Client(server_uri, auth)
+            self.taxii_client = TAXII2Client(server_uri, user, password)
 
         self.taxii_client.populate_available_information()
 
@@ -38,10 +38,8 @@ class TAXIIDataSink(DataSink):
                     self.collection = c
                     break
             if not self.collection:
-                raise ValueError("The colledction %s is not found on the api_root %s of this taxii server" %
+                raise ValueError("The collection %s is not found on the api_root %s of this taxii server" %
                                  (collection_id, api_root_name))
-        if not auth:
-            auth = {"user": "admin", "pass": "taxii"}
 
         super(TAXIIDataSink, self).__init__(name="/".join([self.taxii_client.server_uri,
                                                            self.api_root.name,
