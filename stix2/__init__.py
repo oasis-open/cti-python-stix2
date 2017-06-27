@@ -18,6 +18,16 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
 from .other import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
                     ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
+from .pattern_expressions import (AndBooleanExpression,
+                                  AndObservableExpression,
+                                  EqualityComparisonExpression,
+                                  FollowedByObservableExpression,
+                                  MatchesComparisonExpression,
+                                  ObservableExpression, OrBooleanExpression,
+                                  OrObservableExpression,
+                                  ParentheticalExpression,
+                                  QualifiedObservationExpression,
+                                  WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
                   IntrusionSet, Malware, ObservedData, Report, ThreatActor,
                   Tool, Vulnerability)
