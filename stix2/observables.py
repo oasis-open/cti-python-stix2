@@ -215,7 +215,7 @@ class WindowsPEBinaryExt(_Extension):
         'imphash': StringProperty(),
         'machine_hex': HexProperty(),
         'number_of_sections': IntegerProperty(),
-        'time_date_stamp': TimestampProperty(),
+        'time_date_stamp': TimestampProperty(precision='second'),
         'pointer_to_symbol_table_hex': HexProperty(),
         'number_of_symbols': IntegerProperty(),
         'size_of_optional_header': IntegerProperty(),

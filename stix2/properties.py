@@ -217,10 +217,7 @@ class TimestampProperty(Property):
         super(TimestampProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        try:
-            return parse_into_datetime(value, self.precision)
-        except ValueError:
-            raise
+        return parse_into_datetime(value, self.precision)
 
 
 class ObservableProperty(Property):

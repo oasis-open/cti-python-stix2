@@ -17,14 +17,9 @@ class STIXdatetime(dt.datetime):
         precision = kwargs.pop('precision', None)
         if isinstance(args[0], dt.datetime):  # Allow passing in a datetime object
             dttm = args[0]
-            args = (dttm.year,)
-            kwargs['month'] = dttm.month
-            kwargs['day'] = dttm.day
-            kwargs['hour'] = dttm.hour
-            kwargs['minute'] = dttm.minute
-            kwargs['second'] = dttm.second
-            kwargs['microsecond'] = dttm.microsecond
-            kwargs['tzinfo'] = dttm.tzinfo
+            args = (dttm.year, dttm.month, dttm.day, dttm.hour, dttm.minute,
+                    dttm.second, dttm.microsecond, dttm.tzinfo)
+        # self will be an instance of STIXdatetime, not dt.datetime
         self = dt.datetime.__new__(cls, *args, **kwargs)
         self.precision = precision
         return self
@@ -50,9 +45,10 @@ def format_datetime(dttm):
     ts = zoned.strftime("%Y-%m-%dT%H:%M:%S")
     ms = zoned.strftime("%f")
     precision = getattr(dttm, "precision", None)
-    if precision:
-        if precision == "millisecond":
-            ts = ts + '.' + ms[:3]
+    if precision == 'second':
+        pass  # Alredy precise to the second
+    elif precision == "millisecond":
+        ts = ts + '.' + ms[:3]
     elif zoned.microsecond > 0:
         ts = ts + '.' + ms.rstrip("0")
     return ts + "Z"
@@ -83,11 +79,16 @@ def parse_into_datetime(value, precision=None):
     if not precision:
         return ts
     ms = ts.microsecond
-    if precision == 'millisecond':
+    if precision == 'second':
+        ts = ts.replace(microsecond=0)
+    elif precision == 'millisecond':
         ms_len = len(str(ms))
         if ms_len > 3:
             # Truncate to millisecond precision
-            return ts.replace(microsecond=(ts.microsecond // (10 ** (ms_len - 3))))
+            factor = 10 ** (ms_len - 3)
+            ts = ts.replace(microsecond=(ts.microsecond // factor) * factor)
+        else:
+            ts = ts.replace(microsecond=0)
     return STIXdatetime(ts, precision=precision)
 
 
