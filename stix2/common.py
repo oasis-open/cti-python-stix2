@@ -7,8 +7,8 @@ from .utils import NOW
 
 COMMON_PROPERTIES = {
     # 'type' and 'id' should be defined on each individual type
-    'created': TimestampProperty(default=lambda: NOW),
-    'modified': TimestampProperty(default=lambda: NOW),
+    'created': TimestampProperty(default=lambda: NOW, precision='millisecond'),
+    'modified': TimestampProperty(default=lambda: NOW, precision='millisecond'),
     'external_references': ListProperty(ExternalReference),
     'revoked': BooleanProperty(),
     'labels': ListProperty(StringProperty),
