@@ -4,7 +4,7 @@ import pytest
 import pytz
 
 import stix2
-from stix2.other import TLP_WHITE
+from stix2 import TLP_WHITE
 
 from .constants import MARKING_DEFINITION_ID
 

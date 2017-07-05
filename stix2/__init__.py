@@ -15,7 +15,8 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           WindowsProcessExt, WindowsRegistryKey,
                           WindowsRegistryValueType, WindowsServiceExt,
                           X509Certificate, X509V3ExtenstionsType)
-from .other import (ExternalReference, GranularMarking, KillChainPhase,
+from .other import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
+                    ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
                   IntrusionSet, Malware, ObservedData, Report, ThreatActor,
