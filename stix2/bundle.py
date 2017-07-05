@@ -17,6 +17,9 @@ class Bundle(_STIXBase):
     def __init__(self, *args, **kwargs):
         # Add any positional arguments to the 'objects' kwarg.
         if args:
-            kwargs['objects'] = kwargs.get('objects', []) + list(args)
+            if isinstance(args[0], list):
+                kwargs['objects'] = args[0] + list(args[1:]) + kwargs.get('objects', [])
+            else:
+                kwargs['objects'] = list(args) + kwargs.get('objects', [])
 
         super(Bundle, self).__init__(**kwargs)
