@@ -1,5 +1,3 @@
-from six import text_type
-
 
 class PatternExpression(object):
 
@@ -28,10 +26,10 @@ class ComparisonExpression(PatternExpression):
         if isinstance(self.rhs, list):
             final_rhs = []
             for r in self.rhs:
-                final_rhs.append("'" + self.escape_quotes_and_backslashes(text_type(r)) + "'")
+                final_rhs.append("'" + self.escape_quotes_and_backslashes("%s" % r) + "'")
             rhs_string = "(" + ", ".join(final_rhs) + ")"
         else:
-            rhs_string = "'" + self.escape_quotes_and_backslashes(text_type(self.rhs)) + "'"
+            rhs_string = "'" + self.escape_quotes_and_backslashes("%s" % self.rhs) + "'"
         return self.lhs + (" NOT" if self.negated else "") + " " + self.operator + " " + rhs_string
 
 
@@ -87,12 +85,14 @@ class BooleanExpression(PatternExpression):
                 self.root_type = arg.root_type
             elif self.root_type and (self.root_type != arg.root_type) and operator == "AND":
                 raise ValueError("This expression cannot have a mixed root type")
+            elif self.root_type and (self.root_type != arg.root_type):
+                self.root_type = None
             self.operands.append(arg)
 
     def __str__(self):
         sub_exprs = []
         for o in self.operands:
-            sub_exprs.append(str(o))
+            sub_exprs.append("%s" % o)
         return (" " + self.operator + " ").join(sub_exprs)
 
 
@@ -111,7 +111,7 @@ class ObservableExpression(PatternExpression):
         self.operand = operand
 
     def __str__(self):
-        return "[" + str(self.operand) + "]"
+        return "[%s]" % self.operand
 
 
 class CompoundObservableExpression(PatternExpression):
@@ -122,7 +122,7 @@ class CompoundObservableExpression(PatternExpression):
     def __str__(self):
         sub_exprs = []
         for o in self.operands:
-            sub_exprs.append(str(o))
+            sub_exprs.append("%s" % o)
         return (" " + self.operator + " ").join(sub_exprs)
 
 
@@ -144,9 +144,11 @@ class FollowedByObservableExpression(CompoundObservableExpression):
 class ParentheticalExpression(PatternExpression):
     def __init__(self, exp):
         self.expression = exp
+        if hasattr(exp, "root_type"):
+            self.root_type = exp.root_type
 
     def __str__(self):
-        return "(" + str(self.expression) + ")"
+        return "(%s)" % self.expression
 
 
 class ExpressionQualifier(PatternExpression):
@@ -158,7 +160,7 @@ class RepeatQualifier(ExpressionQualifier):
         self.times_to_repeat = times_to_repeat
 
     def __str__(self):
-        return "REPEATS %s TIMES" % str(self.times_to_repeat)
+        return "REPEATS %s TIMES" % self.times_to_repeat
 
 
 class WithinQualifier(ExpressionQualifier):
@@ -166,7 +168,7 @@ class WithinQualifier(ExpressionQualifier):
         self.number_of_seconds = number_of_seconds
 
     def __str__(self):
-        return "WITHIN %s SECONDS" % (str(self.number_of_seconds))
+        return "WITHIN %s SECONDS" % self.number_of_seconds
 
 
 class StartStopQualifier(ExpressionQualifier):
@@ -175,7 +177,7 @@ class StartStopQualifier(ExpressionQualifier):
         self.stop_time = stop_time
 
     def __str__(self):
-        return "START %s STOP %s" % (str(self.start_time), str(self.stop_time))
+        return "START %s STOP %s" % (self.start_time, self.stop_time)
 
 
 class QualifiedObservationExpression(PatternExpression):
@@ -184,4 +186,4 @@ class QualifiedObservationExpression(PatternExpression):
         self.qualifier = qualifier
 
     def __str__(self):
-        return str(self.observation_expression) + " " + str(self.qualifier)
+        return "%s %s" % (self.observation_expression, self.qualifier)
