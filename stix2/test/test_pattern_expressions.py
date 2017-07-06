@@ -56,3 +56,14 @@ def test_multiple_file_observable_expression():
     op2_exp = stix2.ObservableExpression(exp3)
     exp = stix2.AndObservableExpression([op1_exp, op2_exp])
     assert str(exp) == "[file:hashes.'SHA-256' = 'bf07a7fbb825fc0aae7bf4a1177b2b31fcf8a3feeaf7092761e18c859ee52a9c' OR file:hashes.MD5 = 'cead3f77f6cda6ec00f57d76c9a6879f'] AND [file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']" # noqa
+
+
+def test_root_types():
+    ast = stix2.ObservableExpression(
+            stix2.AndBooleanExpression(
+                [stix2.ParentheticalExpression(
+                    stix2.OrBooleanExpression([
+                        stix2.EqualityComparisonExpression(u"a:b", u"1"),
+                        stix2.EqualityComparisonExpression(u"b:c", u"2")])),
+                 stix2.EqualityComparisonExpression(u"b:d", u"3")]))
+    assert str(ast) == "[(a:b = '1' OR b:c = '2') AND b:d = '3']"
