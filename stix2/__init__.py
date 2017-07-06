@@ -23,6 +23,7 @@ from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
                   Tool, Vulnerability)
 from .sro import Relationship, Sighting
 from .utils import get_dict
+from .version import __version__
 
 OBJ_MAP = {
     'attack-pattern': AttackPattern,
