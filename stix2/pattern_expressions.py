@@ -1,3 +1,5 @@
+from .constants import ListConstant, make_constant
+
 
 class PatternExpression(object):
 
@@ -13,24 +15,30 @@ class PatternExpression(object):
 
 class ComparisonExpression(PatternExpression):
     def __init__(self, operator, lhs, rhs, negated=False):
-        if operator == "=" and isinstance(rhs, list):
+        if operator == "=" and isinstance(rhs, ListConstant):
             self.operator = "IN"
         else:
             self.operator = operator
         self.lhs = lhs
-        self.rhs = rhs
+        if isinstance(rhs, str):
+            self.rhs = make_constant(rhs)
+        else:
+            self.rhs = rhs
         self.negated = negated
         self.root_type = self.get_root_from_object_path(lhs)
 
     def __str__(self):
-        if isinstance(self.rhs, list):
-            final_rhs = []
-            for r in self.rhs:
-                final_rhs.append("'" + self.escape_quotes_and_backslashes("%s" % r) + "'")
-            rhs_string = "(" + ", ".join(final_rhs) + ")"
+        # if isinstance(self.rhs, list):
+        #     final_rhs = []
+        #     for r in self.rhs:
+        #         final_rhs.append("'" + self.escape_quotes_and_backslashes("%s" % r) + "'")
+        #     rhs_string = "(" + ", ".join(final_rhs) + ")"
+        # else:
+        #     rhs_string = self.rhs
+        if self.negated:
+            return "%s NOT %s %s" % (self.lhs, self.operator, self.rhs)
         else:
-            rhs_string = "'" + self.escape_quotes_and_backslashes("%s" % self.rhs) + "'"
-        return self.lhs + (" NOT" if self.negated else "") + " " + self.operator + " " + rhs_string
+            return "%s %s %s" % (self.lhs, self.operator, self.rhs)
 
 
 class EqualityComparisonExpression(ComparisonExpression):
