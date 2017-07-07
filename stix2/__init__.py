@@ -4,6 +4,8 @@
 
 from . import exceptions
 from .bundle import Bundle
+from .constants import (FloatConstant, HashConstant, IntegerConstant,
+                        StringConstant)
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, Directory, DomainName,
                           EmailAddress, EmailMessage, EmailMIMEComponent, File,
@@ -23,12 +25,17 @@ from .pattern_expressions import (AndBooleanExpression,
                                   ComparisonExpression,
                                   EqualityComparisonExpression,
                                   FollowedByObservableExpression,
+                                  GreaterThanComparisonExpression,
+                                  GreaterThanEqualComparisonExpression,
+                                  LessThanComparisonExpression,
+                                  LessThanEqualComparisonExpression,
+                                  LikeComparisonExpression,
                                   MatchesComparisonExpression,
-                                  ObservableExpression,
-                                  OrBooleanExpression,
+                                  ObservableExpression, OrBooleanExpression,
                                   OrObservableExpression,
                                   ParentheticalExpression,
                                   QualifiedObservationExpression,
+                                  RepeatQualifier, StartStopQualifier,
                                   WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
                   IntrusionSet, Malware, ObservedData, Report, ThreatActor,
