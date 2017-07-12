@@ -20,43 +20,24 @@ class FileSystemStore(DataStore):
     """
 
     """
-    def __init__(self, stix_dir="stix_data", source=None, sink=None, name="FileSystemStore"):
+    def __init__(self, stix_dir="stix_data", name="FileSystemStore"):
         self.name = name
         self.id = make_id()
-
-        if source:
-            self.source = source
-        else:
-            self.source = FileSystemSource(stix_dir=stix_dir)
-
-        if sink:
-            self.sink = sink
-        else:
-            self.sink = FileSystemSink(stix_dir=stix_dir)
+        self.source = FileSystemSource(stix_dir=stix_dir)
+        self.sink = FileSystemSink(stix_dir=stix_dir)
 
     @property
     def source(self):
         return self.source
 
-    @source.setter
-    def source(self, source):
-        self.source = source
-
     @property
     def sink(self):
         return self.sink
-
-    @sink.setter
-    def sink(self, sink):
-        self.sink = sink
 
     # file system sink API calls
 
     def add(self, stix_objs):
         return self.sink.add(stix_objs=stix_objs)
-
-    def remove(self, stix_ids):
-        return self.sink.remove(stix_ids=stix_ids)
 
     # file sytem source API calls
 
@@ -98,17 +79,6 @@ class FileSystemSink(DataSink):
         for stix_obj in stix_objs:
             path = os.path.join(self.stix_dir, stix_obj["type"], stix_obj["id"])
             json.dump(Bundle([stix_obj]), open(path, 'w+', indent=4))
-
-    def remove(self, stix_ids=None):
-        if not stix_ids:
-            stix_ids = []
-        for stix_id in stix_ids:
-            stix_type = stix_id.split("--")[0]
-            try:
-                os.remove(os.path.join(self.stix_dir, stix_type, stix_id))
-            except OSError:
-                # log error? nonexistent object in data with directory
-                continue
 
 
 class FileSystemSource(DataSource):

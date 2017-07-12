@@ -64,33 +64,19 @@ class DataStore(object):
     An implementer will create a concrete subclass from
     this abstract class for the specific data store.
     """
-    def __init__(self, name="DataStore", source=None, sink=None):
+    def __init__(self, name="DataStore"):
         self.name = name
         self.id = make_id()
-        if source:
-            self.source = source
-        else:
-            self.source = DataSource()
-        if sink:
-            self.sink = sink
-        else:
-            self.sink = DataSink()
+        self.source = DataSource()
+        self.sink = DataSink()
 
     @property
     def source(self):
         return self.source
 
-    @source.setter
-    def source(self, source):
-        self.source = source
-
     @property
     def sink(self):
         return self.sink
-
-    @sink.setter
-    def sink(self, sink):
-        self.sink = sink
 
     def get(self, stix_id):
         """

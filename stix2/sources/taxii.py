@@ -14,7 +14,6 @@ import json
 import uuid
 
 from stix2.sources import DataSink, DataSource, DataStore, make_id
-from taxii2_client import TAXII2Client
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
@@ -23,9 +22,7 @@ class TAXIICollectionStore(DataStore):
     """
     """
     def __init__(self,
-                 source=None,
-                 sink=None,
-                 server_uri=None,
+                 taxii_client=None,
                  api_root_name=None,
                  collection_id=None,
                  user=None,
@@ -34,32 +31,16 @@ class TAXIICollectionStore(DataStore):
 
         self.name = name
         self.id = make_id()
-
-        if source:
-            self.source = source
-        else:
-            self.source = TAXIICollectionSource(server_uri, api_root_name, collection_id, user, password)
-
-        if sink:
-            self.sink = sink
-        else:
-            self.TAXIICollectionSink(server_uri, api_root_name, collection_id, user, password)
+        self.source = TAXIICollectionSource(taxii_client, api_root_name, collection_id, user, password)
+        self.sink = self.TAXIICollectionSink(taxii_client, api_root_name, collection_id, user, password)
 
     @property
     def source(self):
         return self.source
 
-    @source.setter
-    def source(self, source):
-        self.source = source
-
     @property
     def sink(self):
         return self.sink
-
-    @sink.setter
-    def sink(self, sink):
-        self.sink = sink
 
     # file system sink API calls
 
@@ -82,10 +63,10 @@ class TAXIICollectionSink(DataSink):
     """
     """
 
-    def __init__(self, server_uri=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXIICollectionSink"):
+    def __init__(self, taxii_client=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXIICollectionSink"):
         super(TAXIICollectionSink, self).__init__(name=name)
 
-        self.taxii_client = TAXII2Client(server_uri, user, password)
+        self.taxii_client = taxii_client
         self.taxii_client.populate_available_information()
 
         if not api_root_name:
@@ -110,7 +91,7 @@ class TAXIICollectionSink(DataSink):
                 raise ValueError("The collection %s is not found on the api_root %s of this taxii server" %
                                  (collection_id, api_root_name))
 
-    def save(self, stix_obj):
+    def add(self, stix_obj):
         """
         """
         self.collection.add_objects(self.create_bundle([json.loads(str(stix_obj))]))
@@ -142,10 +123,10 @@ class TAXIICollectionSink(DataSink):
 class TAXIICollectionSource(DataSource):
     """
     """
-    def __init__(self, server_uri=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXIICollectionSourc"):
+    def __init__(self, taxii_client=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXIICollectionSourc"):
         super(TAXIICollectionSource, self).__init__(name=name)
 
-        self.taxii_client = TAXII2Client(server_uri, user, password)
+        self.taxii_client = taxii_client
         self.taxii_client.populate_available_information()
 
         if not api_root_name:

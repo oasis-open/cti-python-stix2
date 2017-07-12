@@ -28,73 +28,16 @@ from stix2validator import validate_string
 class MemoryStore(DataStore):
     """
     """
-    def __init__(self, stix_data=None, source=None, sink=None, name="MemoryStore"):
+    def __init__(self, stix_data=None, name="MemoryStore"):
+        """
+        Note: It doesnt make sense to create a MemoryStore by passing
+         in existing MemorySource and MemorySink because there could
+         be data concurrency issues. Just as easy to create new MemoryStore.
+        """
         self.name = name
         self.id = make_id()
-
-        if source:
-            self.source = source
-        else:
-            self.source = MemorySource(stix_data=stix_data)
-
-        if sink:
-            self.sink = sink
-        else:
-            self.sink = MemorySink(stix_data=stix_data)
-
-    @property
-    def source(self):
-        return self.source
-
-    @source.setter
-    def source(self, source):
-        self.source = source
-
-    @property
-    def sink(self):
-        return self.sink
-
-    @sink.setter
-    def sink(self, sink):
-        self.sink = sink
-
-    # memory sink API calls
-
-    def add(self, stix_data):
-        return self.sink.add(stix_data=stix_data)
-
-    def remove(self, stix_ids):
-        return self.sink.remove(stix_ids=stix_ids)
-
-    def save(self):
-        return self.sink.save()
-
-    # memory source API calls
-
-    def get(self, stix_id):
-        return self.source.get(stix_id=stix_id)
-
-    def all_versions(self, stix_id):
-        return self.source.all_versions(stix_id=stix_id)
-
-    def query(self, query):
-        return self.source.query(query=query)
-
-
-class MemorySink(DataSink):
-    """
-
-    """
-    def __init__(self, stix_data=None, name="MemorySink"):
-        """
-        Args:
-
-            data (dictionary OR list): valid STIX 2.0 content in bundle or a list
-            name (string): optional name tag of the data source
-
-        """
-        super(MemorySink, self).__init__(name=name)
         self.data = {}
+
         if stix_data:
             if type(stix_data) == dict:
                 # stix objects are in a bundle
@@ -108,7 +51,6 @@ class MemorySink(DataSink):
                 else:
                     print("Error: json data passed to MemorySink() was found to not be validated by STIX 2 Validator")
                     print(r)
-                    self.data = {}
             elif type(stix_data) == list:
                 # stix objects are in a list
                 for stix_obj in stix_data:
@@ -118,8 +60,86 @@ class MemorySink(DataSink):
                     else:
                         print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
                         print(r)
-            else:
-                raise ValueError("stix_data must be in bundle format or raw list")
+
+        self.source = MemorySource(stix_data=self.data, _store=True)
+        self.sink = MemorySink(stix_data=self.data, _store=True)
+
+    @property
+    def source(self):
+        return self.source
+
+    @property
+    def sink(self):
+        return self.sink
+
+    # memory sink API calls
+
+    def add(self, stix_data):
+        return self.sink.add(stix_data=stix_data)
+
+    def save_to_file(self, file_path):
+        return self.sink.save(file_path=file_path)
+
+    # memory source API calls
+
+    def get(self, stix_id):
+        return self.source.get(stix_id=stix_id)
+
+    def all_versions(self, stix_id):
+        return self.source.all_versions(stix_id=stix_id)
+
+    def query(self, query):
+        return self.source.query(query=query)
+
+    def load_from_file(self, file_path):
+        return self.source.load_from_file(file_path=file_path)
+
+
+class MemorySink(DataSink):
+    """
+
+    """
+    def __init__(self, stix_data=None, name="MemorySink", _store=False):
+        """
+        Args:
+
+            data (dictionary OR list): valid STIX 2.0 content in bundle or a list
+            name (string): optional name tag of the data source
+            _store (bool): if the MemorySink is a part of a DataStore, in which case
+                           "stix_data" is a direct reference to shared memory with DataSource
+
+        """
+        super(MemorySink, self).__init__(name=name)
+
+        if _store:
+            self.data = stix_data
+        else:
+            self.data = {}
+            if stix_data:
+                if type(stix_data) == dict:
+                    # stix objects are in a bundle
+                    # verify STIX json data
+                    r = validate_string(json.dumps(stix_data))
+                    # make dictionary of the objects for easy lookup
+                    if r.is_valid:
+                        for stix_obj in stix_data["objects"]:
+
+                            self.data[stix_obj["id"]] = stix_obj
+                    else:
+                        print("Error: json data passed to MemorySink() was found to not be validated by STIX 2 Validator")
+                        print(r)
+                        self.data = {}
+                elif type(stix_data) == list:
+                    # stix objects are in a list
+                    for stix_obj in stix_data:
+                        r = validate_string(json.dumps(stix_obj))
+                        if r.is_valid:
+                            self.data[stix_obj["id"]] = stix_obj
+                        else:
+                            print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                            print(r)
+                else:
+                    raise ValueError("stix_data must be in bundle format or raw list")
 
     def add(self, stix_data):
         """
@@ -145,60 +165,54 @@ class MemorySink(DataSink):
         else:
             raise ValueError("stix_data must be in bundle format or raw list")
 
-    def remove(self, stix_ids):
+    def save_to_file(self, file_path):
         """
         """
-        for stix_id in stix_ids:
-            try:
-                del self.data[stix_id]
-            except KeyError:
-                pass
-
-    def save(self, file_path=None):
-        """
-        """
-        if not file_path:
-            file_path = os.path.dirname(os.path.realpath(__file__))
         json.dump(Bundle(self.data.values()), file_path, indent=4)
 
 
 class MemorySource(DataSource):
 
-    def __init__(self, stix_data=None, name="MemorySource"):
+    def __init__(self, stix_data=None, name="MemorySource", _store=False):
         """
         Args:
 
             data (dictionary OR list): valid STIX 2.0 content in bundle or list
             name (string): optional name tag of the data source
+            _store (bool): if the MemorySource is a part of a DataStore, in which case
+                           "stix_data" is a direct reference to shared memory with DataSink
 
         """
         super(MemorySource, self).__init__(name=name)
-        self.data = {}
 
-        if stix_data:
-            if type(stix_data) == dict:
-                # stix objects are in a bundle
-                # verify STIX json data
-                r = validate_string(json.dumps(stix_data))
-                # make dictionary of the objects for easy lookup
-                if r.is_valid:
-                    for stix_obj in stix_data["objects"]:
-                        self.data[stix_obj["id"]] = stix_obj
-                else:
-                    print("Error: json data passed to MemorySink() was found to not be validated by STIX 2 Validator")
-                    print(r)
-                    self.data = {}
-            elif type(stix_data) == list:
-                # stix objects are in a list
-                for stix_obj in stix_data:
-                    r = validate_string(json.dumps(stix_obj))
+        if _store:
+            self.data = stix_data
+        else:
+            self.data = {}
+            if stix_data:
+                if type(stix_data) == dict:
+                    # stix objects are in a bundle
+                    # verify STIX json data
+                    r = validate_string(json.dumps(stix_data))
+                    # make dictionary of the objects for easy lookup
                     if r.is_valid:
-                        self.data[stix_obj["id"]] = stix_obj
+                        for stix_obj in stix_data["objects"]:
+                            self.data[stix_obj["id"]] = stix_obj
                     else:
-                        print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                        print("Error: json data passed to MemorySink() was found to not be validated by STIX 2 Validator")
                         print(r)
-            else:
-                raise ValueError("stix_data must be in bundle format or raw list")
+                        self.data = {}
+                elif type(stix_data) == list:
+                    # stix objects are in a list
+                    for stix_obj in stix_data:
+                        r = validate_string(json.dumps(stix_obj))
+                        if r.is_valid:
+                            self.data[stix_obj["id"]] = stix_obj
+                        else:
+                            print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                            print(r)
+                else:
+                    raise ValueError("stix_data must be in bundle format or raw list")
 
     def get(self, stix_id, _composite_filters=None):
         """
@@ -266,3 +280,18 @@ class MemorySource(DataSource):
         all_data = self.apply_common_filters(self.data.values(), query)
 
         return all_data
+
+    def load_from_file(self, file_path):
+        """
+        """
+        file_path = os.path.abspath(file_path)
+        stix_data = json.load(open(file_path, "r"))
+
+        r = validate_string(json.dumps(stix_data))
+
+        if r.is_valid:
+            for stix_obj in stix_data["objects"]:
+                    self.data[stix_obj["id"]] = stix_obj
+        else:
+            print("Error: STIX data loaded from file (%s) was found to not be validated by STIX 2 Validator") % file_path
+            print(r)
