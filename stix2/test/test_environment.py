@@ -37,3 +37,12 @@ def test_object_factory_granular_markings():
                                   granular_markings=marking)
     ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
     assert "created_by_ref" in ind.granular_markings[0].selectors
+
+
+def test_object_factory_external_resource():
+    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
+                                      description="Threat report")
+    factory = stix2.ObjectFactory(external_references=ext_ref)
+    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    assert ind.external_references[0].source_name == "ACME Threat Intel"
+    assert ind.external_references[0].description == "Threat report"
