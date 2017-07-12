@@ -4,6 +4,7 @@
 
 from . import exceptions
 from .bundle import Bundle
+from .environment import ObjectFactory
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, Directory, DomainName,
                           EmailAddress, EmailMessage, EmailMIMEComponent, File,
