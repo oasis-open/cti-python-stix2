@@ -67,7 +67,7 @@ class DomainName(_Observable):
 
 
 class EmailAddress(_Observable):
-    _type = 'email-address'
+    _type = 'email-addr'
     _properties = {
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),

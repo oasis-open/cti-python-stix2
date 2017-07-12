@@ -4,8 +4,9 @@
 
 from . import exceptions
 from .bundle import Bundle
-from .constants import (FloatConstant, HashConstant, IntegerConstant,
-                        StringConstant)
+from .constants import (FloatConstant, HashConstant, HexConstant,
+                        IntegerConstant, StringConstant)
+from .object_path import ObjectPath, ObjectPathComponent
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, Directory, DomainName,
                           EmailAddress, EmailMessage, EmailMIMEComponent, File,
@@ -27,6 +28,8 @@ from .pattern_expressions import (AndBooleanExpression,
                                   FollowedByObservableExpression,
                                   GreaterThanComparisonExpression,
                                   GreaterThanEqualComparisonExpression,
+                                  IsSubsetComparisonExpression,
+                                  IsSupersetComparisonExpression,
                                   LessThanComparisonExpression,
                                   LessThanEqualComparisonExpression,
                                   LikeComparisonExpression,
@@ -67,7 +70,7 @@ OBJ_MAP_OBSERVABLE = {
     'autonomous-system': AutonomousSystem,
     'directory': Directory,
     'domain-name': DomainName,
-    'email-address': EmailAddress,
+    'email-addr': EmailAddress,
     'email-message': EmailMessage,
     'file': File,
     'ipv4-addr': IPv4Address,

@@ -121,5 +121,15 @@ class ListConstant(Constant):
 
 
 def make_constant(value):
-    # TODO: Stub
-    pass
+    if isinstance(value, str):
+        return StringConstant(value)
+    elif isinstance(value, int):
+        return IntegerConstant(value)
+    elif isinstance(value, float):
+        return FloatConstant(value)
+    elif isinstance(value, list):
+        return ListConstant(value)
+    elif isinstance(value, bool):
+        return BooleanConstant(value)
+    else:
+        raise ValueError("Unable to create a constant from %s" % value)
