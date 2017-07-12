@@ -20,11 +20,20 @@ def test_object_factory_obj_markings():
     stmt_marking = stix2.StatementMarking("Copyright 2016, Example Corp")
     mark_def = stix2.MarkingDefinition(definition_type="statement",
                                        definition=stmt_marking)
-    factory = stix2.ObjectFactory(markings=[mark_def, stix2.TLP_AMBER])
+    factory = stix2.ObjectFactory(object_markings=[mark_def, stix2.TLP_AMBER])
     ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
     assert mark_def.id in ind.object_marking_refs
     assert stix2.TLP_AMBER.id in ind.object_marking_refs
 
-    factory = stix2.ObjectFactory(markings=stix2.TLP_RED)
+    factory = stix2.ObjectFactory(object_markings=stix2.TLP_RED)
     ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
     assert stix2.TLP_RED.id in ind.object_marking_refs
+
+
+def test_object_factory_granular_markings():
+    marking = stix2.GranularMarking(marking_ref=stix2.TLP_AMBER,
+                                    selectors="created_by_ref")
+    factory = stix2.ObjectFactory(created_by=IDENTITY_ID,
+                                  granular_markings=marking)
+    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    assert "created_by_ref" in ind.granular_markings[0].selectors
