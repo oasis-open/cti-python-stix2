@@ -29,6 +29,19 @@ EXPECTED_STATEMENT_MARKING_DEFINITION = """{
     "type": "marking-definition"
 }"""
 
+EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING = """{
+    "created": "2016-04-06T20:03:00.000Z",
+    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "description": "Campaign by Green Group against a series of targets in the financial services sector.",
+    "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+    "modified": "2016-04-06T20:03:00.000Z",
+    "name": "Green Group Attacks Against Finance",
+    "object_marking_refs": [
+        "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+    ],
+    "type": "campaign"
+}"""
+
 EXPECTED_GRANULAR_MARKING = """{
     "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "selectors": [
@@ -84,6 +97,29 @@ def test_marking_def_example_with_positional_statement():
     assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
 
 
+def test_marking_def_invalid_type():
+    with pytest.raises(ValueError):
+        stix2.MarkingDefinition(
+            id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            created="2017-01-20T00:00:00.000Z",
+            definition_type="my-definiition-type",
+            definition=stix2.StatementMarking("Copyright 2016, Example Corp")
+        )
+
+
+def test_campaign_with_markings_example():
+    campaign = stix2.Campaign(
+        id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created="2016-04-06T20:03:00Z",
+        modified="2016-04-06T20:03:00Z",
+        name="Green Group Attacks Against Finance",
+        description="Campaign by Green Group against a series of targets in the financial services sector.",
+        object_marking_refs=TLP_WHITE
+    )
+    assert str(campaign) == EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING
+
+
 def test_granular_example():
     granular_marking = stix2.GranularMarking(
         marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
@@ -119,7 +155,6 @@ def test_campaign_with_granular_markings_example():
                 marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
                 selectors=["description"])
             ])
-    print(str(campaign))
     assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS
 
 

@@ -102,7 +102,7 @@ class ListProperty(Property):
         except TypeError:
             raise ValueError("must be an iterable.")
         try:
-            if isinstance(value, basestring):
+            if isinstance(value, _STIXBase) or isinstance(value, basestring):
                 value = [value]
         except NameError:
             if isinstance(value, str):
