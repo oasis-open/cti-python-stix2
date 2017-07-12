@@ -1,18 +1,15 @@
 import base64
 import binascii
 import collections
-import datetime as dt
 import inspect
 import re
 import uuid
 
-from dateutil import parser
-import pytz
 from six import text_type
 
 from .base import _Observable, _STIXBase
 from .exceptions import DictionaryKeyError
-from .utils import get_dict
+from .utils import get_dict, parse_into_datetime
 
 
 class Property(object):
@@ -215,26 +212,12 @@ class BooleanProperty(Property):
 
 class TimestampProperty(Property):
 
-    def clean(self, value):
-        if isinstance(value, dt.date):
-            if hasattr(value, 'hour'):
-                return value
-            else:
-                # Add a time component
-                return dt.datetime.combine(value, dt.time(), tzinfo=pytz.utc)
+    def __init__(self, precision=None, **kwargs):
+        self.precision = precision
+        super(TimestampProperty, self).__init__(**kwargs)
 
-        # value isn't a date or datetime object so assume it's a string
-        try:
-            parsed = parser.parse(value)
-        except TypeError:
-            # Unknown format
-            raise ValueError("must be a datetime object, date object, or "
-                             "timestamp string in a recognizable format.")
-        if parsed.tzinfo:
-            return parsed.astimezone(pytz.utc)
-        else:
-            # Doesn't have timezone info in the string; assume UTC
-            return pytz.utc.localize(parsed)
+    def clean(self, value):
+        return parse_into_datetime(value, self.precision)
 
 
 class ObservableProperty(Property):
@@ -244,6 +227,8 @@ class ObservableProperty(Property):
             dictified = get_dict(value)
         except ValueError:
             raise ValueError("The observable property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
@@ -265,6 +250,8 @@ class DictionaryProperty(Property):
             dictified = get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         for k in dictified.keys():
             if len(k) < 3:
@@ -418,6 +405,8 @@ class ExtensionsProperty(DictionaryProperty):
             dictified = get_dict(value)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         from .__init__ import EXT_MAP  # avoid circular import
         if self.enclosing_type in EXT_MAP:

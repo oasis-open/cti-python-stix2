@@ -10,12 +10,12 @@ from .constants import OBSERVED_DATA_ID
 
 
 EXPECTED = """{
-    "created": "2016-04-06T19:58:16Z",
+    "created": "2016-04-06T19:58:16.000Z",
     "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
     "first_observed": "2015-12-21T19:00:00Z",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
     "last_observed": "2015-12-21T19:00:00Z",
-    "modified": "2016-04-06T19:58:16Z",
+    "modified": "2016-04-06T19:58:16.000Z",
     "number_observed": 50,
     "objects": {
         "0": {
@@ -31,8 +31,8 @@ def test_observed_data_example():
     observed_data = stix2.ObservedData(
         id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-        created="2016-04-06T19:58:16Z",
-        modified="2016-04-06T19:58:16Z",
+        created="2016-04-06T19:58:16.000Z",
+        modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
         number_observed=50,
@@ -48,12 +48,12 @@ def test_observed_data_example():
 
 
 EXPECTED_WITH_REF = """{
-    "created": "2016-04-06T19:58:16Z",
+    "created": "2016-04-06T19:58:16.000Z",
     "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
     "first_observed": "2015-12-21T19:00:00Z",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
     "last_observed": "2015-12-21T19:00:00Z",
-    "modified": "2016-04-06T19:58:16Z",
+    "modified": "2016-04-06T19:58:16.000Z",
     "number_observed": 50,
     "objects": {
         "0": {
@@ -76,8 +76,8 @@ def test_observed_data_example_with_refs():
     observed_data = stix2.ObservedData(
         id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-        created="2016-04-06T19:58:16Z",
-        modified="2016-04-06T19:58:16Z",
+        created="2016-04-06T19:58:16.000Z",
+        modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
         number_observed=50,
@@ -102,8 +102,8 @@ def test_observed_data_example_with_bad_refs():
         stix2.ObservedData(
             id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
             created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-            created="2016-04-06T19:58:16Z",
-            modified="2016-04-06T19:58:16Z",
+            created="2016-04-06T19:58:16.000Z",
+            modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
             last_observed="2015-12-21T19:00:00Z",
             number_observed=50,
@@ -130,11 +130,11 @@ def test_observed_data_example_with_bad_refs():
     {
         "type": "observed-data",
         "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        "created": "2016-04-06T19:58:16Z",
+        "created": "2016-04-06T19:58:16.000Z",
         "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         "first_observed": "2015-12-21T19:00:00Z",
         "last_observed": "2015-12-21T19:00:00Z",
-        "modified": "2016-04-06T19:58:16Z",
+        "modified": "2016-04-06T19:58:16.000Z",
         "number_observed": 50,
         "objects": {
             "0": {
@@ -197,6 +197,13 @@ def test_parse_artifact_invalid(data):
     odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
     with pytest.raises(ValueError):
         stix2.parse(odata_str)
+
+
+def test_artifact_example_dependency_error():
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.Artifact(url="http://example.com/sirvizio.exe")
+
+    assert excinfo.value.dependencies == [("hashes", "url")]
 
 
 @pytest.mark.parametrize("data", [
@@ -285,6 +292,31 @@ def test_parse_email_message(data):
     odata = stix2.parse_observable(data, valid_refs)
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
+
+
+@pytest.mark.parametrize("data", [
+    """
+    {
+         "type": "email-message",
+         "from_ref": "0",
+         "to_refs": ["1"],
+         "is_multipart": true,
+         "date": "1997-11-21T15:55:06.000Z",
+         "subject": "Saying Hello",
+         "body": "Cats are funny!"
+    }
+    """
+])
+def test_parse_email_message_not_multipart(data):
+    valid_refs = {
+        "0": "email-addr",
+        "1": "email-addr",
+    }
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.parse_observable(data, valid_refs)
+
+    assert excinfo.value.cls == stix2.EmailMessage
+    assert excinfo.value.dependencies == [("is_multipart", "body")]
 
 
 @pytest.mark.parametrize("data", [
@@ -434,12 +466,12 @@ def test_parse_basic_tcp_traffic_with_error(data):
 
 
 EXPECTED_PROCESS_OD = """{
-    "created": "2016-04-06T19:58:16Z",
+    "created": "2016-04-06T19:58:16.000Z",
     "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
     "first_observed": "2015-12-21T19:00:00Z",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
     "last_observed": "2015-12-21T19:00:00Z",
-    "modified": "2016-04-06T19:58:16Z",
+    "modified": "2016-04-06T19:58:16.000Z",
     "number_observed": 50,
     "objects": {
         "0": {
@@ -467,8 +499,8 @@ def test_observed_data_with_process_example():
     observed_data = stix2.ObservedData(
         id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-        created="2016-04-06T19:58:16Z",
-        modified="2016-04-06T19:58:16Z",
+        created="2016-04-06T19:58:16.000Z",
+        modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
         number_observed=50,
@@ -778,6 +810,10 @@ def test_file_example_encryption_error():
     assert excinfo.value.cls == stix2.File
     assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
 
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.File(name="qwerty.dll",
+                   encryption_algorithm="AES128-CBC")
+
 
 def test_ip4_address_example():
     ip4 = stix2.IPv4Address(_valid_refs={"4": "mac-addr", "5": "mac-addr"},
@@ -911,6 +947,23 @@ def test_process_example_empty_with_extensions():
     assert excinfo.value.properties == sorted(properties_of_extension)
 
 
+def test_process_example_windows_process_ext():
+    proc = stix2.Process(pid=314,
+                         name="foobar.exe",
+                         extensions={
+                             "windows-process-ext": {
+                                 "aslr_enabled": True,
+                                 "dep_enabled": True,
+                                 "priority": "HIGH_PRIORITY_CLASS",
+                                 "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
+                             }
+                         })
+    assert proc.extensions["windows-process-ext"].aslr_enabled
+    assert proc.extensions["windows-process-ext"].dep_enabled
+    assert proc.extensions["windows-process-ext"].priority == "HIGH_PRIORITY_CLASS"
+    assert proc.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
+
+
 def test_process_example_windows_process_ext_empty():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
             stix2.Process(pid=1221,
@@ -925,14 +978,12 @@ def test_process_example_windows_process_ext_empty():
 
 
 def test_process_example_extensions_empty():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-            stix2.Process(extensions={
-                          })
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+            stix2.Process(extensions={})
 
     assert excinfo.value.cls == stix2.Process
-    properties_of_process = list(stix2.Process._properties.keys())
-    properties_of_process.remove("type")
-    assert excinfo.value.properties == sorted(properties_of_process)
+    assert excinfo.value.prop_name == 'extensions'
+    assert 'non-empty dictionary' in excinfo.value.reason
 
 
 def test_process_example_with_WindowsProcessExt_Object():

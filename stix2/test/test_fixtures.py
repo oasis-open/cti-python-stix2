@@ -1,11 +1,12 @@
-import datetime as dt
 import uuid
+
+from stix2 import utils
 
 from .constants import FAKE_TIME
 
 
 def test_clock(clock):
-    assert dt.datetime.now() == FAKE_TIME
+    assert utils.STIXdatetime.now() == FAKE_TIME
 
 
 def test_my_uuid4_fixture(uuid4):

@@ -40,7 +40,8 @@ def test_making_new_version_with_unset():
     assert campaign_v1.created_by_ref == campaign_v2.created_by_ref
     assert campaign_v1.created == campaign_v2.created
     assert campaign_v1.name == campaign_v2.name
-    assert campaign_v2.description is None
+    with pytest.raises(AttributeError):
+        assert campaign_v2.description
     assert campaign_v1.modified < campaign_v2.modified
 
 

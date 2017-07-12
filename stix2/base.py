@@ -73,7 +73,7 @@ class _STIXBase(collections.Mapping):
         failed_dependency_pairs = []
         for p in list_of_properties:
             for dp in list_of_dependent_properties:
-                if not self.__getattr__(p) and self.__getattr__(dp):
+                if not self.get(p) and self.get(dp):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
@@ -83,20 +83,26 @@ class _STIXBase(collections.Mapping):
             # TODO: check selectors
             pass
 
-    def __init__(self, **kwargs):
+    def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
 
         # Detect any keyword arguments not allowed for a specific type
-        extra_kwargs = list(set(kwargs) - set(cls._properties))
-        if extra_kwargs:
-            raise ExtraPropertiesError(cls, extra_kwargs)
+        custom_props = kwargs.pop('custom_properties', {})
+        if custom_props and not isinstance(custom_props, dict):
+            raise ValueError("'custom_properties' must be a dictionary")
+        if not allow_custom:
+            extra_kwargs = list(set(kwargs) - set(cls._properties))
+            if extra_kwargs:
+                raise ExtraPropertiesError(cls, extra_kwargs)
 
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
-        for prop_name, prop_value in kwargs.items():
+        props = kwargs.copy()
+        props.update(custom_props)
+        for prop_name, prop_value in props.items():
             if prop_value is not None:
                 setting_kwargs[prop_name] = prop_value
 
@@ -124,16 +130,10 @@ class _STIXBase(collections.Mapping):
 
     # Handle attribute access just like key access
     def __getattr__(self, name):
-        try:
-            # Return attribute value.
+        if name in self:
             return self.__getitem__(name)
-        except KeyError:
-            # If attribute not found, check if its a property of the object.
-            if name in self._properties:
-                return None
-
-            raise AttributeError("'%s' object has no attribute '%s'" %
-                                 (self.__class__.__name__, name))
+        raise AttributeError("'%s' object has no attribute '%s'" %
+                             (self.__class__.__name__, name))
 
     def __setattr__(self, name, value):
         if name != '_inner' and not name.startswith("_STIXBase__"):
@@ -163,7 +163,7 @@ class _STIXBase(collections.Mapping):
 
     def new_version(self, **kwargs):
         unchangable_properties = []
-        if self.revoked:
+        if self.get("revoked"):
             raise RevokeError("new_version")
         new_obj_inner = copy.deepcopy(self._inner)
         properties_to_change = kwargs.keys()
@@ -176,14 +176,14 @@ class _STIXBase(collections.Mapping):
         if 'modified' not in kwargs:
             kwargs['modified'] = get_timestamp()
         else:
-            new_modified_property = parse_into_datetime(kwargs['modified'])
+            new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
             if new_modified_property < self.modified:
                 raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
         new_obj_inner.update(kwargs)
         return cls(**new_obj_inner)
 
     def revoke(self):
-        if self.revoked:
+        if self.get("revoked"):
             raise RevokeError("revoke")
         return self.new_version(revoked=True)
 

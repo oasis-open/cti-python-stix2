@@ -5,8 +5,10 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
+import stix2
+
 from .base import _Extension, _Observable, _STIXBase
-from .exceptions import AtLeastOnePropertyError
+from .exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                          EmbeddedObjectProperty, EnumProperty,
                          ExtensionsProperty, FloatProperty, HashesProperty,
@@ -65,7 +67,7 @@ class DomainName(_Observable):
 
 
 class EmailAddress(_Observable):
-    _type = 'email-address'
+    _type = 'email-addr'
     _properties = {
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),
@@ -110,7 +112,9 @@ class EmailMessage(_Observable):
     def _check_object_constraints(self):
         super(EmailMessage, self)._check_object_constraints()
         self._check_properties_dependency(["is_multipart"], ["body_multipart"])
-        # self._dependency(["is_multipart"], ["body"], [False])
+        if self.get("is_multipart") is True and self.get("body"):
+            # 'body' MAY only be used if is_multipart is false.
+            raise DependentPropertiesError(self.__class__, [("is_multipart", "body")])
 
 
 class ArchiveExt(_Extension):
@@ -211,7 +215,7 @@ class WindowsPEBinaryExt(_Extension):
         'imphash': StringProperty(),
         'machine_hex': HexProperty(),
         'number_of_sections': IntegerProperty(),
-        'time_date_stamp': TimestampProperty(),
+        'time_date_stamp': TimestampProperty(precision='second'),
         'pointer_to_symbol_table_hex': HexProperty(),
         'number_of_symbols': IntegerProperty(),
         'size_of_optional_header': IntegerProperty(),
@@ -443,13 +447,13 @@ class Process(_Observable):
         super(Process, self)._check_object_constraints()
         try:
             self._check_at_least_one_property()
-            if self.extensions and "windows-process-ext" in self.extensions:
+            if "windows-process-ext" in self.get('extensions', {}):
                 self.extensions["windows-process-ext"]._check_at_least_one_property()
         except AtLeastOnePropertyError as enclosing_exc:
-            if not self.extensions:
+            if 'extensions' not in self:
                 raise enclosing_exc
             else:
-                if "windows-process-ext" in self.extensions:
+                if "windows-process-ext" in self.get('extensions', {}):
                     self.extensions["windows-process-ext"]._check_at_least_one_property()
 
 
@@ -584,3 +588,27 @@ class X509Certificate(_Observable):
         'subject_public_key_exponent': IntegerProperty(),
         'x509_v3_extensions': EmbeddedObjectProperty(type=X509V3ExtenstionsType),
     }
+
+
+def CustomObservable(type='x-custom-observable', properties={}):
+    """Custom STIX Cyber Observable type decorator
+
+    """
+
+    def custom_builder(cls):
+
+        class _Custom(cls, _Observable):
+            _type = type
+            _properties = {
+                'type': TypeProperty(_type),
+            }
+            _properties.update(properties)
+
+            def __init__(self, **kwargs):
+                _Observable.__init__(self, **kwargs)
+                cls.__init__(self, **kwargs)
+
+        stix2._register_observable(_Custom)
+        return _Custom
+
+    return custom_builder
