@@ -123,7 +123,7 @@ class DomainName(_Observable):
 
 
 class EmailAddress(_Observable):
-    _type = 'email-address'
+    _type = 'email-addr'
     _properties = {
         'type': TypeProperty(_type),
         'value': StringProperty(required=True),
@@ -651,7 +651,7 @@ OBJ_MAP_OBSERVABLE = {
     'autonomous-system': AutonomousSystem,
     'directory': Directory,
     'domain-name': DomainName,
-    'email-address': EmailAddress,
+    'email-addr': EmailAddress,
     'email-message': EmailMessage,
     'file': File,
     'ipv4-addr': IPv4Address,

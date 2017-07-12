@@ -4,8 +4,9 @@
 
 from . import exceptions
 from .bundle import Bundle
-from .constants import (FloatConstant, HashConstant, IntegerConstant,
-                        StringConstant)
+from .constants import (FloatConstant, HashConstant, HexConstant,
+                        IntegerConstant, StringConstant)
+from .object_path import ObjectPath, ObjectPathComponent
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, CustomObservable, Directory,
                           DomainName, EmailAddress, EmailMessage,
@@ -29,6 +30,8 @@ from .pattern_expressions import (AndBooleanExpression,
                                   FollowedByObservableExpression,
                                   GreaterThanComparisonExpression,
                                   GreaterThanEqualComparisonExpression,
+                                  IsSubsetComparisonExpression,
+                                  IsSupersetComparisonExpression,
                                   LessThanComparisonExpression,
                                   LessThanEqualComparisonExpression,
                                   LikeComparisonExpression,
