@@ -164,7 +164,6 @@ def parse_observable(data, _valid_refs=[], allow_custom=False):
     return obj_class(allow_custom=allow_custom, **obj)
 
 
-
 def _register_type(new_type):
     """Register a custom STIX Object type.
     """
