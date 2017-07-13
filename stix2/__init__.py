@@ -4,6 +4,9 @@
 
 from . import exceptions
 from .bundle import Bundle
+from .constants import (FloatConstant, HashConstant, HexConstant,
+                        IntegerConstant, StringConstant)
+from .object_path import ObjectPath, ObjectPathComponent
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, Directory, DomainName,
                           EmailAddress, EmailMessage, EmailMIMEComponent, File,
@@ -18,6 +21,25 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
 from .other import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
                     ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
+from .pattern_expressions import (AndBooleanExpression,
+                                  AndObservableExpression,
+                                  ComparisonExpression,
+                                  EqualityComparisonExpression,
+                                  FollowedByObservableExpression,
+                                  GreaterThanComparisonExpression,
+                                  GreaterThanEqualComparisonExpression,
+                                  IsSubsetComparisonExpression,
+                                  IsSupersetComparisonExpression,
+                                  LessThanComparisonExpression,
+                                  LessThanEqualComparisonExpression,
+                                  LikeComparisonExpression,
+                                  MatchesComparisonExpression,
+                                  ObservableExpression, OrBooleanExpression,
+                                  OrObservableExpression,
+                                  ParentheticalExpression,
+                                  QualifiedObservationExpression,
+                                  RepeatQualifier, StartStopQualifier,
+                                  WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
                   IntrusionSet, Malware, ObservedData, Report, ThreatActor,
                   Tool, Vulnerability)
@@ -48,7 +70,7 @@ OBJ_MAP_OBSERVABLE = {
     'autonomous-system': AutonomousSystem,
     'directory': Directory,
     'domain-name': DomainName,
-    'email-address': EmailAddress,
+    'email-addr': EmailAddress,
     'email-message': EmailMessage,
     'file': File,
     'ipv4-addr': IPv4Address,

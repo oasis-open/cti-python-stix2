@@ -225,7 +225,7 @@ def test_parse_autonomous_system_valid(data):
 
 @pytest.mark.parametrize("data", [
     """{
-        "type": "email-address",
+        "type": "email-addr",
         "value": "john@example.com",
         "display_name": "John Doe",
         "belongs_to_ref": "0"
@@ -233,7 +233,7 @@ def test_parse_autonomous_system_valid(data):
 ])
 def test_parse_email_address(data):
     odata = stix2.parse_observable(data, {"0": "user-account"})
-    assert odata.type == "email-address"
+    assert odata.type == "email-addr"
 
     odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', data)
     with pytest.raises(stix2.exceptions.InvalidObjRefError):
@@ -555,6 +555,15 @@ def test_artifact_mutual_exclusion_error():
 
     assert excinfo.value.cls == stix2.Artifact
     assert excinfo.value.properties == ["payload_bin", "url"]
+
+
+def test_artifact_dependency_error():
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.Artifact(mime_type="image/jpeg",
+                       url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg")
+
+    assert excinfo.value.cls == stix2.Artifact
+    assert excinfo.value.dependencies == [("hashes", "url")]
 
 
 def test_directory_example():
