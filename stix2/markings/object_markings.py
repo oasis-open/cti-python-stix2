@@ -1,28 +1,20 @@
 
-import six
-
 from stix2.markings import utils
 
 
 def get_markings(obj):
     """
-    Get all object level markings from the given TLO object.
+    Get all object level markings from the given SDO or SRO object.
 
     Args:
-        obj: A TLO object.
+        obj: A SDO or SRO object.
 
     Returns:
-        list: Marking IDs contained in the TLO.
+        list: Marking IDs contained in the SDO or SRO. Empty list if no
+            markings are present in `object_marking_refs`.
 
     """
-    object_markings = obj.get("object_marking_refs", [])
-
-    if not object_markings:
-        return []
-    elif isinstance(object_markings, six.string_types):
-        return [object_markings]
-    else:
-        return object_markings
+    return obj.get("object_marking_refs", [])
 
 
 def add_markings(obj, marking):
@@ -30,23 +22,19 @@ def add_markings(obj, marking):
     Appends an object level marking to the object_marking_refs collection.
 
     Args:
-        obj: A TLO object.
-        marking: identifier or list of marking identifiers that apply to the
-            TLO object.
+        obj: A SDO or SRO object.
+        marking: identifier or list of identifiers to apply SDO or SRO object.
 
     Raises:
         AssertionError: If `marking` fail data validation.
 
     """
     marking = utils.convert_to_list(marking)
-    utils.validate(obj, marking=marking)
 
-    if not obj.get("object_marking_refs"):
-        obj["object_marking_refs"] = list()
+    # TODO: Remove set for comparison and raise DuplicateMarkingException.
+    object_markings = set(obj.get("object_marking_refs", []) + marking)
 
-    object_markings = set(obj.get("object_marking_refs") + marking)
-
-    obj["object_marking_refs"] = list(object_markings)
+    return obj.new_version(object_marking_refs=list(object_markings))
 
 
 def remove_markings(obj, marking):
@@ -54,13 +42,13 @@ def remove_markings(obj, marking):
     Removes object level marking from the object_marking_refs collection.
 
     Args:
-        obj: A TLO object.
-        marking: identifier or list of marking identifiers that apply to the
-            TLO object.
+        obj: A SDO or SRO object.
+        marking: identifier or list of identifiers that apply to the
+            SDO or SRO object.
 
     Raises:
-        AssertionError: If `marking` fail data validation. Also
-            if markings to remove are not found on the provided TLO.
+        AssertionError: If markings to remove are not found on the provided
+            SDO or SRO.
 
     """
     marking = utils.convert_to_list(marking)
@@ -69,17 +57,14 @@ def remove_markings(obj, marking):
     object_markings = obj.get("object_marking_refs", [])
 
     if not object_markings:
-        return []
+        return obj
 
     if any(x not in obj["object_marking_refs"] for x in marking):
         raise AssertionError("Unable to remove Object Level Marking(s) from "
                              "internal collection. Marking(s) not found...")
 
-    obj["object_marking_refs"] = [x for x in object_markings
-                                  if x not in marking]
-
-    if not obj.get("object_marking_refs"):
-        obj.pop("object_marking_refs")
+    return obj.new_version(object_marking_refs=[x for x in object_markings
+                                                if x not in marking])
 
 
 def set_markings(obj, marking):
@@ -88,15 +73,12 @@ def set_markings(obj, marking):
     the collection. Refer to `clear_markings` and `add_markings` for details.
 
     Args:
-        obj: A TLO object.
-        marking: identifier or list of marking identifiers that apply to the
-            TLO object.
+        obj: A SDO or SRO object.
+        marking: identifier or list of identifiers to apply in the
+            SDO or SRO object.
 
     """
-    utils.validate(obj, marking=marking)
-
-    clear_markings(obj)
-    add_markings(obj, marking)
+    return add_markings(clear_markings(obj), marking)
 
 
 def clear_markings(obj):
@@ -104,31 +86,27 @@ def clear_markings(obj):
     Removes all object level markings from the object_marking_refs collection.
 
     Args:
-        obj: A TLO object.
+        obj: A SDO or SRO object.
 
     """
-    try:
-        del obj["object_marking_refs"]
-    except KeyError:
-        raise AssertionError("Unable to clear Object Marking(s) from internal"
-                             " collection. No Markings in object...")
+    return obj.new_version(object_marking_refs=None)
 
 
 def is_marked(obj, marking=None):
     """
-    Checks if TLO is marked by any marking or by specific marking(s).
+    Checks if SDO or SRO is marked by any marking or by specific marking(s).
 
     Args:
-        obj: A TLO object.
+        obj: A SDO or SRO object.
         marking: identifier or list of marking identifiers that apply to the
-            TLO object.
+            SDO or SRO object.
 
     Returns:
-        bool: True if TLO has object level markings. False otherwise.
+        bool: True if SDO or SRO has object level markings. False otherwise.
 
     Note:
-        When a list of marking IDs is provided, if ANY of the provided marking
-        IDs matches, True is returned.
+        When an identifier or list of identifiers is provided, if ANY of the
+        provided marking refs match, True is returned.
 
     """
     marking = utils.convert_to_list(marking)

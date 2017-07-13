@@ -116,9 +116,9 @@ def add_markings(obj, selectors, marking):
 
     """
     if selectors is None:
-        object_markings.add_markings(obj, marking)
+        return object_markings.add_markings(obj, marking)
     else:
-        granular_markings.add_markings(obj, selectors, marking)
+        return granular_markings.add_markings(obj, selectors, marking)
 
 
 def clear_markings(obj, selectors):
