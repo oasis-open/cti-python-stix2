@@ -1,10 +1,8 @@
+from .constants import Constant, IntegerConstant, ListConstant, make_constant
+from .object_path import ObjectPath
+
 
 class PatternExpression(object):
-
-    @staticmethod
-    def get_root_from_object_path(lhs):
-        path_as_parts = lhs.split(":")
-        return path_as_parts[0]
 
     @staticmethod
     def escape_quotes_and_backslashes(s):
@@ -13,24 +11,33 @@ class PatternExpression(object):
 
 class ComparisonExpression(PatternExpression):
     def __init__(self, operator, lhs, rhs, negated=False):
-        if operator == "=" and isinstance(rhs, list):
+        if operator == "=" and isinstance(rhs, ListConstant):
             self.operator = "IN"
         else:
             self.operator = operator
-        self.lhs = lhs
-        self.rhs = rhs
+        if isinstance(lhs, ObjectPath):
+            self.lhs = lhs
+        else:
+            self.lhs = ObjectPath.make_object_path(lhs)
+        if isinstance(rhs, Constant):
+            self.rhs = rhs
+        else:
+            self.rhs = make_constant(rhs)
         self.negated = negated
-        self.root_type = self.get_root_from_object_path(lhs)
+        self.root_type = self.lhs.object_type_name
 
     def __str__(self):
-        if isinstance(self.rhs, list):
-            final_rhs = []
-            for r in self.rhs:
-                final_rhs.append("'" + self.escape_quotes_and_backslashes("%s" % r) + "'")
-            rhs_string = "(" + ", ".join(final_rhs) + ")"
+        # if isinstance(self.rhs, list):
+        #     final_rhs = []
+        #     for r in self.rhs:
+        #         final_rhs.append("'" + self.escape_quotes_and_backslashes("%s" % r) + "'")
+        #     rhs_string = "(" + ", ".join(final_rhs) + ")"
+        # else:
+        #     rhs_string = self.rhs
+        if self.negated:
+            return "%s NOT %s %s" % (self.lhs, self.operator, self.rhs)
         else:
-            rhs_string = "'" + self.escape_quotes_and_backslashes("%s" % self.rhs) + "'"
-        return self.lhs + (" NOT" if self.negated else "") + " " + self.operator + " " + rhs_string
+            return "%s %s %s" % (self.lhs, self.operator, self.rhs)
 
 
 class EqualityComparisonExpression(ComparisonExpression):
@@ -73,7 +80,14 @@ class MatchesComparisonExpression(ComparisonExpression):
         super(MatchesComparisonExpression, self).__init__("MATCHES", lhs, rhs, negated)
 
 
-# TODO: ISASUBSET, ISSUPERSET
+class IsSubsetComparisonExpression(ComparisonExpression):
+        def __init__(self, lhs, rhs, negated=False):
+            super(IsSubsetComparisonExpression, self).__init__("ISSUBSET", lhs, rhs, negated)
+
+
+class IsSupersetComparisonExpression(ComparisonExpression):
+        def __init__(self, lhs, rhs, negated=False):
+            super(IsSupersetComparisonExpression, self).__init__("ISSUPERSET", lhs, rhs, negated)
 
 
 class BooleanExpression(PatternExpression):
@@ -157,7 +171,12 @@ class ExpressionQualifier(PatternExpression):
 
 class RepeatQualifier(ExpressionQualifier):
     def __init__(self, times_to_repeat):
-        self.times_to_repeat = times_to_repeat
+        if isinstance(times_to_repeat, IntegerConstant):
+            self.times_to_repeat = times_to_repeat
+        elif isinstance(times_to_repeat, int):
+            self.times_to_repeat = IntegerConstant(times_to_repeat)
+        else:
+            raise ValueError("%s is not a valid argument for a Within Qualifier" % times_to_repeat)
 
     def __str__(self):
         return "REPEATS %s TIMES" % self.times_to_repeat
@@ -165,7 +184,12 @@ class RepeatQualifier(ExpressionQualifier):
 
 class WithinQualifier(ExpressionQualifier):
     def __init__(self, number_of_seconds):
-        self.number_of_seconds = number_of_seconds
+        if isinstance(number_of_seconds, IntegerConstant):
+            self.number_of_seconds = number_of_seconds
+        elif isinstance(number_of_seconds, int):
+            self.number_of_seconds = IntegerConstant(number_of_seconds)
+        else:
+            raise ValueError("%s is not a valid argument for a Within Qualifier" % number_of_seconds)
 
     def __str__(self):
         return "WITHIN %s SECONDS" % self.number_of_seconds
@@ -173,8 +197,18 @@ class WithinQualifier(ExpressionQualifier):
 
 class StartStopQualifier(ExpressionQualifier):
     def __init__(self, start_time, stop_time):
-        self.start_time = start_time
-        self.stop_time = stop_time
+        if isinstance(start_time, IntegerConstant):
+            self.start_time = start_time
+        elif isinstance(start_time, int):
+            self.start_time = IntegerConstant(start_time)
+        else:
+            raise ValueError("%s is not a valid argument for a Within Qualifier" % start_time)
+        if isinstance(stop_time, IntegerConstant):
+            self.stop_time = stop_time
+        elif isinstance(stop_time, int):
+            self.stop_time = IntegerConstant(stop_time)
+        else:
+            raise ValueError("%s is not a valid argument for a Within Qualifier" % stop_time)
 
     def __str__(self):
         return "START %s STOP %s" % (self.start_time, self.stop_time)
