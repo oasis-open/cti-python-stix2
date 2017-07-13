@@ -165,11 +165,11 @@ class InvalidSelectorError(STIXError, ValueError):
         return msg.format(self.key, self.__class__.__name__)
 
 
-class InvalidMarkingError(STIXError, ValueError):
+class DuplicateMarkingError(STIXError, ValueError):
     """Marking violation. The marking reference must be a valid identifier."""
 
     def __init__(self, cls, key):
-        super(InvalidMarkingError, self).__init__()
+        super(DuplicateMarkingError, self).__init__()
         self.cls = cls
         self.key = key
 
