@@ -52,12 +52,3 @@ def test_object_factory_obj_markings():
     factory = stix2.ObjectFactory(object_marking_refs=stix2.TLP_RED)
     ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
     assert stix2.TLP_RED.id in ind.object_marking_refs
-
-
-def test_object_factory_granular_markings():
-    marking = stix2.GranularMarking(marking_ref=stix2.TLP_AMBER,
-                                    selectors="created_by_ref")
-    factory = stix2.ObjectFactory(created_by_ref=IDENTITY_ID,
-                                  granular_markings=marking)
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
-    assert "created_by_ref" in ind.granular_markings[0].selectors
