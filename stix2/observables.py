@@ -5,16 +5,72 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-import stix2
-
 from .base import _Extension, _Observable, _STIXBase
-from .exceptions import AtLeastOnePropertyError, DependentPropertiesError
+from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
+                         ParseError)
 from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty,
-                         ExtensionsProperty, FloatProperty, HashesProperty,
-                         HexProperty, IntegerProperty, ListProperty,
-                         ObjectReferenceProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
+                         EmbeddedObjectProperty, EnumProperty, FloatProperty,
+                         HashesProperty, HexProperty, IntegerProperty,
+                         ListProperty, ObjectReferenceProperty, Property,
+                         StringProperty, TimestampProperty, TypeProperty)
+from .utils import get_dict
+
+
+class ObservableProperty(Property):
+
+    def clean(self, value):
+        try:
+            dictified = get_dict(value)
+        except ValueError:
+            raise ValueError("The observable property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
+
+        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
+
+        # from .__init__ import parse_observable  # avoid circular import
+        for key, obj in dictified.items():
+            parsed_obj = parse_observable(obj, valid_refs)
+            if not issubclass(type(parsed_obj), _Observable):
+                raise ValueError("Objects in an observable property must be "
+                                 "Cyber Observable Objects")
+            dictified[key] = parsed_obj
+
+        return dictified
+
+
+class ExtensionsProperty(DictionaryProperty):
+    """ Property for representing extensions on Observable objects
+    """
+
+    def __init__(self, enclosing_type=None, required=False):
+        self.enclosing_type = enclosing_type
+        super(ExtensionsProperty, self).__init__(required)
+
+    def clean(self, value):
+        try:
+            dictified = get_dict(value)
+        except ValueError:
+            raise ValueError("The extensions property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The dictionary property must contain a non-empty dictionary")
+
+        if self.enclosing_type in EXT_MAP:
+            specific_type_map = EXT_MAP[self.enclosing_type]
+            for key, subvalue in dictified.items():
+                if key in specific_type_map:
+                    cls = specific_type_map[key]
+                    if type(subvalue) is dict:
+                        dictified[key] = cls(**subvalue)
+                    elif type(subvalue) is cls:
+                        dictified[key] = subvalue
+                    else:
+                        raise ValueError("Cannot determine extension type.")
+                else:
+                    raise ValueError("The key used in the extensions dictionary is not an extension type name")
+        else:
+            raise ValueError("The enclosing type has no extensions defined")
+        return dictified
 
 
 class Artifact(_Observable):
@@ -590,9 +646,101 @@ class X509Certificate(_Observable):
     }
 
 
+OBJ_MAP_OBSERVABLE = {
+    'artifact': Artifact,
+    'autonomous-system': AutonomousSystem,
+    'directory': Directory,
+    'domain-name': DomainName,
+    'email-address': EmailAddress,
+    'email-message': EmailMessage,
+    'file': File,
+    'ipv4-addr': IPv4Address,
+    'ipv6-addr': IPv6Address,
+    'mac-addr': MACAddress,
+    'mutex': Mutex,
+    'network-traffic': NetworkTraffic,
+    'process': Process,
+    'software': Software,
+    'url': URL,
+    'user-account': UserAccount,
+    'windows-registry-key': WindowsRegistryKey,
+    'x509-certificate': X509Certificate,
+}
+
+EXT_MAP_FILE = {
+    'archive-ext': ArchiveExt,
+    'ntfs-ext': NTFSExt,
+    'pdf-ext': PDFExt,
+    'raster-image-ext': RasterImageExt,
+    'windows-pebinary-ext': WindowsPEBinaryExt
+}
+
+EXT_MAP_NETWORK_TRAFFIC = {
+    'http-request-ext': HTTPRequestExt,
+    'icmp-ext': ICMPExt,
+    'socket-ext': SocketExt,
+    'tcp-ext': TCPExt,
+}
+
+EXT_MAP_PROCESS = {
+    'windows-process-ext': WindowsProcessExt,
+    'windows-service-ext': WindowsServiceExt,
+}
+
+EXT_MAP_USER_ACCOUNT = {
+    'unix-account-ext': UNIXAccountExt,
+}
+
+EXT_MAP = {
+    'file': EXT_MAP_FILE,
+    'network-traffic': EXT_MAP_NETWORK_TRAFFIC,
+    'process': EXT_MAP_PROCESS,
+    'user-account': EXT_MAP_USER_ACCOUNT,
+
+}
+
+
+def parse_observable(data, _valid_refs=[], allow_custom=False):
+    """Deserialize a string or file-like object into a STIX Cyber Observable object.
+
+    Args:
+        data: The STIX 2 string to be parsed.
+        _valid_refs: A list of object references valid for the scope of the object being parsed.
+        allow_custom: Whether to allow custom properties or not. Default: False.
+
+    Returns:
+        An instantiated Python STIX Cyber Observable object.
+    """
+
+    obj = get_dict(data)
+    obj['_valid_refs'] = _valid_refs
+
+    if 'type' not in obj:
+        raise ParseError("Can't parse object with no 'type' property: %s" % str(obj))
+    try:
+        obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
+    except KeyError:
+        raise ParseError("Can't parse unknown object type '%s'! For custom observables, use the CustomObservable decorator." % obj['type'])
+
+    if 'extensions' in obj and obj['type'] in EXT_MAP:
+        for name, ext in obj['extensions'].items():
+            if name not in EXT_MAP[obj['type']]:
+                raise ParseError("Can't parse Unknown extension type '%s' for object type '%s'!" % (name, obj['type']))
+            ext_class = EXT_MAP[obj['type']][name]
+            obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
+
+    return obj_class(allow_custom=allow_custom, **obj)
+
+
+def _register_observable(new_observable):
+    """Register a custom STIX Cyber Observable type.
+    """
+
+    OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
+
+
 def CustomObservable(type='x-custom-observable', properties={}):
     """Custom STIX Cyber Observable type decorator
-
     """
 
     def custom_builder(cls):
@@ -608,7 +756,7 @@ def CustomObservable(type='x-custom-observable', properties={}):
                 _Observable.__init__(self, **kwargs)
                 cls.__init__(self, **kwargs)
 
-        stix2._register_observable(_Custom)
+        _register_observable(_Custom)
         return _Custom
 
     return custom_builder

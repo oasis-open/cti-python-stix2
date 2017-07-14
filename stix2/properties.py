@@ -7,7 +7,7 @@ import uuid
 
 from six import text_type
 
-from .base import _Observable, _STIXBase
+from .base import _STIXBase
 from .exceptions import DictionaryKeyError
 from .utils import get_dict, parse_into_datetime
 
@@ -220,29 +220,6 @@ class TimestampProperty(Property):
         return parse_into_datetime(value, self.precision)
 
 
-class ObservableProperty(Property):
-
-    def clean(self, value):
-        try:
-            dictified = get_dict(value)
-        except ValueError:
-            raise ValueError("The observable property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
-
-        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
-
-        from .__init__ import parse_observable  # avoid circular import
-        for key, obj in dictified.items():
-            parsed_obj = parse_observable(obj, valid_refs)
-            if not issubclass(type(parsed_obj), _Observable):
-                raise ValueError("Objects in an observable property must be "
-                                 "Cyber Observable Objects")
-            dictified[key] = parsed_obj
-
-        return dictified
-
-
 class DictionaryProperty(Property):
 
     def clean(self, value):
@@ -393,35 +370,3 @@ class EnumProperty(StringProperty):
         if value not in self.allowed:
             raise ValueError("value '%s' is not valid for this enumeration." % value)
         return self.string_type(value)
-
-
-class ExtensionsProperty(DictionaryProperty):
-    def __init__(self, enclosing_type=None, required=False):
-        self.enclosing_type = enclosing_type
-        super(ExtensionsProperty, self).__init__(required)
-
-    def clean(self, value):
-        try:
-            dictified = get_dict(value)
-        except ValueError:
-            raise ValueError("The extensions property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
-
-        from .__init__ import EXT_MAP  # avoid circular import
-        if self.enclosing_type in EXT_MAP:
-            specific_type_map = EXT_MAP[self.enclosing_type]
-            for key, subvalue in dictified.items():
-                if key in specific_type_map:
-                    cls = specific_type_map[key]
-                    if type(subvalue) is dict:
-                        dictified[key] = cls(**subvalue)
-                    elif type(subvalue) is cls:
-                        dictified[key] = subvalue
-                    else:
-                        raise ValueError("Cannot determine extension type.")
-                else:
-                    raise ValueError("The key used in the extensions dictionary is not an extension type name")
-        else:
-            raise ValueError("The enclosing type has no extensions defined")
-        return dictified
