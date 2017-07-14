@@ -2,6 +2,8 @@ import pytest
 
 import stix2
 
+from .constants import FAKE_TIME
+
 
 def test_identity_custom_property():
     with pytest.raises(ValueError):
@@ -171,8 +173,8 @@ def test_observable_custom_property_allowed():
 def test_observed_data_with_custom_observable_object():
     no = NewObservable(property1='something')
     ob_data = stix2.ObservedData(
-        first_observed=stix2.utils.NOW,
-        last_observed=stix2.utils.NOW,
+        first_observed=FAKE_TIME,
+        last_observed=FAKE_TIME,
         number_observed=1,
         objects={'0': no},
         allow_custom=True,
