@@ -7,8 +7,8 @@ from .common import COMMON_PROPERTIES
 from .observables import ObservableProperty
 from .other import KillChainPhase
 from .properties import (IDProperty, IntegerProperty, ListProperty,
-                         ReferenceProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
+                         ReferenceProperty, StringProperty, TimestampProperty,
+                         TypeProperty)
 from .utils import NOW
 
 
