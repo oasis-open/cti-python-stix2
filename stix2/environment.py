@@ -1,5 +1,26 @@
 
 class ObjectFactory(object):
+    """Object Factory
+
+    Used to easily create STIX objects with default values for certain
+    properties.
+
+    Args:
+        created_by_ref: Default created_by_ref value to apply to all
+            objects created by this factory.
+        created: Default created value to apply to all
+            objects created by this factory.
+        external_references: Default `external_references` value to apply
+            to all objects created by this factory.
+        object_marking_refs: Default `object_marking_refs` value to apply
+            to all objects created by this factory.
+        list_append: When a default is set for a list property like
+            `external_references` or `object_marking_refs` and a value for
+            that property is passed into `create()`, if this is set to True,
+            that value will be added to the list alongside the default. If
+            this is set to False, the passed in value will replace the
+            default. Defaults to True.
+    """
 
     def __init__(self, created_by_ref=None, created=None,
                  external_references=None, object_marking_refs=None,
