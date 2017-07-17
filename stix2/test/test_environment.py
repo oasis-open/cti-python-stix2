@@ -39,6 +39,9 @@ def test_object_factory_external_resource():
     assert ind.external_references[0].source_name == "ACME Threat Intel"
     assert ind.external_references[0].description == "Threat report"
 
+    ind2 = factory.create(stix2.Indicator, external_references=None, **INDICATOR_KWARGS)
+    assert 'external_references' not in ind2
+
 
 def test_object_factory_obj_markings():
     stmt_marking = stix2.StatementMarking("Copyright 2016, Example Corp")
@@ -52,3 +55,24 @@ def test_object_factory_obj_markings():
     factory = stix2.ObjectFactory(object_marking_refs=stix2.TLP_RED)
     ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
     assert stix2.TLP_RED.id in ind.object_marking_refs
+
+
+def test_object_factory_list_append():
+    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
+                                      description="Threat report from ACME")
+    ext_ref2 = stix2.ExternalReference(source_name="Yet Another Threat Report",
+                                       description="Threat report from YATR")
+    factory = stix2.ObjectFactory(external_references=ext_ref)
+    ind = factory.create(stix2.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
+    assert ind.external_references[1].source_name == "Yet Another Threat Report"
+
+
+def test_object_factory_list_replace():
+    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
+                                      description="Threat report from ACME")
+    ext_ref2 = stix2.ExternalReference(source_name="Yet Another Threat Report",
+                                       description="Threat report from YATR")
+    factory = stix2.ObjectFactory(external_references=ext_ref, list_append=False)
+    ind = factory.create(stix2.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
+    assert len(ind.external_references) == 1
+    assert ind.external_references[0].source_name == "Yet Another Threat Report"
