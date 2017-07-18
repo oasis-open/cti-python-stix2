@@ -1,3 +1,5 @@
+import copy
+
 
 class ObjectFactory(object):
     """Object Factory
@@ -44,7 +46,7 @@ class ObjectFactory(object):
     def create(self, cls, **kwargs):
         # Use self.defaults as the base, but update with any explicit args
         # provided by the user.
-        properties = dict(**self._defaults)
+        properties = copy.deepcopy(self._defaults)
         if kwargs:
             if self._list_append:
                 # Append provided items to list properties instead of replacing them
@@ -55,7 +57,11 @@ class ObjectFactory(object):
                         continue
                     if not isinstance(properties[list_prop], list):
                         properties[list_prop] = [properties[list_prop]]
-                    properties[list_prop].append(kwarg_prop)
+
+                    if isinstance(kwarg_prop, list):
+                        properties[list_prop].extend(kwarg_prop)
+                    else:
+                        properties[list_prop].append(kwarg_prop)
 
             properties.update(**kwargs)
 

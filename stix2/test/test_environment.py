@@ -62,9 +62,14 @@ def test_object_factory_list_append():
                                       description="Threat report from ACME")
     ext_ref2 = stix2.ExternalReference(source_name="Yet Another Threat Report",
                                        description="Threat report from YATR")
+    ext_ref3 = stix2.ExternalReference(source_name="Threat Report #3",
+                                       description="One more threat report")
     factory = stix2.ObjectFactory(external_references=ext_ref)
     ind = factory.create(stix2.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
     assert ind.external_references[1].source_name == "Yet Another Threat Report"
+
+    ind = factory.create(stix2.Indicator, external_references=[ext_ref2, ext_ref3], **INDICATOR_KWARGS)
+    assert ind.external_references[2].source_name == "Threat Report #3"
 
 
 def test_object_factory_list_replace():
