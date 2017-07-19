@@ -4,9 +4,6 @@
 
 from . import exceptions
 from .bundle import Bundle
-from .constants import (FloatConstant, HashConstant, HexConstant,
-                        IntegerConstant, StringConstant)
-from .object_path import ObjectPath, ObjectPathComponent
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, CustomObservable, Directory,
                           DomainName, EmailAddress, EmailMessage,
@@ -23,25 +20,23 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
 from .other import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
                     ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
-from .pattern_expressions import (AndBooleanExpression,
-                                  AndObservableExpression,
-                                  ComparisonExpression,
-                                  EqualityComparisonExpression,
-                                  FollowedByObservableExpression,
-                                  GreaterThanComparisonExpression,
-                                  GreaterThanEqualComparisonExpression,
-                                  IsSubsetComparisonExpression,
-                                  IsSupersetComparisonExpression,
-                                  LessThanComparisonExpression,
-                                  LessThanEqualComparisonExpression,
-                                  LikeComparisonExpression,
-                                  MatchesComparisonExpression,
-                                  ObservableExpression, OrBooleanExpression,
-                                  OrObservableExpression,
-                                  ParentheticalExpression,
-                                  QualifiedObservationExpression,
-                                  RepeatQualifier, StartStopQualifier,
-                                  WithinQualifier)
+from .patterns import (AndBooleanExpression, AndObservationExpression,
+                       BasicObjectPathComponent, EqualityComparisonExpression,
+                       FloatConstant, FollowedByObservationExpression,
+                       GreaterThanComparisonExpression,
+                       GreaterThanEqualComparisonExpression, HashConstant,
+                       HexConstant, IntegerConstant,
+                       IsSubsetComparisonExpression,
+                       IsSupersetComparisonExpression,
+                       LessThanComparisonExpression,
+                       LessThanEqualComparisonExpression,
+                       LikeComparisonExpression, ListConstant,
+                       ListObjectPathComponent, MatchesComparisonExpression,
+                       ObjectPath, ObservationExpression, OrBooleanExpression,
+                       OrObservationExpression, ParentheticalExpression,
+                       QualifiedObservationExpression,
+                       ReferenceObjectPathComponent, RepeatQualifier,
+                       StartStopQualifier, StringConstant, WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
                   Identity, Indicator, IntrusionSet, Malware, ObservedData,
                   Report, ThreatActor, Tool, Vulnerability)
