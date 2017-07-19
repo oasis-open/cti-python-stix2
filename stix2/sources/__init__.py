@@ -67,16 +67,8 @@ class DataStore(object):
     def __init__(self, name="DataStore"):
         self.name = name
         self.id = make_id()
-        self.source = DataSource()
-        self.sink = DataSink()
-
-    @property
-    def source(self):
-        return self.source
-
-    @property
-    def sink(self):
-        return self.sink
+        self.source = None
+        self.sink = None
 
     def get(self, stix_id):
         """

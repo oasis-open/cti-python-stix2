@@ -26,14 +26,6 @@ class FileSystemStore(DataStore):
         self.source = FileSystemSource(stix_dir=stix_dir)
         self.sink = FileSystemSink(stix_dir=stix_dir)
 
-    @property
-    def source(self):
-        return self.source
-
-    @property
-    def sink(self):
-        return self.sink
-
     # file system sink API calls
 
     def add(self, stix_objs):

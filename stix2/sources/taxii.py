@@ -32,15 +32,7 @@ class TAXIICollectionStore(DataStore):
         self.name = name
         self.id = make_id()
         self.source = TAXIICollectionSource(taxii_client, api_root_name, collection_id, user, password)
-        self.sink = self.TAXIICollectionSink(taxii_client, api_root_name, collection_id, user, password)
-
-    @property
-    def source(self):
-        return self.source
-
-    @property
-    def sink(self):
-        return self.sink
+        self.sink = TAXIICollectionSink(taxii_client, api_root_name, collection_id, user, password)
 
     # file system sink API calls
 

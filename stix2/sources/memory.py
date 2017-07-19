@@ -64,14 +64,6 @@ class MemoryStore(DataStore):
         self.source = MemorySource(stix_data=self.data, _store=True)
         self.sink = MemorySink(stix_data=self.data, _store=True)
 
-    @property
-    def source(self):
-        return self.source
-
-    @property
-    def sink(self):
-        return self.sink
-
     # memory sink API calls
 
     def add(self, stix_data):
