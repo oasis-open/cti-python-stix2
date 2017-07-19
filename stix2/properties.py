@@ -5,7 +5,7 @@ import inspect
 import re
 import uuid
 
-from six import text_type
+from six import string_types, text_type
 
 from .base import _STIXBase
 from .exceptions import DictionaryKeyError
@@ -101,12 +101,9 @@ class ListProperty(Property):
             iter(value)
         except TypeError:
             raise ValueError("must be an iterable.")
-        try:
-            if isinstance(value, basestring):
-                value = [value]
-        except NameError:
-            if isinstance(value, str):
-                value = [value]
+
+        if isinstance(value, (_STIXBase, string_types)):
+            value = [value]
 
         result = []
         for item in value:

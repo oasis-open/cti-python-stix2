@@ -7,6 +7,8 @@
 
 This repository provides Python APIs for serializing and de-serializing STIX 2 JSON content, along with higher-level APIs for common tasks, including data markings, versioning, and for resolving STIX IDs across multiple data sources.
 
+For more information, see [the documentation](https://stix2.readthedocs.io/en/latest/) on ReadTheDocs.
+
 ## Installation
 
 Install with [`pip`](https://pip.pypa.io/en/stable/):

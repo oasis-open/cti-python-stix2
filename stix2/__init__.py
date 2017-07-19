@@ -4,6 +4,7 @@
 
 from . import exceptions
 from .bundle import Bundle
+from .environment import ObjectFactory
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, CustomObservable, Directory,
                           DomainName, EmailAddress, EmailMessage,
@@ -20,6 +21,23 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
 from .other import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
                     ExternalReference, GranularMarking, KillChainPhase,
                     MarkingDefinition, StatementMarking, TLPMarking)
+from .patterns import (AndBooleanExpression, AndObservationExpression,
+                       BasicObjectPathComponent, EqualityComparisonExpression,
+                       FloatConstant, FollowedByObservationExpression,
+                       GreaterThanComparisonExpression,
+                       GreaterThanEqualComparisonExpression, HashConstant,
+                       HexConstant, IntegerConstant,
+                       IsSubsetComparisonExpression,
+                       IsSupersetComparisonExpression,
+                       LessThanComparisonExpression,
+                       LessThanEqualComparisonExpression,
+                       LikeComparisonExpression, ListConstant,
+                       ListObjectPathComponent, MatchesComparisonExpression,
+                       ObjectPath, ObservationExpression, OrBooleanExpression,
+                       OrObservationExpression, ParentheticalExpression,
+                       QualifiedObservationExpression,
+                       ReferenceObjectPathComponent, RepeatQualifier,
+                       StartStopQualifier, StringConstant, WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
                   Identity, Indicator, IntrusionSet, Malware, ObservedData,
                   Report, ThreatActor, Tool, Vulnerability)
