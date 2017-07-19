@@ -8,7 +8,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 
 def get_version():
-    with open('stix2/version.py') as f:
+    with open('stix2/version.py', encoding="utf-8") as f:
         for line in f.readlines():
             if line.startswith("__version__"):
                 version = line.split()[-1].strip('"')
