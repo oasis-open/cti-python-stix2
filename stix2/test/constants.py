@@ -20,6 +20,12 @@ TOOL_ID = "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 VULNERABILITY_ID = "vulnerability--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 
+# Minimum required args for an Identity instance
+IDENTITY_KWARGS = dict(
+    name="John Smith",
+    identity_class="individual",
+)
+
 # Minimum required args for an Indicator instance
 INDICATOR_KWARGS = dict(
     labels=['malicious-activity'],

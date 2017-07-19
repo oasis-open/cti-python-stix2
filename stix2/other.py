@@ -69,7 +69,7 @@ class MarkingProperty(Property):
 class MarkingDefinition(_STIXBase):
     _type = 'marking-definition'
     _properties = {
-        'created': TimestampProperty(default=lambda: NOW, required=True),
+        'created': TimestampProperty(default=lambda: NOW),
         'external_references': ListProperty(ExternalReference),
         'created_by_ref': ReferenceProperty(type="identity"),
         'object_marking_refs': ListProperty(ReferenceProperty(type="marking-definition")),
