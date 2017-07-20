@@ -1,25 +1,37 @@
+import pytest
+from taxii2_client import Collection
+
 from stix2.sources import taxii
 
-
-def test_ds_taxii():
-    ds = taxii.TAXIICollectionSource()
-    assert ds.name == 'TAXII'
+COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 
 
-def test_ds_taxii_name():
-    ds = taxii.TAXIICollectionSource(name='My Data Source Name')
+class MockTAXIIClient(object):
+    """Mock for taxii2_client.TAXIIClient"""
+
+    def get(self):
+        return {}
+
+    def post(self):
+        return {}
+
+
+@pytest.fixture
+def collection():
+    return Collection(COLLECTION_URL, MockTAXIIClient())
+
+
+def test_ds_taxii(collection):
+    ds = taxii.TAXIICollectionSource(collection)
+    assert ds.name == 'TAXIICollectionSource'
+
+
+def test_ds_taxii_name(collection):
+    ds = taxii.TAXIICollectionSource(collection, name='My Data Source Name')
     assert ds.name == "My Data Source Name"
 
 
-def test_ds_params():
-    url = "http://taxii_url.com:5000"
-    creds = {"username": "Wade", "password": "Wilson"}
-    ds = taxii.TAXIICollectionSource(api_root=url, auth=creds)
-    assert ds.taxii_info['api_root']['url'] == url
-    assert ds.taxii_info['auth'] == creds
-
-
-def test_parse_taxii_filters():
+def test_parse_taxii_filters(collection):
     query = [
         {
             "field": "added_after",
@@ -55,14 +67,14 @@ def test_parse_taxii_filters():
         "match[version]": "first"
     }
 
-    ds = taxii.TAXIICollectionSource()
+    ds = taxii.TAXIICollectionSource(collection)
 
     taxii_filters = ds._parse_taxii_filters(query)
 
     assert taxii_filters == expected_params
 
 
-def test_add_get_remove_filter():
+def test_add_get_remove_filter(collection):
 
     class dummy(object):
         x = 4
@@ -114,7 +126,7 @@ def test_add_get_remove_filter():
         "Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary"
     ]
 
-    ds = taxii.TAXIICollectionSource()
+    ds = taxii.TAXIICollectionSource(collection)
     # add
     ids, statuses = ds.add_filter(filters)
 
@@ -156,7 +168,7 @@ def test_add_get_remove_filter():
         assert id_ in ids[:3]
 
 
-def test_apply_common_filters():
+def test_apply_common_filters(collection):
     stix_objs = [
         {
             "created": "2017-01-27T13:49:53.997Z",
@@ -210,7 +222,7 @@ def test_apply_common_filters():
         }
     ]
 
-    ds = taxii.TAXIICollectionSource()
+    ds = taxii.TAXIICollectionSource(collection)
 
     resp = ds.apply_common_filters(stix_objs, [filters[0]])
     ids = [r['id'] for r in resp]
@@ -224,7 +236,7 @@ def test_apply_common_filters():
     assert resp[0]['id'] == stix_objs[0]['id']
 
 
-def test_deduplicate():
+def test_deduplicate(collection):
     stix_objs = [
         {
             "created": "2017-01-27T13:49:53.935Z",
@@ -288,7 +300,7 @@ def test_deduplicate():
         }
     ]
 
-    ds = taxii.TAXIICollectionSource()
+    ds = taxii.TAXIICollectionSource(collection)
     unique = ds.deduplicate(stix_objs)
 
     # Only 3 objects are unique

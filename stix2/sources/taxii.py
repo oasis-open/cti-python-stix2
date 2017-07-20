@@ -21,67 +21,28 @@ TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 class TAXIICollectionStore(DataStore):
     """
     """
-    def __init__(self,
-                 taxii_client=None,
-                 api_root_name=None,
-                 collection_id=None,
-                 user=None,
-                 password=None,
-                 name="TAXIICollectionStore"):
+    def __init__(self, collection, name="TAXIICollectionStore"):
+        """
+        Create a new TAXII Collection Data store
+
+        Args:
+            collection (taxii2.Collection): Collection instance
+        """
 
         self.name = name
         self.id = make_id()
-        self.source = TAXIICollectionSource(taxii_client, api_root_name, collection_id, user, password)
-        self.sink = TAXIICollectionSink(taxii_client, api_root_name, collection_id, user, password)
-
-    # file system sink API calls
-
-    def add(self, stix_objs):
-        return self.sink.add(stix_objs=stix_objs)
-
-    # file sytem source API calls
-
-    def get(self, stix_id):
-        return self.source.get(stix_id=stix_id)
-
-    def all_versions(self, stix_id):
-        return self.source.all_versions(stix_id=stix_id)
-
-    def query(self, query):
-        return self.source.query(query=query)
+        self.source = TAXIICollectionSource(collection)
+        self.sink = TAXIICollectionSink(collection)
 
 
 class TAXIICollectionSink(DataSink):
     """
     """
 
-    def __init__(self, taxii_client=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXIICollectionSink"):
+    def __init__(self, collection, name="TAXIICollectionSink"):
         super(TAXIICollectionSink, self).__init__(name=name)
 
-        self.taxii_client = taxii_client
-        self.taxii_client.populate_available_information()
-
-        if not api_root_name:
-            raise ValueError("No api_root specified.")
-        else:
-            self.api_root = None
-            for a_r in self.taxii_client.api_roots:
-                if api_root_name == a_r.name:
-                    self.api_root = a_r
-                    break
-            if not self.api_root:
-                raise ValueError("The api_root %s is not found on this taxii server" % api_root_name)
-        if not collection_id:
-            raise ValueError("No collection specified.")
-        else:
-            self.collection = None
-            for c in self.api_root.collections:
-                if c.id_ == collection_id:
-                    self.collection = c
-                    break
-            if not self.collection:
-                raise ValueError("The collection %s is not found on the api_root %s of this taxii server" %
-                                 (collection_id, api_root_name))
+        self.collection = collection
 
     def add(self, stix_obj):
         """
@@ -95,53 +56,14 @@ class TAXIICollectionSink(DataSink):
                     spec_version="2.0",
                     type="bundle")
 
-    # utility functions for the current set collection and api root
-    def get_api_root_info(self):
-        """
-        """
-        return self.api_root.get_information()
-
-    def get_api_root_collections(self):
-        """
-        """
-        return self.api_root.get_collections()
-
-    def get_collection_manifest(self):
-        """
-        """
-        return self.collection.get_collection_manifest()
-
 
 class TAXIICollectionSource(DataSource):
     """
     """
-    def __init__(self, taxii_client=None, api_root_name=None, collection_id=None, user=None, password=None, name="TAXIICollectionSourc"):
+    def __init__(self, collection, name="TAXIICollectionSource"):
         super(TAXIICollectionSource, self).__init__(name=name)
 
-        self.taxii_client = taxii_client
-        self.taxii_client.populate_available_information()
-
-        if not api_root_name:
-            raise ValueError("No api_root specified.")
-        else:
-            self.api_root = None
-            for a_r in self.taxii_client.api_roots:
-                if api_root_name == a_r.name:
-                    self.api_root = a_r
-                    break
-            if not self.api_root:
-                raise ValueError("The api_root %s is not found on this taxii server" % api_root_name)
-        if not collection_id:
-            raise ValueError("No collection specified.")
-        else:
-            self.collection = None
-            for c in self.api_root.collections:
-                if c.id_ == collection_id:
-                    self.collection = c
-                    break
-            if not self.collection:
-                raise ValueError("The collection %s is not found on the api_root %s of this taxii server" %
-                                 (collection_id, api_root_name))
+        self.collection = collection
 
     def get(self, stix_id, _composite_filters=None):
         """
@@ -244,54 +166,3 @@ class TAXIICollectionSource(DataSource):
                     taxii_field = "match[" + filter_["field"] + ']'
                     params[taxii_field] = filter_["value"]
         return params
-
-    # utility functions for the current attached collection and api root
-    def get_api_root_info(self):
-        """
-        """
-        return self.api_root.get_information()
-
-    def get_api_root_collections(self):
-        """
-        """
-        return self.api_root.get_collections()
-
-    def get_collection_manifest(self):
-        """
-        """
-        return self.collection.get_collection_manifest()
-
-
-def get_server_api_roots(taxii_client):
-    """
-    """
-    api_root_info = []
-    taxii_client.populate_available_information()
-
-    for api_root in taxii_client.api_roots:
-        api_root_info.append(api_root.information())
-
-    return api_root_info
-
-
-def get_server_collections(taxii_client):
-    """
-    """
-    server_collections = []
-
-    taxii_client.populate_available_information()
-
-    for api_root in taxii_client.api_roots:
-        server_collections.extend(api_root.get_collections())
-
-    return server_collections
-
-
-def get_api_root_collections(taxii_client, api_root_name):
-    """
-    """
-    taxii_client.populate_available_information()
-
-    for api_root in taxii_client.api_roots:
-        if api_root == api_root_name:
-            return api_root.get_collections()
