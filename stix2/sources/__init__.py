@@ -292,7 +292,7 @@ class DataSource(object):
                         "status": "added as a common filter",
                         "filter": filter_,
                         "data_source_name": self.name,
-                        "data_source_id": self.id_
+                        "data_source_id": self.id,
                     })
             else:
                 self.filter_allowed[id_] = False
@@ -301,7 +301,7 @@ class DataSource(object):
                     "filter": filter_,
                     "errors": copy.deepcopy(errors),
                     "data_source_name": self.name,
-                    "data_source_id": self.id_
+                    "data_source_id": self.id,
                 })
                 del errors[:]
 
@@ -661,7 +661,7 @@ class CompositeDataSource(object):
                         "status": "added as a common filter",
                         "filter": filter_,
                         "data_source_name": self.name,
-                        "data_source_id": self.id_
+                        "data_source_id": self.id
                     })
             else:
                 self.filter_allowed[id_] = False
@@ -670,7 +670,7 @@ class CompositeDataSource(object):
                     "filter": filter_,
                     "errors": errors,
                     "data_source_name": self.name,
-                    "data_source_id": self.id_
+                    "data_source_id": self.id
                 })
                 del errors[:]
 
