@@ -238,6 +238,8 @@ to serve as Maintainer(s); subsequently, participating community members
 may select additional or substitute Maintainers, per `consensus
 agreements <https://www.oasis-open.org/resources/open-repositories/maintainers-guide#additionalMaintainers>`__.
 
+.. _currentMaintainers:
+
 **Current Maintainers of this Open Repository**
 
 -  `Greg Back <mailto:gback@mitre.org>`__; GitHub ID:
@@ -267,7 +269,7 @@ Feedback
 Questions or comments about this Open Repository's activities should be
 composed as GitHub issues or comments. If use of an issue/comment is not
 possible or appropriate, questions may be directed by email to the
-Maintainer(s) `listed above <#currentMaintainers>`__. Please send
+Maintainer(s) `listed above <#currentmaintainers>`__. Please send
 general questions about Open Repository participation to OASIS Staff at
 repository-admin@oasis-open.org and any specific CLA-related questions
 to repository-cla@oasis-open.org.
