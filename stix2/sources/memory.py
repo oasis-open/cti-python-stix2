@@ -64,24 +64,8 @@ class MemoryStore(DataStore):
         self.source = MemorySource(stix_data=self.data, _store=True)
         self.sink = MemorySink(stix_data=self.data, _store=True)
 
-    # memory sink API calls
-
-    def add(self, stix_data):
-        return self.sink.add(stix_data=stix_data)
-
     def save_to_file(self, file_path):
-        return self.sink.save(file_path=file_path)
-
-    # memory source API calls
-
-    def get(self, stix_id):
-        return self.source.get(stix_id=stix_id)
-
-    def all_versions(self, stix_id):
-        return self.source.all_versions(stix_id=stix_id)
-
-    def query(self, query):
-        return self.source.query(query=query)
+        return self.sink.save_to_file(file_path=file_path)
 
     def load_from_file(self, file_path):
         return self.source.load_from_file(file_path=file_path)
