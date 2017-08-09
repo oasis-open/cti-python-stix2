@@ -58,7 +58,7 @@ class MemoryStore(DataStore):
                     if r.is_valid:
                         self.data[stix_obj["id"]] = stix_obj
                     else:
-                        print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                        print("Error: STIX object %s is not valid under STIX 2 validator." % stix_obj["id"])
                         print(r)
 
         self.source = MemorySource(stix_data=self.data, _store=True)
@@ -112,7 +112,7 @@ class MemorySink(DataSink):
                         if r.is_valid:
                             self.data[stix_obj["id"]] = stix_obj
                         else:
-                            print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                            print("Error: STIX object %s is not valid under STIX 2 validator." % stix_obj["id"])
                             print(r)
                 else:
                     raise ValueError("stix_data must be in bundle format or raw list")
@@ -136,7 +136,7 @@ class MemorySink(DataSink):
                 if r.is_valid:
                     self.data[stix_obj["id"]] = stix_obj
                 else:
-                    print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                    print("Error: STIX object %s is not valid under STIX 2 validator." % stix_obj["id"])
                     print(r)
         else:
             raise ValueError("stix_data must be in bundle format or raw list")
@@ -185,7 +185,7 @@ class MemorySource(DataSource):
                         if r.is_valid:
                             self.data[stix_obj["id"]] = stix_obj
                         else:
-                            print("Error: STIX object %s is not valid under STIX 2 validator.") % stix_obj["id"]
+                            print("Error: STIX object %s is not valid under STIX 2 validator." % stix_obj["id"])
                             print(r)
                 else:
                     raise ValueError("stix_data must be in bundle format or raw list")
@@ -269,5 +269,5 @@ class MemorySource(DataSource):
             for stix_obj in stix_data["objects"]:
                     self.data[stix_obj["id"]] = stix_obj
         else:
-            print("Error: STIX data loaded from file (%s) was found to not be validated by STIX 2 Validator") % file_path
+            print("Error: STIX data loaded from file (%s) was found to not be validated by STIX 2 Validator" % file_path)
             print(r)

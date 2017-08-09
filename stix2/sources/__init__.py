@@ -23,10 +23,6 @@ from six import iteritems
 def make_id():
     return str(uuid.uuid4())
 
-
-# STIX 2.0 fields used to denote object version
-STIX_VERSION_FIELDS = ['id', 'modified']
-
 # Currently, only STIX 2.0 common SDO fields (that are not compex objects)
 # are supported for filtering on
 STIX_COMMON_FIELDS = [
@@ -705,8 +701,6 @@ class CompositeDataSource(object):
     def filters(self):
         """return filters attached to Composite Data Source
 
-        Args:
-
         Returns:
             (list): the list of filters currently attached to the Data Source
 
@@ -727,18 +721,12 @@ class CompositeDataSource(object):
                 (list): unique set of the passed list of STIX objects
         """
 
-        unique = []
-        dont_have = False
-        for i in stix_obj_list:
-            dont_have = False
-            for j in unique:
-                for field in STIX_VERSION_FIELDS:
-                    if not i[field] == j[field]:
-                        dont_have = True
-                    break
-            if dont_have:
-                unique.append(i)
-        return unique
+        unique_objs = {}
+
+        for obj in stix_obj_list:
+            unique_objs[(obj["id"], obj["modified"])] = obj
+
+        return list(unique_objs.values())
 
 
 class STIXCommonPropertyFilters():
@@ -775,7 +763,7 @@ class STIXCommonPropertyFilters():
             return -1
 
     @classmethod
-    def _boolean(filter_, stix_obj_field):
+    def _boolean(cls, filter_, stix_obj_field):
         if filter_["op"] == "=":
             return stix_obj_field == filter_["value"]
         elif filter_["op"] == "!=":
@@ -802,7 +790,7 @@ class STIXCommonPropertyFilters():
 
     @classmethod
     def external_references(cls, filter_, stix_obj):
-        '''
+        """
         stix object's can have a list of external references
 
         external-reference properties:
@@ -811,7 +799,7 @@ class STIXCommonPropertyFilters():
             external_reference.url (string)
             external_reference.hashes (hash, but for filtering purposes , a string)
             external_reference.external_id  (string)
-        '''
+        """
         for er in stix_obj["external_references"]:
             # grab er property name from filter field
             filter_field = filter_["field"].split(".")[1]
@@ -822,13 +810,13 @@ class STIXCommonPropertyFilters():
 
     @classmethod
     def granular_markings(cls, filter_, stix_obj):
-        '''
+        """
         stix object's can have a list of granular marking references
 
         granular-marking properties:
             granular-marking.marking_ref (id)
             granular-marking.selectors  (string)
-        '''
+        """
         for gm in stix_obj["granular_markings"]:
             # grab gm property name from filter field
             filter_field = filter_["field"].split(".")[1]

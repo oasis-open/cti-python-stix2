@@ -12,13 +12,12 @@ TODO: Test everything
 import json
 import os
 
-from sources import DataSink, DataSource, DataStore, make_id
+from stix2.sources import DataSink, DataSource, DataStore, make_id
 from stix2 import Bundle
 
 
 class FileSystemStore(DataStore):
     """
-
     """
     def __init__(self, stix_dir="stix_data", name="FileSystemStore"):
         self.name = name
@@ -54,7 +53,7 @@ class FileSystemSink(DataSink):
             stix_objs = []
         for stix_obj in stix_objs:
             path = os.path.join(self.stix_dir, stix_obj["type"], stix_obj["id"])
-            json.dump(Bundle([stix_obj]), open(path, 'w+', indent=4))
+            json.dump(Bundle([stix_obj]), open(path, 'w+'), indent=4)
 
 
 class FileSystemSource(DataSource):
