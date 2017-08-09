@@ -33,31 +33,11 @@ def test_ds_taxii_name(collection):
 
 def test_parse_taxii_filters():
     query = [
-        {
-            "field": "added_after",
-            "op": "=",
-            "value": "2016-02-01T00:00:01.000Z"
-        },
-        {
-            "field": "id",
-            "op": "=",
-            "value": "taxii stix object ID"
-        },
-        {
-            "field": "type",
-            "op": "=",
-            "value": "taxii stix object ID"
-        },
-        {
-            "field": "version",
-            "op": "=",
-            "value": "first"
-        },
-        {
-            "field": "created_by_ref",
-            "op": "=",
-            "value": "Bane"
-        }
+        Filter("added_after", "=", "2016-02-01T00:00:01.000Z"),
+        Filter("id", "=", "taxii stix object ID"),
+        Filter("type", "=", "taxii stix object ID"),
+        Filter("version", "=", "first"),
+        Filter("created_by_ref", "=", "Bane"),
     ]
 
     expected_params = {
@@ -162,21 +142,9 @@ def test_apply_common_filters():
     ]
 
     filters = [
-        {
-            "field": "type",
-            "op": "!=",
-            "value": "relationship"
-        },
-        {
-            "field": "id",
-            "op": "=",
-            "value": "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"
-        },
-        {
-            "field": "labels",
-            "op": "in",
-            "value": "remote-access-trojan"
-        }
+        Filter("type", "!=", "relationship"),
+        Filter("id", "=", "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"),
+        Filter("labels", "in", "remote-access-trojan"),
     ]
 
     ds = DataSource()

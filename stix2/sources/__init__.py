@@ -289,17 +289,17 @@ class DataSource(object):
 
                 # skip filter as filter was identified (when added) as
                 # not a common filter
-                if 'id' in filter_ and self.filter_allowed[filter_['id']] is False:
+                if filter_.field not in STIX_COMMON_FIELDS:
                     continue
 
                 # check filter "field" is in STIX object - if cant be applied
                 # due to STIX object, STIX object is discarded (i.e. did not
                 # make it through the filter)
-                if filter_['field'] not in stix_obj.keys():
+                if filter_.field not in stix_obj.keys():
                     clean = False
                     break
                 try:
-                    match = getattr(STIXCommonPropertyFilters, filter_['field'])(filter_, stix_obj)
+                    match = getattr(STIXCommonPropertyFilters, filter_.field)(filter_, stix_obj)
                     if not match:
                         clean = False
                         break
@@ -553,39 +553,39 @@ class STIXCommonPropertyFilters():
     @classmethod
     def _all(cls, filter_, stix_obj_field):
         """all filter operations (for filters whose value type can be applied to any operation type)"""
-        if filter_["op"] == '=':
-            return stix_obj_field == filter_["value"]
-        elif filter_["op"] == "!=":
-            return stix_obj_field != filter_["value"]
-        elif filter_["op"] == "in":
-            return stix_obj_field in filter_["value"]
-        elif filter_["op"] == ">":
-            return stix_obj_field > filter_["value"]
-        elif filter_["op"] == "<":
-            return stix_obj_field < filter_["value"]
-        elif filter_["op"] == ">=":
-            return stix_obj_field >= filter_["value"]
-        elif filter_["op"] == "<=":
-            return stix_obj_field <= filter_["value"]
+        if filter_.op == '=':
+            return stix_obj_field == filter_.value
+        elif filter_.op == "!=":
+            return stix_obj_field != filter_.value
+        elif filter_.op == "in":
+            return stix_obj_field in filter_.value
+        elif filter_.op == ">":
+            return stix_obj_field > filter_.value
+        elif filter_.op == "<":
+            return stix_obj_field < filter_.value
+        elif filter_.op == ">=":
+            return stix_obj_field >= filter_.value
+        elif filter_.op == "<=":
+            return stix_obj_field <= filter_.value
         else:
             return -1
 
     @classmethod
     def _id(cls, filter_, stix_obj_id):
         """base filter types"""
-        if filter_["op"] == "=":
-            return stix_obj_id == filter_["value"]
-        elif filter_["op"] == "!=":
-            return stix_obj_id != filter_["value"]
+        if filter_.op == "=":
+            return stix_obj_id == filter_.value
+        elif filter_.op == "!=":
+            return stix_obj_id != filter_.value
         else:
             return -1
 
     @classmethod
     def _boolean(cls, filter_, stix_obj_field):
-        if filter_["op"] == "=":
-            return stix_obj_field == filter_["value"]
-        elif filter_["op"] == "!=":
-            return stix_obj_field != filter_["value"]
+        if filter_.op == "=":
+            return stix_obj_field == filter_.value
+        elif filter_.op == "!=":
+            return stix_obj_field != filter_.value
         else:
             return -1
 
@@ -620,7 +620,7 @@ class STIXCommonPropertyFilters():
         """
         for er in stix_obj["external_references"]:
             # grab er property name from filter field
-            filter_field = filter_["field"].split(".")[1]
+            filter_field = filter_.field.split(".")[1]
             r = cls._string(filter_, er[filter_field])
             if r:
                 return r
@@ -637,7 +637,7 @@ class STIXCommonPropertyFilters():
         """
         for gm in stix_obj["granular_markings"]:
             # grab gm property name from filter field
-            filter_field = filter_["field"].split(".")[1]
+            filter_field = filter_.field.split(".")[1]
 
             if filter_field == "marking_ref":
                 return cls._id(filter_, gm[filter_field])
