@@ -1,7 +1,7 @@
 import pytest
 from taxii2_client import Collection
 
-from stix2.sources import DataSource, taxii
+from stix2.sources import DataSource, Filter, taxii
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 
@@ -74,94 +74,55 @@ def test_parse_taxii_filters():
     assert taxii_filters == expected_params
 
 
-@pytest.skip
 def test_add_get_remove_filter():
 
     # First 3 filters are valid, remaining fields are erroneous in some way
-    filters = [
-        {
-            "field": "type",
-            "op": '=',
-            "value": "malware"
-        },
-        {
-            "field": "id",
-            "op": "!=",
-            "value": "stix object id"
-        },
-        {
-            "field": "labels",
-            "op": "in",
-            "value": ["heartbleed", "malicious-activity"]
-        },
-        {
-            "field": "revoked",
-            "value": "filter missing \'op\' field"
-        },
-        {
-            "field": "description",
-            "op": "=",
-            "value": "not supported field - just place holder"
-        },
-        {
-            "field": "modified",
-            "op": "*",
-            "value": "not supported operator - just place holder"
-        },
-        {
-            "field": "created",
-            "op": "=",
-            "value": set(),
-        }
+    valid_filters = [
+        Filter('type', '=', 'malware'),
+        Filter('id', '!=', 'stix object id'),
+        Filter('labels', 'in', ["heartbleed", "malicious-activity"]),
     ]
-
-    expected_errors = [
-        "Filter was missing a required field(key). Each filter requires 'field', 'op', 'value' keys.",
-        "Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported",
-        "Filter operation(from 'op' field) not supported",
-        "Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary"
+    invalid_filters = [
+        Filter('description', '=', 'not supported field - just place holder'),
+        Filter('modified', '*', 'not supported operator - just place holder'),
+        Filter('created', '=', object()),
     ]
 
     ds = DataSource()
-    # add
-    ids, statuses = ds.add_filter(filters)
 
-    # 7 filters should have been successfully added
-    assert len(ids) == 7
+    assert len(ds.filters) == 0
 
-    # all filters added to data source
-    for idx, status in enumerate(statuses):
-        assert status['filter'] == filters[idx]
+    ds.add_filter(valid_filters[0])
+    assert len(ds.filters) == 1
 
-    # proper status warnings were triggered
-    assert statuses[3]['errors'][0] == expected_errors[0]
-    assert statuses[4]['errors'][0] == expected_errors[1]
-    assert statuses[5]['errors'][0] == expected_errors[2]
-    assert statuses[6]['errors'][0] == expected_errors[3]
+    # Addin the same filter again will have no effect since `filters` uses a set
+    ds.add_filter(valid_filters[0])
+    assert len(ds.filters) == 1
 
-    # get
-    ds_filters = ds.get_filters()
+    ds.add_filter(valid_filters[1])
+    assert len(ds.filters) == 2
+    ds.add_filter(valid_filters[2])
+    assert len(ds.filters) == 3
 
-    # TODO: what are we trying to test here?
-    for idx, flt in enumerate(filters):
-        assert flt['value'] == ds_filters[idx]['value']
+    # TODO: make better error messages
+    with pytest.raises(ValueError) as excinfo:
+        ds.add_filter(invalid_filters[0])
+    assert str(excinfo.value) == "Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported"
+
+    with pytest.raises(ValueError) as excinfo:
+        ds.add_filter(invalid_filters[1])
+    assert str(excinfo.value) == "Filter operation(from 'op' field) not supported"
+
+    with pytest.raises(ValueError) as excinfo:
+        ds.add_filter(invalid_filters[2])
+    assert str(excinfo.value) == "Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary"
+
+    assert set(valid_filters) == ds.filters
 
     # remove
-    ds.remove_filter([ids[3]])
-    ds.remove_filter([ids[4]])
-    ds.remove_filter([ids[5]])
-    ds.remove_filter([ids[6]])
+    ds.filters.remove(valid_filters[0])
 
-    rem_filters = ds.get_filters()
-
-    assert len(rem_filters) == 3
-
-    # check remaining filters
-    rem_ids = [f['id'] for f in rem_filters]
-
-    # check remaining
-    for id_ in rem_ids:
-        assert id_ in ids[:3]
+    assert len(ds.filters) == 2
 
 
 def test_apply_common_filters():
