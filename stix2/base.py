@@ -3,7 +3,7 @@
 import collections
 import copy
 import datetime as dt
-import json
+import simplejson as json
 
 from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          ExtraPropertiesError, ImmutableError,
@@ -35,6 +35,9 @@ def get_required_properties(properties):
 
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
+
+    def _object_properties(self):
+        return list(self._properties.keys())
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
@@ -141,12 +144,14 @@ class _STIXBase(collections.Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        # TODO: put keys in specific order. Probably need custom JSON encoder.
-        return json.dumps(self, indent=4, sort_keys=True, cls=STIXJSONEncoder,
-                          separators=(",", ": "))  # Don't include spaces after commas.
+        properties = self._object_properties()
+        # separators kwarg -> don't include spaces after commas.
+        return json.dumps(self, indent=4, cls=STIXJSONEncoder,
+                          item_sort_key=lambda x: properties.index(x[0]),
+                          separators=(",", ": "))
 
     def __repr__(self):
-        props = [(k, self[k]) for k in sorted(self._properties) if self.get(k)]
+        props = [(k, self[k]) for k in self._object_properties() if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 
