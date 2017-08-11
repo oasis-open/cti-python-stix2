@@ -28,8 +28,7 @@ class TAXIICollectionStore(DataStore):
             collection (taxii2.Collection): Collection instance
 
         """
-        self.name = name
-        self.id = make_id()
+        super(TAXIICollectionStore, self).__init__(name=name)
         self.source = TAXIICollectionSource(collection)
         self.sink = TAXIICollectionSink(collection)
 
@@ -39,7 +38,6 @@ class TAXIICollectionSink(DataSink):
     """
     def __init__(self, collection, name="TAXIICollectionSink"):
         super(TAXIICollectionSink, self).__init__(name=name)
-
         self.collection = collection
 
     def add(self, stix_obj):
@@ -60,7 +58,6 @@ class TAXIICollectionSource(DataSource):
     """
     def __init__(self, collection, name="TAXIICollectionSource"):
         super(TAXIICollectionSource, self).__init__(name=name)
-
         self.collection = collection
 
     def get(self, stix_id, _composite_filters=None):
