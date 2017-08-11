@@ -1,201 +1,293 @@
 """STIX 2.0 Domain Objects"""
 
+from collections import OrderedDict
+
 import stix2
 
 from .base import _STIXBase
-from .common import COMMON_PROPERTIES
 from .observables import ObservableProperty
-from .other import KillChainPhase
-from .properties import (IDProperty, IntegerProperty, ListProperty,
-                         ReferenceProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
+from .other import ExternalReference, GranularMarking, KillChainPhase
+from .properties import (BooleanProperty, IDProperty, IntegerProperty,
+                         ListProperty, ReferenceProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from .utils import NOW
 
 
 class AttackPattern(_STIXBase):
 
     _type = 'attack-pattern'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'kill_chain_phases': ListProperty(KillChainPhase),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Campaign(_STIXBase):
 
     _type = 'campaign'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'aliases': ListProperty(StringProperty),
-        'first_seen': TimestampProperty(),
-        'last_seen': TimestampProperty(),
-        'objective': StringProperty(),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('aliases', ListProperty(StringProperty)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
+        ('objective', StringProperty()),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class CourseOfAction(_STIXBase):
 
     _type = 'course-of-action'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Identity(_STIXBase):
 
     _type = 'identity'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'identity_class': StringProperty(required=True),
-        'sectors': ListProperty(StringProperty),
-        'contact_information': StringProperty(),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('identity_class', StringProperty(required=True)),
+        ('sectors', ListProperty(StringProperty)),
+        ('contact_information', StringProperty()),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Indicator(_STIXBase):
 
     _type = 'indicator'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'labels': ListProperty(StringProperty, required=True),
-        'name': StringProperty(),
-        'description': StringProperty(),
-        'pattern': StringProperty(required=True),
-        'valid_from': TimestampProperty(default=lambda: NOW),
-        'valid_until': TimestampProperty(),
-        'kill_chain_phases': ListProperty(KillChainPhase),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('labels', ListProperty(StringProperty, required=True)),
+        ('name', StringProperty()),
+        ('description', StringProperty()),
+        ('pattern', StringProperty(required=True)),
+        ('valid_from', TimestampProperty(default=lambda: NOW)),
+        ('valid_until', TimestampProperty()),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('revoked', BooleanProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class IntrusionSet(_STIXBase):
 
     _type = 'intrusion-set'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'aliases': ListProperty(StringProperty),
-        'first_seen': TimestampProperty(),
-        'last_seen ': TimestampProperty(),
-        'goals': ListProperty(StringProperty),
-        'resource_level': StringProperty(),
-        'primary_motivation': StringProperty(),
-        'secondary_motivations': ListProperty(StringProperty),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('aliases', ListProperty(StringProperty)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen ', TimestampProperty()),
+        ('goals', ListProperty(StringProperty)),
+        ('resource_level', StringProperty()),
+        ('primary_motivation', StringProperty()),
+        ('secondary_motivations', ListProperty(StringProperty)),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Malware(_STIXBase):
 
     _type = 'malware'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'labels': ListProperty(StringProperty, required=True),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'kill_chain_phases': ListProperty(KillChainPhase),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty, required=True)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class ObservedData(_STIXBase):
 
     _type = 'observed-data'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'first_observed': TimestampProperty(required=True),
-        'last_observed': TimestampProperty(required=True),
-        'number_observed': IntegerProperty(required=True),
-        'objects': ObservableProperty(),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('first_observed', TimestampProperty(required=True)),
+        ('last_observed', TimestampProperty(required=True)),
+        ('number_observed', IntegerProperty(required=True)),
+        ('objects', ObservableProperty()),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Report(_STIXBase):
 
     _type = 'report'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'labels': ListProperty(StringProperty, required=True),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'published': TimestampProperty(),
-        'object_refs': ListProperty(ReferenceProperty),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('published', TimestampProperty()),
+        ('object_refs', ListProperty(ReferenceProperty)),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty, required=True)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class ThreatActor(_STIXBase):
 
     _type = 'threat-actor'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'labels': ListProperty(StringProperty, required=True),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'aliases': ListProperty(StringProperty),
-        'roles': ListProperty(StringProperty),
-        'goals': ListProperty(StringProperty),
-        'sophistication': StringProperty(),
-        'resource_level': StringProperty(),
-        'primary_motivation': StringProperty(),
-        'secondary_motivations': ListProperty(StringProperty),
-        'personal_motivations': ListProperty(StringProperty),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('aliases', ListProperty(StringProperty)),
+        ('roles', ListProperty(StringProperty)),
+        ('goals', ListProperty(StringProperty)),
+        ('sophistication', StringProperty()),
+        ('resource_level', StringProperty()),
+        ('primary_motivation', StringProperty()),
+        ('secondary_motivations', ListProperty(StringProperty)),
+        ('personal_motivations', ListProperty(StringProperty)),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty, required=True)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Tool(_STIXBase):
 
     _type = 'tool'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'labels': ListProperty(StringProperty, required=True),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-        'kill_chain_phases': ListProperty(KillChainPhase),
-        'tool_version': StringProperty(),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('tool_version', StringProperty()),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty, required=True)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
 class Vulnerability(_STIXBase):
 
     _type = 'vulnerability'
-    _properties = COMMON_PROPERTIES.copy()
-    _properties.update({
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'name': StringProperty(required=True),
-        'description': StringProperty(),
-    })
+    _properties = OrderedDict()
+    _properties.update([
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('revoked', BooleanProperty()),
+        ('labels', ListProperty(StringProperty)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+    ])
 
 
-def CustomObject(type='x-custom-type', properties={}):
+def CustomObject(type='x-custom-type', properties=None):
     """Custom STIX Object type decorator
 
     Example 1:
@@ -226,12 +318,28 @@ def CustomObject(type='x-custom-type', properties={}):
 
         class _Custom(cls, _STIXBase):
             _type = type
-            _properties = COMMON_PROPERTIES.copy()
-            _properties.update({
-                'id': IDProperty(_type),
-                'type': TypeProperty(_type),
-            })
+            _properties = OrderedDict()
+            _properties.update([
+                ('type', TypeProperty(_type)),
+                ('id', IDProperty(_type)),
+                ('created_by_ref', ReferenceProperty(type="identity")),
+                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+            ])
+
+            if properties is None:
+                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+
             _properties.update(properties)
+
+            # This is to follow the general properties structure.
+            _properties.update([
+                ('revoked', BooleanProperty()),
+                ('labels', ListProperty(StringProperty)),
+                ('external_references', ListProperty(ExternalReference)),
+                ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+                ('granular_markings', ListProperty(GranularMarking)),
+            ])
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
