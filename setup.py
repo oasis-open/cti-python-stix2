@@ -16,6 +16,7 @@ install_requires = [
     'six',
     'python-dateutil',
     'requests',
+    'simplejson',
 ]
 
 setup(
