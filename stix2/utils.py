@@ -24,6 +24,9 @@ class STIXdatetime(dt.datetime):
         self.precision = precision
         return self
 
+    def __repr__(self):
+        return "'%s'" % format_datetime(self)
+
 
 def get_timestamp():
     return STIXdatetime.now(tz=pytz.UTC)
@@ -77,7 +80,7 @@ def parse_into_datetime(value, precision=None):
 
     # Ensure correct precision
     if not precision:
-        return ts
+        return STIXdatetime(ts, precision=precision)
     ms = ts.microsecond
     if precision == 'second':
         ts = ts.replace(microsecond=0)
