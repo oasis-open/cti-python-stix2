@@ -12,16 +12,15 @@ TODO: Test everything
 import json
 import os
 
-from stix2.sources import DataSink, DataSource, DataStore, make_id
 from stix2 import Bundle
+from stix2.sources import DataSink, DataSource, DataStore
 
 
 class FileSystemStore(DataStore):
     """
     """
     def __init__(self, stix_dir="stix_data", name="FileSystemStore"):
-        self.name = name
-        self.id = make_id()
+        super(FileSystemStore, self).__init__(name=name)
         self.source = FileSystemSource(stix_dir=stix_dir)
         self.sink = FileSystemSink(stix_dir=stix_dir)
 
@@ -94,8 +93,11 @@ class FileSystemSource(DataSource):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        NOTE: since FileSystem sources/sinks dont handle mutliple verions of a STIX object,
-        this operation is futile. Pass call to get(). (Appoved by G.B.)
+        Notes:
+            Since FileSystem sources/sinks don't handle multiple versions
+            of a STIX object, this operation is futile. Pass call to get().
+            (Approved by G.B.)
+
         """
 
         # query = [
@@ -139,7 +141,7 @@ class FileSystemSource(DataSource):
         if "type" in [filter_["field"] for filter_ in file_filters]:
             for filter_ in file_filters:
                 if filter_["field"] == "type":
-                    if filter_["op"] == '=':
+                    if filter_["op"] == "=":
                         include_paths.append(os.path.join(self.stix_dir, filter_["value"]))
                     elif filter_["op"] == "!=":
                         declude_paths.append(os.path.join(self.stix_dir, filter_["value"]))
@@ -167,8 +169,11 @@ class FileSystemSource(DataSource):
         # may forgo the loading of STIX content into memory
         if "id" in [filter_["field"] for filter_ in file_filters]:
             for filter_ in file_filters:
-                if filter_["field"] == "id" and filter_["field"] == '=':
+                if filter_["field"] == "id" and filter_["op"] == "=":
                     id_ = filter_["value"]
+                    break
+            else:
+                id_ = None
         else:
             id_ = None
 
@@ -188,7 +193,6 @@ class FileSystemSource(DataSource):
                         all_data.extend(self.apply_common_filters([stix_obj], query))
 
         all_data = self.deduplicate(all_data)
-
         return all_data
 
     def _parse_file_filters(self, query):

@@ -9,9 +9,11 @@ Classes:
 
 TODO:Test everything
 
-NOTE: add_filter(), remove_filter(), deduplicate() - if these functions remain
-      the exact same for DataSource, DataSink, CompositeDataSource etc... -> just
-      make those functions an interface to inherit?
+Notes:
+    add_filter(), remove_filter(), deduplicate() - if these functions remain
+    the exact same for DataSource, DataSink, CompositeDataSource etc... -> just
+    make those functions an interface to inherit?
+
 """
 
 import copy
@@ -23,7 +25,8 @@ from six import iteritems
 def make_id():
     return str(uuid.uuid4())
 
-# Currently, only STIX 2.0 common SDO fields (that are not compex objects)
+
+# Currently, only STIX 2.0 common SDO fields (that are not complex objects)
 # are supported for filtering on
 STIX_COMMON_FIELDS = [
     "created",
@@ -59,6 +62,7 @@ class DataStore(object):
     """
     An implementer will create a concrete subclass from
     this abstract class for the specific data store.
+
     """
     def __init__(self, name="DataStore"):
         self.name = name
@@ -69,29 +73,25 @@ class DataStore(object):
     def get(self, stix_id):
         """
         Implement:
-            -translate API get() call to the appropriate DataSource call
+            Translate API get() call to the appropriate DataSource call
 
         Args:
-
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
                 return a single object, the most recent version of the object
                 specified by the "id".
 
-            _composite_filters (list): list of filters passed along from
-                the Composite Data Filter.
-
         Returns:
             stix_obj (dictionary): the STIX object to be returned
+
         """
         return self.source.get(stix_id=stix_id)
 
     def all_versions(self, stix_id):
         """
         Implement:
-            -translate all_versions() call to the appropriate DataSource call
+            Translate all_versions() call to the appropriate DataSource call
 
         Args:
-
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
                 return a single object, the most recent version of the object
                 specified by the "id".
@@ -102,21 +102,19 @@ class DataStore(object):
         Returns:
             stix_objs (list): a list of STIX objects (where each object is a
                 STIX object)
+
         """
         return self.source.all_versions(stix_id=stix_id)
 
     def query(self, query):
         """
         Fill:
-            -implement the specific data source API calls, processing,
+            Implement the specific data source API calls, processing,
             functionality required for retrieving query from the data source
 
         Args:
             query (list): a list of filters (which collectively are the query)
-                to conduct search on
-
-            _composite_filters (list): a list of filters passed from the
-                Composite Data Source
+                to conduct search on.
 
         Returns:
             stix_objs (list): a list of STIX objects (where each object is a
@@ -136,8 +134,13 @@ class DataStore(object):
 
 class DataSink(object):
     """
-    An implementer will create a concrete subclass from this
-    abstract class for the specific data sink.
+    Abstract class for defining a data sink. Intended for subclassing into
+    different sink components.
+
+    Attributes:
+        id (str): A unique UUIDv4 to identify this DataSink.
+        name (str): The descriptive name that identifies this DataSink.
+
     """
 
     def __init__(self, name="DataSink"):
@@ -147,16 +150,25 @@ class DataSink(object):
     def add(self, stix_objs):
         """
         Fill:
-            -implement the specific data sink API calls, processing,
+            Implement the specific data sink API calls, processing,
             functionality required for adding data to the sink
+
         """
         raise NotImplementedError()
 
 
 class DataSource(object):
     """
-    An implementer will create a concrete subclass from
-    this abstract class for the specific data source.
+    Abstract class for defining a data source. Intended for subclassing into
+    different source components.
+
+    Attributes:
+        id (str): A unique UUIDv4 to identify this DataSource.
+        name (str): The descriptive name that identifies this DataSource.
+        filters (dict): A collection of filters present in this DataSource.
+        filter_allowed (dict): A collection of the allowed filters in this
+            DataSource.
+
     """
 
     def __init__(self, name="DataSource"):
@@ -168,11 +180,10 @@ class DataSource(object):
     def get(self, stix_id, _composite_filters=None):
         """
         Fill:
-            -implement the specific data source API calls, processing,
+            Implement the specific data source API calls, processing,
             functionality required for retrieving data from the data source
 
         Args:
-
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
                 return a single object, the most recent version of the object
                 specified by the "id".
@@ -196,7 +207,7 @@ class DataSource(object):
             functionality required for retrieving data from the data source
 
         Args:
-            id (str): The id of the STIX 2.0 object to retrieve. Should
+            stix_id (str): The id of the STIX 2.0 object to retrieve. Should
                 return a list of objects, all the versions of the object
                 specified by the "id".
 
@@ -206,8 +217,8 @@ class DataSource(object):
         Returns:
             stix_objs (list): a list of STIX objects (where each object is a
                 STIX object)
-        """
 
+        """
         raise NotImplementedError()
 
     def query(self, query, _composite_filters=None):
@@ -225,13 +236,11 @@ class DataSource(object):
 
         Returns:
 
-
         """
-
         raise NotImplementedError()
 
     def add_filter(self, filters):
-        """add/attach a filter to the Data Source instance
+        """Add/attach a filter to the Data Source instance
 
         Args:
             filters (list): list of filters (dict) to add to the Data Source
@@ -240,14 +249,13 @@ class DataSource(object):
             status (list): list of status/error messages
 
         """
-
         status = []
         errors = []
         ids = []
         allowed = True
 
         for filter_ in filters:
-            # check required filter components ("field", "op", "value") exist
+            # check required filter components ('field', 'op', 'value') exist
             for field in FILTER_FIELDS:
                 if field not in filter_.keys():
                     allowed = False
@@ -306,14 +314,11 @@ class DataSource(object):
         return ids, status
 
     def remove_filter(self, filter_ids):
-        """remove/detach a filter from the Data Source instance
+        """Remove/detach a filter from the Data Source instance
 
         Args:
-            filter_ids (list): list of filter ids to dettach/remove
-                from Data Source
-
-        Returns:
-
+            filter_ids (list): list of filter ids to detach/remove
+                from Data Source.
 
         """
         for filter_id in filter_ids:
@@ -328,7 +333,7 @@ class DataSource(object):
         return
 
     def get_filters(self):
-        """return copy of all filters currently attached to Data Source
+        """Return copy of all filters currently attached to Data Source
 
         TODO: make this a property?
 
@@ -340,7 +345,7 @@ class DataSource(object):
         return copy.deepcopy(list(self.filters.values()))
 
     def apply_common_filters(self, stix_objs, query):
-        """evaluates filters against a set of STIX 2.0 objects
+        """Evaluates filters against a set of STIX 2.0 objects
 
         Supports only STIX 2.0 common property fields
 
@@ -350,10 +355,9 @@ class DataSource(object):
 
         Returns:
             (list): list of STIX objects that successfully evaluate against
-                the query
+                the query.
 
         """
-
         filtered_stix_objs = []
 
         # evaluate objects against filter
@@ -390,9 +394,9 @@ class DataSource(object):
         return filtered_stix_objs
 
     def deduplicate(self, stix_obj_list):
-        """deduplicate a list of STIX objects into a unique set
+        """Deduplicate a list of STIX objects to a unique set
 
-        reduces a set of STIX objects to unique set by looking
+        Reduces a set of STIX objects to unique set by looking
         at 'id' and 'modified' fields - as a unique object version
         is determined by the combination of those fields
 
@@ -400,30 +404,34 @@ class DataSource(object):
             stix_obj_list (list): list of STIX objects (dicts)
 
         Returns:
-            (list): a unique set of the passed STIX object list
-
+            A list with a unique set of the passed list of STIX objects.
 
         """
-        unique = []
-        have = False
-        for i in stix_obj_list:
-            for j in unique:
-                if i['id'] == j['id'] and i['modified'] == j['modified']:
-                    have = True
-                    break
-            if not have:
-                unique.append(i)
-            have = False
-        return unique
+        unique_objs = {}
+
+        for obj in stix_obj_list:
+            unique_objs[(obj['id'], obj['modified'])] = obj
+
+        return list(unique_objs.values())
 
 
 class CompositeDataSource(object):
     """Composite Data Source
 
     Acts as a controller for all the defined/configured STIX Data Sources
-    e.g. a user can defined n Data Sources - creating Data Source (objects)
+    e.g. a user can define n Data Sources - creating Data Source (objects)
     for each. There is only one instance of this for any python STIX 2.0
-    application
+    application.
+
+    Attributes:
+        id (str): A UUIDv4 to identify this CompositeDataSource.
+        name (str): The name that identifies this CompositeDataSource.
+        data_sources (dict): A dictionary of DataSource objects; to be
+            controlled and used by the Data Source Controller object.
+        filters (dict): A collection of filters present in this
+            CompositeDataSource.
+        filter_allowed (dict): A collection of the allowed filters in this
+            CompositeDataSource.
 
     """
     def __init__(self, name="CompositeDataSource"):
@@ -431,11 +439,9 @@ class CompositeDataSource(object):
         Creates a new STIX Data Source.
 
         Args:
-            'data_sources' (dict): a dict of DataSource objects; to be
-                controlled and used by the Data Source Controller object
+            name (str): A string containing the name to attach in the
+                CompositeDataSource instance.
 
-            filters :
-            name :
         """
         self.id = make_id()
         self.name = name
@@ -446,23 +452,23 @@ class CompositeDataSource(object):
     def get(self, stix_id):
         """Retrieve STIX object by 'id'
 
-        federated retrieve method-iterates through all STIX data sources
+        Federated retrieve method-iterates through all STIX data sources
         defined in the "data_sources" parameter. Each data source has a
         specific API retrieve-like function and associated parameters. This
         function does a federated retrieval and consolidation of the data
         returned from all the STIX data sources.
 
-        note: a composite data source will pass its attached filters to
-        each configured data source, pushing filtering to them to handle
+        Notes:
+             A composite data source will pass its attached filters to
+             each configured data source, pushing filtering to them to handle.
 
         Args:
-            id (str): the id of the STIX object to retrieve
+            stix_id (str): the id of the STIX object to retrieve.
 
         Returns:
-            stix_obj (dict): the STIX object to be returned
+            stix_obj (dict): the STIX object to be returned.
 
         """
-
         all_data = []
 
         # for every configured Data Source, call its retrieve handler
@@ -485,14 +491,16 @@ class CompositeDataSource(object):
         Federated all_versions retrieve method - iterates through all STIX data
         sources defined in "data_sources"
 
-        note: a composite data source will pass its attached filters to
-        each configured data source, pushing filtering to them to handle
+        Notes:
+            A composite data source will pass its attached filters to
+            each configured data source, pushing filtering to them to handle
 
         Args:
-            id_ (str): id of the STIX objects to retrieve
+            stix_id (str): id of the STIX objects to retrieve
 
         Returns:
             all_data (list): list of STIX objects that have the specified id
+
         """
         all_data = []
 
@@ -509,10 +517,10 @@ class CompositeDataSource(object):
         return all_data
 
     def query(self, query=None):
-        """composite data source query
+        """Composite data source query
 
-        Federate the query to all Data Sources attached
-        to the Composite Data Source
+        Federate the query to all Data Sources attached to the
+        Composite Data Source.
 
         Args:
             query (list): list of filters to search on
@@ -540,16 +548,13 @@ class CompositeDataSource(object):
         return all_data
 
     def add_data_source(self, data_sources):
-        """add/attach Data Source to the Composite Data Source instance
+        """Add/attach Data Source to the Composite Data Source instance
 
         Args:
             data_sources (list): a list of Data Source objects to attach
                 to the Composite Data Source
 
-        Returns:
-
         """
-
         for ds in data_sources:
             if issubclass(ds, DataSource):
                 if self.data_sources[ds['id']] in self.data_sources.keys():
@@ -568,7 +573,7 @@ class CompositeDataSource(object):
         return
 
     def remove_data_source(self, data_source_ids):
-        """remove/detach Data Source from the Composite Data Source instance
+        """Remove/detach Data Source from the Composite Data Source instance
 
         Args:
             data_source_ids (list): a list of Data Source
@@ -590,17 +595,13 @@ class CompositeDataSource(object):
 
     @property
     def data_sources(self):
-        """return all attached Data Sources
-
-        Args:
-
-        Returns:
+        """Return all attached Data Sources
 
         """
         return copy.deepcopy(self.data_sources.values())
 
     def add_filter(self, filters):
-        """add/attach a filter to the Composite Data Source instance
+        """Add/attach a filter to the Composite Data Source instance
 
         Args:
             filters (list): list of filters (dict) to add to the Data Source
@@ -609,7 +610,6 @@ class CompositeDataSource(object):
             status (list): list of status/error messages
 
         """
-
         status = []
         errors = []
         ids = []
@@ -679,12 +679,9 @@ class CompositeDataSource(object):
 
         Args:
             filter_ids (list): list of filter id's (which are strings)
-            dettach from the Composite Data Source
-
-        Returns:
+                detach from the Composite Data Source.
 
         """
-
         for filter_id in filter_ids:
             try:
                 if filter_id in self.filters:
@@ -699,7 +696,7 @@ class CompositeDataSource(object):
 
     @property
     def filters(self):
-        """return filters attached to Composite Data Source
+        """Return filters attached to Composite Data Source
 
         Returns:
             (list): the list of filters currently attached to the Data Source
@@ -708,7 +705,7 @@ class CompositeDataSource(object):
         return copy.deepcopy(list(self.filters.values()))
 
     def deduplicate(self, stix_obj_list):
-        """deduplicate a list fo STIX objects to a unique set
+        """Deduplicate a list of STIX objects to a unique set
 
         Reduces a set of STIX objects to unique set by looking
         at 'id' and 'modified' fields - as a unique object version
@@ -718,9 +715,9 @@ class CompositeDataSource(object):
             stix_obj_list (list): list of STIX objects (dicts)
 
         Returns:
-                (list): unique set of the passed list of STIX objects
-        """
+            A list with a unique set of the passed list of STIX objects.
 
+        """
         unique_objs = {}
 
         for obj in stix_obj_list:
@@ -729,13 +726,13 @@ class CompositeDataSource(object):
         return list(unique_objs.values())
 
 
-class STIXCommonPropertyFilters():
+class STIXCommonPropertyFilters(object):
     """
     """
     @classmethod
     def _all(cls, filter_, stix_obj_field):
         """all filter operations (for filters whose value type can be applied to any operation type)"""
-        if filter_["op"] == '=':
+        if filter_["op"] == "=":
             return stix_obj_field == filter_["value"]
         elif filter_["op"] == "!=":
             return stix_obj_field != filter_["value"]
@@ -791,14 +788,15 @@ class STIXCommonPropertyFilters():
     @classmethod
     def external_references(cls, filter_, stix_obj):
         """
-        stix object's can have a list of external references
+        STIX object's can have a list of external references
 
-        external-reference properties:
-            external_reference.source_name (string)
-            external_reference.description (string)
-            external_reference.url (string)
-            external_reference.hashes (hash, but for filtering purposes , a string)
-            external_reference.external_id  (string)
+        external_references properties:
+            external_references.source_name (string)
+            external_references.description (string)
+            external_references.url (string)
+            external_references.hashes (hash, but for filtering purposes, a string)
+            external_references.external_id  (string)
+
         """
         for er in stix_obj["external_references"]:
             # grab er property name from filter field
@@ -811,11 +809,12 @@ class STIXCommonPropertyFilters():
     @classmethod
     def granular_markings(cls, filter_, stix_obj):
         """
-        stix object's can have a list of granular marking references
+        STIX object's can have a list of granular marking references
 
-        granular-marking properties:
-            granular-marking.marking_ref (id)
-            granular-marking.selectors  (string)
+        granular_markings properties:
+            granular_markings.marking_ref (id)
+            granular_markings.selectors  (string)
+
         """
         for gm in stix_obj["granular_markings"]:
             # grab gm property name from filter field

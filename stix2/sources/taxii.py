@@ -11,7 +11,6 @@ TODO: Test everything
 """
 
 import json
-import uuid
 
 from stix2.sources import DataSink, DataSource, DataStore, make_id
 
@@ -27,8 +26,8 @@ class TAXIICollectionStore(DataStore):
 
         Args:
             collection (taxii2.Collection): Collection instance
-        """
 
+        """
         self.name = name
         self.id = make_id()
         self.source = TAXIICollectionSource(collection)
@@ -38,7 +37,6 @@ class TAXIICollectionStore(DataStore):
 class TAXIICollectionSink(DataSink):
     """
     """
-
     def __init__(self, collection, name="TAXIICollectionSink"):
         super(TAXIICollectionSink, self).__init__(name=name)
 
@@ -51,7 +49,7 @@ class TAXIICollectionSink(DataSink):
 
     @staticmethod
     def create_bundle(objects):
-        return dict(id="bundle--" + str(uuid.uuid4()),
+        return dict(id="bundle--%s" % make_id(),
                     objects=objects,
                     spec_version="2.0",
                     type="bundle")
@@ -137,15 +135,17 @@ class TAXIICollectionSource(DataSource):
         return all_data
 
     def _parse_taxii_filters(self, query):
-        """Parse out TAXII filters that the TAXII server can filter on
+        """Parse out TAXII filters that the TAXII server can filter on.
 
-         For instance
-        "?match[type]=indicator,sighting" should be in a query dict as follows
-        {
-            "field": "type"
-            "op": "=",
-            "value": "indicator,sighting"
-        }
+        Notes:
+            For instance - "?match[type]=indicator,sighting" should be in a
+            query dict as follows:
+
+            {
+                "field": "type"
+                "op": "=",
+                "value": "indicator,sighting"
+            }
 
         Args:
             query (list): list of filters to extract which ones are TAXII
@@ -154,8 +154,8 @@ class TAXIICollectionSource(DataSource):
         Returns:
             params (dict): dict of the TAXII filters but in format required
                 for 'requests.get()'.
-        """
 
+        """
         params = {}
 
         for filter_ in query:
@@ -163,6 +163,6 @@ class TAXIICollectionSource(DataSource):
                 if filter_["field"] == "added_after":
                     params[filter_["field"]] = filter_["value"]
                 else:
-                    taxii_field = "match[" + filter_["field"] + ']'
+                    taxii_field = "match[%s]" % filter_["field"]
                     params[taxii_field] = filter_["value"]
         return params

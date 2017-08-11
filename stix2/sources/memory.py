@@ -11,9 +11,10 @@ TODO: Test everything.
 TODO: Use deduplicate() calls only when memory corpus is dirty (been added to)
       can save a lot of time for successive queries
 
-NOTE: Not worrying about STIX versioning. The in memory STIX data at anytime
-      will only hold one version of a STIX object. As such, when save() is called,
-      the single versions of all the STIX objects are what is written to file.
+Notes:
+    Not worrying about STIX versioning. The in memory STIX data at anytime
+    will only hold one version of a STIX object. As such, when save() is called,
+    the single versions of all the STIX objects are what is written to file.
 
 """
 
@@ -21,7 +22,7 @@ import json
 import os
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore, make_id
+from stix2.sources import DataSink, DataSource, DataStore
 from stix2validator import validate_string
 
 
@@ -30,12 +31,13 @@ class MemoryStore(DataStore):
     """
     def __init__(self, stix_data=None, name="MemoryStore"):
         """
-        Note: It doesnt make sense to create a MemoryStore by passing
-         in existing MemorySource and MemorySink because there could
-         be data concurrency issues. Just as easy to create new MemoryStore.
+        Notes:
+            It doesn't make sense to create a MemoryStore by passing
+            in existing MemorySource and MemorySink because there could
+            be data concurrency issues. Just as easy to create new MemoryStore.
+
         """
-        self.name = name
-        self.id = make_id()
+        super(MemoryStore, self).__init__(name=name)
         self.data = {}
 
         if stix_data:
@@ -46,7 +48,6 @@ class MemoryStore(DataStore):
                 # make dictionary of the objects for easy lookup
                 if r.is_valid:
                     for stix_obj in stix_data["objects"]:
-
                         self.data[stix_obj["id"]] = stix_obj
                 else:
                     print("Error: json data passed to MemorySink() was found to not be validated by STIX 2 Validator")
@@ -73,16 +74,16 @@ class MemoryStore(DataStore):
 
 class MemorySink(DataSink):
     """
-
     """
     def __init__(self, stix_data=None, name="MemorySink", _store=False):
         """
         Args:
-
-            data (dictionary OR list): valid STIX 2.0 content in bundle or a list
+            stix_data (dictionary OR list): valid STIX 2.0 content in
+                bundle or a list.
             name (string): optional name tag of the data source
-            _store (bool): if the MemorySink is a part of a DataStore, in which case
-                           "stix_data" is a direct reference to shared memory with DataSource
+            _store (bool): if the MemorySink is a part of a DataStore,
+                in which case "stix_data" is a direct reference to
+                shared memory with DataSource.
 
         """
         super(MemorySink, self).__init__(name=name)
@@ -152,11 +153,12 @@ class MemorySource(DataSource):
     def __init__(self, stix_data=None, name="MemorySource", _store=False):
         """
         Args:
-
-            data (dictionary OR list): valid STIX 2.0 content in bundle or list
-            name (string): optional name tag of the data source
-            _store (bool): if the MemorySource is a part of a DataStore, in which case
-                           "stix_data" is a direct reference to shared memory with DataSink
+            stix_data (dictionary OR list): valid STIX 2.0 content in
+                bundle or list.
+            name (string): optional name tag of the data source.
+            _store (bool): if the MemorySource is a part of a DataStore,
+                in which case "stix_data" is a direct reference to shared
+                memory with DataSink.
 
         """
         super(MemorySource, self).__init__(name=name)
@@ -167,7 +169,7 @@ class MemorySource(DataSource):
             self.data = {}
             if stix_data:
                 if type(stix_data) == dict:
-                    # stix objects are in a bundle
+                    # STIX objects are in a bundle
                     # verify STIX json data
                     r = validate_string(json.dumps(stix_data))
                     # make dictionary of the objects for easy lookup
@@ -179,7 +181,7 @@ class MemorySource(DataSource):
                         print(r)
                         self.data = {}
                 elif type(stix_data) == list:
-                    # stix objects are in a list
+                    # STIX objects are in a list
                     for stix_obj in stix_data:
                         r = validate_string(json.dumps(stix_obj))
                         if r.is_valid:
@@ -219,8 +221,11 @@ class MemorySource(DataSource):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        NOTE: since Memory sources/sinks dont handle mutliple verions of a STIX object,
-        this operation is futile. Translate call to get(). (Appoved by G.B.)
+        Notes:
+            Since Memory sources/sinks don't handle multiple versions of a
+            STIX object, this operation is futile. Translate call to get().
+            (Approved by G.B.)
+
         """
 
         # query = [
@@ -237,9 +242,7 @@ class MemorySource(DataSource):
 
     def query(self, query=None, _composite_filters=None):
         """
-
         """
-
         if query is None:
             query = []
 
@@ -250,7 +253,7 @@ class MemorySource(DataSource):
             query.extend(_composite_filters)
 
         # deduplicate data before filtering  -> Deduplication is not required as Memory only ever holds one version of an object
-        # all_data = self.depuplicate(all_data)
+        # all_data = self.deduplicate(all_data)
 
         # apply STIX common property filters
         all_data = self.apply_common_filters(self.data.values(), query)

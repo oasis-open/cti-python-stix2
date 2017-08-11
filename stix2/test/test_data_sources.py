@@ -74,7 +74,7 @@ def test_parse_taxii_filters():
     assert taxii_filters == expected_params
 
 
-@pytest.skip
+@pytest.mark.skip(reason="test_add_get_remove_filter() - Determine what are we testing.")
 def test_add_get_remove_filter():
 
     # First 3 filters are valid, remaining fields are erroneous in some way
