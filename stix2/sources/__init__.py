@@ -14,14 +14,27 @@ NOTE: add_filter(), remove_filter(), deduplicate() - if these functions remain
       make those functions an interface to inherit?
 """
 
+import collections
 import copy
 import uuid
 
 from six import iteritems
 
 
+class Filter(collections.namedtuple("Filter", ['field', 'op', 'value'])):
+    __slots__ = ()
+
+    def __new__(cls, field, op, value):
+        # If value is a list, convert it to a tuple so it is hashable.
+        if isinstance(value, list):
+            value = tuple(value)
+        self = super(Filter, cls).__new__(cls, field, op, value)
+        return self
+
+
 def make_id():
     return str(uuid.uuid4())
+
 
 # Currently, only STIX 2.0 common SDO fields (that are not compex objects)
 # are supported for filtering on
@@ -43,10 +56,6 @@ STIX_COMMON_FIELDS = [
     "type",
     "granular_markings"
 ]
-
-
-# Required fields in filter(dict)
-FILTER_FIELDS = ['field', 'op', 'value']
 
 # Supported filter operations
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
@@ -162,8 +171,7 @@ class DataSource(object):
     def __init__(self, name="DataSource"):
         self.name = name
         self.id = make_id()
-        self.filters = {}
-        self.filter_allowed = {}
+        self.filters = set()
 
     def get(self, stix_id, _composite_filters=None):
         """
@@ -230,114 +238,32 @@ class DataSource(object):
 
         raise NotImplementedError()
 
-    def add_filter(self, filters):
-        """add/attach a filter to the Data Source instance
+    def add_filters(self, filters):
+        """Add multiple filters to the DataSource.
 
         Args:
-            filters (list): list of filters (dict) to add to the Data Source
-
-        Returns:
-            status (list): list of status/error messages
-
+            filter (list): list of filters (dict) to add to the Data Source.
         """
+        for filter in filters:
+            self.add_filter(filter)
 
-        status = []
-        errors = []
-        ids = []
-        allowed = True
+    def add_filter(self, filter):
+        """Add a filter."""
+        # check filter field is a supported STIX 2.0 common field
+        if filter.field not in STIX_COMMON_FIELDS:
+            raise ValueError("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
 
-        for filter_ in filters:
-            # check required filter components ("field", "op", "value") exist
-            for field in FILTER_FIELDS:
-                if field not in filter_.keys():
-                    allowed = False
-                    errors.append("Filter was missing a required field(key). Each filter requires 'field', 'op', 'value' keys.")
-                    break
+        # check filter operator is supported
+        if filter.op not in FILTER_OPS:
+            raise ValueError("Filter operation(from 'op' field) not supported")
 
-            if allowed:
-                # no need for further checks if filter is missing parameters
+        # check filter value type is supported
+        if type(filter.value) not in FILTER_VALUE_TYPES:
+            raise ValueError("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
-                # check filter field is a supported STIX 2.0 common field
-                if filter_['field'] not in STIX_COMMON_FIELDS:
-                    allowed = False
-                    errors.append("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
+        self.filters.add(filter)
 
-                # check filter operator is supported
-                if filter_['op'] not in FILTER_OPS:
-                    allowed = False
-                    errors.append("Filter operation(from 'op' field) not supported")
-
-                # check filter value type is supported
-                if type(filter_['value']) not in FILTER_VALUE_TYPES:
-                    allowed = False
-                    errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
-
-            # Filter is added regardless of whether it fits requirements
-            # to be a common filter. This is done because some filters
-            # may be added and used by third party Data Sources, where the
-            # filtering may be conducted within those plugins, just not here
-
-            id_ = make_id()
-            filter_['id'] = id_
-            self.filters[id_] = filter_
-            ids.append(id_)
-
-            if allowed:
-                self.filter_allowed[id_] = True
-                status.append({
-                        "status": "added as a common filter",
-                        "filter": filter_,
-                        "data_source_name": self.name,
-                        "data_source_id": self.id,
-                    })
-            else:
-                self.filter_allowed[id_] = False
-                status.append({
-                    "status": "added but is not a common filter",
-                    "filter": filter_,
-                    "errors": copy.deepcopy(errors),
-                    "data_source_name": self.name,
-                    "data_source_id": self.id,
-                })
-                del errors[:]
-
-            allowed = True
-
-        return ids, status
-
-    def remove_filter(self, filter_ids):
-        """remove/detach a filter from the Data Source instance
-
-        Args:
-            filter_ids (list): list of filter ids to dettach/remove
-                from Data Source
-
-        Returns:
-
-
-        """
-        for filter_id in filter_ids:
-            try:
-                if filter_id in self.filters:
-                    del self.filters[filter_id]
-                    del self.filter_allowed[filter_id]
-            except KeyError:
-                # filter 'id' not found list of filters attached to Data Source
-                pass
-
-        return
-
-    def get_filters(self):
-        """return copy of all filters currently attached to Data Source
-
-        TODO: make this a property?
-
-        Returns:
-            (list): a copy of all the filters(dict) which are attached
-                to Data Source
-
-        """
-        return copy.deepcopy(list(self.filters.values()))
+    # TODO: Do we need a remove_filter function?
 
     def apply_common_filters(self, stix_objs, query):
         """evaluates filters against a set of STIX 2.0 objects
@@ -363,17 +289,17 @@ class DataSource(object):
 
                 # skip filter as filter was identified (when added) as
                 # not a common filter
-                if 'id' in filter_ and self.filter_allowed[filter_['id']] is False:
+                if filter_.field not in STIX_COMMON_FIELDS:
                     continue
 
                 # check filter "field" is in STIX object - if cant be applied
                 # due to STIX object, STIX object is discarded (i.e. did not
                 # make it through the filter)
-                if filter_['field'] not in stix_obj.keys():
+                if filter_.field not in stix_obj.keys():
                     clean = False
                     break
                 try:
-                    match = getattr(STIXCommonPropertyFilters, filter_['field'])(filter_, stix_obj)
+                    match = getattr(STIXCommonPropertyFilters, filter_.field)(filter_, stix_obj)
                     if not match:
                         clean = False
                         break
@@ -599,114 +525,6 @@ class CompositeDataSource(object):
         """
         return copy.deepcopy(self.data_sources.values())
 
-    def add_filter(self, filters):
-        """add/attach a filter to the Composite Data Source instance
-
-        Args:
-            filters (list): list of filters (dict) to add to the Data Source
-
-        Returns:
-            status (list): list of status/error messages
-
-        """
-
-        status = []
-        errors = []
-        ids = []
-        allowed = True
-
-        for filter_ in filters:
-            # check required filter components ("field", "op", "value") exist
-            for field in FILTER_FIELDS:
-                if field not in filter_.keys():
-                    allowed = False
-                    errors.append("Filter was missing a required field(key). Each filter requires 'field', 'op', 'value' keys.")
-                    break
-
-            if allowed:
-                # no need for further checks if filter is missing parameters
-
-                # check filter field is a supported STIX 2.0 common field
-                if filter_['field'] not in STIX_COMMON_FIELDS:
-                    allowed = False
-                    errors.append("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
-
-                # check filter operator is supported
-                if filter_['op'] not in FILTER_OPS:
-                    allowed = False
-                    errors.append("Filter operation(from 'op' field) not supported")
-
-                # check filter value type is supported
-                if type(filter_['value']) not in FILTER_VALUE_TYPES:
-                    allowed = False
-                    errors.append("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
-
-            # Filter is added regardless of whether it fits requirements
-            # to be a common filter. This is done because some filters
-            # may be added and used by third party Data Sources, where the
-            # filtering may be conducted within those plugins, just not here
-
-            id_ = make_id()
-            filter_['id'] = id_
-            self.filters['id_'] = filter_
-            ids.append(id_)
-
-            if allowed:
-                self.filter_allowed[id_] = True
-                status.append({
-                        "status": "added as a common filter",
-                        "filter": filter_,
-                        "data_source_name": self.name,
-                        "data_source_id": self.id
-                    })
-            else:
-                self.filter_allowed[id_] = False
-                status.append({
-                    "status": "added but is not a common filter",
-                    "filter": filter_,
-                    "errors": errors,
-                    "data_source_name": self.name,
-                    "data_source_id": self.id
-                })
-                del errors[:]
-
-            allowed = True
-
-        return ids, status
-
-    def remove_filter(self, filter_ids):
-        """Remove/detach a filter from the Data Source instance
-
-        Args:
-            filter_ids (list): list of filter id's (which are strings)
-            dettach from the Composite Data Source
-
-        Returns:
-
-        """
-
-        for filter_id in filter_ids:
-            try:
-                if filter_id in self.filters:
-                    del self.filters[filter_id]
-                    del self.filter_allowed[filter_id]
-            except KeyError:
-                # filter id not found in list of filters
-                # attached to the Composite Data Source
-                pass
-
-        return
-
-    @property
-    def filters(self):
-        """return filters attached to Composite Data Source
-
-        Returns:
-            (list): the list of filters currently attached to the Data Source
-
-        """
-        return copy.deepcopy(list(self.filters.values()))
-
     def deduplicate(self, stix_obj_list):
         """deduplicate a list fo STIX objects to a unique set
 
@@ -735,39 +553,39 @@ class STIXCommonPropertyFilters():
     @classmethod
     def _all(cls, filter_, stix_obj_field):
         """all filter operations (for filters whose value type can be applied to any operation type)"""
-        if filter_["op"] == '=':
-            return stix_obj_field == filter_["value"]
-        elif filter_["op"] == "!=":
-            return stix_obj_field != filter_["value"]
-        elif filter_["op"] == "in":
-            return stix_obj_field in filter_["value"]
-        elif filter_["op"] == ">":
-            return stix_obj_field > filter_["value"]
-        elif filter_["op"] == "<":
-            return stix_obj_field < filter_["value"]
-        elif filter_["op"] == ">=":
-            return stix_obj_field >= filter_["value"]
-        elif filter_["op"] == "<=":
-            return stix_obj_field <= filter_["value"]
+        if filter_.op == '=':
+            return stix_obj_field == filter_.value
+        elif filter_.op == "!=":
+            return stix_obj_field != filter_.value
+        elif filter_.op == "in":
+            return stix_obj_field in filter_.value
+        elif filter_.op == ">":
+            return stix_obj_field > filter_.value
+        elif filter_.op == "<":
+            return stix_obj_field < filter_.value
+        elif filter_.op == ">=":
+            return stix_obj_field >= filter_.value
+        elif filter_.op == "<=":
+            return stix_obj_field <= filter_.value
         else:
             return -1
 
     @classmethod
     def _id(cls, filter_, stix_obj_id):
         """base filter types"""
-        if filter_["op"] == "=":
-            return stix_obj_id == filter_["value"]
-        elif filter_["op"] == "!=":
-            return stix_obj_id != filter_["value"]
+        if filter_.op == "=":
+            return stix_obj_id == filter_.value
+        elif filter_.op == "!=":
+            return stix_obj_id != filter_.value
         else:
             return -1
 
     @classmethod
     def _boolean(cls, filter_, stix_obj_field):
-        if filter_["op"] == "=":
-            return stix_obj_field == filter_["value"]
-        elif filter_["op"] == "!=":
-            return stix_obj_field != filter_["value"]
+        if filter_.op == "=":
+            return stix_obj_field == filter_.value
+        elif filter_.op == "!=":
+            return stix_obj_field != filter_.value
         else:
             return -1
 
@@ -802,7 +620,7 @@ class STIXCommonPropertyFilters():
         """
         for er in stix_obj["external_references"]:
             # grab er property name from filter field
-            filter_field = filter_["field"].split(".")[1]
+            filter_field = filter_.field.split(".")[1]
             r = cls._string(filter_, er[filter_field])
             if r:
                 return r
@@ -819,7 +637,7 @@ class STIXCommonPropertyFilters():
         """
         for gm in stix_obj["granular_markings"]:
             # grab gm property name from filter field
-            filter_field = filter_["field"].split(".")[1]
+            filter_field = filter_.field.split(".")[1]
 
             if filter_field == "marking_ref":
                 return cls._id(filter_, gm[filter_field])

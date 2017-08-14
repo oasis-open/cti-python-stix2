@@ -159,10 +159,10 @@ class TAXIICollectionSource(DataSource):
         params = {}
 
         for filter_ in query:
-            if filter_["field"] in TAXII_FILTERS:
-                if filter_["field"] == "added_after":
-                    params[filter_["field"]] = filter_["value"]
+            if filter_.field in TAXII_FILTERS:
+                if filter_.field == "added_after":
+                    params[filter_.field] = filter_.value
                 else:
-                    taxii_field = "match[" + filter_["field"] + ']'
-                    params[taxii_field] = filter_["value"]
+                    taxii_field = "match[" + filter_.field + ']'
+                    params[taxii_field] = filter_.value
         return params
