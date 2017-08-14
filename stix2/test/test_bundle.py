@@ -116,3 +116,15 @@ def test_create_bundle_with_arg_listarg_and_kwarg(indicator, malware, relationsh
     bundle = stix2.Bundle([indicator], malware, objects=[relationship])
 
     assert str(bundle) == EXPECTED_BUNDLE
+
+
+def test_parse_bundle():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    assert bundle.type == "bundle"
+    assert bundle.id.startswith("bundle--")
+    assert bundle.spec_version == "2.0"
+    assert type(bundle.objects[0]) is stix2.Indicator
+    assert bundle.objects[0].type == 'indicator'
+    assert bundle.objects[1].type == 'malware'
+    assert bundle.objects[2].type == 'relationship'

@@ -5,8 +5,8 @@ from collections import OrderedDict
 import stix2
 
 from .base import _STIXBase
+from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty
-from .other import ExternalReference, GranularMarking, KillChainPhase
 from .properties import (BooleanProperty, IDProperty, IntegerProperty,
                          ListProperty, ReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
