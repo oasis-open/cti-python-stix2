@@ -11,7 +11,7 @@ from .utils import NOW, get_dict
 
 class ExternalReference(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
@@ -25,7 +25,7 @@ class ExternalReference(_STIXBase):
 
 class KillChainPhase(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('kill_chain_name', StringProperty(required=True)),
         ('phase_name', StringProperty(required=True)),
     ])
@@ -33,23 +33,24 @@ class KillChainPhase(_STIXBase):
 
 class GranularMarking(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('marking_ref', ReferenceProperty(required=True, type="marking-definition")),
         ('selectors', ListProperty(SelectorProperty, required=True)),
     ])
 
 
 class TLPMarking(_STIXBase):
-    # TODO: don't allow the creation of any other TLPMarkings than the ones below
+    _type = 'tlp'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('tlp', Property(required=True))
     ])
 
 
 class StatementMarking(_STIXBase):
+    _type = 'statement'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('statement', StringProperty(required=True))
     ])
 
@@ -67,36 +68,32 @@ class MarkingProperty(Property):
     """
 
     def clean(self, value):
-        if type(value) in [TLPMarking, StatementMarking]:
+        if type(value) in OBJ_MAP_MARKING.values():
             return value
         else:
-            raise ValueError("must be a Statement or TLP Marking.")
+            raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
 class MarkingDefinition(_STIXBase):
     _type = 'marking-definition'
     _properties = OrderedDict()
-    _properties = _properties.update([
-        ('created', TimestampProperty(default=lambda: NOW)),
-        ('external_references', ListProperty(ExternalReference)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
-        ('granular_markings', ListProperty(GranularMarking)),
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created', TimestampProperty(default=lambda: NOW)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
         ('definition_type', StringProperty(required=True)),
         ('definition', MarkingProperty(required=True)),
     ])
-    marking_map = {
-        'tlp': TLPMarking,
-        'statement': StatementMarking,
-    }
 
     def __init__(self, **kwargs):
         if set(('definition_type', 'definition')).issubset(kwargs.keys()):
             # Create correct marking type object
             try:
-                marking_type = self.marking_map[kwargs['definition_type']]
+                marking_type = OBJ_MAP_MARKING[kwargs['definition_type']]
             except KeyError:
                 raise ValueError("definition_type must be a valid marking type")
 
@@ -106,6 +103,17 @@ class MarkingDefinition(_STIXBase):
 
         super(MarkingDefinition, self).__init__(**kwargs)
 
+
+def register_marking(new_marking):
+    """Register a custom STIX Marking Definition type.
+    """
+    OBJ_MAP_MARKING[new_marking._type] = new_marking
+
+
+OBJ_MAP_MARKING = {
+    'tlp': TLPMarking,
+    'statement': StatementMarking,
+}
 
 TLP_WHITE = MarkingDefinition(
     id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",

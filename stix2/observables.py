@@ -78,7 +78,7 @@ class ExtensionsProperty(DictionaryProperty):
 class Artifact(_Observable):
     _type = 'artifact'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
@@ -95,7 +95,7 @@ class Artifact(_Observable):
 class AutonomousSystem(_Observable):
     _type = 'autonomous-system'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('number', IntegerProperty()),
         ('name', StringProperty()),
@@ -106,7 +106,7 @@ class AutonomousSystem(_Observable):
 class Directory(_Observable):
     _type = 'directory'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
@@ -121,7 +121,7 @@ class Directory(_Observable):
 class DomainName(_Observable):
     _type = 'domain-name'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
@@ -131,7 +131,7 @@ class DomainName(_Observable):
 class EmailAddress(_Observable):
     _type = 'email-addr'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
@@ -141,7 +141,7 @@ class EmailAddress(_Observable):
 
 class EmailMIMEComponent(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('body', StringProperty()),
         ('body_raw_ref', ObjectReferenceProperty(valid_types=['artifact', 'file'])),
         ('content_type', StringProperty()),
@@ -156,7 +156,7 @@ class EmailMIMEComponent(_STIXBase):
 class EmailMessage(_Observable):
     _type = 'email-message'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
@@ -184,7 +184,7 @@ class EmailMessage(_Observable):
 
 class ArchiveExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types='file'), required=True)),
         ('version', StringProperty()),
         ('comment', StringProperty()),
@@ -193,7 +193,7 @@ class ArchiveExt(_Extension):
 
 class AlternateDataStream(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('name', StringProperty(required=True)),
         ('hashes', HashesProperty()),
         ('size', IntegerProperty()),
@@ -202,7 +202,7 @@ class AlternateDataStream(_STIXBase):
 
 class NTFSExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('sid', StringProperty()),
         ('alternate_data_streams', ListProperty(EmbeddedObjectProperty(type=AlternateDataStream))),
     ])
@@ -210,7 +210,7 @@ class NTFSExt(_Extension):
 
 class PDFExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('version', StringProperty()),
         ('is_optimized', BooleanProperty()),
         ('document_info_dict', DictionaryProperty()),
@@ -221,7 +221,7 @@ class PDFExt(_Extension):
 
 class RasterImageExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('image_height', IntegerProperty()),
         ('image_weight', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
@@ -232,7 +232,7 @@ class RasterImageExt(_Extension):
 
 class WindowsPEOptionalHeaderType(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('magic_hex', HexProperty()),
         ('major_linker_version', IntegerProperty()),
         ('minor_linker_version', IntegerProperty()),
@@ -273,7 +273,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
 
 class WindowsPESection(_STIXBase):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty()),
         ('entropy', FloatProperty()),
@@ -283,7 +283,7 @@ class WindowsPESection(_STIXBase):
 
 class WindowsPEBinaryExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('pe_type', StringProperty(required=True)),  # open_vocab
         ('imphash', StringProperty()),
         ('machine_hex', HexProperty()),
@@ -302,7 +302,7 @@ class WindowsPEBinaryExt(_Extension):
 class File(_Observable):
     _type = 'file'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('hashes', HashesProperty()),
@@ -332,7 +332,7 @@ class File(_Observable):
 class IPv4Address(_Observable):
     _type = 'ipv4-addr'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
@@ -343,7 +343,7 @@ class IPv4Address(_Observable):
 class IPv6Address(_Observable):
     _type = 'ipv6-addr'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
@@ -354,7 +354,7 @@ class IPv6Address(_Observable):
 class MACAddress(_Observable):
     _type = 'mac-addr'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
     ])
@@ -363,7 +363,7 @@ class MACAddress(_Observable):
 class Mutex(_Observable):
     _type = 'mutex'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('name', StringProperty()),
     ])
@@ -371,7 +371,7 @@ class Mutex(_Observable):
 
 class HTTPRequestExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('request_method', StringProperty(required=True)),
         ('request_value', StringProperty(required=True)),
         ('request_version', StringProperty()),
@@ -383,7 +383,7 @@ class HTTPRequestExt(_Extension):
 
 class ICMPExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('icmp_type_hex', HexProperty(required=True)),
         ('icmp_code_hex', HexProperty(required=True)),
     ])
@@ -391,7 +391,7 @@ class ICMPExt(_Extension):
 
 class SocketExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('address_family', EnumProperty([
             "AF_UNSPEC",
             "AF_INET",
@@ -425,7 +425,7 @@ class SocketExt(_Extension):
 
 class TCPExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('src_flags_hex', HexProperty()),
         ('dst_flags_hex', HexProperty()),
     ])
@@ -434,7 +434,7 @@ class TCPExt(_Extension):
 class NetworkTraffic(_Observable):
     _type = 'network-traffic'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('start', TimestampProperty()),
@@ -463,7 +463,7 @@ class NetworkTraffic(_Observable):
 
 class WindowsProcessExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('aslr_enabled', BooleanProperty()),
         ('dep_enabled', BooleanProperty()),
         ('priority', StringProperty()),
@@ -475,7 +475,7 @@ class WindowsProcessExt(_Extension):
 
 class WindowsServiceExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('service_name', StringProperty(required=True)),
         ('descriptions', ListProperty(StringProperty)),
         ('display_name', StringProperty()),
@@ -509,7 +509,7 @@ class WindowsServiceExt(_Extension):
 class Process(_Observable):
     _type = 'process'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('is_hidden', BooleanProperty()),
@@ -546,7 +546,7 @@ class Process(_Observable):
 class Software(_Observable):
     _type = 'software'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
@@ -559,7 +559,7 @@ class Software(_Observable):
 class URL(_Observable):
     _type = 'url'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
     ])
@@ -567,7 +567,7 @@ class URL(_Observable):
 
 class UNIXAccountExt(_Extension):
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('gid', IntegerProperty()),
         ('groups', ListProperty(StringProperty)),
         ('home_dir', StringProperty()),
@@ -578,7 +578,7 @@ class UNIXAccountExt(_Extension):
 class UserAccount(_Observable):
     _type = 'user-account'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('user_id', StringProperty(required=True)),
@@ -600,7 +600,7 @@ class UserAccount(_Observable):
 class WindowsRegistryValueType(_STIXBase):
     _type = 'windows-registry-value-type'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('name', StringProperty(required=True)),
         ('data', StringProperty()),
         ('data_type', EnumProperty([
@@ -624,7 +624,7 @@ class WindowsRegistryValueType(_STIXBase):
 class WindowsRegistryKey(_Observable):
     _type = 'windows-registry-key'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('key', StringProperty(required=True)),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
@@ -643,7 +643,7 @@ class WindowsRegistryKey(_Observable):
 class X509V3ExtenstionsType(_STIXBase):
     _type = 'x509-v3-extensions-type'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('basic_constraints', StringProperty()),
         ('name_constraints', StringProperty()),
         ('policy_constraints', StringProperty()),
@@ -666,7 +666,7 @@ class X509V3ExtenstionsType(_STIXBase):
 class X509Certificate(_Observable):
     _type = 'x509-certificate'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('is_self_signed', BooleanProperty()),
         ('hashes', HashesProperty()),
@@ -795,7 +795,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
         class _Custom(cls, _Observable):
             _type = type
             _properties = OrderedDict()
-            _properties = _properties.update([
+            _properties.update([
                 ('type', TypeProperty(_type)),
             ])
 

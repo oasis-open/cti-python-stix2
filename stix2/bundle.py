@@ -10,7 +10,7 @@ class Bundle(_STIXBase):
 
     _type = 'bundle'
     _properties = OrderedDict()
-    _properties = _properties.update([
+    _properties.update([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
         ('spec_version', Property(fixed="2.0")),
