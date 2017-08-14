@@ -138,13 +138,13 @@ class FileSystemSource(DataSource):
         # the corresponding subdirectories as well
         include_paths = []
         declude_paths = []
-        if "type" in [filter_["field"] for filter_ in file_filters]:
+        if "type" in [filter_.field for filter_ in file_filters]:
             for filter_ in file_filters:
-                if filter_["field"] == "type":
-                    if filter_["op"] == "=":
-                        include_paths.append(os.path.join(self.stix_dir, filter_["value"]))
-                    elif filter_["op"] == "!=":
-                        declude_paths.append(os.path.join(self.stix_dir, filter_["value"]))
+                if filter_.field == "type":
+                    if filter_.op == "=":
+                        include_paths.append(os.path.join(self.stix_dir, filter_.value))
+                    elif filter_.op == "!=":
+                        declude_paths.append(os.path.join(self.stix_dir, filter_.value))
         else:
             # have to walk entire STIX directory
             include_paths.append(self.stix_dir)
@@ -167,10 +167,10 @@ class FileSystemSource(DataSource):
 
         # grab stix object ID as well - if present in filters, as
         # may forgo the loading of STIX content into memory
-        if "id" in [filter_["field"] for filter_ in file_filters]:
+        if "id" in [filter_.field for filter_ in file_filters]:
             for filter_ in file_filters:
-                if filter_["field"] == "id" and filter_["op"] == "=":
-                    id_ = filter_["value"]
+                if filter_.field == "id" and filter_.op == "=":
+                    id_ = filter_.value
                     break
             else:
                 id_ = None
@@ -200,6 +200,6 @@ class FileSystemSource(DataSource):
         """
         file_filters = []
         for filter_ in query:
-            if filter_["field"] == "id" or filter_["field"] == "type":
+            if filter_.field == "id" or filter_.field == "type":
                 file_filters.append(filter_)
         return file_filters
