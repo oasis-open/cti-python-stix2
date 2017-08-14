@@ -292,22 +292,22 @@ def CustomObject(type='x-custom-type', properties=None):
 
     Example 1:
 
-    @CustomObject('x-type-name', {
-        'property1': StringProperty(required=True),
-        'property2': IntegerProperty(),
-    })
+    @CustomObject('x-type-name', [
+        ('property1', StringProperty(required=True)),
+        ('property2', IntegerProperty()),
+    ])
     class MyNewObjectType():
         pass
 
     Supply an __init__() function to add any special validations to the custom
-    type. Don't call super().__init() though - doing so will cause an error.
+    type. Don't call super().__init__() though - doing so will cause an error.
 
     Example 2:
 
-    @CustomObject('x-type-name', {
-        'property1': StringProperty(required=True),
-        'property2': IntegerProperty(),
-    })
+    @CustomObject('x-type-name', [
+        ('property1', StringProperty(required=True)),
+        ('property2', IntegerProperty()),
+    ])
     class MyNewObjectType():
         def __init__(self, property2=None, **kwargs):
             if property2 and property2 < 10:
@@ -327,10 +327,13 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
             ])
 
-            if properties is None:
+            if not properties:
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
-            _properties.update(properties)
+            normal_properties = [x for x in properties if not x[0].startswith("x_")]
+            custom_properties = [x for x in properties if x[0].startswith("x_")]
+
+            _properties.update(normal_properties)
 
             # This is to follow the general properties structure.
             _properties.update([
@@ -340,6 +343,9 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
                 ('granular_markings', ListProperty(GranularMarking)),
             ])
+
+            # Put all custom properties at the bottom, sorted alphabetically.
+            _properties.update(sorted(custom_properties, key=lambda x: x[0]))
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
