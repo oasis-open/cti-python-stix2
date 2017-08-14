@@ -3,9 +3,9 @@
 from collections import OrderedDict
 
 from .base import _STIXBase
-from .properties import (IDProperty, ListProperty, Property, ReferenceProperty,
-                         SelectorProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
+from .properties import (IDProperty, HashesProperty, ListProperty, Property,
+                         ReferenceProperty, SelectorProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from .utils import NOW, get_dict
 
 
@@ -15,6 +15,7 @@ class ExternalReference(_STIXBase):
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
+        ('hashes', HashesProperty()),
         ('external_id', StringProperty()),
     ])
 

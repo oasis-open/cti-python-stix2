@@ -734,17 +734,19 @@ EXT_MAP = {
     'network-traffic': EXT_MAP_NETWORK_TRAFFIC,
     'process': EXT_MAP_PROCESS,
     'user-account': EXT_MAP_USER_ACCOUNT,
-
 }
 
 
 def parse_observable(data, _valid_refs, allow_custom=False):
-    """Deserialize a string or file-like object into a STIX Cyber Observable object.
+    """Deserialize a string or file-like object into a STIX Cyber Observable
+    object.
 
     Args:
         data: The STIX 2 string to be parsed.
-        _valid_refs: A list of object references valid for the scope of the object being parsed.
-        allow_custom: Whether to allow custom properties or not. Default: False.
+        _valid_refs: A list of object references valid for the scope of the
+            object being parsed. Use empty list if no valid refs are present.
+        allow_custom: Whether to allow custom properties or not.
+            Default: False.
 
     Returns:
         An instantiated Python STIX Cyber Observable object.
