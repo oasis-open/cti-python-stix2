@@ -49,8 +49,8 @@ class Sighting(_STIXBase):
     _type = 'sighting'
     _properties = OrderedDict()
     _properties.update([
-        ('id', IDProperty(_type)),
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type="identity")),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
