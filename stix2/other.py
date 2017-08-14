@@ -1,5 +1,7 @@
 """STIX 2.0 Objects that are neither SDOs nor SROs"""
 
+from collections import OrderedDict
+
 from .base import _STIXBase
 from .properties import (IDProperty, ListProperty, Property, ReferenceProperty,
                          SelectorProperty, StringProperty, TimestampProperty,
@@ -8,12 +10,13 @@ from .utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):
-    _properties = {
-        'source_name': StringProperty(required=True),
-        'description': StringProperty(),
-        'url': StringProperty(),
-        'external_id': StringProperty(),
-    }
+    _properties = OrderedDict()
+    _properties = _properties.update([
+        ('source_name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('url', StringProperty()),
+        ('external_id', StringProperty()),
+    ])
 
     def _check_object_constraints(self):
         super(ExternalReference, self)._check_object_constraints()
@@ -21,30 +24,34 @@ class ExternalReference(_STIXBase):
 
 
 class KillChainPhase(_STIXBase):
-    _properties = {
-        'kill_chain_name': StringProperty(required=True),
-        'phase_name': StringProperty(required=True),
-    }
+    _properties = OrderedDict()
+    _properties = _properties.update([
+        ('kill_chain_name', StringProperty(required=True)),
+        ('phase_name', StringProperty(required=True)),
+    ])
 
 
 class GranularMarking(_STIXBase):
-    _properties = {
-        'marking_ref': ReferenceProperty(required=True, type="marking-definition"),
-        'selectors': ListProperty(SelectorProperty, required=True),
-    }
+    _properties = OrderedDict()
+    _properties = _properties.update([
+        ('marking_ref', ReferenceProperty(required=True, type="marking-definition")),
+        ('selectors', ListProperty(SelectorProperty, required=True)),
+    ])
 
 
 class TLPMarking(_STIXBase):
     # TODO: don't allow the creation of any other TLPMarkings than the ones below
-    _properties = {
-        'tlp': Property(required=True)
-    }
+    _properties = OrderedDict()
+    _properties = _properties.update([
+        ('tlp', Property(required=True))
+    ])
 
 
 class StatementMarking(_STIXBase):
-    _properties = {
-        'statement': StringProperty(required=True)
-    }
+    _properties = OrderedDict()
+    _properties = _properties.update([
+        ('statement', StringProperty(required=True))
+    ])
 
     def __init__(self, statement=None, **kwargs):
         # Allow statement as positional args.
@@ -68,17 +75,18 @@ class MarkingProperty(Property):
 
 class MarkingDefinition(_STIXBase):
     _type = 'marking-definition'
-    _properties = {
-        'created': TimestampProperty(default=lambda: NOW),
-        'external_references': ListProperty(ExternalReference),
-        'created_by_ref': ReferenceProperty(type="identity"),
-        'object_marking_refs': ListProperty(ReferenceProperty(type="marking-definition")),
-        'granular_markings': ListProperty(GranularMarking),
-        'type': TypeProperty(_type),
-        'id': IDProperty(_type),
-        'definition_type': StringProperty(required=True),
-        'definition': MarkingProperty(required=True),
-    }
+    _properties = OrderedDict()
+    _properties = _properties.update([
+        ('created', TimestampProperty(default=lambda: NOW)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type)),
+        ('definition_type', StringProperty(required=True)),
+        ('definition', MarkingProperty(required=True)),
+    ])
     marking_map = {
         'tlp': TLPMarking,
         'statement': StatementMarking,
