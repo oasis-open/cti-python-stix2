@@ -1,5 +1,7 @@
 """Utility functions and classes for the stix2 library."""
 
+from stix2 import base
+
 import datetime as dt
 import json
 
@@ -115,3 +117,37 @@ def get_dict(data):
             return dict(data)
         except (ValueError, TypeError):
             raise ValueError("Cannot convert '%s' to dictionary." % str(data))
+
+
+def find_property_index(obj, properties, tuple_to_find):
+    """Recursively find the property in the object model, return the index
+    according to the _properties OrderedDict. If its a list look for
+    individual objects.
+    """
+    try:
+        if tuple_to_find[1] in obj._inner.values():
+            return properties.index(tuple_to_find[0])
+        raise ValueError
+    except ValueError:
+        for pv in obj._inner.values():
+            if isinstance(pv, list):
+                for item in pv:
+                    if isinstance(item, base._STIXBase):
+                        val = find_property_index(item,
+                                                  item._object_properties(),
+                                                  tuple_to_find)
+                        if val is not None:
+                            return val
+            elif isinstance(pv, dict):
+                if pv.get(tuple_to_find[0]) is not None:
+                    try:
+                        return int(tuple_to_find[0])
+                    except ValueError:
+                        return len(tuple_to_find[0])
+                for item in pv.values():
+                    if isinstance(item, base._STIXBase):
+                        val = find_property_index(item,
+                                                  item._object_properties(),
+                                                  tuple_to_find)
+                        if val is not None:
+                            return val

@@ -3,6 +3,7 @@
 import collections
 import copy
 import datetime as dt
+
 import simplejson as json
 
 from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
@@ -11,7 +12,8 @@ from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          MissingPropertiesError,
                          MutuallyExclusivePropertiesError, RevokeError,
                          UnmodifiablePropertyError)
-from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
+from .utils import (NOW, find_property_index, format_datetime, get_timestamp,
+                    parse_into_datetime)
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
@@ -145,9 +147,13 @@ class _STIXBase(collections.Mapping):
 
     def __str__(self):
         properties = self._object_properties()
+
+        def sort_by(element):
+            return find_property_index(self, properties, element)
+
         # separators kwarg -> don't include spaces after commas.
         return json.dumps(self, indent=4, cls=STIXJSONEncoder,
-                          item_sort_key=lambda x: properties.index(x[0]),
+                          item_sort_key=sort_by,
                           separators=(",", ": "))
 
     def __repr__(self):
