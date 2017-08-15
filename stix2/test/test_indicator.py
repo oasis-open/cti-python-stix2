@@ -10,25 +10,25 @@ from .constants import FAKE_TIME, INDICATOR_ID, INDICATOR_KWARGS
 
 
 EXPECTED_INDICATOR = """{
-    "created": "2017-01-01T00:00:01.000Z",
+    "type": "indicator",
     "id": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+    "created": "2017-01-01T00:00:01.000Z",
+    "modified": "2017-01-01T00:00:01.000Z",
     "labels": [
         "malicious-activity"
     ],
-    "modified": "2017-01-01T00:00:01.000Z",
     "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-    "type": "indicator",
     "valid_from": "1970-01-01T00:00:01Z"
 }"""
 
 EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
-    created=STIXdatetime(2017, 1, 1, 0, 0, 1, tzinfo=<UTC>),
-    id='indicator--01234567-89ab-cdef-0123-456789abcdef',
-    labels=['malicious-activity'],
-    modified=STIXdatetime(2017, 1, 1, 0, 0, 1, tzinfo=<UTC>),
-    pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     type='indicator',
-    valid_from=datetime.datetime(1970, 1, 1, 0, 0, 1, tzinfo=<UTC>)
+    id='indicator--01234567-89ab-cdef-0123-456789abcdef',
+    created='2017-01-01T00:00:01.000Z',
+    modified='2017-01-01T00:00:01.000Z',
+    labels=['malicious-activity'],
+    pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+    valid_from='1970-01-01T00:00:01Z'
 """.split()) + ")"
 
 

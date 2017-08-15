@@ -4,41 +4,41 @@ import stix2
 
 
 EXPECTED_BUNDLE = """{
+    "type": "bundle",
     "id": "bundle--00000000-0000-0000-0000-000000000004",
+    "spec_version": "2.0",
     "objects": [
         {
-            "created": "2017-01-01T12:34:56.000Z",
+            "type": "indicator",
             "id": "indicator--00000000-0000-0000-0000-000000000001",
+            "created": "2017-01-01T12:34:56.000Z",
+            "modified": "2017-01-01T12:34:56.000Z",
             "labels": [
                 "malicious-activity"
             ],
-            "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-            "type": "indicator",
             "valid_from": "2017-01-01T12:34:56Z"
         },
         {
-            "created": "2017-01-01T12:34:56.000Z",
+            "type": "malware",
             "id": "malware--00000000-0000-0000-0000-000000000002",
-            "labels": [
-                "ransomware"
-            ],
+            "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
-            "type": "malware"
+            "labels": [
+                "ransomware"
+            ]
         },
         {
-            "created": "2017-01-01T12:34:56.000Z",
+            "type": "relationship",
             "id": "relationship--00000000-0000-0000-0000-000000000003",
+            "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "relationship_type": "indicates",
             "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
-            "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210",
-            "type": "relationship"
+            "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210"
         }
-    ],
-    "spec_version": "2.0",
-    "type": "bundle"
+    ]
 }"""
 
 
@@ -84,7 +84,7 @@ def test_bundle_with_wrong_spec_version():
 
 def test_create_bundle(indicator, malware, relationship):
     bundle = stix2.Bundle(objects=[indicator, malware, relationship])
-
+    print(bundle)
     assert str(bundle) == EXPECTED_BUNDLE
 
 

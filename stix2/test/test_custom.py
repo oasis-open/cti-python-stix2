@@ -74,11 +74,11 @@ def test_parse_identity_custom_property(data):
     assert identity.foo == "bar"
 
 
-@stix2.sdo.CustomObject('x-new-type', {
-    'property1': stix2.properties.StringProperty(required=True),
-    'property2': stix2.properties.IntegerProperty(),
-})
-class NewType():
+@stix2.sdo.CustomObject('x-new-type', [
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
+])
+class NewType(object):
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
@@ -106,11 +106,12 @@ def test_parse_custom_object_type():
     assert nt.property1 == 'something'
 
 
-@stix2.observables.CustomObservable('x-new-observable', {
-    'property1': stix2.properties.StringProperty(required=True),
-    'property2': stix2.properties.IntegerProperty(),
-})
-class NewObservable():
+@stix2.observables.CustomObservable('x-new-observable', [
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
+    ('x_property3', stix2.properties.BooleanProperty()),
+])
+class NewObservable(object):
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
@@ -133,7 +134,7 @@ def test_parse_custom_observable_object():
         "property1": "something"
     }"""
 
-    nt = stix2.parse_observable(nt_string)
+    nt = stix2.parse_observable(nt_string, [])
     assert nt.property1 == 'something'
 
 

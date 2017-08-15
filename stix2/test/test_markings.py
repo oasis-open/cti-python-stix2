@@ -10,36 +10,36 @@ from .constants import MARKING_DEFINITION_ID
 
 
 EXPECTED_TLP_MARKING_DEFINITION = """{
+    "type": "marking-definition",
+    "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "created": "2017-01-20T00:00:00Z",
+    "definition_type": "tlp",
     "definition": {
         "tlp": "white"
-    },
-    "definition_type": "tlp",
-    "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-    "type": "marking-definition"
+    }
 }"""
 
 EXPECTED_STATEMENT_MARKING_DEFINITION = """{
+    "type": "marking-definition",
+    "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "created": "2017-01-20T00:00:00Z",
+    "definition_type": "statement",
     "definition": {
         "statement": "Copyright 2016, Example Corp"
-    },
-    "definition_type": "statement",
-    "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-    "type": "marking-definition"
+    }
 }"""
 
 EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING = """{
-    "created": "2016-04-06T20:03:00.000Z",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-    "description": "Campaign by Green Group against a series of targets in the financial services sector.",
+    "type": "campaign",
     "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created": "2016-04-06T20:03:00.000Z",
     "modified": "2016-04-06T20:03:00.000Z",
     "name": "Green Group Attacks Against Finance",
+    "description": "Campaign by Green Group against a series of targets in the financial services sector.",
     "object_marking_refs": [
         "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
-    ],
-    "type": "campaign"
+    ]
 }"""
 
 EXPECTED_GRANULAR_MARKING = """{
@@ -53,8 +53,12 @@ EXPECTED_GRANULAR_MARKING = """{
 }"""
 
 EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
-    "created": "2016-04-06T20:03:00.000Z",
+    "type": "campaign",
+    "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
     "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created": "2016-04-06T20:03:00.000Z",
+    "modified": "2016-04-06T20:03:00.000Z",
+    "name": "Green Group Attacks Against Finance",
     "description": "Campaign by Green Group against a series of targets in the financial services sector.",
     "granular_markings": [
         {
@@ -63,11 +67,7 @@ EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
                 "description"
             ]
         }
-    ],
-    "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-    "modified": "2016-04-06T20:03:00.000Z",
-    "name": "Green Group Attacks Against Finance",
-    "type": "campaign"
+    ]
 }"""
 
 
