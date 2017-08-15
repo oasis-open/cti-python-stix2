@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from .base import _STIXBase
-from .other import ExternalReference, GranularMarking
+from .common import ExternalReference, GranularMarking
 from .properties import (BooleanProperty, IDProperty, IntegerProperty, ListProperty,
                          ReferenceProperty, StringProperty, TimestampProperty,
                          TypeProperty)
