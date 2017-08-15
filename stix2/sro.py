@@ -1,6 +1,9 @@
 """STIX 2.0 Relationship Objects."""
 
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from .base import _STIXBase
 from .common import ExternalReference, GranularMarking

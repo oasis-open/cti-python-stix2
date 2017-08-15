@@ -6,8 +6,6 @@ import json
 from dateutil import parser
 import pytz
 
-from .base import _STIXBase
-
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
 # timestamps in a single object, the timestamps will vary by a few microseconds.
@@ -124,6 +122,7 @@ def find_property_index(obj, properties, tuple_to_find):
     according to the _properties OrderedDict. If its a list look for
     individual objects.
     """
+    from .base import _STIXBase
     try:
         if tuple_to_find[1] in obj._inner.values():
             return properties.index(tuple_to_find[0])

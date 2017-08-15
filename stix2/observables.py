@@ -5,7 +5,10 @@ embedded in Email Message objects, inherit from _STIXBase instead of Observable
 and do not have a '_type' attribute.
 """
 
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 from .base import _Extension, _Observable, _STIXBase
 from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,

@@ -1,6 +1,9 @@
 """STIX 2.0 Domain Objects"""
 
-from collections import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 
 import stix2
 
