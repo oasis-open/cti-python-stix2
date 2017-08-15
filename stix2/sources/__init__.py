@@ -529,7 +529,6 @@ class CompositeDataSource(object):
         """
         return copy.deepcopy(self.data_sources.values())
 
-
     def deduplicate(self, stix_obj_list):
         """Deduplicate a list of STIX objects to a unique set
 

@@ -1,12 +1,12 @@
 """Utility functions and classes for the stix2 library."""
 
-from stix2 import base
-
 import datetime as dt
 import json
 
 from dateutil import parser
 import pytz
+
+from .base import _STIXBase
 
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
@@ -132,7 +132,7 @@ def find_property_index(obj, properties, tuple_to_find):
         for pv in obj._inner.values():
             if isinstance(pv, list):
                 for item in pv:
-                    if isinstance(item, base._STIXBase):
+                    if isinstance(item, _STIXBase):
                         val = find_property_index(item,
                                                   item._object_properties(),
                                                   tuple_to_find)
@@ -145,7 +145,7 @@ def find_property_index(obj, properties, tuple_to_find):
                     except ValueError:
                         return len(tuple_to_find[0])
                 for item in pv.values():
-                    if isinstance(item, base._STIXBase):
+                    if isinstance(item, _STIXBase):
                         val = find_property_index(item,
                                                   item._object_properties(),
                                                   tuple_to_find)
