@@ -84,7 +84,7 @@ def test_bundle_with_wrong_spec_version():
 
 def test_create_bundle(indicator, malware, relationship):
     bundle = stix2.Bundle(objects=[indicator, malware, relationship])
-    print(bundle)
+
     assert str(bundle) == EXPECTED_BUNDLE
 
 

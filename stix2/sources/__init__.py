@@ -344,7 +344,7 @@ class DataSource(object):
         return list(unique_objs.values())
 
 
-class CompositeDataSource(object):
+class CompositeDataSource(DataSource):
     """Composite Data Source
 
     Acts as a controller for all the defined/configured STIX Data Sources
@@ -353,14 +353,9 @@ class CompositeDataSource(object):
     application.
 
     Attributes:
-        id (str): A UUIDv4 to identify this CompositeDataSource.
         name (str): The name that identifies this CompositeDataSource.
         data_sources (dict): A dictionary of DataSource objects; to be
             controlled and used by the Data Source Controller object.
-        filters (dict): A collection of filters present in this
-            CompositeDataSource.
-        filter_allowed (dict): A collection of the allowed filters in this
-            CompositeDataSource.
 
     """
     def __init__(self, name="CompositeDataSource"):
@@ -372,13 +367,10 @@ class CompositeDataSource(object):
                 CompositeDataSource instance.
 
         """
-        self.id = make_id()
-        self.name = name
+        super(CompositeDataSource, self).__init__(name=name)
         self.data_sources = {}
-        self.filters = {}
-        self.filter_allowed = {}
 
-    def get(self, stix_id):
+    def get(self, stix_id, _composite_filters=None):
         """Retrieve STIX object by 'id'
 
         Federated retrieve method-iterates through all STIX data sources
@@ -394,6 +386,9 @@ class CompositeDataSource(object):
         Args:
             stix_id (str): the id of the STIX object to retrieve.
 
+            _composite_filters (list): a list of filters passed from the
+                Composite Data Source
+
         Returns:
             stix_obj (dict): the STIX object to be returned.
 
@@ -402,7 +397,7 @@ class CompositeDataSource(object):
 
         # for every configured Data Source, call its retrieve handler
         for ds_id, ds in iteritems(self.data_sources):
-            data = ds.get(stix_id=stix_id, _composite_filters=self.filters.values())
+            data = ds.get(stix_id=stix_id, _composite_filters=list(self.filters))
             all_data.extend(data)
 
         # remove duplicate versions
@@ -414,7 +409,7 @@ class CompositeDataSource(object):
 
         return stix_obj
 
-    def all_versions(self, stix_id):
+    def all_versions(self, stix_id, _composite_filters=None):
         """Retrieve STIX objects by 'id'
 
         Federated all_versions retrieve method - iterates through all STIX data
@@ -427,6 +422,9 @@ class CompositeDataSource(object):
         Args:
             stix_id (str): id of the STIX objects to retrieve
 
+            _composite_filters (list): a list of filters passed from the
+                Composite Data Source
+
         Returns:
             all_data (list): list of STIX objects that have the specified id
 
@@ -435,7 +433,7 @@ class CompositeDataSource(object):
 
         # retrieve STIX objects from all configured data sources
         for ds_id, ds in iteritems(self.data_sources):
-            data = ds.all_versions(stix_id=stix_id, _composite_filters=self.filters.values())
+            data = ds.all_versions(stix_id=stix_id, _composite_filters=list(self.filters))
             all_data.extend(data)
 
         # remove exact duplicates (where duplicates are STIX 2.0 objects
@@ -445,14 +443,17 @@ class CompositeDataSource(object):
 
         return all_data
 
-    def query(self, query=None):
+    def query(self, query=None, _composite_filters=None):
         """Composite data source query
 
         Federate the query to all Data Sources attached to the
         Composite Data Source.
 
         Args:
-            query (list): list of filters to search on
+            query (list): list of filters to search on.
+
+            _composite_filters (list): a list of filters passed from the
+                Composite Data Source
 
         Returns:
             all_data (list): list of STIX objects to be returned
@@ -466,7 +467,7 @@ class CompositeDataSource(object):
         # federate query to all attached data sources,
         # pass composite filters to id
         for ds_id, ds in iteritems(self.data_sources):
-            data = ds.query(query=query, _composite_filters=self.filters.values())
+            data = ds.query(query=query, _composite_filters=list(self.filters))
             all_data.extend(data)
 
         # remove exact duplicates (where duplicates are STIX 2.0
@@ -508,8 +509,6 @@ class CompositeDataSource(object):
             data_source_ids (list): a list of Data Source
                 id's(which are strings)
 
-        Returns:
-
         """
 
         for id_ in data_source_ids:
@@ -528,27 +527,6 @@ class CompositeDataSource(object):
 
         """
         return copy.deepcopy(self.data_sources.values())
-
-    def deduplicate(self, stix_obj_list):
-        """Deduplicate a list of STIX objects to a unique set
-
-        Reduces a set of STIX objects to unique set by looking
-        at 'id' and 'modified' fields - as a unique object version
-        is determined by the combination of those fields
-
-        Args:
-            stix_obj_list (list): list of STIX objects (dicts)
-
-        Returns:
-            A list with a unique set of the passed list of STIX objects.
-
-        """
-        unique_objs = {}
-
-        for obj in stix_obj_list:
-            unique_objs[(obj["id"], obj["modified"])] = obj
-
-        return list(unique_objs.values())
 
 
 class STIXCommonPropertyFilters(object):
