@@ -3,9 +3,8 @@
 import stix2
 
 from .base import _STIXBase
-from .common import COMMON_PROPERTIES
+from .common import COMMON_PROPERTIES, KillChainPhase
 from .observables import ObservableProperty
-from .other import KillChainPhase
 from .properties import (IDProperty, IntegerProperty, ListProperty,
                          ReferenceProperty, StringProperty, TimestampProperty,
                          TypeProperty)
