@@ -157,3 +157,29 @@ class ParseError(STIXError, ValueError):
 
     def __init__(self, msg):
         super(ParseError, self).__init__(msg)
+
+
+class InvalidSelectorError(STIXError, ValueError):
+    """Granular Marking selector violation. The selector must resolve into an existing STIX object property."""
+
+    def __init__(self, cls, key):
+        super(InvalidSelectorError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Selector '{0}' in '{1}' is not valid!"
+        return msg.format(self.key, self.__class__.__name__)
+
+
+class DuplicateMarkingError(STIXError, ValueError):
+    """Marking violation. The marking reference must be a valid identifier."""
+
+    def __init__(self, cls, key):
+        super(DuplicateMarkingError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Marking '{0}' in '{1}' is not a valid marking reference."
+        return msg.format(self.key, self.__class__.__name__)

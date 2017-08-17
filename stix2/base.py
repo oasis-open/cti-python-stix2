@@ -11,6 +11,7 @@ from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          MissingPropertiesError,
                          MutuallyExclusivePropertiesError, RevokeError,
                          UnmodifiablePropertyError)
+from .markings.utils import validate
 from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
@@ -80,8 +81,7 @@ class _STIXBase(collections.Mapping):
 
     def _check_object_constraints(self):
         for m in self.get("granular_markings", []):
-            # TODO: check selectors
-            pass
+            validate(self, m.get("selectors"), m.get("marking_ref"))
 
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
