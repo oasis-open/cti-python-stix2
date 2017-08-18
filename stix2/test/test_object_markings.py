@@ -1,7 +1,7 @@
 
-from stix2 import markings
-
 import pytest
+
+from stix2 import markings
 
 """Tests for the Data Markings API."""
 

@@ -8,7 +8,7 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
 
     Args:
         obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
+        selectors: string or list of selector strings relative to the TLO in
             which the field(s) appear(s).
         inherited: If True, include markings inherited relative to the field(s).
         descendants: If True, include granular markings applied to any children
@@ -47,7 +47,7 @@ def set_markings(obj, selectors, marking):
 
     Args:
         obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
+        selectors: string or list of selector strings relative to the TLO in
             which the field(s) appear(s).
         marking: identifier or list of marking identifiers that apply to the
             field(s) selected by `selectors`.
@@ -134,7 +134,7 @@ def add_markings(obj, selectors, marking):
 
 def clear_markings(obj, selectors):
     """
-    Removes all granular_marking associated with the selectors.
+    Removes all granular_markings associated with the selectors.
 
     Args:
         obj: A TLO object.

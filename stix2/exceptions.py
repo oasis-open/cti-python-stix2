@@ -172,8 +172,21 @@ class InvalidSelectorError(STIXError, ValueError):
         return msg.format(self.key, self.__class__.__name__)
 
 
-class DuplicateMarkingError(STIXError, ValueError):
+class InvalidMarkingError(STIXError, ValueError):
     """Marking violation. The marking reference must be a valid identifier."""
+
+    def __init__(self, cls, key):
+        super(InvalidMarkingError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Marking '{0}' in '{1}' is not a valid marking reference."
+        return msg.format(self.key, self.__class__.__name__)
+
+
+class DuplicateMarkingError(STIXError, ValueError):
+    """Marking violation. The marking reference is a duplicate."""
 
     def __init__(self, cls, key):
         super(DuplicateMarkingError, self).__init__()
@@ -181,5 +194,5 @@ class DuplicateMarkingError(STIXError, ValueError):
         self.key = key
 
     def __str__(self):
-        msg = "Marking '{0}' in '{1}' is not a valid marking reference."
+        msg = "Marking '{0}' in '{1}' is a duplicate marking reference."
         return msg.format(self.key, self.__class__.__name__)

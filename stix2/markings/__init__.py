@@ -5,9 +5,7 @@ These high level functions will operate on both object level markings and
 granular markings unless otherwise noted in each of the functions.
 """
 
-from stix2.markings import utils
-from stix2.markings import granular_markings
-from stix2.markings import object_markings
+from stix2.markings import granular_markings, object_markings
 
 
 def get_markings(obj, selectors, inherited=False, descendants=False):

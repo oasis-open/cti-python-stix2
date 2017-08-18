@@ -1,7 +1,7 @@
 
-from stix2 import markings
-
 import pytest
+
+from stix2 import markings
 
 """Tests for the Data Markings API."""
 
@@ -141,8 +141,7 @@ def test_add_marking_bad_selector(data, marking):
         markings.add_markings(data, marking[0], marking[1])
 
 
-GET_MARKINGS_TEST_DATA = \
-{
+GET_MARKINGS_TEST_DATA = {
     "a": 333,
     "b": "value",
     "c": [
@@ -510,8 +509,7 @@ def test_remove_marking_bad_selector():
         markings.remove_markings(before, ["title"], ["marking-definition--1", "marking-definition--2"])
 
 
-IS_MARKED_TEST_DATA = \
-{
+IS_MARKED_TEST_DATA = {
     "title": "test title",
     "description": "test description",
     "revision": 2,
@@ -905,8 +903,7 @@ def test_set_marking_mark_same_property_same_marking():
     assert before == after
 
 
-CLEAR_MARKINGS_TEST_DATA = \
-{
+CLEAR_MARKINGS_TEST_DATA = {
     "title": "test title",
     "description": "test description",
     "revision": 2,
