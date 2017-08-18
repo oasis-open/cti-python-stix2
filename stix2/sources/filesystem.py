@@ -13,7 +13,7 @@ import json
 import os
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources import DataSink, DataSource, DataStore, Filter
 
 
 class FileSystemStore(DataStore):
@@ -78,11 +78,7 @@ class FileSystemSource(DataSource):
         """
         """
         query = [
-            {
-                "field": "id",
-                "op": "=",
-                "value": stix_id
-            }
+            Filter("id", "=", stix_id)
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)

@@ -22,7 +22,7 @@ import json
 import os
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources import DataSink, DataSource, DataStore, Filter
 from stix2validator import validate_string
 
 
@@ -205,11 +205,7 @@ class MemorySource(DataSource):
 
         # if there are filters from the composite level, process full query
         query = [
-            {
-                "field": "id",
-                "op": "=",
-                "value": stix_id
-            }
+            Filter("id", "=", stix_id)
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
