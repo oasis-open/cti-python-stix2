@@ -6,8 +6,8 @@ from .base import _STIXBase
 from .common import COMMON_PROPERTIES, KillChainPhase
 from .observables import ObservableProperty
 from .properties import (IDProperty, IntegerProperty, ListProperty,
-                         ReferenceProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
+                         PatternProperty, ReferenceProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from .utils import NOW
 
 
@@ -77,7 +77,7 @@ class Indicator(_STIXBase):
         'labels': ListProperty(StringProperty, required=True),
         'name': StringProperty(),
         'description': StringProperty(),
-        'pattern': StringProperty(required=True),
+        'pattern': PatternProperty(required=True),
         'valid_from': TimestampProperty(default=lambda: NOW),
         'valid_until': TimestampProperty(),
         'kill_chain_phases': ListProperty(KillChainPhase),
