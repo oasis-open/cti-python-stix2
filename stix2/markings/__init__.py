@@ -63,9 +63,9 @@ def set_markings(obj, selectors, marking):
 
     """
     if selectors is None:
-        object_markings.set_markings(obj, marking)
+        return object_markings.set_markings(obj, marking)
     else:
-        granular_markings.set_markings(obj, selectors, marking)
+        return granular_markings.set_markings(obj, selectors, marking)
 
 
 def remove_markings(obj, selectors, marking):
@@ -89,9 +89,9 @@ def remove_markings(obj, selectors, marking):
 
    """
     if selectors is None:
-        object_markings.remove_markings(obj, marking)
+        return object_markings.remove_markings(obj, marking)
     else:
-        granular_markings.remove_markings(obj, selectors, marking)
+        return granular_markings.remove_markings(obj, selectors, marking)
 
 
 def add_markings(obj, selectors, marking):
@@ -134,9 +134,9 @@ def clear_markings(obj, selectors):
 
     """
     if selectors is None:
-        object_markings.clear_markings(obj)
+        return object_markings.clear_markings(obj)
     else:
-        granular_markings.clear_markings(obj, selectors)
+        return granular_markings.clear_markings(obj, selectors)
 
 
 def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):

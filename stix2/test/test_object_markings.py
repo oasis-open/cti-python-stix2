@@ -1,9 +1,19 @@
 
 import pytest
 
-from stix2 import markings
+from stix2 import Malware, exceptions, markings
+
+from .constants import FAKE_TIME, MALWARE_ID, MARKING_IDS
+from .constants import MALWARE_KWARGS as MALWARE_KWARGS_CONST
 
 """Tests for the Data Markings API."""
+
+MALWARE_KWARGS = MALWARE_KWARGS_CONST.copy()
+MALWARE_KWARGS.update({
+    'id': MALWARE_ID,
+    'created': FAKE_TIME,
+    'modified': FAKE_TIME,
+})
 
 
 def test_add_markings_one_marking():
@@ -15,10 +25,10 @@ def test_add_markings_one_marking():
     after = {
         "title": "test title",
         "description": "test description",
-        "object_marking_refs": ["marking-definition--1"]
+        "object_marking_refs": [MARKING_IDS[0]]
     }
 
-    markings.add_markings(before, None, "marking-definition--1")
+    markings.add_markings(before, None, MARKING_IDS[0])
 
     assert before == after
 
@@ -32,41 +42,38 @@ def test_add_markings_multiple_marking():
     after = {
         "title": "test title",
         "description": "test description",
-        "object_marking_refs": ["marking-definition--1", "marking-definition--2"]
+        "object_marking_refs": [MARKING_IDS[0], MARKING_IDS[1]]
     }
 
-    markings.add_markings(before, None, ["marking-definition--1", "marking-definition--2"])
+    markings.add_markings(before, None, [MARKING_IDS[0], MARKING_IDS[1]])
 
     for m in before["object_marking_refs"]:
         assert m in after["object_marking_refs"]
 
 
 def test_add_markings_combination():
-    before = {
-        "title": "test title",
-        "description": "test description"
-    }
-
-    after = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--1", "marking-definition--2"],
-        "granular_markings": [
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1]],
+        granular_markings=[
             {
-                "selectors": ["title"],
-                "marking_ref": "marking-definition--3"
+                "selectors": ["labels"],
+                "marking_ref": MARKING_IDS[2]
             },
             {
-                "selectors": ["description"],
-                "marking_ref": "marking-definition--4"
+                "selectors": ["name"],
+                "marking_ref": MARKING_IDS[3]
             },
-        ]
-    }
+        ],
+        **MALWARE_KWARGS
+    )
 
-    markings.add_markings(before, None, "marking-definition--1")
-    markings.add_markings(before, None, "marking-definition--2")
-    markings.add_markings(before, "title", "marking-definition--3")
-    markings.add_markings(before, "description", "marking-definition--4")
+    before = markings.add_markings(before, None, MARKING_IDS[0])
+    before = markings.add_markings(before, None, MARKING_IDS[1])
+    before = markings.add_markings(before, "labels", MARKING_IDS[2])
+    before = markings.add_markings(before, "name", MARKING_IDS[3])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -79,15 +86,14 @@ def test_add_markings_combination():
     ([""]),
     (""),
     ([]),
-    (["marking-definition--1", 456])
+    ([MARKING_IDS[0], 456])
 ])
 def test_add_markings_bad_markings(data):
-    before = {
-        "title": "test title",
-        "description": "test description"
-    }
-    with pytest.raises(AssertionError):
-        markings.add_markings(before, None, data)
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    with pytest.raises(exceptions.InvalidValueError):
+        before = markings.add_markings(before, None, data)
 
     assert "object_marking_refs" not in before
 
@@ -240,65 +246,58 @@ def test_get_markings_object_and_granular_combinations(data):
 
 
 def test_remove_markings_object_level():
-    after = {
-        "title": "test title",
-        "description": "test description"
-    }
+    before = Malware(
+        object_marking_refs=[MARKING_IDS[0]],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        **MALWARE_KWARGS
+    )
 
-    before = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--1"]
-    }
+    before = markings.remove_markings(before, None, MARKING_IDS[0])
 
-    markings.remove_markings(before, None, "marking-definition--1")
-
-    assert before == after
+    assert 'object_marking_refs' not in before
+    assert 'object_marking_refs' not in after
 
 
 def test_remove_markings_multiple():
-    after = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--2"]
-    }
+    before = Malware(
+        object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        object_marking_refs=[MARKING_IDS[1]],
+        **MALWARE_KWARGS
+    )
 
-    before = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--1", "marking-definition--2", "marking-definition--3"]
-    }
+    before = markings.remove_markings(before, None, [MARKING_IDS[0], MARKING_IDS[2]])
 
-    markings.remove_markings(before, None, ["marking-definition--1", "marking-definition--3"])
-
-    assert before == after
+    assert before['object_marking_refs'] == after['object_marking_refs']
 
 
 def test_remove_markings_bad_markings():
     before = {
         "title": "test title",
         "description": "test description",
-        "object_marking_refs": ["marking-definition--1", "marking-definition--2", "marking-definition--3"]
+        "object_marking_refs": [MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]]
     }
     with pytest.raises(AssertionError):
-        markings.remove_markings(before, None, ["marking-definition--5"])
+        markings.remove_markings(before, None, [MARKING_IDS[4]])
 
 
 def test_clear_markings():
-    after = {
-        "title": "test title",
-        "description": "test description"
-    }
+    before = Malware(
+        object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        **MALWARE_KWARGS
+    )
 
-    before = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--1", "marking-definition--2", "marking-definition--3"]
-    }
+    before = markings.clear_markings(before, None)
 
-    markings.clear_markings(before, None)
-
-    assert before == after
+    assert 'object_marking_refs' not in before
+    assert 'object_marking_refs' not in after
 
 
 def test_is_marked_object_and_granular_combinations():
@@ -442,23 +441,21 @@ def test_is_marked_object_and_granular_combinations():
 
 
 def test_set_marking():
-    before = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--1", "marking-definition--2", "marking-definition--3"]
-    }
-    after = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": ["marking-definition--7", "marking-definition--9"]
-    }
+    before = Malware(
+        object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        object_marking_refs=[MARKING_IDS[4], MARKING_IDS[5]],
+        **MALWARE_KWARGS
+    )
 
-    markings.set_markings(before, None, ["marking-definition--7", "marking-definition--9"])
+    before = markings.set_markings(before, None, [MARKING_IDS[4], MARKING_IDS[5]])
 
     for m in before["object_marking_refs"]:
-        assert m in ["marking-definition--7", "marking-definition--9"]
+        assert m in [MARKING_IDS[4], MARKING_IDS[5]]
 
-    assert ["marking-definition--1", "marking-definition--2", "marking-definition--3"] not in before["object_marking_refs"]
+    assert [MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]] not in before["object_marking_refs"]
 
     for x in before["object_marking_refs"]:
         assert x in after["object_marking_refs"]
@@ -468,20 +465,18 @@ def test_set_marking():
     ([]),
     ([""]),
     (""),
-    (["marking-definition--7", 687])
+    ([MARKING_IDS[4], 687])
 ])
 def test_set_marking_bad_input(data):
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "object_marking_refs": ["marking-definition--1"]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "object_marking_refs": ["marking-definition--1"]
-    }
-    with pytest.raises(AssertionError):
-        markings.set_markings(before, None, data)
+    before = Malware(
+        object_marking_refs=[MARKING_IDS[0]],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        object_marking_refs=[MARKING_IDS[0]],
+        **MALWARE_KWARGS
+    )
+    with pytest.raises(exceptions.InvalidValueError):
+        before = markings.set_markings(before, None, data)
 
     assert before == after

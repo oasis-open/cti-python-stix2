@@ -63,8 +63,11 @@ def remove_markings(obj, marking):
         raise AssertionError("Unable to remove Object Level Marking(s) from "
                              "internal collection. Marking(s) not found...")
 
-    return obj.new_version(object_marking_refs=[x for x in object_markings
-                                                if x not in marking])
+    new_markings = [x for x in object_markings if x not in marking]
+    if new_markings:
+        return obj.new_version(object_marking_refs=new_markings)
+    else:
+        return obj.new_version(object_marking_refs=None)
 
 
 def set_markings(obj, marking):
