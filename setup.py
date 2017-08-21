@@ -50,5 +50,6 @@ setup(
         'six',
         'python-dateutil',
         'requests',
+        'stix2-patterns',
     ],
 )
