@@ -1,5 +1,5 @@
 import pytest
-from taxii2_client import Collection
+from taxii2client import Collection
 
 from stix2.sources import DataSource, Filter, taxii
 

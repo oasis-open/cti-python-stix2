@@ -52,6 +52,8 @@ setup(
         'pytz',
         'requests',
         'simplejson',
-        'six'
+        'six',
+        'stix2-patterns',
+        'taxii2-client',
     ],
 )

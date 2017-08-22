@@ -39,8 +39,8 @@ constructor:
     from stix2 import Indicator
 
     indicator = Indicator(name="File hash for malware variant",
-                          labels=['malicious-activity'],
-                          pattern='file:hashes.md5 = "d41d8cd98f00b204e9800998ecf8427e"')
+                          labels=["malicious-activity"],
+                          pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']")
 
 Certain required attributes of all objects will be set automatically if
 not provided as keyword arguments:

@@ -7,6 +7,8 @@ import uuid
 
 from six import string_types, text_type
 
+from stix2patterns.validator import run_validator
+
 from .base import _STIXBase
 from .exceptions import DictionaryKeyError
 from .utils import get_dict, parse_into_datetime
@@ -369,4 +371,18 @@ class EnumProperty(StringProperty):
         value = super(EnumProperty, self).clean(value)
         if value not in self.allowed:
             raise ValueError("value '%s' is not valid for this enumeration." % value)
+        return self.string_type(value)
+
+
+class PatternProperty(StringProperty):
+
+    def __init__(self, **kwargs):
+        super(PatternProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        str_value = super(PatternProperty, self).clean(value)
+        errors = run_validator(str_value)
+        if errors:
+            raise ValueError(str(errors[0]))
+
         return self.string_type(value)
