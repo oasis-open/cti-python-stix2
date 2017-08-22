@@ -173,7 +173,7 @@ def test_parse_observed_data(data):
     }""",
 ])
 def test_parse_artifact_valid(data):
-    odata_str = re.compile('"objects".+\}', re.DOTALL).sub('"objects": { %s }\n}' % data, EXPECTED)
+    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["0"].type == "artifact"
 
@@ -194,7 +194,7 @@ def test_parse_artifact_valid(data):
     }""",
 ])
 def test_parse_artifact_invalid(data):
-    odata_str = re.compile('"objects".+\}', re.DOTALL).sub('"objects": { %s }\n}' % data, EXPECTED)
+    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
     with pytest.raises(ValueError):
         stix2.parse(odata_str)
 
@@ -215,7 +215,7 @@ def test_artifact_example_dependency_error():
     }""",
 ])
 def test_parse_autonomous_system_valid(data):
-    odata_str = re.compile('"objects".+\}', re.DOTALL).sub('"objects": { %s }\n}' % data, EXPECTED)
+    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["0"].type == "autonomous-system"
     assert odata.objects["0"].number == 15139
@@ -358,7 +358,7 @@ def test_parse_email_message_not_multipart(data):
         }""",
 ])
 def test_parse_file_archive(data):
-    odata_str = re.compile('"objects".+\}', re.DOTALL).sub('"objects": { %s }\n}' % data, EXPECTED)
+    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["3"].extensions['archive-ext'].version == "5.0"
 
