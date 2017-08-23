@@ -45,6 +45,7 @@ INDICATOR_KWARGS = dict(
 MALWARE_KWARGS = dict(
     labels=['ransomware'],
     name="Cryptolocker",
+    description="A ransomware related to ..."
 )
 
 # Minimum required args for a Relationship instance

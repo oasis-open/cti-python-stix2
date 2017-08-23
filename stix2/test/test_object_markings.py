@@ -17,35 +17,32 @@ MALWARE_KWARGS.update({
 
 
 def test_add_markings_one_marking():
-    before = {
-        "title": "test title",
-        "description": "test description"
-    }
+    before = Malware(
+        **MALWARE_KWARGS
+    )
 
-    after = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": [MARKING_IDS[0]]
-    }
+    after = Malware(
+        object_marking_refs=[MARKING_IDS[0]],
+        **MALWARE_KWARGS,
+    )
 
-    markings.add_markings(before, None, MARKING_IDS[0])
+    before = markings.add_markings(before, None, MARKING_IDS[0])
 
-    assert before == after
+    for m in before["object_marking_refs"]:
+        assert m in after["object_marking_refs"]
 
 
 def test_add_markings_multiple_marking():
-    before = {
-        "title": "test title",
-        "description": "test description"
-    }
+    before = Malware(
+        **MALWARE_KWARGS
+    )
 
-    after = {
-        "title": "test title",
-        "description": "test description",
-        "object_marking_refs": [MARKING_IDS[0], MARKING_IDS[1]]
-    }
+    after = Malware(
+        object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1]],
+        **MALWARE_KWARGS,
+    )
 
-    markings.add_markings(before, None, [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.add_markings(before, None, [MARKING_IDS[0], MARKING_IDS[1]])
 
     for m in before["object_marking_refs"]:
         assert m in after["object_marking_refs"]

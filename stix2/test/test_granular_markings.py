@@ -1,128 +1,134 @@
 
 import pytest
 
-from stix2 import markings
+from stix2 import Malware, exceptions, markings
+
+from .constants import FAKE_TIME, MALWARE_ID, MARKING_IDS
+from .constants import MALWARE_KWARGS as MALWARE_KWARGS_CONST
 
 """Tests for the Data Markings API."""
 
+MALWARE_KWARGS = MALWARE_KWARGS_CONST.copy()
+MALWARE_KWARGS.update({
+    'id': MALWARE_ID,
+    'created': FAKE_TIME,
+    'modified': FAKE_TIME,
+})
+
 
 def test_add_marking_mark_one_selector_multiple_refs():
-    before = {
-        "description": "test description",
-        "title": "foo",
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             },
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--2"
+                "marking_ref": MARKING_IDS[1]
             },
-        ]
-    }
-    markings.add_markings(before, ["description"], ["marking-definition--1", "marking-definition--2"])
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.add_markings(before, ["description"], [MARKING_IDS[0], MARKING_IDS[1]])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
 
 def test_add_marking_mark_multiple_selector_one_refs():
-    before = {
-        "description": "test description",
-        "title": "foo",
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
+                "selectors": ["description", "name"],
+                "marking_ref": MARKING_IDS[0]
             },
-        ]
-    }
-    markings.add_markings(before, ["description", "title"], ["marking-definition--1"])
-    assert before == after
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.add_markings(before, ["description", "name"], [MARKING_IDS[0]])
+
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
 def test_add_marking_mark_multiple_selector_multiple_refs():
-    before = {
-        "description": "test description",
-        "title": "foo",
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
+                "selectors": ["description", "name"],
+                "marking_ref": MARKING_IDS[0]
             },
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    markings.add_markings(before, ["description", "title"], ["marking-definition--1", "marking-definition--2"])
+                "selectors": ["description", "name"],
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.add_markings(before, ["description", "name"], [MARKING_IDS[0], MARKING_IDS[1]])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
 
 def test_add_marking_mark_another_property_same_marking():
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             },
-        ]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
+                "selectors": ["description", "name"],
+                "marking_ref": MARKING_IDS[0]
             },
-        ]
-    }
-    markings.add_markings(before, ["title"], ["marking-definition--1"])
-    assert before == after
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.add_markings(before, ["name"], [MARKING_IDS[0]])
+
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
 def test_add_marking_mark_same_property_same_marking():
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
-            }
-        ]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+                "marking_ref": MARKING_IDS[0]
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
-            }
-        ]
-    }
-    markings.add_markings(before, ["description"], ["marking-definition--1"])
-    assert before == after
+                "marking_ref": MARKING_IDS[0]
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.add_markings(before, ["description"], [MARKING_IDS[0]])
+
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
 @pytest.mark.parametrize("data,marking", [
@@ -329,176 +335,151 @@ def test_get_markings_positional_arguments_combinations(data):
 
 
 def test_remove_marking_remove_one_selector_with_multiple_refs():
-    after = {
-        "description": "test description",
-        "title": "foo",
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             },
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    markings.remove_markings(before, ["description"], ["marking-definition--1", "marking-definition--2"])
-    assert before == after
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["description"], [MARKING_IDS[0], MARKING_IDS[1]])
+    assert "granular_markings" not in before
 
 
 def test_remove_marking_remove_multiple_selector_one_ref():
-    after = {
-        "description": "test description",
-        "title": "foo",
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
-            },
-        ]
-    }
-    markings.remove_markings(before, ["description", "title"], ["marking-definition--1"])
-    assert before == after
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["description", "modified"], [MARKING_IDS[0]])
+    assert "granular_markings" not in before
 
 
 def test_remove_marking_mark_one_selector_from_multiple_ones():
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
-            },
-        ]
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
-            },
-        ]
-    }
-    markings.remove_markings(before, ["title"], ["marking-definition--1"])
-    assert before == after
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["modified"], [MARKING_IDS[0]])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
 def test_remove_marking_mark_one_selector_markings_from_multiple_ones():
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             },
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0]
             },
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    markings.remove_markings(before, ["title"], ["marking-definition--1"])
-
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["modified"], [MARKING_IDS[0]])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
 
 def test_remove_marking_mark_mutilple_selector_multiple_refs():
-    after = {
-        "description": "test description",
-        "title": "foo",
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0]
             },
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    markings.remove_markings(before, ["description", "title"], ["marking-definition--1", "marking-definition--2"])
-    assert before == after
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["description", "modified"], [MARKING_IDS[0], MARKING_IDS[1]])
+    assert "granular_markings" not in before
 
 
 def test_remove_marking_mark_another_property_same_marking():
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
-            },
-        ]
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
-            {
-                "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
-            },
-            {
-                "selectors": ["title"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             }
-        ]
-    }
-    markings.remove_markings(before, ["title"], ["marking-definition--1"])
-    assert before == after
+        ],
+        **MALWARE_KWARGS
+    )
+    before = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[0]
+            },
+            {
+                "selectors": ["modified"],
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["modified"], [MARKING_IDS[0]])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
 def test_remove_marking_mark_same_property_same_marking():
-    after = {
-        "description": "test description",
-        "title": "foo",
-    }
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             }
-        ]
-    }
-    markings.remove_markings(before, ["description"], ["marking-definition--1"])
-    assert before == after
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, ["description"], [MARKING_IDS[0]])
+    assert "granular_markings" not in before
 
 
 def test_remove_marking_bad_selector():
@@ -741,104 +722,97 @@ def test_is_marked_positional_arguments_combinations():
 
 
 def test_set_marking_mark_one_selector_multiple_refs():
-    before = {
-        "description": "test description",
-        "title": "foo",
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             },
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    markings.set_markings(before, ["description"], ["marking-definition--1", "marking-definition--2"])
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, ["description"], [MARKING_IDS[0], MARKING_IDS[1]])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
 
 def test_set_marking_mark_multiple_selector_one_refs():
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--3"
-            },
-        ]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
-            },
-        ]
-    }
-    markings.set_markings(before, ["description", "title"], ["marking-definition--1"])
-    assert before == after
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, ["description", "modified"], [MARKING_IDS[0]])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
 def test_set_marking_mark_multiple_selector_multiple_refs_from_none():
-    before = {
-        "description": "test description",
-        "title": "foo",
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--1"
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0]
             },
             {
-                "selectors": ["description", "title"],
-                "marking_ref": "marking-definition--2"
-            },
-        ]
-    }
-    markings.set_markings(before, ["description", "title"], ["marking-definition--1", "marking-definition--2"])
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[1]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, ["description", "modified"], [MARKING_IDS[0], MARKING_IDS[1]])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
 
 def test_set_marking_mark_another_property_same_marking():
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             }
-        ]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--7"
+                "marking_ref": MARKING_IDS[1]
             },
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--8"
-            },
-        ]
-    }
-    markings.set_markings(before, ["description"], ["marking-definition--7", "marking-definition--8"])
+                "marking_ref": MARKING_IDS[2]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, ["description"], [MARKING_IDS[1], MARKING_IDS[2]])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -879,76 +853,72 @@ def test_set_marking_bad_selector(marking):
 
 
 def test_set_marking_mark_same_property_same_marking():
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             }
-        ]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             }
-        ]
-    }
-    markings.set_markings(before, ["description"], ["marking-definition--1"])
-    assert before == after
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, ["description"], [MARKING_IDS[0]])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
 
 
-CLEAR_MARKINGS_TEST_DATA = {
-    "title": "test title",
-    "description": "test description",
-    "revision": 2,
-    "type": "test",
-    "granular_markings": [
+CLEAR_MARKINGS_TEST_DATA = Malware(
+    granular_markings=[
         {
             "selectors": ["description"],
-            "marking_ref": "marking-definition--1"
+            "marking_ref": MARKING_IDS[0]
         },
         {
-            "selectors": ["revision", "description"],
-            "marking_ref": "marking-definition--2"
+            "selectors": ["modified", "description"],
+            "marking_ref": MARKING_IDS[1]
         },
         {
-            "selectors": ["revision", "description", "type"],
-            "marking_ref": "marking-definition--3"
+            "selectors": ["modified", "description", "type"],
+            "marking_ref": MARKING_IDS[2]
         },
-    ]
-}
+    ],
+    **MALWARE_KWARGS
+)
 
 
 @pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
 def test_clear_marking_smoke(data):
     """Test clear_marking call does not fail."""
-    markings.clear_markings(data, "revision")
-    assert markings.is_marked(data, "revision") is False
+    data = markings.clear_markings(data, "modified")
+    assert markings.is_marked(data, "modified") is False
 
 
 @pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
 def test_clear_marking_multiple_selectors(data):
     """Test clearing markings for multiple selectors effectively removes associated markings."""
-    markings.clear_markings(data, ["type", "description"])
+    data = markings.clear_markings(data, ["type", "description"])
     assert markings.is_marked(data, ["type", "description"]) is False
 
 
 @pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
 def test_clear_marking_one_selector(data):
     """Test markings associated with one selector were removed."""
-    markings.clear_markings(data, "description")
+    data = markings.clear_markings(data, "description")
     assert markings.is_marked(data, "description") is False
 
 
 @pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
 def test_clear_marking_all_selectors(data):
-    markings.clear_markings(data, ["description", "type", "revision"])
+    data = markings.clear_markings(data, ["description", "type", "modified"])
     assert markings.is_marked(data, "description") is False
     assert "granular_markings" not in data
 
