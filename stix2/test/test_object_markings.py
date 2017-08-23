@@ -23,7 +23,7 @@ def test_add_markings_one_marking():
 
     after = Malware(
         object_marking_refs=[MARKING_IDS[0]],
-        **MALWARE_KWARGS,
+        **MALWARE_KWARGS
     )
 
     before = markings.add_markings(before, None, MARKING_IDS[0])
@@ -39,7 +39,7 @@ def test_add_markings_multiple_marking():
 
     after = Malware(
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1]],
-        **MALWARE_KWARGS,
+        **MALWARE_KWARGS
     )
 
     before = markings.add_markings(before, None, [MARKING_IDS[0], MARKING_IDS[1]])
@@ -62,7 +62,7 @@ def test_add_markings_combination():
             {
                 "selectors": ["name"],
                 "marking_ref": MARKING_IDS[3]
-            },
+            }
         ],
         **MALWARE_KWARGS
     )

@@ -1,7 +1,7 @@
 
 import pytest
 
-from stix2 import Malware, exceptions, markings
+from stix2 import Malware, markings
 
 from .constants import FAKE_TIME, MALWARE_ID, MARKING_IDS
 from .constants import MALWARE_KWARGS as MALWARE_KWARGS_CONST
