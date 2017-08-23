@@ -67,81 +67,51 @@ def fix_value(data):
     return data
 
 
-def _fix_markings(markings):
+def compress_markings(granular_markings):
 
-    for granular_marking in markings:
-        refs = granular_marking.get("marking_ref", [])
-        selectors = granular_marking.get("selectors", [])
-
-        if not isinstance(refs, list):
-            granular_marking["marking_ref"] = [refs]
-
-        if not isinstance(selectors, list):
-            granular_marking["selectors"] = [selectors]
-
-
-def _group_by(markings):
-
-    key = "marking_ref"
-    retrieve = "selectors"
+    if not granular_markings:
+        return
 
     map_ = collections.defaultdict(set)
 
-    for granular_marking in markings:
-        for data in granular_marking.get(key, []):
-            map_[data].update(granular_marking.get(retrieve))
+    for granular_marking in granular_markings:
+        if granular_marking.get("marking_ref"):
+            map_[granular_marking.get("marking_ref")].update(granular_marking.get("selectors"))
 
-    granular_markings = \
+    compressed = \
         [
-            {"selectors": sorted(selectors), "marking_ref": ref}
-            for ref, selectors in six.iteritems(map_)
+            {"marking_ref": marking_ref, "selectors": sorted(selectors)}
+            for marking_ref, selectors in six.iteritems(map_)
         ]
 
-    return granular_markings
+    return compressed
 
 
-def compress_markings(tlo):
+def expand_markings(granular_markings):
 
-    if not tlo.get("granular_markings"):
+    if not granular_markings:
         return
 
-    granular_markings = tlo.get("granular_markings")
-
-    _fix_markings(granular_markings)
-
-    tlo["granular_markings"] = _group_by(granular_markings)
-
-
-def expand_markings(tlo):
-
-    if not tlo.get("granular_markings"):
-        return
-
-    granular_markings = tlo.get("granular_markings")
-
-    _fix_markings(granular_markings)
-
-    expanded = list()
+    expanded = []
 
     for marking in granular_markings:
-        selectors = marking.get("selectors", [])
-        marking_ref = marking.get("marking_ref", [])
+        selectors = marking.get("selectors")
+        marking_ref = marking.get("marking_ref")
 
         expanded.extend(
             [
-                {"selectors": [sel], "marking_ref": ref}
-                for sel in selectors
-                for ref in marking_ref
+                {"marking_ref": marking_ref, "selectors": [selector]}
+                for selector in selectors
             ]
         )
 
-    tlo["granular_markings"] = expanded
+    return expanded
 
 
 def build_granular_marking(granular_marking):
-    tlo = {"granular_markings": [granular_marking]}
+    tlo = {"granular_markings": granular_marking}
 
-    expand_markings(tlo)
+    expand_markings(tlo["granular_markings"])
 
     return tlo
 
@@ -156,14 +126,15 @@ def iterpath(obj, path=None):
         path: None, used recursively to store ancestors.
 
     Example:
-        >>> for item in iterpath(tlo):
+        >>> for item in iterpath(obj):
         >>>     print(item)
         (['type'], 'campaign')
         ...
         (['cybox', 'objects', '[0]', 'hashes', 'sha1'], 'cac35ec206d868b7d7cb0b55f31d9425b075082b')
 
     Returns:
-        tuple: Containing two items: a list of ancestors and the property value.
+        tuple: Containing two items: a list of ancestors and the
+            property value.
 
     """
     if path is None:
@@ -209,7 +180,7 @@ def get_selector(obj, prop):
         location is for now the option to assert the data.
 
     Example:
-        >>> selector = get_selector(tlo, tlo["cybox"]["objects"][0]["file_name"])
+        >>> selector = get_selector(obj, obj["cybox"]["objects"][0]["file_name"])
         >>> print(selector)
         ["cybox.objects.[0].file_name"]
 
