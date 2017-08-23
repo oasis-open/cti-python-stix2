@@ -180,3 +180,60 @@ def test_observed_data_with_custom_observable_object():
         allow_custom=True,
     )
     assert ob_data.objects['0'].property1 == 'something'
+
+
+@stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext', {
+    'property1': stix2.properties.StringProperty(required=True),
+    'property2': stix2.properties.IntegerProperty(),
+})
+class NewExtension():
+    def __init__(self, property2=None, **kwargs):
+        if property2 and property2 < 10:
+            raise ValueError("'property2' is too small.")
+
+
+def test_custom_extension():
+    ext = NewExtension(property1='something')
+    assert ext.property1 == 'something'
+
+    with pytest.raises(stix2.exceptions.MissingPropertiesError):
+        NewExtension(property2=42)
+
+    with pytest.raises(ValueError):
+        NewExtension(property1='something', property2=4)
+
+
+def test_custom_extension_invalid():
+    class Foo(object):
+        pass
+    with pytest.raises(ValueError):
+        @stix2.observables.CustomExtension(Foo, 'x-new-ext', {
+            'property1': stix2.properties.StringProperty(required=True),
+        })
+        class FooExtension():
+            pass  # pragma: no cover
+
+    class Bar(stix2.observables._Observable):
+        pass
+    with pytest.raises(ValueError):
+        @stix2.observables.CustomExtension(Bar, 'x-new-ext', {
+            'property1': stix2.properties.StringProperty(required=True),
+        })
+        class BarExtension():
+            pass
+
+
+def test_parse_observable_with_custom_extension():
+    input_str = """{
+        "type": "domain-name",
+        "value": "example.com",
+        "extensions": {
+            "x-new-ext": {
+                "property1": "foo",
+                "property2": 12
+            }
+        }
+    }"""
+
+    parsed = stix2.parse_observable(input_str)
+    assert parsed.extensions['x-new-ext'].property2 == 12
