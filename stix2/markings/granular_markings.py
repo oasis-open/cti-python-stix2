@@ -1,24 +1,29 @@
 
+from stix2 import exceptions
 from stix2.markings import utils
 
 
 def get_markings(obj, selectors, inherited=False, descendants=False):
     """
-    Get all markings associated to the field(s).
+    Get all markings associated to with the properties.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selector strings relative to the TLO in
-            which the field(s) appear(s).
-        inherited: If True, include markings inherited relative to the field(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selector strings relative to the SDO or
+            SRO in which the properties appear.
+        inherited: If True, include markings inherited relative to the
+            properties.
         descendants: If True, include granular markings applied to any children
-            relative to the field(s).
+            relative to the properties.
+
+    Raises:
+        InvalidSelectorError: If `selectors` fail validation.
 
     Returns:
-        list: Marking IDs that matched the selectors expression.
+        list: Marking identifiers that matched the selectors expression.
 
     """
-    selectors = utils.fix_value(selectors)
+    selectors = utils.convert_to_list(selectors)
     utils.validate(obj, selectors)
 
     granular_markings = obj.get("granular_markings", [])
@@ -46,11 +51,15 @@ def set_markings(obj, selectors, marking):
     marking. Refer to `clear_markings` and `add_markings` for details.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selector strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selector strings relative to the SDO or
+            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings removed
+        and new ones added.
 
     """
     obj = clear_markings(obj, selectors)
@@ -62,19 +71,23 @@ def remove_markings(obj, selectors, marking):
     Removes granular_marking from the granular_markings collection.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
 
     Raises:
-        AssertionError: If `selectors` or `marking` fail data validation. Also
-            if markings to remove are not found on the provided TLO.
+        InvalidSelectorError: If `selectors` fail validation.
+        MarkingNotFoundError: If markings to remove are not found on
+            the provided SDO or SRO.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings removed.
 
     """
-    selectors = utils.fix_value(selectors)
-    utils.validate(obj, selectors, marking)
+    selectors = utils.convert_to_list(selectors)
+    utils.validate(obj, selectors)
 
     granular_markings = obj.get("granular_markings")
 
@@ -90,14 +103,10 @@ def remove_markings(obj, selectors, marking):
     else:
         to_remove = [{"marking_ref": marking, "selectors": selectors}]
 
-    to_remove = utils.expand_markings(to_remove)
-    tlo = utils.build_granular_marking(to_remove)
-
-    remove = tlo.get("granular_markings", [])
+    remove = utils.build_granular_marking(to_remove).get("granular_markings")
 
     if not any(marking in granular_markings for marking in remove):
-        raise AssertionError("Unable to remove Granular Marking(s) from"
-                             " internal collection. Marking(s) not found...")
+        raise exceptions.MarkingNotFoundError(obj, remove)
 
     granular_markings = [
         m for m in granular_markings if m not in remove
@@ -105,10 +114,10 @@ def remove_markings(obj, selectors, marking):
 
     granular_markings = utils.compress_markings(granular_markings)
 
-    if not granular_markings:
-        return obj.new_version(granular_markings=None)
-    else:
+    if granular_markings:
         return obj.new_version(granular_markings=granular_markings)
+    else:
+        return obj.new_version(granular_markings=None)
 
 
 def add_markings(obj, selectors, marking):
@@ -116,18 +125,21 @@ def add_markings(obj, selectors, marking):
     Appends a granular_marking to the granular_markings collection.
 
     Args:
-        obj: A TLO object.
+        obj: An SDO or SRO object.
         selectors: list of type string, selectors must be relative to the TLO
             in which the properties appear.
-        marking: identifier that apply to the properties selected by
-            `selectors`.
+        marking: identifier or list of marking identifiers that apply to the
+            properties selected by `selectors`.
 
     Raises:
-        AssertionError: If `selectors` or `marking` fail data validation.
+        InvalidSelectorError: If `selectors` fail validation.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings added.
 
     """
-    selectors = utils.fix_value(selectors)
-    utils.validate(obj, selectors, marking)
+    selectors = utils.convert_to_list(selectors)
+    utils.validate(obj, selectors)
 
     if isinstance(marking, list):
         granular_marking = []
@@ -149,16 +161,20 @@ def clear_markings(obj, selectors):
     Removes all granular_markings associated with the selectors.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
 
     Raises:
-        AssertionError: If `selectors` or `marking` fail data validation. Also
-            if markings to remove are not found on the provided TLO.
+        InvalidSelectorError: If `selectors` fail validation.
+        MarkingNotFoundError: If markings to remove are not found on
+            the provided SDO or SRO.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings cleared.
 
     """
-    selectors = utils.fix_value(selectors)
+    selectors = utils.convert_to_list(selectors)
     utils.validate(obj, selectors)
 
     granular_markings = obj.get("granular_markings")
@@ -179,8 +195,7 @@ def clear_markings(obj, selectors):
                for clear_marking in clear
                for clear_selector in clear_marking.get("selectors", [])
                ):
-        raise AssertionError("Unable to clear Granular Marking(s) from"
-                             " internal collection. Selector(s) not found...")
+        raise exceptions.MarkingNotFoundError(obj, clear)
 
     for granular_marking in granular_markings:
         for s in selectors:
@@ -192,10 +207,10 @@ def clear_markings(obj, selectors):
 
     granular_markings = utils.compress_markings(granular_markings)
 
-    if not granular_markings:
-        return obj.new_version(granular_markings=None)
-    else:
+    if granular_markings:
         return obj.new_version(granular_markings=granular_markings)
+    else:
+        return obj.new_version(granular_markings=None)
 
 
 def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
@@ -203,27 +218,30 @@ def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
     Checks if field is marked by any marking or by specific marking(s).
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
         inherited: If True, return markings inherited from the given selector.
         descendants: If True, return granular markings applied to any children
             of the given selector.
 
+    Raises:
+        InvalidSelectorError: If `selectors` fail validation.
+
     Returns:
-        bool: True if ``selectors`` is found on internal TLO collection.
+        bool: True if ``selectors`` is found on internal SDO or SRO collection.
             False otherwise.
 
     Note:
-        When a list of marking IDs is provided, if ANY of the provided marking
-        IDs matches, True is returned.
+        When a list of marking identifiers is provided, if ANY of the provided
+        marking identifiers match, True is returned.
 
     """
-    selectors = utils.fix_value(selectors)
-    marking = utils.fix_value(marking)
-    utils.validate(obj, selectors, marking)
+    selectors = utils.convert_to_list(selectors)
+    marking = utils.convert_to_list(marking)
+    utils.validate(obj, selectors)
 
     granular_markings = obj.get("granular_markings", [])
 

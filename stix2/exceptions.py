@@ -159,7 +159,7 @@ class ParseError(STIXError, ValueError):
         super(ParseError, self).__init__(msg)
 
 
-class InvalidSelectorError(STIXError, ValueError):
+class InvalidSelectorError(STIXError, AssertionError):
     """Granular Marking selector violation. The selector must resolve into an existing STIX object property."""
 
     def __init__(self, cls, key):
@@ -168,31 +168,18 @@ class InvalidSelectorError(STIXError, ValueError):
         self.key = key
 
     def __str__(self):
-        msg = "Selector '{0}' in '{1}' is not valid!"
-        return msg.format(self.key, self.__class__.__name__)
+        msg = "Selector {0} in {1} is not valid!"
+        return msg.format(self.key, self.cls.__class__.__name__)
 
 
-class InvalidMarkingError(STIXError, ValueError):
-    """Marking violation. The marking reference must be a valid identifier."""
+class MarkingNotFoundError(STIXError, AssertionError):
+    """Marking violation. The marking reference must be present in SDO or SRO."""
 
     def __init__(self, cls, key):
-        super(InvalidMarkingError, self).__init__()
+        super(MarkingNotFoundError, self).__init__()
         self.cls = cls
         self.key = key
 
     def __str__(self):
-        msg = "Marking '{0}' in '{1}' is not a valid marking reference."
-        return msg.format(self.key, self.__class__.__name__)
-
-
-class DuplicateMarkingError(STIXError, ValueError):
-    """Marking violation. The marking reference is a duplicate."""
-
-    def __init__(self, cls, key):
-        super(DuplicateMarkingError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Marking '{0}' in '{1}' is a duplicate marking reference."
-        return msg.format(self.key, self.__class__.__name__)
+        msg = "Marking {0} was not found in {1}!"
+        return msg.format(self.key, self.cls.__class__.__name__)

@@ -3,9 +3,23 @@ import collections
 
 import six
 
+from stix2 import exceptions
 
-def evaluate_expression(obj, selector):
 
+def _evaluate_expression(obj, selector):
+    """
+    Walks an SDO or SRO generating selectors to match against ``selector``. If
+    a match is found and the the value of this property is present in the
+    objects. Matching value of the property will be returned.
+
+    Args:
+        obj: An SDO or SRO object.
+        selector: A string following the selector syntax.
+
+    Returns:
+        list: Values contained in matching property. Otherwise empty list.
+
+    """
     for items, value in iterpath(obj):
         path = ".".join(items)
 
@@ -15,45 +29,26 @@ def evaluate_expression(obj, selector):
     return []
 
 
-def validate_selector(obj, selector):
-    results = list(evaluate_expression(obj, selector))
+def _validate_selector(obj, selector):
+    results = list(_evaluate_expression(obj, selector))
 
     if len(results) >= 1:
         return True
 
 
-def validate_markings(marking):
-    if isinstance(marking, six.string_types):
-        if not marking:
-            return False
-        else:
-            return True
-
-    elif isinstance(marking, list) and len(marking) >= 1:
-        for m in marking:
-            if not m:
-                return False
-            elif not isinstance(m, six.string_types):
-                return False
-
-        return True
-    else:
-        return False
-
-
-def validate(obj, selectors=None, marking=None):
-
-    if selectors is not None:
-        assert selectors
-
+def validate(obj, selectors):
+    """Given an SDO or SRO, check that each selector is valid."""
+    if selectors:
         for s in selectors:
-            assert validate_selector(obj, s)
+            if not _validate_selector(obj, s):
+                raise exceptions.InvalidSelectorError(obj, s)
+        return
 
-    if marking is not None:
-        assert validate_markings(marking)
+    raise exceptions.InvalidSelectorError(obj, selectors)
 
 
 def convert_to_list(data):
+    """Convert input into a list for further processing."""
     if data is not None:
         if isinstance(data, list):
             return data
@@ -61,14 +56,47 @@ def convert_to_list(data):
             return [data]
 
 
-def fix_value(data):
-    data = convert_to_list(data)
-
-    return data
-
-
 def compress_markings(granular_markings):
+    """
+    Compress granular markings list. If there is more than one marking
+    identifier matches. It will collapse into a single granular marking.
 
+    Examples:
+        Input:
+        [
+            {
+                "selectors": [
+                    "description"
+                ],
+                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            },
+            {
+                "selectors": [
+                    "name"
+                ],
+                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            }
+        ]
+
+        Output:
+        [
+            {
+                "selectors": [
+                    "description",
+                    "name"
+                ],
+                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            }
+        ]
+
+    Args:
+        granular_markings: The granular markings list property present in a
+            SDO or SRO.
+
+    Returns:
+        list: A list with all markings collapsed.
+
+    """
     if not granular_markings:
         return
 
@@ -88,10 +116,46 @@ def compress_markings(granular_markings):
 
 
 def expand_markings(granular_markings):
+    """
+    Expands granular markings list. If there is more than one selector per
+    granular marking. It will be expanded using the same marking_ref.
 
-    if not granular_markings:
-        return
+    Examples:
+        Input:
+        [
+            {
+                "selectors": [
+                    "description",
+                    "name"
+                ],
+                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            }
+        ]
 
+        Output:
+        [
+            {
+                "selectors": [
+                    "description"
+                ],
+                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            },
+            {
+                "selectors": [
+                    "name"
+                ],
+                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            }
+        ]
+
+    Args:
+        granular_markings: The granular markings list property present in a
+            SDO or SRO.
+
+    Returns:
+        list: A list with all markings expanded.
+
+    """
     expanded = []
 
     for marking in granular_markings:
@@ -109,11 +173,9 @@ def expand_markings(granular_markings):
 
 
 def build_granular_marking(granular_marking):
-    tlo = {"granular_markings": granular_marking}
-
-    expand_markings(tlo["granular_markings"])
-
-    return tlo
+    """Returns a dictionary with the required structure for a granular
+    marking"""
+    return {"granular_markings": expand_markings(granular_marking)}
 
 
 def iterpath(obj, path=None):
@@ -122,7 +184,7 @@ def iterpath(obj, path=None):
     tuple containing a list of ancestors and the property value.
 
     Args:
-        obj: A TLO object.
+        obj: An SDO or SRO object.
         path: None, used recursively to store ancestors.
 
     Example:
@@ -164,36 +226,3 @@ def iterpath(obj, path=None):
                 path.pop()
 
         path.pop()
-
-
-def get_selector(obj, prop):
-    """
-    Function that creates a selector based on ``prop``.
-
-    Args:
-        obj: A TLO object.
-        prop: A property of the TLO object.
-
-    Note:
-        Must supply the actual value inside the structure. Since some
-        limitations exist with Python interning methods, checking for object
-        location is for now the option to assert the data.
-
-    Example:
-        >>> selector = get_selector(obj, obj["cybox"]["objects"][0]["file_name"])
-        >>> print(selector)
-        ["cybox.objects.[0].file_name"]
-
-    Returns:
-        list: A list with one selector that asserts the supplied property.
-            Empty list if it was unable to find the property.
-
-    """
-    selector = []
-
-    for ancestors, value in iterpath(obj):
-        if value is prop:
-            path = ".".join(ancestors)
-            selector.append(path)
-
-    return selector

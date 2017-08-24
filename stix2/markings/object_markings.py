@@ -1,4 +1,5 @@
 
+from stix2 import exceptions
 from stix2.markings import utils
 
 
@@ -10,7 +11,7 @@ def get_markings(obj):
         obj: A SDO or SRO object.
 
     Returns:
-        list: Marking IDs contained in the SDO or SRO. Empty list if no
+        list: Marking identifiers contained in the SDO or SRO. Empty list if no
             markings are present in `object_marking_refs`.
 
     """
@@ -25,13 +26,12 @@ def add_markings(obj, marking):
         obj: A SDO or SRO object.
         marking: identifier or list of identifiers to apply SDO or SRO object.
 
-    Raises:
-        AssertionError: If `marking` fail data validation.
+    Returns:
+        A new version of the given SDO or SRO with specified markings added.
 
     """
     marking = utils.convert_to_list(marking)
 
-    # TODO: Remove set for comparison and raise DuplicateMarkingException.
     object_markings = set(obj.get("object_marking_refs", []) + marking)
 
     return obj.new_version(object_marking_refs=list(object_markings))
@@ -47,12 +47,14 @@ def remove_markings(obj, marking):
             SDO or SRO object.
 
     Raises:
-        AssertionError: If markings to remove are not found on the provided
-            SDO or SRO.
+        MarkingNotFoundError: If markings to remove are not found on
+            the provided SDO or SRO.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings removed.
 
     """
     marking = utils.convert_to_list(marking)
-    utils.validate(obj, marking=marking)
 
     object_markings = obj.get("object_marking_refs", [])
 
@@ -60,8 +62,7 @@ def remove_markings(obj, marking):
         return obj
 
     if any(x not in obj["object_marking_refs"] for x in marking):
-        raise AssertionError("Unable to remove Object Level Marking(s) from "
-                             "internal collection. Marking(s) not found...")
+        raise exceptions.MarkingNotFoundError(obj, marking)
 
     new_markings = [x for x in object_markings if x not in marking]
     if new_markings:
@@ -80,6 +81,10 @@ def set_markings(obj, marking):
         marking: identifier or list of identifiers to apply in the
             SDO or SRO object.
 
+    Returns:
+        A new version of the given SDO or SRO with specified markings removed
+        and new ones added.
+
     """
     return add_markings(clear_markings(obj), marking)
 
@@ -90,6 +95,9 @@ def clear_markings(obj):
 
     Args:
         obj: A SDO or SRO object.
+
+    Returns:
+        A new version of the given SDO or SRO with object_marking_refs cleared.
 
     """
     return obj.new_version(object_marking_refs=None)

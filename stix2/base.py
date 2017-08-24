@@ -81,7 +81,7 @@ class _STIXBase(collections.Mapping):
 
     def _check_object_constraints(self):
         for m in self.get("granular_markings", []):
-            validate(self, m.get("selectors"), m.get("marking_ref"))
+            validate(self, m.get("selectors"))
 
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__

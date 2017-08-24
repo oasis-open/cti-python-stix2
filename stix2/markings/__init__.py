@@ -13,16 +13,16 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
     Get all markings associated to the field(s).
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         inherited: If True, include object level markings and granular markings
-            inherited relative to the field(s).
+            inherited relative to the properties.
         descendants: If True, include granular markings applied to any children
-            relative to the field(s).
+            relative to the properties.
 
     Returns:
-        list: Marking IDs that matched the selectors expression.
+        list: Marking identifiers that matched the selectors expression.
 
     Note:
         If ``selectors`` is None, operation will be performed only on object
@@ -51,11 +51,15 @@ def set_markings(obj, selectors, marking):
     marking. Refer to `clear_markings` and `add_markings` for details.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings removed
+        and new ones added.
 
     Note:
         If ``selectors`` is None, operations will be performed on object level
@@ -73,15 +77,19 @@ def remove_markings(obj, selectors, marking):
     Removes granular_marking from the granular_markings collection.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
 
     Raises:
-        AssertionError: If `selectors` or `marking` fail data validation. Also
-            if markings to remove are not found on the provided TLO.
+        InvalidSelectorError: If `selectors` fail validation.
+        MarkingNotFoundError: If markings to remove are not found on
+            the provided SDO or SRO.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings removed.
 
     Note:
         If ``selectors`` is None, operations will be performed on object level
@@ -99,14 +107,17 @@ def add_markings(obj, selectors, marking):
     Appends a granular_marking to the granular_markings collection.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
 
     Raises:
-        AssertionError: If `selectors` or `marking` fail data validation.
+        InvalidSelectorError: If `selectors` fail validation.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings added.
 
     Note:
         If ``selectors`` is None, operations will be performed on object level
@@ -124,9 +135,17 @@ def clear_markings(obj, selectors):
     Removes all granular_marking associated with the selectors.
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the field(s) appear(s).
+
+    Raises:
+        InvalidSelectorError: If `selectors` fail validation.
+        MarkingNotFoundError: If markings to remove are not found on
+            the provided SDO or SRO.
+
+    Returns:
+        A new version of the given SDO or SRO with specified markings cleared.
 
     Note:
         If ``selectors`` is None, operations will be performed on object level
@@ -144,23 +163,23 @@ def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
     Checks if field(s) is marked by any marking or by specific marking(s).
 
     Args:
-        obj: A TLO object.
-        selectors: string or list of selectors strings relative to the TLO in
-            which the field(s) appear(s).
+        obj: An SDO or SRO object.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the field(s) appear(s).
         marking: identifier or list of marking identifiers that apply to the
-            field(s) selected by `selectors`.
+            properties selected by `selectors`.
         inherited: If True, include object level markings and granular markings
-            inherited to determine if the field(s) is/are marked.
+            inherited to determine if the properties is/are marked.
         descendants: If True, include granular markings applied to any children
-            of the given selector to determine if the field(s) is/are marked.
+            of the given selector to determine if the properties is/are marked.
 
     Returns:
-        bool: True if ``selectors`` is found on internal TLO collection.
+        bool: True if ``selectors`` is found on internal SDO or SRO collection.
             False otherwise.
 
     Note:
-        When a list of marking IDs is provided, if ANY of the provided marking
-        IDs matches, True is returned.
+        When a list of marking identifiers is provided, if ANY of the provided
+        marking identifiers match, True is returned.
 
         If ``selectors`` is None, operation will be performed only on object
         level markings.
