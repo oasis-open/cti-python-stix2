@@ -115,6 +115,19 @@ def test_parse_custom_object_type():
     assert nt.property1 == 'something'
 
 
+def test_parse_unregistered_custom_object_type():
+    nt_string = """{
+        "type": "x-foobar-observable",
+        "created": "2015-12-21T19:59:11Z",
+        "property1": "something"
+    }"""
+
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+        stix2.parse(nt_string)
+    assert "Can't parse unknown object type" in str(excinfo.value)
+    assert "use the CustomObject decorator." in str(excinfo.value)
+
+
 @stix2.observables.CustomObservable('x-new-observable', {
     'property1': stix2.properties.StringProperty(required=True),
     'property2': stix2.properties.IntegerProperty(),
@@ -137,6 +150,36 @@ def test_custom_observable_object():
     with pytest.raises(ValueError) as excinfo:
         NewObservable(property1='something', property2=4)
     assert "'property2' is too small." in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_ref_property():
+    @stix2.observables.CustomObservable('x-new-obs', {
+        'property1': stix2.properties.StringProperty(required=True),
+        'property_ref': stix2.properties.StringProperty(),
+    })
+    class NewObs():
+        pass
+
+    with pytest.raises(ValueError) as excinfo:
+        NewObs(_valid_refs={'1': 'file'},
+               property1='something',
+               property_ref='1')
+    assert "is named like an object reference property but is not an ObjectReferenceProperty" in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_valid_refs():
+    @stix2.observables.CustomObservable('x-new-obs', {
+        'property1': stix2.properties.StringProperty(required=True),
+        'property_ref': stix2.properties.ObjectReferenceProperty(valid_types='email-addr'),
+    })
+    class NewObs():
+        pass
+
+    with pytest.raises(Exception) as excinfo:
+        NewObs(_valid_refs=['1'],
+               property1='something',
+               property_ref='1')
+    assert "must be created with _valid_refs as a dict, not a list" in str(excinfo.value)
 
 
 def test_parse_custom_observable_object():
