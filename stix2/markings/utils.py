@@ -30,6 +30,7 @@ def _evaluate_expression(obj, selector):
 
 
 def _validate_selector(obj, selector):
+    """Internal method to evaluate each selector."""
     results = list(_evaluate_expression(obj, selector))
 
     if len(results) >= 1:
