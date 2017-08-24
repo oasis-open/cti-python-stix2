@@ -31,9 +31,6 @@ class ObservableProperty(Property):
         # from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
             parsed_obj = parse_observable(obj, valid_refs)
-            if not issubclass(type(parsed_obj), _Observable):
-                raise ValueError("Objects in an observable property must be "
-                                 "Cyber Observable Objects")
             dictified[key] = parsed_obj
 
         return dictified
@@ -734,16 +731,17 @@ def parse_observable(data, _valid_refs=[], allow_custom=False):
     obj['_valid_refs'] = _valid_refs
 
     if 'type' not in obj:
-        raise ParseError("Can't parse object with no 'type' property: %s" % str(obj))
+        raise ParseError("Can't parse observable with no 'type' property: %s" % str(obj))
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        raise ParseError("Can't parse unknown object type '%s'! For custom observables, use the CustomObservable decorator." % obj['type'])
+        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
+                         "use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
             if name not in EXT_MAP[obj['type']]:
-                raise ParseError("Can't parse Unknown extension type '%s' for object type '%s'!" % (name, obj['type']))
+                raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
             ext_class = EXT_MAP[obj['type']][name]
             obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
 
@@ -787,13 +785,16 @@ def _register_extension(observable, new_extension):
     try:
         observable_type = observable._type
     except AttributeError:
-        raise ValueError("Custom observables must be created with the @CustomObservable decorator.")
+        raise ValueError("Unknown observable type. Custom observables must be "
+                         "created with the @CustomObservable decorator.")
 
     try:
         EXT_MAP[observable_type][new_extension._type] = new_extension
     except KeyError:
         if observable_type not in OBJ_MAP_OBSERVABLE:
-            raise ValueError("Unknown observable type '%s'" % observable_type)
+            raise ValueError("Unknown observable type '%s'. Custom observables "
+                             "must be created with the @CustomObservable decorator."
+                             % observable_type)
         else:
             EXT_MAP[observable_type] = {new_extension._type: new_extension}
 
