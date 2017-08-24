@@ -6,10 +6,9 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from .base import _STIXBase
-from .properties import (BooleanProperty, HashesProperty, IDProperty,
-                         ListProperty, Property, ReferenceProperty,
-                         SelectorProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
+from .properties import (HashesProperty, IDProperty, ListProperty, Property,
+                         ReferenceProperty, SelectorProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from .utils import NOW, get_dict
 
 
@@ -148,17 +147,3 @@ TLP_RED = MarkingDefinition(
     definition_type="tlp",
     definition=TLPMarking(tlp="red")
 )
-
-COMMON_PROPERTIES = OrderedDict()
-
-COMMON_PROPERTIES.update([
-    # 'type' and 'id' should be defined on each individual type
-    ('created_by_ref', ReferenceProperty(type="identity")),
-    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-    ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-    ('revoked', BooleanProperty()),
-    ('labels', ListProperty(StringProperty)),
-    ('external_references', ListProperty(ExternalReference)),
-    ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
-    ('granular_markings', ListProperty(GranularMarking)),
-])
