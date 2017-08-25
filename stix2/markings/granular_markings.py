@@ -184,14 +184,14 @@ def clear_markings(obj, selectors):
 
     granular_markings = utils.expand_markings(granular_markings)
 
-    tlo = utils.build_granular_marking(
+    sdo = utils.build_granular_marking(
         [{"selectors": selectors, "marking_ref": "N/A"}]
     )
 
-    clear = tlo.get("granular_markings", [])
+    clear = sdo.get("granular_markings", [])
 
-    if not any(clear_selector in tlo_selectors.get("selectors", [])
-               for tlo_selectors in granular_markings
+    if not any(clear_selector in sdo_selectors.get("selectors", [])
+               for sdo_selectors in granular_markings
                for clear_marking in clear
                for clear_selector in clear_marking.get("selectors", [])
                ):

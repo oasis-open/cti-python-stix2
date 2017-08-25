@@ -220,7 +220,10 @@ def test_get_markings_smoke(data):
     assert markings.get_markings(data, "a") == ["1"]
 
 
-@pytest.mark.parametrize("data", [GET_MARKINGS_TEST_DATA])
+@pytest.mark.parametrize("data", [
+    GET_MARKINGS_TEST_DATA,
+    {"b": 1234},
+])
 def test_get_markings_not_marked(data):
     """Test selector that is not marked returns empty list."""
     results = markings.get_markings(data, "b")
@@ -362,7 +365,7 @@ def test_remove_marking_remove_multiple_selector_one_ref():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["description", "modified"], [MARKING_IDS[0]])
+    before = markings.remove_markings(before, ["description", "modified"], MARKING_IDS[0])
     assert "granular_markings" not in before
 
 
@@ -385,7 +388,7 @@ def test_remove_marking_mark_one_selector_from_multiple_ones():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["modified"], [MARKING_IDS[0]])
+    before = markings.remove_markings(before, ["modified"], MARKING_IDS[0])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -480,6 +483,14 @@ def test_remove_marking_mark_same_property_same_marking():
     )
     before = markings.remove_markings(before, ["description"], [MARKING_IDS[0]])
     assert "granular_markings" not in before
+
+
+def test_remove_no_markings():
+    before = {
+        "description": "test description",
+    }
+    after = markings.remove_markings(before, ["description"], ["marking-definition--1"])
+    assert before == after
 
 
 def test_remove_marking_bad_selector():
@@ -584,7 +595,7 @@ def test_is_marked_no_marking_refs(data):
 
 def test_is_marked_positional_arguments_combinations():
     """Test multiple combinations for inherited and descendant markings."""
-    test_tlo = \
+    test_sdo = \
         {
             "a": 333,
             "b": "value",
@@ -650,75 +661,89 @@ def test_is_marked_positional_arguments_combinations():
             ]
         }
 
-    assert markings.is_marked(test_tlo, "a", ["1"], False, False)
-    assert markings.is_marked(test_tlo, "a", ["1"], True, False)
-    assert markings.is_marked(test_tlo, "a", ["1"], True, True)
-    assert markings.is_marked(test_tlo, "a", ["1"], False, True)
+    assert markings.is_marked(test_sdo, "a", ["1"], False, False)
+    assert markings.is_marked(test_sdo, "a", ["1"], True, False)
+    assert markings.is_marked(test_sdo, "a", ["1"], True, True)
+    assert markings.is_marked(test_sdo, "a", ["1"], False, True)
 
-    assert markings.is_marked(test_tlo, "b", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_tlo, "b", inherited=True, descendants=False) is False
-    assert markings.is_marked(test_tlo, "b", inherited=True, descendants=True) is False
-    assert markings.is_marked(test_tlo, "b", inherited=False, descendants=True) is False
+    assert markings.is_marked(test_sdo, "b", inherited=False, descendants=False) is False
+    assert markings.is_marked(test_sdo, "b", inherited=True, descendants=False) is False
+    assert markings.is_marked(test_sdo, "b", inherited=True, descendants=True) is False
+    assert markings.is_marked(test_sdo, "b", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_tlo, "c", ["2"], False, False)
-    assert markings.is_marked(test_tlo, "c", ["2"], True, False)
-    assert markings.is_marked(test_tlo, "c", ["2", "3", "4", "5"], True, True)
-    assert markings.is_marked(test_tlo, "c", ["2", "3", "4", "5"], False, True)
+    assert markings.is_marked(test_sdo, "c", ["2"], False, False)
+    assert markings.is_marked(test_sdo, "c", ["2"], True, False)
+    assert markings.is_marked(test_sdo, "c", ["2", "3", "4", "5"], True, True)
+    assert markings.is_marked(test_sdo, "c", ["2", "3", "4", "5"], False, True)
 
-    assert markings.is_marked(test_tlo, "c.[0]", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_tlo, "c.[0]", ["2"], True, False)
-    assert markings.is_marked(test_tlo, "c.[0]", ["2"], True, True)
-    assert markings.is_marked(test_tlo, "c.[0]", inherited=False, descendants=True) is False
+    assert markings.is_marked(test_sdo, "c.[0]", inherited=False, descendants=False) is False
+    assert markings.is_marked(test_sdo, "c.[0]", ["2"], True, False)
+    assert markings.is_marked(test_sdo, "c.[0]", ["2"], True, True)
+    assert markings.is_marked(test_sdo, "c.[0]", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_tlo, "c.[1]", ["3"], False, False)
-    assert markings.is_marked(test_tlo, "c.[1]", ["2", "3"], True, False)
-    assert markings.is_marked(test_tlo, "c.[1]", ["2", "3"], True, True)
-    assert markings.is_marked(test_tlo, "c.[1]", ["3"], False, True)
+    assert markings.is_marked(test_sdo, "c.[1]", ["3"], False, False)
+    assert markings.is_marked(test_sdo, "c.[1]", ["2", "3"], True, False)
+    assert markings.is_marked(test_sdo, "c.[1]", ["2", "3"], True, True)
+    assert markings.is_marked(test_sdo, "c.[1]", ["3"], False, True)
 
-    assert markings.is_marked(test_tlo, "c.[2]", ["4"], False, False)
-    assert markings.is_marked(test_tlo, "c.[2]", ["2", "4"], True, False)
-    assert markings.is_marked(test_tlo, "c.[2]", ["2", "4", "5"], True, True)
-    assert markings.is_marked(test_tlo, "c.[2]", ["4", "5"], False, True)
+    assert markings.is_marked(test_sdo, "c.[2]", ["4"], False, False)
+    assert markings.is_marked(test_sdo, "c.[2]", ["2", "4"], True, False)
+    assert markings.is_marked(test_sdo, "c.[2]", ["2", "4", "5"], True, True)
+    assert markings.is_marked(test_sdo, "c.[2]", ["4", "5"], False, True)
 
-    assert markings.is_marked(test_tlo, "c.[2].g", ["5"], False, False)
-    assert markings.is_marked(test_tlo, "c.[2].g", ["2", "4", "5"], True, False)
-    assert markings.is_marked(test_tlo, "c.[2].g", ["2", "4", "5"], True, True)
-    assert markings.is_marked(test_tlo, "c.[2].g", ["5"], False, True)
+    assert markings.is_marked(test_sdo, "c.[2].g", ["5"], False, False)
+    assert markings.is_marked(test_sdo, "c.[2].g", ["2", "4", "5"], True, False)
+    assert markings.is_marked(test_sdo, "c.[2].g", ["2", "4", "5"], True, True)
+    assert markings.is_marked(test_sdo, "c.[2].g", ["5"], False, True)
 
-    assert markings.is_marked(test_tlo, "x", ["6"], False, False)
-    assert markings.is_marked(test_tlo, "x", ["6"], True, False)
-    assert markings.is_marked(test_tlo, "x", ["6", "7", "8", "9", "10"], True, True)
-    assert markings.is_marked(test_tlo, "x", ["6", "7", "8", "9", "10"], False, True)
+    assert markings.is_marked(test_sdo, "x", ["6"], False, False)
+    assert markings.is_marked(test_sdo, "x", ["6"], True, False)
+    assert markings.is_marked(test_sdo, "x", ["6", "7", "8", "9", "10"], True, True)
+    assert markings.is_marked(test_sdo, "x", ["6", "7", "8", "9", "10"], False, True)
 
-    assert markings.is_marked(test_tlo, "x.y", ["7"], False, False)
-    assert markings.is_marked(test_tlo, "x.y", ["6", "7"], True, False)
-    assert markings.is_marked(test_tlo, "x.y", ["6", "7", "8"], True, True)
-    assert markings.is_marked(test_tlo, "x.y", ["7", "8"], False, True)
+    assert markings.is_marked(test_sdo, "x.y", ["7"], False, False)
+    assert markings.is_marked(test_sdo, "x.y", ["6", "7"], True, False)
+    assert markings.is_marked(test_sdo, "x.y", ["6", "7", "8"], True, True)
+    assert markings.is_marked(test_sdo, "x.y", ["7", "8"], False, True)
 
-    assert markings.is_marked(test_tlo, "x.y.[0]", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_tlo, "x.y.[0]", ["6", "7"], True, False)
-    assert markings.is_marked(test_tlo, "x.y.[0]", ["6", "7"], True, True)
-    assert markings.is_marked(test_tlo, "x.y.[0]", inherited=False, descendants=True) is False
+    assert markings.is_marked(test_sdo, "x.y.[0]", inherited=False, descendants=False) is False
+    assert markings.is_marked(test_sdo, "x.y.[0]", ["6", "7"], True, False)
+    assert markings.is_marked(test_sdo, "x.y.[0]", ["6", "7"], True, True)
+    assert markings.is_marked(test_sdo, "x.y.[0]", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_tlo, "x.y.[1]", ["8"], False, False)
-    assert markings.is_marked(test_tlo, "x.y.[1]", ["6", "7", "8"], True, False)
-    assert markings.is_marked(test_tlo, "x.y.[1]", ["6", "7", "8"], True, True)
-    assert markings.is_marked(test_tlo, "x.y.[1]", ["8"], False, True)
+    assert markings.is_marked(test_sdo, "x.y.[1]", ["8"], False, False)
+    assert markings.is_marked(test_sdo, "x.y.[1]", ["6", "7", "8"], True, False)
+    assert markings.is_marked(test_sdo, "x.y.[1]", ["6", "7", "8"], True, True)
+    assert markings.is_marked(test_sdo, "x.y.[1]", ["8"], False, True)
 
-    assert markings.is_marked(test_tlo, "x.z", ["9"], False, False)
-    assert markings.is_marked(test_tlo, "x.z", ["6", "9"], True, False)
-    assert markings.is_marked(test_tlo, "x.z", ["6", "9", "10"], True, True)
-    assert markings.is_marked(test_tlo, "x.z", ["9", "10"], False, True)
+    assert markings.is_marked(test_sdo, "x.z", ["9"], False, False)
+    assert markings.is_marked(test_sdo, "x.z", ["6", "9"], True, False)
+    assert markings.is_marked(test_sdo, "x.z", ["6", "9", "10"], True, True)
+    assert markings.is_marked(test_sdo, "x.z", ["9", "10"], False, True)
 
-    assert markings.is_marked(test_tlo, "x.z.foo1", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_tlo, "x.z.foo1", ["6", "9"], True, False)
-    assert markings.is_marked(test_tlo, "x.z.foo1", ["6", "9"], True, True)
-    assert markings.is_marked(test_tlo, "x.z.foo1", inherited=False, descendants=True) is False
+    assert markings.is_marked(test_sdo, "x.z.foo1", inherited=False, descendants=False) is False
+    assert markings.is_marked(test_sdo, "x.z.foo1", ["6", "9"], True, False)
+    assert markings.is_marked(test_sdo, "x.z.foo1", ["6", "9"], True, True)
+    assert markings.is_marked(test_sdo, "x.z.foo1", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_tlo, "x.z.foo2", ["10"], False, False)
-    assert markings.is_marked(test_tlo, "x.z.foo2", ["6", "9", "10"], True, False)
-    assert markings.is_marked(test_tlo, "x.z.foo2", ["6", "9", "10"], True, True)
-    assert markings.is_marked(test_tlo, "x.z.foo2", ["10"], False, True)
+    assert markings.is_marked(test_sdo, "x.z.foo2", ["10"], False, False)
+    assert markings.is_marked(test_sdo, "x.z.foo2", ["6", "9", "10"], True, False)
+    assert markings.is_marked(test_sdo, "x.z.foo2", ["6", "9", "10"], True, True)
+    assert markings.is_marked(test_sdo, "x.z.foo2", ["10"], False, True)
+
+
+def test_create_sdo_with_invalid_marking():
+    with pytest.raises(AssertionError) as excinfo:
+        Malware(
+            granular_markings=[
+                {
+                    "selectors": ["foo"],
+                    "marking_ref": MARKING_IDS[0]
+                }
+            ],
+            **MALWARE_KWARGS
+        )
+    assert str(excinfo.value) == "Selector foo in Malware is not valid!"
 
 
 def test_set_marking_mark_one_selector_multiple_refs():
@@ -819,35 +844,33 @@ def test_set_marking_mark_another_property_same_marking():
 
 
 @pytest.mark.parametrize("marking", [
-    (["foo"], ["marking-definition--7", "marking-definition--8"]),
-    ("", ["marking-definition--7", "marking-definition--8"]),
-    ([], ["marking-definition--7", "marking-definition--8"]),
-    ([""], ["marking-definition--7", "marking-definition--8"])
+    (["foo"], [MARKING_IDS[4], MARKING_IDS[5]]),
+    ("", [MARKING_IDS[4], MARKING_IDS[5]]),
+    ([], [MARKING_IDS[4], MARKING_IDS[5]]),
+    ([""], [MARKING_IDS[4], MARKING_IDS[5]]),
 ])
 def test_set_marking_bad_selector(marking):
-    before = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+    before = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
+                "marking_ref": MARKING_IDS[0]
             }
-        ]
-    }
-    after = {
-        "description": "test description",
-        "title": "foo",
-        "granular_markings": [
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
             {
                 "selectors": ["description"],
-                "marking_ref": "marking-definition--1"
-            },
-        ]
-    }
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
 
     with pytest.raises(AssertionError):
-        markings.set_markings(before, marking[0], marking[1])
+        before = markings.set_markings(before, marking[0], marking[1])
 
     assert before == after
 
