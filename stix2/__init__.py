@@ -4,8 +4,9 @@
 
 from . import exceptions
 from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
-                     ExternalReference, GranularMarking, KillChainPhase,
-                     MarkingDefinition, StatementMarking, TLPMarking)
+                     CustomMarking, ExternalReference, GranularMarking,
+                     KillChainPhase, MarkingDefinition, StatementMarking,
+                     TLPMarking)
 from .core import Bundle, _register_type, parse
 from .environment import ObjectFactory
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,

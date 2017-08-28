@@ -330,13 +330,10 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
             ])
 
-            if not properties:
+            if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
-            normal_properties = [x for x in properties if not x[0].startswith("x_")]
-            custom_properties = [x for x in properties if x[0].startswith("x_")]
-
-            _properties.update(normal_properties)
+            _properties.update([x for x in properties if not x[0].startswith("x_")])
 
             # This is to follow the general properties structure.
             _properties.update([
@@ -348,7 +345,7 @@ def CustomObject(type='x-custom-type', properties=None):
             ])
 
             # Put all custom properties at the bottom, sorted alphabetically.
-            _properties.update(sorted(custom_properties, key=lambda x: x[0]))
+            _properties.update(sorted([x for x in properties if x[0].startswith("x_")], key=lambda x: x[0]))
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
