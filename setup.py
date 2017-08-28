@@ -47,7 +47,7 @@ setup(
     keywords="stix stix2 json cti cyber threat intelligence",
     packages=find_packages(),
     install_requires=[
-        'ordereddict',
+        'ordereddict ; python_version<"2.7"',
         'python-dateutil',
         'pytz',
         'requests',
