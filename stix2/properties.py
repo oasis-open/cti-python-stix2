@@ -6,7 +6,6 @@ import re
 import uuid
 
 from six import string_types, text_type
-
 from stix2patterns.validator import run_validator
 
 from .base import _STIXBase

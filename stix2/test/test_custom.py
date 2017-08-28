@@ -135,31 +135,11 @@ def test_custom_no_properties_raises_exception():
         class NewObject1(object):
             pass
 
-        NewObject1()
-
-        @stix2.sdo.CustomObject('x-new-object-type', ("a", 0))
-        class NewObject2(object):
-            pass
-
-        NewObject2()
-
-        @stix2.observables.CustomObservable('x-new-object-type')
-        class NewObject3(object):
-            pass
-
-        NewObject3()
+    with pytest.raises(ValueError):
 
         @stix2.observables.CustomObservable('x-new-object-type', (("prop", stix2.properties.BooleanProperty())))
         class NewObject4(object):
             pass
-
-        NewObject4()
-
-        @stix2.common.CustomMarking('x-new-marking-type')
-        class NewObject5(object):
-            pass
-
-        NewObject5()
 
 
 def test_parse_custom_observable_object():

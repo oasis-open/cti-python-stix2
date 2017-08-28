@@ -17,7 +17,6 @@ Notes:
 """
 
 import collections
-import copy
 import uuid
 
 from six import iteritems

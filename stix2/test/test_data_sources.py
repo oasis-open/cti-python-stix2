@@ -1,7 +1,8 @@
 import pytest
 from taxii2client import Collection
 
-from stix2.sources import CompositeDataSource, DataSink, DataSource, DataStore, Filter, make_id, taxii
+from stix2.sources import (CompositeDataSource, DataSink, DataSource,
+                           DataStore, Filter, make_id, taxii)
 from stix2.sources.memory import MemorySource
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
@@ -24,8 +25,14 @@ def test_ds_smoke():
 
     with pytest.raises(NotImplementedError):
         ds3.add(None)
+
+    with pytest.raises(NotImplementedError):
         ds3.all_versions("malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")
+
+    with pytest.raises(NotImplementedError):
         ds3.get("malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")
+
+    with pytest.raises(NotImplementedError):
         ds3.query([Filter("id", "=", "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")])
 
 
@@ -169,6 +176,7 @@ def test_apply_common_filters():
 
     resp = ds.apply_common_filters(stix_objs, [filters[2]])
     assert resp[0]['id'] == stix_objs[0]['id']
+
 
 STIX_OBJS1 = [
     {

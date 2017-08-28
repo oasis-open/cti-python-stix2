@@ -21,9 +21,10 @@ Notes:
 import json
 import os
 
+from stix2validator import validate_string
+
 from stix2 import Bundle
 from stix2.sources import DataSink, DataSource, DataStore, Filter
-from stix2validator import validate_string
 
 
 class MemoryStore(DataStore):

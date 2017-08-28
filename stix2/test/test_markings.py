@@ -187,8 +187,7 @@ def test_parse_marking_definition(data):
 ])
 class NewMarking(object):
     def __init__(self, property2=None, **kwargs):
-        if property2 and property2 < 10:
-            raise ValueError("'property2' is too small.")
+        return
 
 
 def test_registered_custom_marking():
@@ -217,8 +216,7 @@ def test_not_registered_marking_raises_exception():
         ])
         class NewObject2(object):
             def __init__(self, property2=None, **kwargs):
-                if property2 and property2 < 10:
-                    raise ValueError("'property2' is too small.")
+                return
 
         no = NewObject2(property1='something', property2=55)
 
@@ -228,6 +226,13 @@ def test_not_registered_marking_raises_exception():
             definition_type="x-new-marking-type2",
             definition=no
         )
+
+
+def test_bad_marking_construction():
+    with pytest.raises(ValueError):
+        @stix2.sdo.CustomObject('x-new-marking-type2', ("a", "b"))
+        class NewObject3(object):
+            pass
 
 
 # TODO: Add other examples
