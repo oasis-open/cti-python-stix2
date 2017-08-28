@@ -75,7 +75,7 @@ def test_marking_def_example_with_tlp():
     assert str(TLP_WHITE) == EXPECTED_TLP_MARKING_DEFINITION
 
 
-def test_marking_def_example_with_statement():
+def test_marking_def_example_with_statement_positional_argument():
     marking_definition = stix2.MarkingDefinition(
         id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         created="2017-01-20T00:00:00.000Z",
@@ -86,12 +86,13 @@ def test_marking_def_example_with_statement():
     assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
 
 
-def test_marking_def_example_with_positional_statement():
+def test_marking_def_example_with_kwargs_statement():
+    kwargs = dict(statement="Copyright 2016, Example Corp")
     marking_definition = stix2.MarkingDefinition(
         id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
-        definition=stix2.StatementMarking("Copyright 2016, Example Corp")
+        definition=stix2.StatementMarking(**kwargs)
     )
 
     assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
@@ -178,6 +179,55 @@ def test_parse_marking_definition(data):
     assert gm.created == dt.datetime(2017, 1, 20, 0, 0, 0, tzinfo=pytz.utc)
     assert gm.definition.tlp == "white"
     assert gm.definition_type == "tlp"
+
+
+@stix2.common.CustomMarking('x-new-marking-type', [
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
+])
+class NewMarking(object):
+    def __init__(self, property2=None, **kwargs):
+        if property2 and property2 < 10:
+            raise ValueError("'property2' is too small.")
+
+
+def test_registered_custom_marking():
+    nm = NewMarking(property1='something', property2=55)
+
+    marking_def = stix2.MarkingDefinition(
+        id="marking-definition--00000000-0000-0000-0000-000000000012",
+        created="2017-01-22T00:00:00.000Z",
+        definition_type="x-new-marking-type",
+        definition=nm
+    )
+
+    assert marking_def.type == "marking-definition"
+    assert marking_def.id == "marking-definition--00000000-0000-0000-0000-000000000012"
+    assert marking_def.created == dt.datetime(2017, 1, 22, 0, 0, 0, tzinfo=pytz.utc)
+    assert marking_def.definition.property1 == "something"
+    assert marking_def.definition.property2 == 55
+    assert marking_def.definition_type == "x-new-marking-type"
+
+
+def test_not_registered_marking_raises_exception():
+    with pytest.raises(ValueError):
+        @stix2.sdo.CustomObject('x-new-marking-type2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ])
+        class NewObject2(object):
+            def __init__(self, property2=None, **kwargs):
+                if property2 and property2 < 10:
+                    raise ValueError("'property2' is too small.")
+
+        no = NewObject2(property1='something', property2=55)
+
+        stix2.MarkingDefinition(
+            id="marking-definition--00000000-0000-0000-0000-000000000012",
+            created="2017-01-22T00:00:00.000Z",
+            definition_type="x-new-marking-type2",
+            definition=no
+        )
 
 
 # TODO: Add other examples
