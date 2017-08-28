@@ -19,7 +19,7 @@ from stix2.sources import DataSink, DataSource, DataStore, Filter
 class FileSystemStore(DataStore):
     """
     """
-    def __init__(self, stix_dir="stix_data", name="FileSystemStore"):
+    def __init__(self, name="FileSystemStore", stix_dir="stix_data"):
         super(FileSystemStore, self).__init__(name=name)
         self.source = FileSystemSource(stix_dir=stix_dir)
         self.sink = FileSystemSink(stix_dir=stix_dir)
@@ -28,7 +28,7 @@ class FileSystemStore(DataStore):
 class FileSystemSink(DataSink):
     """
     """
-    def __init__(self, stix_dir="stix_data", name="FileSystemSink"):
+    def __init__(self, name="FileSystemSink", stix_dir="stix_data"):
         super(FileSystemSink, self).__init__(name=name)
         self.stix_dir = os.path.abspath(stix_dir)
 
@@ -58,7 +58,7 @@ class FileSystemSink(DataSink):
 class FileSystemSource(DataSource):
     """
     """
-    def __init__(self, stix_dir="stix_data", name="FileSystemSource"):
+    def __init__(self, name="FileSystemSource", stix_dir="stix_data"):
         super(FileSystemSource, self).__init__(name=name)
         self.stix_dir = os.path.abspath(stix_dir)
 
@@ -71,8 +71,8 @@ class FileSystemSource(DataSource):
         return self.stix_dir
 
     @stix_dir.setter
-    def stix_dir(self, dir):
-        self.stix_dir = dir
+    def stix_dir(self, dir_):
+        self.stix_dir = dir_
 
     def get(self, stix_id, _composite_filters=None):
         """

@@ -29,7 +29,7 @@ from stix2validator import validate_string
 class MemoryStore(DataStore):
     """
     """
-    def __init__(self, stix_data=None, name="MemoryStore"):
+    def __init__(self, name="MemoryStore", stix_data=None):
         """
         Notes:
             It doesn't make sense to create a MemoryStore by passing
@@ -75,7 +75,7 @@ class MemoryStore(DataStore):
 class MemorySink(DataSink):
     """
     """
-    def __init__(self, stix_data=None, name="MemorySink", _store=False):
+    def __init__(self, name="MemorySink", stix_data=None, _store=False):
         """
         Args:
             stix_data (dictionary OR list): valid STIX 2.0 content in
@@ -150,7 +150,7 @@ class MemorySink(DataSink):
 
 class MemorySource(DataSource):
 
-    def __init__(self, stix_data=None, name="MemorySource", _store=False):
+    def __init__(self, name="MemorySource", stix_data=None, _store=False):
         """
         Args:
             stix_data (dictionary OR list): valid STIX 2.0 content in
@@ -177,8 +177,8 @@ class MemorySource(DataSource):
                         for stix_obj in stix_data["objects"]:
                             self.data[stix_obj["id"]] = stix_obj
                     else:
-                        print("Error: json data passed to MemorySink() was found to not be validated by STIX 2 Validator")
-                        print(r)
+                        print("Error: json data passed to MemorySource() was found to not be validated by STIX 2 Validator")
+                        print(r.as_dict())
                         self.data = {}
                 elif type(stix_data) == list:
                     # STIX objects are in a list
