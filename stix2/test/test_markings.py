@@ -209,7 +209,8 @@ def test_registered_custom_marking():
 
 
 def test_not_registered_marking_raises_exception():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
+        # Used custom object on purpose to demonstrate a not-registered marking
         @stix2.sdo.CustomObject('x-new-marking-type2', [
             ('property1', stix2.properties.StringProperty(required=True)),
             ('property2', stix2.properties.IntegerProperty()),
@@ -227,12 +228,17 @@ def test_not_registered_marking_raises_exception():
             definition=no
         )
 
+    assert str(excinfo.value) == "definition_type must be a valid marking type"
 
-def test_bad_marking_construction():
-    with pytest.raises(ValueError):
-        @stix2.sdo.CustomObject('x-new-marking-type2', ("a", "b"))
+
+def test_marking_wrong_type_construction():
+    with pytest.raises(ValueError) as excinfo:
+        # Test passing wrong type for properties.
+        @stix2.CustomMarking('x-new-marking-type2', ("a", "b"))
         class NewObject3(object):
             pass
+
+    assert str(excinfo.value) == "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
 
 
 # TODO: Add other examples

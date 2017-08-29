@@ -18,6 +18,109 @@ def collection():
     return Collection(COLLECTION_URL, MockTAXIIClient())
 
 
+STIX_OBJS1 = [
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    },
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    },
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.936Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    },
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    },
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    }
+]
+
+STIX_OBJS2 = [
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-31T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    },
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    },
+    {
+        "created": "2017-01-27T13:49:53.935Z",
+        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "labels": [
+            "url-watchlist"
+        ],
+        "modified": "2017-01-27T13:49:53.935Z",
+        "name": "Malicious site hosting downloader",
+        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "type": "indicator",
+        "valid_from": "2017-01-27T13:49:53.935382Z"
+    }
+]
+
+
 def test_ds_smoke():
     ds1 = DataSource()
     ds2 = DataSink()
@@ -149,9 +252,21 @@ def test_apply_common_filters():
         },
         {
             "created": "2014-05-08T09:00:00.000Z",
+            "granular_markings": [
+                {
+                    "marking_ref": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
+                    "selectors": [
+                        "relationship_type"
+                    ]
+                }
+            ],
             "id": "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463",
             "modified": "2014-05-08T09:00:00.000Z",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ],
             "relationship_type": "indicates",
+            "revoked": True,
             "source_ref": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
             "target_ref": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
             "type": "relationship"
@@ -162,6 +277,13 @@ def test_apply_common_filters():
         Filter("type", "!=", "relationship"),
         Filter("id", "=", "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"),
         Filter("labels", "in", "remote-access-trojan"),
+        Filter("created", ">", "2015-01-01T01:00:00.000Z"),
+        Filter("revoked", "=", True),
+        Filter("revoked", "!=", True),
+        Filter("revoked", "?", False),
+        Filter("object_marking_refs", "=", "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"),
+        Filter("granular_markings.selectors", "in", "relationship_type"),
+        Filter("granular_markings.marking_ref", "=", "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"),
     ]
 
     ds = DataSource()
@@ -177,108 +299,85 @@ def test_apply_common_filters():
     resp = ds.apply_common_filters(stix_objs, [filters[2]])
     assert resp[0]['id'] == stix_objs[0]['id']
 
+    resp = ds.apply_common_filters(stix_objs, [filters[3]])
+    assert resp[0]['id'] == stix_objs[0]['id']
+    assert len(resp) == 1
 
-STIX_OBJS1 = [
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    },
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    },
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.936Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    },
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    },
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    }
-]
+    resp = ds.apply_common_filters(stix_objs, [filters[4]])
+    assert resp[0]['id'] == stix_objs[2]['id']
+    assert len(resp) == 1
 
-STIX_OBJS2 = [
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-31T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    },
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    },
-    {
-        "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
-        "labels": [
-            "url-watchlist"
-        ],
-        "modified": "2017-01-27T13:49:53.935Z",
-        "name": "Malicious site hosting downloader",
-        "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
-        "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
-    }
-]
+    # Note that if 'revoked' property is not present in object.
+    # Currently we can't use such an expression to filter for...
+    resp = ds.apply_common_filters(stix_objs, [filters[5]])
+    assert len(resp) == 0
+
+    with pytest.raises(ValueError) as excinfo:
+        ds.apply_common_filters(stix_objs, [filters[6]])
+
+    assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
+                                  "for specified field: {1}").format(filters[6].op,
+                                                                     filters[6].field)
+
+    resp = ds.apply_common_filters(stix_objs, [filters[7]])
+    assert resp[0]['id'] == stix_objs[2]['id']
+    assert len(resp) == 1
+
+    resp = ds.apply_common_filters(stix_objs, [filters[8], filters[9]])
+    assert resp[0]['id'] == stix_objs[2]['id']
+    assert len(resp) == 1
+
+    # These are used with STIX_OBJS2
+    more_filters = [
+        Filter("modified", "<", "2017-01-28T13:49:53.935Z"),
+        Filter("modified", ">", "2017-01-28T13:49:53.935Z"),
+        Filter("modified", ">=", "2017-01-27T13:49:53.935Z"),
+        Filter("modified", "<=", "2017-01-27T13:49:53.935Z"),
+        Filter("modified", "?", "2017-01-27T13:49:53.935Z"),
+        Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"),
+        Filter("id", "?", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"),
+        Filter("notacommonproperty", "=", "bar"),
+    ]
+
+    resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[0]])
+    assert resp[0]['id'] == STIX_OBJS2[1]['id']
+    assert len(resp) == 2
+
+    resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[1]])
+    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    assert len(resp) == 1
+
+    resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[2]])
+    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    assert len(resp) == 3
+
+    resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[3]])
+    assert resp[0]['id'] == STIX_OBJS2[1]['id']
+    assert len(resp) == 2
+
+    with pytest.raises(ValueError) as excinfo:
+        ds.apply_common_filters(STIX_OBJS2, [more_filters[4]])
+
+    assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
+                                  "for specified field: {1}").format(more_filters[4].op,
+                                                                     more_filters[4].field)
+
+    resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[5]])
+    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    assert len(resp) == 1
+
+    with pytest.raises(ValueError) as excinfo:
+        ds.apply_common_filters(STIX_OBJS2, [more_filters[6]])
+
+    assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
+                                  "for specified field: {1}").format(more_filters[6].op,
+                                                                     more_filters[6].field)
+
+    with pytest.raises(ValueError) as excinfo:
+        ds.apply_common_filters(STIX_OBJS2, [more_filters[7]])
+
+    assert str(excinfo.value) == ("Error, field: {0} is not supported for "
+                                  "filtering on.".format(more_filters[7].field))
 
 
 def test_deduplicate():

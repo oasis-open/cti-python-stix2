@@ -8,6 +8,8 @@ import stix2
 
 from .constants import OBSERVED_DATA_ID
 
+OBJECTS_REGEX = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL)
+
 
 EXPECTED = """{
     "type": "observed-data",
@@ -173,7 +175,7 @@ def test_parse_observed_data(data):
     }""",
 ])
 def test_parse_artifact_valid(data):
-    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["0"].type == "artifact"
 
@@ -194,7 +196,7 @@ def test_parse_artifact_valid(data):
     }""",
 ])
 def test_parse_artifact_invalid(data):
-    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     with pytest.raises(ValueError):
         stix2.parse(odata_str)
 
@@ -204,6 +206,7 @@ def test_artifact_example_dependency_error():
         stix2.Artifact(url="http://example.com/sirvizio.exe")
 
     assert excinfo.value.dependencies == [("hashes", "url")]
+    assert str(excinfo.value) == "The property dependencies for Artifact: (hashes, url) are not met."
 
 
 @pytest.mark.parametrize("data", [
@@ -215,7 +218,7 @@ def test_artifact_example_dependency_error():
     }""",
 ])
 def test_parse_autonomous_system_valid(data):
-    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["0"].type == "autonomous-system"
     assert odata.objects["0"].number == 15139
@@ -358,7 +361,7 @@ def test_parse_email_message_not_multipart(data):
         }""",
 ])
 def test_parse_file_archive(data):
-    odata_str = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL).sub('"objects": { %s }' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["3"].extensions['archive-ext'].version == "5.0"
 
@@ -555,6 +558,7 @@ def test_artifact_mutual_exclusion_error():
 
     assert excinfo.value.cls == stix2.Artifact
     assert excinfo.value.properties == ["payload_bin", "url"]
+    assert str(excinfo.value) == "The (payload_bin, url) properties for Artifact are mutually exclusive."
 
 
 def test_directory_example():
@@ -925,6 +929,10 @@ def test_process_example_empty_error():
     properties_of_process = list(stix2.Process._properties.keys())
     properties_of_process.remove("type")
     assert excinfo.value.properties == sorted(properties_of_process)
+    msg = "At least one of the ({1}) properties for {0} must be populated."
+    msg = msg.format(stix2.Process.__name__,
+                     ", ".join(sorted(properties_of_process)))
+    assert str(excinfo.value) == msg
 
 
 def test_process_example_empty_with_extensions():

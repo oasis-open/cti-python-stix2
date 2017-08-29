@@ -290,28 +290,34 @@ class DataSource(object):
         for stix_obj in stix_objs:
             clean = True
             for filter_ in query:
-
-                # skip filter as filter was identified (when added) as
-                # not a common filter
-                if filter_.field not in STIX_COMMON_FIELDS:
-                    continue
-
-                # check filter "field" is in STIX object - if cant be applied
-                # due to STIX object, STIX object is discarded (i.e. did not
-                # make it through the filter)
-                if filter_.field not in stix_obj.keys():
-                    clean = False
-                    break
                 try:
-                    match = getattr(STIXCommonPropertyFilters, filter_.field)(filter_, stix_obj)
+                    # skip filter as filter was identified (when added) as
+                    # not a common filter
+                    if filter_.field not in STIX_COMMON_FIELDS:
+                        raise Exception("Error, field: {0} is not supported for filtering on.".format(filter_.field))
+
+                    # For properties like granular_markings and external_references
+                    # need to break the first property from the string.
+                    if "." in filter_.field:
+                        field = filter_.field.split(".")[0]
+                    else:
+                        field = filter_.field
+
+                    # check filter "field" is in STIX object - if cant be
+                    # applied due to STIX object, STIX object is discarded
+                    # (i.e. did not make it through the filter)
+                    if field not in stix_obj.keys():
+                        clean = False
+                        break
+
+                    match = getattr(STIXCommonPropertyFilters, field)(filter_, stix_obj)
                     if not match:
                         clean = False
                         break
                     elif match == -1:
-                        # error, filter operator not supported for specified field:
-                        pass
+                        raise Exception("Error, filter operator: {0} not supported for specified field: {1}".format(filter_.op, filter_.field))
                 except Exception as e:
-                    print(e)
+                    raise ValueError(e)
 
             # if object unmarked after all filters, add it
             if clean:
@@ -646,11 +652,11 @@ class STIXCommonPropertyFilters(object):
 
     @classmethod
     def modified(cls, filter_, stix_obj):
-        return cls._timestamp(filter_, stix_obj["created"])
+        return cls._timestamp(filter_, stix_obj["modified"])
 
     @classmethod
-    def object_markings_ref(cls, filter_, stix_obj):
-        for marking_id in stix_obj["object_market_refs"]:
+    def object_marking_refs(cls, filter_, stix_obj):
+        for marking_id in stix_obj["object_marking_refs"]:
             r = cls._id(filter_, marking_id)
             if r:
                 return r
