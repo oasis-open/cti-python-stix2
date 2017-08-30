@@ -5,10 +5,10 @@ from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
 from stix2.observables import EmailMIMEComponent, ExtensionsProperty
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
-                              EnumProperty, HashesProperty, HexProperty,
-                              IDProperty, IntegerProperty, ListProperty,
-                              Property, ReferenceProperty, StringProperty,
-                              TimestampProperty, TypeProperty)
+                              EnumProperty, FloatProperty, HashesProperty,
+                              HexProperty, IDProperty, IntegerProperty,
+                              ListProperty, Property, ReferenceProperty,
+                              StringProperty, TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME
 
@@ -120,6 +120,27 @@ def test_integer_property_invalid(value):
 
 
 @pytest.mark.parametrize("value", [
+    2,
+    -1,
+    3.14,
+    False,
+])
+def test_float_property_valid(value):
+    int_prop = FloatProperty()
+    assert int_prop.clean(value) is not None
+
+
+@pytest.mark.parametrize("value", [
+    "something",
+    StringProperty(),
+])
+def test_float_property_invalid(value):
+    int_prop = FloatProperty()
+    with pytest.raises(ValueError):
+        int_prop.clean(value)
+
+
+@pytest.mark.parametrize("value", [
     True,
     False,
     'True',
@@ -210,10 +231,22 @@ def test_dictionary_property_valid(d):
     {'a'*300: 'something'},
     {'Hey!': 'something'},
 ])
+def test_dictionary_property_invalid_key(d):
+    dict_prop = DictionaryProperty()
+
+    with pytest.raises(DictionaryKeyError) as excinfo:
+        dict_prop.clean(d)
+    assert "Invalid dictionary key" in str(excinfo.value)
+
+
+@pytest.mark.parametrize("d", [
+    {},
+    "{'description': 'something'}",
+])
 def test_dictionary_property_invalid(d):
     dict_prop = DictionaryProperty()
 
-    with pytest.raises(DictionaryKeyError):
+    with pytest.raises(ValueError):
         dict_prop.clean(d)
 
 
@@ -250,10 +283,18 @@ def test_embedded_property():
         emb_prop.clean("string")
 
 
-def test_enum_property():
-    enum_prop = EnumProperty(['a', 'b', 'c'])
+@pytest.mark.parametrize("value", [
+    ['a', 'b', 'c'],
+    ('a', 'b', 'c'),
+    'b',
+])
+def test_enum_property_valid(value):
+    enum_prop = EnumProperty(value)
     assert enum_prop.clean('b')
 
+
+def test_enum_property_invalid():
+    enum_prop = EnumProperty(['a', 'b', 'c'])
     with pytest.raises(ValueError):
         enum_prop.clean('z')
 

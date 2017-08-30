@@ -6,7 +6,7 @@ from .constants import FAKE_TIME
 
 
 def test_identity_custom_property():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         stix2.Identity(
             id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
@@ -15,6 +15,7 @@ def test_identity_custom_property():
             identity_class="individual",
             custom_properties="foobar",
         )
+    assert str(excinfo.value) == "'custom_properties' must be a dictionary"
 
     identity = stix2.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
@@ -31,7 +32,7 @@ def test_identity_custom_property():
 
 
 def test_identity_custom_property_invalid():
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.Identity(
             id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
@@ -40,6 +41,9 @@ def test_identity_custom_property_invalid():
             identity_class="individual",
             x_foo="bar",
         )
+    assert excinfo.value.cls == stix2.Identity
+    assert excinfo.value.properties == ['x_foo']
+    assert "Unexpected properties for" in str(excinfo.value)
 
 
 def test_identity_custom_property_allowed():
@@ -67,8 +71,11 @@ def test_identity_custom_property_allowed():
     }""",
 ])
 def test_parse_identity_custom_property(data):
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         identity = stix2.parse(data)
+    assert excinfo.value.cls == stix2.Identity
+    assert excinfo.value.properties == ['foo']
+    assert "Unexpected properties for" in str(excinfo.value)
 
     identity = stix2.parse(data, allow_custom=True)
     assert identity.foo == "bar"
@@ -88,11 +95,13 @@ def test_custom_object_type():
     nt = NewType(property1='something')
     assert nt.property1 == 'something'
 
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         NewType(property2=42)
+    assert "No values for required properties" in str(excinfo.value)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         NewType(property1='something', property2=4)
+    assert "'property2' is too small." in str(excinfo.value)
 
 
 def test_parse_custom_object_type():
@@ -104,6 +113,19 @@ def test_parse_custom_object_type():
 
     nt = stix2.parse(nt_string)
     assert nt.property1 == 'something'
+
+
+def test_parse_unregistered_custom_object_type():
+    nt_string = """{
+        "type": "x-foobar-observable",
+        "created": "2015-12-21T19:59:11Z",
+        "property1": "something"
+    }"""
+
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+        stix2.parse(nt_string)
+    assert "Can't parse unknown object type" in str(excinfo.value)
+    assert "use the CustomObject decorator." in str(excinfo.value)
 
 
 @stix2.observables.CustomObservable('x-new-observable', {
@@ -120,11 +142,59 @@ def test_custom_observable_object():
     no = NewObservable(property1='something')
     assert no.property1 == 'something'
 
-    with pytest.raises(stix2.exceptions.MissingPropertiesError):
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         NewObservable(property2=42)
+    assert excinfo.value.properties == ['property1']
+    assert "No values for required properties" in str(excinfo.value)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         NewObservable(property1='something', property2=4)
+    assert "'property2' is too small." in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_ref_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomObservable('x-new-obs', {
+            'property_ref': stix2.properties.StringProperty(),
+        })
+        class NewObs():
+            pass
+    assert "is named like an object reference property but is not an ObjectReferenceProperty" in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_refs_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomObservable('x-new-obs', {
+            'property_refs': stix2.properties.StringProperty(),
+        })
+        class NewObs():
+            pass
+    assert "is named like an object reference list property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_refs_list_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomObservable('x-new-obs', {
+            'property_refs': stix2.properties.ListProperty(stix2.properties.StringProperty),
+        })
+        class NewObs():
+            pass
+    assert "is named like an object reference list property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_valid_refs():
+    @stix2.observables.CustomObservable('x-new-obs', {
+        'property1': stix2.properties.StringProperty(required=True),
+        'property_ref': stix2.properties.ObjectReferenceProperty(valid_types='email-addr'),
+    })
+    class NewObs():
+        pass
+
+    with pytest.raises(Exception) as excinfo:
+        NewObs(_valid_refs=['1'],
+               property1='something',
+               property_ref='1')
+    assert "must be created with _valid_refs as a dict, not a list" in str(excinfo.value)
 
 
 def test_parse_custom_observable_object():
@@ -137,12 +207,34 @@ def test_parse_custom_observable_object():
     assert nt.property1 == 'something'
 
 
+def test_parse_unregistered_custom_observable_object():
+    nt_string = """{
+        "type": "x-foobar-observable",
+        "property1": "something"
+    }"""
+
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+        stix2.parse_observable(nt_string)
+    assert "Can't parse unknown observable type" in str(excinfo.value)
+
+
+def test_parse_invalid_custom_observable_object():
+    nt_string = """{
+        "property1": "something"
+    }"""
+
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+        stix2.parse_observable(nt_string)
+    assert "Can't parse observable with no 'type' property" in str(excinfo.value)
+
+
 def test_observable_custom_property():
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError) as excinfo:
         NewObservable(
             property1='something',
             custom_properties="foobar",
         )
+    assert "'custom_properties' must be a dictionary" in str(excinfo.value)
 
     no = NewObservable(
         property1='something',
@@ -154,11 +246,13 @@ def test_observable_custom_property():
 
 
 def test_observable_custom_property_invalid():
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         NewObservable(
             property1='something',
             x_foo="bar",
         )
+    assert excinfo.value.properties == ['x_foo']
+    assert "Unexpected properties for" in str(excinfo.value)
 
 
 def test_observable_custom_property_allowed():
@@ -180,3 +274,107 @@ def test_observed_data_with_custom_observable_object():
         allow_custom=True,
     )
     assert ob_data.objects['0'].property1 == 'something'
+
+
+@stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext', {
+    'property1': stix2.properties.StringProperty(required=True),
+    'property2': stix2.properties.IntegerProperty(),
+})
+class NewExtension():
+    def __init__(self, property2=None, **kwargs):
+        if property2 and property2 < 10:
+            raise ValueError("'property2' is too small.")
+
+
+def test_custom_extension():
+    ext = NewExtension(property1='something')
+    assert ext.property1 == 'something'
+
+    with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
+        NewExtension(property2=42)
+    assert excinfo.value.properties == ['property1']
+    assert str(excinfo.value) == "No values for required properties for _Custom: (property1)."
+
+    with pytest.raises(ValueError) as excinfo:
+        NewExtension(property1='something', property2=4)
+    assert str(excinfo.value) == "'property2' is too small."
+
+
+def test_custom_extension_wrong_observable_type():
+    ext = NewExtension(property1='something')
+    with pytest.raises(ValueError) as excinfo:
+        stix2.File(name="abc.txt",
+                   extensions={
+                       "ntfs-ext": ext,
+                   })
+
+    assert 'Cannot determine extension type' in excinfo.value.reason
+
+
+def test_custom_extension_invalid_observable():
+    # These extensions are being applied to improperly-created Observables.
+    # The Observable classes should have been created with the CustomObservable decorator.
+    class Foo(object):
+        pass
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomExtension(Foo, 'x-new-ext', {
+            'property1': stix2.properties.StringProperty(required=True),
+        })
+        class FooExtension():
+            pass  # pragma: no cover
+    assert str(excinfo.value) == "'observable' must be a valid Observable class!"
+
+    class Bar(stix2.observables._Observable):
+        pass
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomExtension(Bar, 'x-new-ext', {
+            'property1': stix2.properties.StringProperty(required=True),
+        })
+        class BarExtension():
+            pass
+    assert "Unknown observable type" in str(excinfo.value)
+    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
+
+    class Baz(stix2.observables._Observable):
+        _type = 'Baz'
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomExtension(Baz, 'x-new-ext', {
+            'property1': stix2.properties.StringProperty(required=True),
+        })
+        class BazExtension():
+            pass
+    assert "Unknown observable type" in str(excinfo.value)
+    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
+
+
+def test_parse_observable_with_custom_extension():
+    input_str = """{
+        "type": "domain-name",
+        "value": "example.com",
+        "extensions": {
+            "x-new-ext": {
+                "property1": "foo",
+                "property2": 12
+            }
+        }
+    }"""
+
+    parsed = stix2.parse_observable(input_str)
+    assert parsed.extensions['x-new-ext'].property2 == 12
+
+
+def test_parse_observable_with_unregistered_custom_extension():
+    input_str = """{
+        "type": "domain-name",
+        "value": "example.com",
+        "extensions": {
+            "x-foobar-ext": {
+                "property1": "foo",
+                "property2": 12
+            }
+        }
+    }"""
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.parse_observable(input_str)
+    assert "Can't parse Unknown extension type" in str(excinfo.value)
