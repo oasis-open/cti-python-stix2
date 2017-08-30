@@ -768,12 +768,12 @@ def CustomObservable(type='x-custom-observable', properties={}):
             }
             # Check properties ending in "_ref/s" are ObjectReferenceProperties
             for prop_name, prop in properties.items():
-                if prop_name.endswith('_ref') and prop.__class__.__name__ != 'ObjectReferenceProperty':
+                if prop_name.endswith('_ref') and not isinstance(prop, ObjectReferenceProperty):
                     raise ValueError("'%s' is named like an object reference property but "
                                      "is not an ObjectReferenceProperty." % prop_name)
-                elif (prop_name.endswith('_refs') and (prop.__class__.__name__ != 'ListProperty'
-                                                       or prop.contained.__class__.__name__ != 'ObjectReferenceProperty')):
-                    raise ValueError("'%s' is named like an object reference property but "
+                elif (prop_name.endswith('_refs') and (not isinstance(prop, ListProperty)
+                                                       or not isinstance(prop.contained, ObjectReferenceProperty))):
+                    raise ValueError("'%s' is named like an object reference list property but "
                                      "is not a ListProperty containing ObjectReferenceProperty." % prop_name)
 
             _properties.update(properties)
