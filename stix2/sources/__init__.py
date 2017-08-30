@@ -16,54 +16,17 @@ Notes:
 
 """
 
-import collections
 import copy
 import uuid
 
 from six import iteritems
 
-
-class Filter(collections.namedtuple("Filter", ['field', 'op', 'value'])):
-    __slots__ = ()
-
-    def __new__(cls, field, op, value):
-        # If value is a list, convert it to a tuple so it is hashable.
-        if isinstance(value, list):
-            value = tuple(value)
-        self = super(Filter, cls).__new__(cls, field, op, value)
-        return self
+from filters import (FILTER_OPS, FILTER_VALUE_TYPES, STIX_COMMON_FIELDS,
+                     STIX_COMMON_FILTERS_MAP)
 
 
 def make_id():
     return str(uuid.uuid4())
-
-
-# Currently, only STIX 2.0 common SDO fields (that are not complex objects)
-# are supported for filtering on
-STIX_COMMON_FIELDS = [
-    "created",
-    "created_by_ref",
-    "external_references.source_name",
-    "external_references.description",
-    "external_references.url",
-    "external_references.hashes",
-    "external_references.external_id",
-    "granular_markings.marking_ref",
-    "granular_markings.selectors",
-    "id",
-    "labels",
-    "modified",
-    "object_marking_refs",
-    "revoked",
-    "type",
-    "granular_markings"
-]
-
-# Supported filter operations
-FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
-
-# Supported filter value types
-FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
 
 
 class DataStore(object):
@@ -306,7 +269,7 @@ class DataSource(object):
                     clean = False
                     break
                 try:
-                    match = getattr(STIXCommonPropertyFilters, filter_.field)(filter_, stix_obj)
+                    match = STIX_COMMON_FILTERS_MAP[filter_.field](filter_, stix_obj)
                     if not match:
                         clean = False
                         break
@@ -527,140 +490,3 @@ class CompositeDataSource(DataSource):
 
         """
         return copy.deepcopy(self.data_sources.values())
-
-
-class STIXCommonPropertyFilters(object):
-    """
-    """
-    @classmethod
-    def _all(cls, filter_, stix_obj_field):
-        """all filter operations (for filters whose value type can be applied to any operation type)"""
-        if filter_.op == "=":
-            return stix_obj_field == filter_.value
-        elif filter_.op == "!=":
-            return stix_obj_field != filter_.value
-        elif filter_.op == "in":
-            return stix_obj_field in filter_.value
-        elif filter_.op == ">":
-            return stix_obj_field > filter_.value
-        elif filter_.op == "<":
-            return stix_obj_field < filter_.value
-        elif filter_.op == ">=":
-            return stix_obj_field >= filter_.value
-        elif filter_.op == "<=":
-            return stix_obj_field <= filter_.value
-        else:
-            return -1
-
-    @classmethod
-    def _id(cls, filter_, stix_obj_id):
-        """base filter types"""
-        if filter_.op == "=":
-            return stix_obj_id == filter_.value
-        elif filter_.op == "!=":
-            return stix_obj_id != filter_.value
-        else:
-            return -1
-
-    @classmethod
-    def _boolean(cls, filter_, stix_obj_field):
-        if filter_.op == "=":
-            return stix_obj_field == filter_.value
-        elif filter_.op == "!=":
-            return stix_obj_field != filter_.value
-        else:
-            return -1
-
-    @classmethod
-    def _string(cls, filter_, stix_obj_field):
-        return cls._all(filter_, stix_obj_field)
-
-    @classmethod
-    def _timestamp(cls, filter_, stix_obj_timestamp):
-        return cls._all(filter_, stix_obj_timestamp)
-
-    # STIX 2.0 Common Property filters
-    @classmethod
-    def created(cls, filter_, stix_obj):
-        return cls._timestamp(filter_, stix_obj["created"])
-
-    @classmethod
-    def created_by_ref(cls, filter_, stix_obj):
-        return cls._id(filter_, stix_obj["created_by_ref"])
-
-    @classmethod
-    def external_references(cls, filter_, stix_obj):
-        """
-        STIX object's can have a list of external references
-
-        external_references properties:
-            external_references.source_name (string)
-            external_references.description (string)
-            external_references.url (string)
-            external_references.hashes (hash, but for filtering purposes, a string)
-            external_references.external_id  (string)
-
-        """
-        for er in stix_obj["external_references"]:
-            # grab er property name from filter field
-            filter_field = filter_.field.split(".")[1]
-            r = cls._string(filter_, er[filter_field])
-            if r:
-                return r
-        return False
-
-    @classmethod
-    def granular_markings(cls, filter_, stix_obj):
-        """
-        STIX object's can have a list of granular marking references
-
-        granular_markings properties:
-            granular_markings.marking_ref (id)
-            granular_markings.selectors  (string)
-
-        """
-        for gm in stix_obj["granular_markings"]:
-            # grab gm property name from filter field
-            filter_field = filter_.field.split(".")[1]
-
-            if filter_field == "marking_ref":
-                return cls._id(filter_, gm[filter_field])
-
-            elif filter_field == "selectors":
-                for selector in gm[filter_field]:
-                    r = cls._string(filter_, selector)
-                    if r:
-                        return r
-        return False
-
-    @classmethod
-    def id(cls, filter_, stix_obj):
-        return cls._id(filter_, stix_obj["id"])
-
-    @classmethod
-    def labels(cls, filter_, stix_obj):
-        for label in stix_obj["labels"]:
-            r = cls._string(filter_, label)
-            if r:
-                return r
-        return False
-
-    @classmethod
-    def modified(cls, filter_, stix_obj):
-        return cls._timestamp(filter_, stix_obj["created"])
-
-    @classmethod
-    def object_markings_ref(cls, filter_, stix_obj):
-        for marking_id in stix_obj["object_market_refs"]:
-            r = cls._id(filter_, marking_id)
-            if r:
-                return r
-        return False
-
-    @classmethod
-    def revoked(cls, filter_, stix_obj):
-        return cls._boolean(filter_, stix_obj["revoked"])
-
-    @classmethod
-    def type(cls, filter_, stix_obj):
-        return cls._string(filter_, stix_obj["type"])

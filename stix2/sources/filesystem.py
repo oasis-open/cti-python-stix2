@@ -13,7 +13,7 @@ import json
 import os
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources import DataSink, DataSource, DataStore, Filter
 
 
 class FileSystemStore(DataStore):
@@ -77,13 +77,7 @@ class FileSystemSource(DataSource):
     def get(self, stix_id, _composite_filters=None):
         """
         """
-        query = [
-            {
-                "field": "id",
-                "op": "=",
-                "value": stix_id
-            }
-        ]
+        query = [Filter("id", "=", stix_id)]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
@@ -95,20 +89,9 @@ class FileSystemSource(DataSource):
         """
         Notes:
             Since FileSystem sources/sinks don't handle multiple versions
-            of a STIX object, this operation is futile. Pass call to get().
-            (Approved by G.B.)
+            of a STIX object, this operation is unnecessary. Pass call to get().
 
         """
-
-        # query = [
-        #     {
-        #         "field": "id",
-        #         "op": "=",
-        #         "value": stix_id
-        #     }
-        # ]
-
-        # all_data = self.query(query=query, _composite_filters=_composite_filters)
 
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 

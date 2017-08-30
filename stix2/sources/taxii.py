@@ -12,7 +12,7 @@ TODO: Test everything
 
 import json
 
-from stix2.sources import DataSink, DataSource, DataStore, make_id
+from stix2.sources import DataSink, DataSource, DataStore, Filter, make_id
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
@@ -89,16 +89,8 @@ class TAXIICollectionSource(DataSource):
         """
         # make query in TAXII query format since 'id' is TAXII field
         query = [
-            {
-                "field": "match[id]",
-                "op": "=",
-                "value": stix_id
-            },
-            {
-                "field": "match[version]",
-                "op": "=",
-                "value": "all"
-            }
+            Filter("match[id]", "=", stix_id),
+            Filter("match[version]", "=", "all")
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
@@ -138,11 +130,7 @@ class TAXIICollectionSource(DataSource):
             For instance - "?match[type]=indicator,sighting" should be in a
             query dict as follows:
 
-            {
-                "field": "type"
-                "op": "=",
-                "value": "indicator,sighting"
-            }
+            Filter("type", "=", "indicator,sighting")
 
         Args:
             query (list): list of filters to extract which ones are TAXII
