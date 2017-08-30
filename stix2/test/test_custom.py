@@ -153,18 +153,33 @@ def test_custom_observable_object():
 
 
 def test_custom_observable_object_invalid_ref_property():
-    @stix2.observables.CustomObservable('x-new-obs', {
-        'property1': stix2.properties.StringProperty(required=True),
-        'property_ref': stix2.properties.StringProperty(),
-    })
-    class NewObs():
-        pass
-
     with pytest.raises(ValueError) as excinfo:
-        NewObs(_valid_refs={'1': 'file'},
-               property1='something',
-               property_ref='1')
+        @stix2.observables.CustomObservable('x-new-obs', {
+            'property_ref': stix2.properties.StringProperty(),
+        })
+        class NewObs():
+            pass
     assert "is named like an object reference property but is not an ObjectReferenceProperty" in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_refs_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomObservable('x-new-obs', {
+            'property_refs': stix2.properties.StringProperty(),
+        })
+        class NewObs():
+            pass
+    assert "is named like an object reference property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
+
+
+def test_custom_observable_object_invalid_refs_list_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomObservable('x-new-obs', {
+            'property_refs': stix2.properties.ListProperty(stix2.properties.StringProperty),
+        })
+        class NewObs():
+            pass
+    assert "is named like an object reference property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_valid_refs():
