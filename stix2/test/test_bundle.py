@@ -19,7 +19,6 @@ EXPECTED_BUNDLE = """{
         },
         {
             "created": "2017-01-01T12:34:56.000Z",
-            "description": "A ransomware related to ...",
             "id": "malware--00000000-0000-0000-0000-000000000002",
             "labels": [
                 "ransomware"

@@ -55,6 +55,12 @@ INDICATOR_KWARGS = dict(
 MALWARE_KWARGS = dict(
     labels=['ransomware'],
     name="Cryptolocker",
+)
+
+# All required args for a Malware instance, plus some optional args
+MALWARE_MORE_KWARGS = dict(
+    labels=['ransomware'],
+    name="Cryptolocker",
     description="A ransomware related to ..."
 )
 
