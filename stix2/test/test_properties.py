@@ -5,10 +5,10 @@ from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
 from stix2.observables import EmailMIMEComponent, ExtensionsProperty
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
-                              EnumProperty, HashesProperty, HexProperty,
-                              IDProperty, IntegerProperty, ListProperty,
-                              Property, ReferenceProperty, StringProperty,
-                              TimestampProperty, TypeProperty)
+                              EnumProperty, FloatProperty, HashesProperty,
+                              HexProperty, IDProperty, IntegerProperty,
+                              ListProperty, Property, ReferenceProperty,
+                              StringProperty, TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME
 
@@ -120,6 +120,27 @@ def test_integer_property_invalid(value):
 
 
 @pytest.mark.parametrize("value", [
+    2,
+    -1,
+    3.14,
+    False,
+])
+def test_float_property_valid(value):
+    int_prop = FloatProperty()
+    assert int_prop.clean(value) is not None
+
+
+@pytest.mark.parametrize("value", [
+    "something",
+    StringProperty(),
+])
+def test_float_property_invalid(value):
+    int_prop = FloatProperty()
+    with pytest.raises(ValueError):
+        int_prop.clean(value)
+
+
+@pytest.mark.parametrize("value", [
     True,
     False,
     'True',
@@ -215,12 +236,32 @@ def test_dictionary_property_valid(d):
     [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other thanlowercase a-z, "
                             "uppercase A-Z, numerals 0-9, hyphen (-), or underscore (_))."],
 ])
-def test_dictionary_property_invalid(d):
+def test_dictionary_property_invalid_key(d):
     dict_prop = DictionaryProperty()
 
     with pytest.raises(DictionaryKeyError) as excinfo:
         dict_prop.clean(d[0])
 
+    assert str(excinfo.value) == d[1]
+
+
+@pytest.mark.parametrize("d", [
+    ({}, "The dictionary property must contain a non-empty dictionary"),
+    # TODO: This error message could be made more helpful. The error is caused
+    # because `json.loads()` doesn't like the *single* quotes around the key
+    # name, even though they are valid in a Python dictionary. While technically
+    # accurate (a string is not a dictionary), if we want to be able to load
+    # string-encoded "dictionaries" that are, we need a better error message
+    # or an alternative to `json.loads()` ... and preferably *not* `eval()`. :-)
+    # Changing the following to `'{"description": "something"}'` does not cause
+    # any ValueError to be raised.
+    ("{'description': 'something'}", "The dictionary property must contain a dictionary"),
+])
+def test_dictionary_property_invalid(d):
+    dict_prop = DictionaryProperty()
+
+    with pytest.raises(ValueError) as excinfo:
+        dict_prop.clean(d[0])
     assert str(excinfo.value) == d[1]
 
 
@@ -257,10 +298,18 @@ def test_embedded_property():
         emb_prop.clean("string")
 
 
-def test_enum_property():
-    enum_prop = EnumProperty(['a', 'b', 'c'])
+@pytest.mark.parametrize("value", [
+    ['a', 'b', 'c'],
+    ('a', 'b', 'c'),
+    'b',
+])
+def test_enum_property_valid(value):
+    enum_prop = EnumProperty(value)
     assert enum_prop.clean('b')
 
+
+def test_enum_property_invalid():
+    enum_prop = EnumProperty(['a', 'b', 'c'])
     with pytest.raises(ValueError):
         enum_prop.clean('z')
 

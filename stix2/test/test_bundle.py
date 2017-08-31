@@ -118,6 +118,20 @@ def test_create_bundle_with_arg_listarg_and_kwarg(indicator, malware, relationsh
     assert str(bundle) == EXPECTED_BUNDLE
 
 
+def test_create_bundle_invalid(indicator, malware, relationship):
+    with pytest.raises(ValueError) as excinfo:
+        stix2.Bundle(objects=[1])
+    assert excinfo.value.reason == "This property may only contain a dictionary or object"
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.Bundle(objects=[{}])
+    assert excinfo.value.reason == "This property may only contain a non-empty dictionary or object"
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.Bundle(objects=[{'type': 'bundle'}])
+    assert excinfo.value.reason == 'This property may not contain a Bundle object'
+
+
 def test_parse_bundle():
     bundle = stix2.parse(EXPECTED_BUNDLE)
 

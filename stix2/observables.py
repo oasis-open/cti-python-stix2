@@ -29,16 +29,13 @@ class ObservableProperty(Property):
         except ValueError:
             raise ValueError("The observable property must contain a dictionary")
         if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
+            raise ValueError("The observable property must contain a non-empty dictionary")
 
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
         # from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
             parsed_obj = parse_observable(obj, valid_refs)
-            if not issubclass(type(parsed_obj), _Observable):
-                raise ValueError("Objects in an observable property must be "
-                                 "Cyber Observable Objects")
             dictified[key] = parsed_obj
 
         return dictified
@@ -58,7 +55,7 @@ class ExtensionsProperty(DictionaryProperty):
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
         if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
+            raise ValueError("The extensions property must contain a non-empty dictionary")
 
         if self.enclosing_type in EXT_MAP:
             specific_type_map = EXT_MAP[self.enclosing_type]
@@ -74,7 +71,7 @@ class ExtensionsProperty(DictionaryProperty):
                 else:
                     raise ValueError("The key used in the extensions dictionary is not an extension type name")
         else:
-            raise ValueError("The enclosing type has no extensions defined")
+            raise ValueError("The enclosing type '%s' has no extensions defined" % self.enclosing_type)
         return dictified
 
 
@@ -87,6 +84,7 @@ class Artifact(_Observable):
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
         ('hashes', HashesProperty()),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -103,6 +101,7 @@ class AutonomousSystem(_Observable):
         ('number', IntegerProperty()),
         ('name', StringProperty()),
         ('rir', StringProperty()),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -118,6 +117,7 @@ class Directory(_Observable):
         ('modified', TimestampProperty()),
         ('accessed', TimestampProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -128,6 +128,7 @@ class DomainName(_Observable):
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -139,6 +140,8 @@ class EmailAddress(_Observable):
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+
     ])
 
 
@@ -175,6 +178,7 @@ class EmailMessage(_Observable):
         ('body', StringProperty()),
         ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
         ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -186,6 +190,7 @@ class EmailMessage(_Observable):
 
 
 class ArchiveExt(_Extension):
+    _type = 'archive-ext'
     _properties = OrderedDict()
     _properties.update([
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types='file'), required=True)),
@@ -204,6 +209,7 @@ class AlternateDataStream(_STIXBase):
 
 
 class NTFSExt(_Extension):
+    _type = 'ntfs-ext'
     _properties = OrderedDict()
     _properties.update([
         ('sid', StringProperty()),
@@ -212,6 +218,7 @@ class NTFSExt(_Extension):
 
 
 class PDFExt(_Extension):
+    _type = 'pdf-ext'
     _properties = OrderedDict()
     _properties.update([
         ('version', StringProperty()),
@@ -223,6 +230,7 @@ class PDFExt(_Extension):
 
 
 class RasterImageExt(_Extension):
+    _type = 'raster-image-ext'
     _properties = OrderedDict()
     _properties.update([
         ('image_height', IntegerProperty()),
@@ -285,6 +293,7 @@ class WindowsPESection(_STIXBase):
 
 
 class WindowsPEBinaryExt(_Extension):
+    _type = 'windows-pebinary-ext'
     _properties = OrderedDict()
     _properties.update([
         ('pe_type', StringProperty(required=True)),  # open_vocab
@@ -340,6 +349,7 @@ class IPv4Address(_Observable):
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -351,6 +361,7 @@ class IPv6Address(_Observable):
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -360,6 +371,7 @@ class MACAddress(_Observable):
     _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -369,10 +381,12 @@ class Mutex(_Observable):
     _properties.update([
         ('type', TypeProperty(_type)),
         ('name', StringProperty()),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
 class HTTPRequestExt(_Extension):
+    _type = 'http-request-ext'
     _properties = OrderedDict()
     _properties.update([
         ('request_method', StringProperty(required=True)),
@@ -385,6 +399,7 @@ class HTTPRequestExt(_Extension):
 
 
 class ICMPExt(_Extension):
+    _type = 'icmp-ext'
     _properties = OrderedDict()
     _properties.update([
         ('icmp_type_hex', HexProperty(required=True)),
@@ -393,6 +408,7 @@ class ICMPExt(_Extension):
 
 
 class SocketExt(_Extension):
+    _type = 'socket-ext'
     _properties = OrderedDict()
     _properties.update([
         ('address_family', EnumProperty([
@@ -427,6 +443,7 @@ class SocketExt(_Extension):
 
 
 class TCPExt(_Extension):
+    _type = 'tcp-ext'
     _properties = OrderedDict()
     _properties.update([
         ('src_flags_hex', HexProperty()),
@@ -465,6 +482,7 @@ class NetworkTraffic(_Observable):
 
 
 class WindowsProcessExt(_Extension):
+    _type = 'windows-process-ext'
     _properties = OrderedDict()
     _properties.update([
         ('aslr_enabled', BooleanProperty()),
@@ -477,6 +495,7 @@ class WindowsProcessExt(_Extension):
 
 
 class WindowsServiceExt(_Extension):
+    _type = 'windows-service-ext'
     _properties = OrderedDict()
     _properties.update([
         ('service_name', StringProperty(required=True)),
@@ -556,6 +575,7 @@ class Software(_Observable):
         ('languages', ListProperty(StringProperty)),
         ('vendor', StringProperty()),
         ('version', StringProperty()),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -565,10 +585,12 @@ class URL(_Observable):
     _properties.update([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
 class UNIXAccountExt(_Extension):
+    _type = 'unix-account-ext'
     _properties = OrderedDict()
     _properties.update([
         ('gid', IntegerProperty()),
@@ -635,6 +657,7 @@ class WindowsRegistryKey(_Observable):
         ('modified', TimestampProperty()),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('number_of_subkeys', IntegerProperty()),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
     @property
@@ -684,6 +707,7 @@ class X509Certificate(_Observable):
         ('subject_public_key_modulus', StringProperty()),
         ('subject_public_key_exponent', IntegerProperty()),
         ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
@@ -708,39 +732,32 @@ OBJ_MAP_OBSERVABLE = {
     'x509-certificate': X509Certificate,
 }
 
-EXT_MAP_FILE = {
-    'archive-ext': ArchiveExt,
-    'ntfs-ext': NTFSExt,
-    'pdf-ext': PDFExt,
-    'raster-image-ext': RasterImageExt,
-    'windows-pebinary-ext': WindowsPEBinaryExt
-}
-
-EXT_MAP_NETWORK_TRAFFIC = {
-    'http-request-ext': HTTPRequestExt,
-    'icmp-ext': ICMPExt,
-    'socket-ext': SocketExt,
-    'tcp-ext': TCPExt,
-}
-
-EXT_MAP_PROCESS = {
-    'windows-process-ext': WindowsProcessExt,
-    'windows-service-ext': WindowsServiceExt,
-}
-
-EXT_MAP_USER_ACCOUNT = {
-    'unix-account-ext': UNIXAccountExt,
-}
 
 EXT_MAP = {
-    'file': EXT_MAP_FILE,
-    'network-traffic': EXT_MAP_NETWORK_TRAFFIC,
-    'process': EXT_MAP_PROCESS,
-    'user-account': EXT_MAP_USER_ACCOUNT,
+    'file': {
+        'archive-ext': ArchiveExt,
+        'ntfs-ext': NTFSExt,
+        'pdf-ext': PDFExt,
+        'raster-image-ext': RasterImageExt,
+        'windows-pebinary-ext': WindowsPEBinaryExt
+    },
+    'network-traffic': {
+        'http-request-ext': HTTPRequestExt,
+        'icmp-ext': ICMPExt,
+        'socket-ext': SocketExt,
+        'tcp-ext': TCPExt,
+    },
+    'process': {
+        'windows-process-ext': WindowsProcessExt,
+        'windows-service-ext': WindowsServiceExt,
+    },
+    'user-account': {
+        'unix-account-ext': UNIXAccountExt,
+    },
 }
 
 
-def parse_observable(data, _valid_refs, allow_custom=False):
+def parse_observable(data, _valid_refs=None, allow_custom=False):
     """Deserialize a string or file-like object into a STIX Cyber Observable
     object.
 
@@ -756,19 +773,20 @@ def parse_observable(data, _valid_refs, allow_custom=False):
     """
 
     obj = get_dict(data)
-    obj['_valid_refs'] = _valid_refs
+    obj['_valid_refs'] = _valid_refs or []
 
     if 'type' not in obj:
-        raise ParseError("Can't parse object with no 'type' property: %s" % str(obj))
+        raise ParseError("Can't parse observable with no 'type' property: %s" % str(obj))
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        raise ParseError("Can't parse unknown object type '%s'! For custom observables, use the CustomObservable decorator." % obj['type'])
+        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
+                         "use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
             if name not in EXT_MAP[obj['type']]:
-                raise ParseError("Can't parse Unknown extension type '%s' for object type '%s'!" % (name, obj['type']))
+                raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
             ext_class = EXT_MAP[obj['type']][name]
             obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
 
@@ -807,6 +825,16 @@ def CustomObservable(type='x-custom-observable', properties=None):
             if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
+            # Check properties ending in "_ref/s" are ObjectReferenceProperties
+            for prop_name, prop in properties:
+                if prop_name.endswith('_ref') and not isinstance(prop, ObjectReferenceProperty):
+                    raise ValueError("'%s' is named like an object reference property but "
+                                     "is not an ObjectReferenceProperty." % prop_name)
+                elif (prop_name.endswith('_refs') and (not isinstance(prop, ListProperty)
+                                                       or not isinstance(prop.contained, ObjectReferenceProperty))):
+                    raise ValueError("'%s' is named like an object reference list property but "
+                                     "is not a ListProperty containing ObjectReferenceProperty." % prop_name)
+
             _properties.update(properties)
 
             def __init__(self, **kwargs):
@@ -814,6 +842,53 @@ def CustomObservable(type='x-custom-observable', properties=None):
                 cls.__init__(self, **kwargs)
 
         _register_observable(_Custom)
+        return _Custom
+
+    return custom_builder
+
+
+def _register_extension(observable, new_extension):
+    """Register a custom extension to a STIX Cyber Observable type.
+    """
+
+    try:
+        observable_type = observable._type
+    except AttributeError:
+        raise ValueError("Unknown observable type. Custom observables must be "
+                         "created with the @CustomObservable decorator.")
+
+    try:
+        EXT_MAP[observable_type][new_extension._type] = new_extension
+    except KeyError:
+        if observable_type not in OBJ_MAP_OBSERVABLE:
+            raise ValueError("Unknown observable type '%s'. Custom observables "
+                             "must be created with the @CustomObservable decorator."
+                             % observable_type)
+        else:
+            EXT_MAP[observable_type] = {new_extension._type: new_extension}
+
+
+def CustomExtension(observable=None, type='x-custom-observable', properties={}):
+    """Decorator for custom extensions to STIX Cyber Observables
+    """
+
+    if not observable or not issubclass(observable, _Observable):
+        raise ValueError("'observable' must be a valid Observable class!")
+
+    def custom_builder(cls):
+
+        class _Custom(cls, _Extension):
+            _type = type
+            _properties = {
+                'extensions': ExtensionsProperty(enclosing_type=_type),
+            }
+            _properties.update(properties)
+
+            def __init__(self, **kwargs):
+                _Extension.__init__(self, **kwargs)
+                cls.__init__(self, **kwargs)
+
+        _register_extension(observable, _Custom)
         return _Custom
 
     return custom_builder

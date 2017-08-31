@@ -216,18 +216,14 @@ class _Observable(_STIXBase):
         try:
             allowed_types = prop.contained.valid_types
         except AttributeError:
-            try:
-                allowed_types = prop.valid_types
-            except AttributeError:
-                raise ValueError("'%s' is named like an object reference property but "
-                                 "is not an ObjectReferenceProperty or a ListProperty "
-                                 "containing ObjectReferenceProperty." % prop_name)
+            allowed_types = prop.valid_types
+
+        try:
+            ref_type = self._STIXBase__valid_refs[ref]
+        except TypeError:
+            raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
 
         if allowed_types:
-            try:
-                ref_type = self._STIXBase__valid_refs[ref]
-            except TypeError:
-                raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
             if ref_type not in allowed_types:
                 raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 

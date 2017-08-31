@@ -127,6 +127,42 @@ def test_observed_data_example_with_bad_refs():
     assert excinfo.value.reason == "Invalid object reference for 'Directory:contains_refs': '2' is not a valid object in local scope"
 
 
+def test_observed_data_example_with_non_dictionary():
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.ObservedData(
+            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created="2016-04-06T19:58:16.000Z",
+            modified="2016-04-06T19:58:16.000Z",
+            first_observed="2015-12-21T19:00:00Z",
+            last_observed="2015-12-21T19:00:00Z",
+            number_observed=50,
+            objects="file: foo.exe",
+        )
+
+    assert excinfo.value.cls == stix2.ObservedData
+    assert excinfo.value.prop_name == "objects"
+    assert 'must contain a dictionary' in excinfo.value.reason
+
+
+def test_observed_data_example_with_empty_dictionary():
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.ObservedData(
+            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created="2016-04-06T19:58:16.000Z",
+            modified="2016-04-06T19:58:16.000Z",
+            first_observed="2015-12-21T19:00:00Z",
+            last_observed="2015-12-21T19:00:00Z",
+            number_observed=50,
+            objects={},
+        )
+
+    assert excinfo.value.cls == stix2.ObservedData
+    assert excinfo.value.prop_name == "objects"
+    assert 'must contain a non-empty dictionary' in excinfo.value.reason
+
+
 @pytest.mark.parametrize("data", [
     EXPECTED,
     {
@@ -206,7 +242,7 @@ def test_artifact_example_dependency_error():
         stix2.Artifact(url="http://example.com/sirvizio.exe")
 
     assert excinfo.value.dependencies == [("hashes", "url")]
-    assert str(excinfo.value) == "The property dependencies for Artifact: (hashes, url) are not met."
+    assert str(excinfo.value) == "The property dependencies for Artifact: (hashes) are not met."
 
 
 @pytest.mark.parametrize("data", [
@@ -419,6 +455,8 @@ def test_parse_email_message_with_at_least_one_error(data):
 
     assert excinfo.value.cls == stix2.EmailMIMEComponent
     assert excinfo.value.properties == ["body", "body_raw_ref"]
+    assert "At least one of the" in str(excinfo.value)
+    assert "must be populated" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("data", [
@@ -558,7 +596,7 @@ def test_artifact_mutual_exclusion_error():
 
     assert excinfo.value.cls == stix2.Artifact
     assert excinfo.value.properties == ["payload_bin", "url"]
-    assert str(excinfo.value) == "The (payload_bin, url) properties for Artifact are mutually exclusive."
+    assert 'are mutually exclusive' in str(excinfo.value)
 
 
 def test_directory_example():
@@ -804,6 +842,8 @@ def test_file_example_encryption_error():
 
     assert excinfo.value.cls == stix2.File
     assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
+    assert "property dependencies" in str(excinfo.value)
+    assert "are not met" in str(excinfo.value)
 
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
         stix2.File(name="qwerty.dll",
