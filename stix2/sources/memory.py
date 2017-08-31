@@ -24,7 +24,8 @@ import os
 from stix2validator import validate_string
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore, Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter
 
 
 class MemoryStore(DataStore):
@@ -205,9 +206,7 @@ class MemorySource(DataSource):
             return stix_obj
 
         # if there are filters from the composite level, process full query
-        query = [
-            Filter("id", "=", stix_id)
-        ]
+        query = [Filter("id", "=", stix_id)]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
@@ -220,20 +219,9 @@ class MemorySource(DataSource):
         """
         Notes:
             Since Memory sources/sinks don't handle multiple versions of a
-            STIX object, this operation is futile. Translate call to get().
-            (Approved by G.B.)
+            STIX object, this operation is unnecessary. Translate call to get().
 
         """
-
-        # query = [
-        #     {
-        #         "field": "id",
-        #         "op": "=",
-        #         "value": stix_id
-        #     }
-        # ]
-
-        # all_data = self.query(query=query, _composite_filters=_composite_filters)
 
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
