@@ -2,7 +2,8 @@ import pytest
 from taxii2client import Collection
 
 from stix2.sources import (CompositeDataSource, DataSink, DataSource,
-                           DataStore, Filter, make_id, taxii)
+                           DataStore, make_id, taxii)
+from stix2.sources.filters import Filter
 from stix2.sources.memory import MemorySource
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'

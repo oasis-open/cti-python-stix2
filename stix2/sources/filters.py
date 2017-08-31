@@ -13,8 +13,6 @@ or if cleaner solution possible.
 import collections
 import types
 
-import filters
-
 # Currently, only STIX 2.0 common SDO fields (that are not complex objects)
 # are supported for filtering on
 STIX_COMMON_FIELDS = [
@@ -180,11 +178,11 @@ def check_labels_filter(filter_, stix_obj):
 
 
 def check_modified_filter(filter_, stix_obj):
-    return _timestamp_filter(filter_, stix_obj["created"])
+    return _timestamp_filter(filter_, stix_obj["modified"])
 
 
-def check_object_markings_ref_filter(filter_, stix_obj):
-    for marking_id in stix_obj["object_market_refs"]:
+def check_object_marking_refs_filter(filter_, stix_obj):
+    for marking_id in stix_obj["object_marking_refs"]:
         r = _id_filter(filter_, marking_id)
         if r:
             return r
@@ -199,29 +197,8 @@ def check_type_filter(filter_, stix_obj):
     return _string_filter(filter_, stix_obj["type"])
 
 
-# script to collect STIX common field filter
-# functions and create mapping to them
-
-"""
-MK: I want to build the filter name -> filter function dictionary
-dynamically whenever it is imported. By enumerating the functions
-in this module, extracting the "check*" functions and making
-pointers to them. But having issues getting an interable of the
-modules entities. globals() works but returns an active dictionary
-so iterating over it is a no go
-"""
-
-for entity in dir(filters):
-    if "check_" in str(entity) and isinstance(filters.__dict__.get(entity), types.FunctionType):
-        field_name = entity.split("_")[1].split("_")[0]
-        STIX_COMMON_FILTERS_MAP[field_name] = filters.__dict__.get(entity)
-
-# Tried this to, didnt work ##############
-"""
-import sys
-for entity in dir(sys.modules[__name__]):
-    print(entity)
-    if "check_" in str(entity) and type(entity) == "function":
-        print(sys.modules[__name__].__dict__.get(entity))
-        STIX_COMMON_FILTERS_MAP[str(entity)] = sys.modules[__name__].__dict__.get(entity)
-"""
+# Create mapping of field names to filter functions
+for name, obj in dict(globals()).items():
+    if "check_" in name and isinstance(obj, types.FunctionType):
+        field_name = "_".join(name.split("_")[1:-1])
+        STIX_COMMON_FILTERS_MAP[field_name] = obj

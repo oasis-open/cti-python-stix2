@@ -20,8 +20,8 @@ import uuid
 
 from six import iteritems
 
-from filters import (FILTER_OPS, FILTER_VALUE_TYPES, STIX_COMMON_FIELDS,
-                     STIX_COMMON_FILTERS_MAP)
+from stix2.sources.filters import (FILTER_OPS, FILTER_VALUE_TYPES,
+                                   STIX_COMMON_FIELDS, STIX_COMMON_FILTERS_MAP)
 
 
 def make_id():
@@ -273,7 +273,7 @@ class DataSource(object):
                         clean = False
                         break
 
-                    match = STIX_COMMON_FILTERS_MAP[filter_.field](filter_, stix_obj)
+                    match = STIX_COMMON_FILTERS_MAP[filter_.field.split('.')[0]](filter_, stix_obj)
                     if not match:
                         clean = False
                         break

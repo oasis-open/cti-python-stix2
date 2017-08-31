@@ -12,7 +12,8 @@ TODO: Test everything
 
 import json
 
-from stix2.sources import DataSink, DataSource, DataStore, Filter, make_id
+from stix2.sources import DataSink, DataSource, DataStore, make_id
+from stix2.sources.filters import Filter
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
