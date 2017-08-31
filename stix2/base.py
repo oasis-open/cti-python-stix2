@@ -3,7 +3,8 @@
 import collections
 import copy
 import datetime as dt
-import json
+
+import simplejson as json
 
 from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          ExtraPropertiesError, ImmutableError,
@@ -11,7 +12,7 @@ from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          MissingPropertiesError,
                          MutuallyExclusivePropertiesError)
 from .markings.utils import validate
-from .utils import NOW, format_datetime, get_timestamp
+from .utils import NOW, find_property_index, format_datetime, get_timestamp
 from .utils import new_version as _new_version
 from .utils import revoke as _revoke
 
@@ -37,6 +38,9 @@ def get_required_properties(properties):
 
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
+
+    def object_properties(self):
+        return list(self._properties.keys())
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
@@ -142,12 +146,18 @@ class _STIXBase(collections.Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        # TODO: put keys in specific order. Probably need custom JSON encoder.
-        return json.dumps(self, indent=4, sort_keys=True, cls=STIXJSONEncoder,
-                          separators=(",", ": "))  # Don't include spaces after commas.
+        properties = self.object_properties()
+
+        def sort_by(element):
+            return find_property_index(self, properties, element)
+
+        # separators kwarg -> don't include spaces after commas.
+        return json.dumps(self, indent=4, cls=STIXJSONEncoder,
+                          item_sort_key=sort_by,
+                          separators=(",", ": "))
 
     def __repr__(self):
-        props = [(k, self[k]) for k in sorted(self._properties) if self.get(k)]
+        props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 
@@ -186,18 +196,14 @@ class _Observable(_STIXBase):
         try:
             allowed_types = prop.contained.valid_types
         except AttributeError:
-            try:
-                allowed_types = prop.valid_types
-            except AttributeError:
-                raise ValueError("'%s' is named like an object reference property but "
-                                 "is not an ObjectReferenceProperty or a ListProperty "
-                                 "containing ObjectReferenceProperty." % prop_name)
+            allowed_types = prop.valid_types
+
+        try:
+            ref_type = self._STIXBase__valid_refs[ref]
+        except TypeError:
+            raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
 
         if allowed_types:
-            try:
-                ref_type = self._STIXBase__valid_refs[ref]
-            except TypeError:
-                raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
             if ref_type not in allowed_types:
                 raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 

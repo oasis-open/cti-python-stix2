@@ -8,22 +8,24 @@ import stix2
 
 from .constants import OBSERVED_DATA_ID
 
+OBJECTS_REGEX = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL)
+
 
 EXPECTED = """{
-    "created": "2016-04-06T19:58:16.000Z",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-    "first_observed": "2015-12-21T19:00:00Z",
+    "type": "observed-data",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-    "last_observed": "2015-12-21T19:00:00Z",
+    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created": "2016-04-06T19:58:16.000Z",
     "modified": "2016-04-06T19:58:16.000Z",
+    "first_observed": "2015-12-21T19:00:00Z",
+    "last_observed": "2015-12-21T19:00:00Z",
     "number_observed": 50,
     "objects": {
         "0": {
-            "name": "foo.exe",
-            "type": "file"
+            "type": "file",
+            "name": "foo.exe"
         }
-    },
-    "type": "observed-data"
+    }
 }"""
 
 
@@ -48,27 +50,27 @@ def test_observed_data_example():
 
 
 EXPECTED_WITH_REF = """{
-    "created": "2016-04-06T19:58:16.000Z",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-    "first_observed": "2015-12-21T19:00:00Z",
+    "type": "observed-data",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-    "last_observed": "2015-12-21T19:00:00Z",
+    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created": "2016-04-06T19:58:16.000Z",
     "modified": "2016-04-06T19:58:16.000Z",
+    "first_observed": "2015-12-21T19:00:00Z",
+    "last_observed": "2015-12-21T19:00:00Z",
     "number_observed": 50,
     "objects": {
         "0": {
-            "name": "foo.exe",
-            "type": "file"
+            "type": "file",
+            "name": "foo.exe"
         },
         "1": {
+            "type": "directory",
+            "path": "/usr/home",
             "contains_refs": [
                 "0"
-            ],
-            "path": "/usr/home",
-            "type": "directory"
+            ]
         }
-    },
-    "type": "observed-data"
+    }
 }"""
 
 
@@ -125,6 +127,42 @@ def test_observed_data_example_with_bad_refs():
     assert excinfo.value.reason == "Invalid object reference for 'Directory:contains_refs': '2' is not a valid object in local scope"
 
 
+def test_observed_data_example_with_non_dictionary():
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.ObservedData(
+            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created="2016-04-06T19:58:16.000Z",
+            modified="2016-04-06T19:58:16.000Z",
+            first_observed="2015-12-21T19:00:00Z",
+            last_observed="2015-12-21T19:00:00Z",
+            number_observed=50,
+            objects="file: foo.exe",
+        )
+
+    assert excinfo.value.cls == stix2.ObservedData
+    assert excinfo.value.prop_name == "objects"
+    assert 'must contain a dictionary' in excinfo.value.reason
+
+
+def test_observed_data_example_with_empty_dictionary():
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.ObservedData(
+            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created="2016-04-06T19:58:16.000Z",
+            modified="2016-04-06T19:58:16.000Z",
+            first_observed="2015-12-21T19:00:00Z",
+            last_observed="2015-12-21T19:00:00Z",
+            number_observed=50,
+            objects={},
+        )
+
+    assert excinfo.value.cls == stix2.ObservedData
+    assert excinfo.value.prop_name == "objects"
+    assert 'must contain a non-empty dictionary' in excinfo.value.reason
+
+
 @pytest.mark.parametrize("data", [
     EXPECTED,
     {
@@ -173,7 +211,7 @@ def test_parse_observed_data(data):
     }""",
 ])
 def test_parse_artifact_valid(data):
-    odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["0"].type == "artifact"
 
@@ -194,7 +232,7 @@ def test_parse_artifact_valid(data):
     }""",
 ])
 def test_parse_artifact_invalid(data):
-    odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     with pytest.raises(ValueError):
         stix2.parse(odata_str)
 
@@ -204,6 +242,7 @@ def test_artifact_example_dependency_error():
         stix2.Artifact(url="http://example.com/sirvizio.exe")
 
     assert excinfo.value.dependencies == [("hashes", "url")]
+    assert str(excinfo.value) == "The property dependencies for Artifact: (hashes) are not met."
 
 
 @pytest.mark.parametrize("data", [
@@ -215,7 +254,7 @@ def test_artifact_example_dependency_error():
     }""",
 ])
 def test_parse_autonomous_system_valid(data):
-    odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["0"].type == "autonomous-system"
     assert odata.objects["0"].number == 15139
@@ -358,7 +397,7 @@ def test_parse_email_message_not_multipart(data):
         }""",
 ])
 def test_parse_file_archive(data):
-    odata_str = re.compile('"objects".+\},', re.DOTALL).sub('"objects": { %s },' % data, EXPECTED)
+    odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str)
     assert odata.objects["3"].extensions['archive-ext'].version == "5.0"
 
@@ -416,6 +455,8 @@ def test_parse_email_message_with_at_least_one_error(data):
 
     assert excinfo.value.cls == stix2.EmailMIMEComponent
     assert excinfo.value.properties == ["body", "body_raw_ref"]
+    assert "At least one of the" in str(excinfo.value)
+    assert "must be populated" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("data", [
@@ -555,6 +596,7 @@ def test_artifact_mutual_exclusion_error():
 
     assert excinfo.value.cls == stix2.Artifact
     assert excinfo.value.properties == ["payload_bin", "url"]
+    assert 'are mutually exclusive' in str(excinfo.value)
 
 
 def test_directory_example():
@@ -800,6 +842,8 @@ def test_file_example_encryption_error():
 
     assert excinfo.value.cls == stix2.File
     assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
+    assert "property dependencies" in str(excinfo.value)
+    assert "are not met" in str(excinfo.value)
 
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
         stix2.File(name="qwerty.dll",
@@ -925,6 +969,10 @@ def test_process_example_empty_error():
     properties_of_process = list(stix2.Process._properties.keys())
     properties_of_process.remove("type")
     assert excinfo.value.properties == sorted(properties_of_process)
+    msg = "At least one of the ({1}) properties for {0} must be populated."
+    msg = msg.format(stix2.Process.__name__,
+                     ", ".join(sorted(properties_of_process)))
+    assert str(excinfo.value) == msg
 
 
 def test_process_example_empty_with_extensions():

@@ -29,6 +29,9 @@ class STIXdatetime(dt.datetime):
         self.precision = precision
         return self
 
+    def __repr__(self):
+        return "'%s'" % format_datetime(self)
+
 
 def get_timestamp():
     return STIXdatetime.now(tz=pytz.UTC)
@@ -82,7 +85,7 @@ def parse_into_datetime(value, precision=None):
 
     # Ensure correct precision
     if not precision:
-        return ts
+        return STIXdatetime(ts, precision=precision)
     ms = ts.microsecond
     if precision == 'second':
         ts = ts.replace(microsecond=0)
@@ -117,6 +120,41 @@ def get_dict(data):
             return dict(data)
         except (ValueError, TypeError):
             raise ValueError("Cannot convert '%s' to dictionary." % str(data))
+
+
+def find_property_index(obj, properties, tuple_to_find):
+    """Recursively find the property in the object model, return the index
+    according to the _properties OrderedDict. If its a list look for
+    individual objects.
+    """
+    from .base import _STIXBase
+    try:
+        if tuple_to_find[1] in obj._inner.values():
+            return properties.index(tuple_to_find[0])
+        raise ValueError
+    except ValueError:
+        for pv in obj._inner.values():
+            if isinstance(pv, list):
+                for item in pv:
+                    if isinstance(item, _STIXBase):
+                        val = find_property_index(item,
+                                                  item.object_properties(),
+                                                  tuple_to_find)
+                        if val is not None:
+                            return val
+            elif isinstance(pv, dict):
+                if pv.get(tuple_to_find[0]) is not None:
+                    try:
+                        return int(tuple_to_find[0])
+                    except ValueError:
+                        return len(tuple_to_find[0])
+                for item in pv.values():
+                    if isinstance(item, _STIXBase):
+                        val = find_property_index(item,
+                                                  item.object_properties(),
+                                                  tuple_to_find)
+                        if val is not None:
+                            return val
 
 
 def new_version(data, **kwargs):

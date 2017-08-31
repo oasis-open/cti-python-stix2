@@ -19,6 +19,7 @@ def get_version():
 with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
+
 setup(
     name='stix2',
     version=get_version(),
@@ -46,9 +47,14 @@ setup(
     keywords="stix stix2 json cti cyber threat intelligence",
     packages=find_packages(),
     install_requires=[
-        'pytz',
-        'six',
+        'ordereddict ; python_version<"2.7"',
         'python-dateutil',
+        'pytz',
         'requests',
+        'simplejson',
+        'six',
+        'stix2-patterns',
+        'stix2-validator',
+        'taxii2-client',
     ],
 )
