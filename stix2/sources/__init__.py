@@ -253,34 +253,31 @@ class DataSource(object):
         for stix_obj in stix_objs:
             clean = True
             for filter_ in query:
-                try:
-                    # skip filter as filter was identified (when added) as
-                    # not a common filter
-                    if filter_.field not in STIX_COMMON_FIELDS:
-                        raise Exception("Error, field: {0} is not supported for filtering on.".format(filter_.field))
+                # skip filter as filter was identified (when added) as
+                # not a common filter
+                if filter_.field not in STIX_COMMON_FIELDS:
+                    raise ValueError("Error, field: {0} is not supported for filtering on.".format(filter_.field))
 
-                    # For properties like granular_markings and external_references
-                    # need to break the first property from the string.
-                    if "." in filter_.field:
-                        field = filter_.field.split(".")[0]
-                    else:
-                        field = filter_.field
+                # For properties like granular_markings and external_references
+                # need to break the first property from the string.
+                if "." in filter_.field:
+                    field = filter_.field.split(".")[0]
+                else:
+                    field = filter_.field
 
-                    # check filter "field" is in STIX object - if cant be
-                    # applied due to STIX object, STIX object is discarded
-                    # (i.e. did not make it through the filter)
-                    if field not in stix_obj.keys():
-                        clean = False
-                        break
+                # check filter "field" is in STIX object - if cant be
+                # applied due to STIX object, STIX object is discarded
+                # (i.e. did not make it through the filter)
+                if field not in stix_obj.keys():
+                    clean = False
+                    break
 
-                    match = STIX_COMMON_FILTERS_MAP[filter_.field.split('.')[0]](filter_, stix_obj)
-                    if not match:
-                        clean = False
-                        break
-                    elif match == -1:
-                        raise Exception("Error, filter operator: {0} not supported for specified field: {1}".format(filter_.op, filter_.field))
-                except Exception as e:
-                    raise ValueError(e)
+                match = STIX_COMMON_FILTERS_MAP[filter_.field.split('.')[0]](filter_, stix_obj)
+                if not match:
+                    clean = False
+                    break
+                elif match == -1:
+                    raise ValueError("Error, filter operator: {0} not supported for specified field: {1}".format(filter_.op, filter_.field))
 
             # if object unmarked after all filters, add it
             if clean:
