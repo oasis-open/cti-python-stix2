@@ -29,6 +29,16 @@ MARKING_IDS = [
     "marking-definition--2802dfb1-1019-40a8-8848-68d0ec0e417f",
 ]
 
+# All required args for a Campaign instance, plus some optional args
+CAMPAIGN_MORE_KWARGS = dict(
+    id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+    created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    created="2016-04-06T20:03:00.000Z",
+    modified="2016-04-06T20:03:00.000Z",
+    name="Green Group Attacks Against Finance",
+    description="Campaign by Green Group against a series of targets in the financial services sector.",
+)
+
 # Minimum required args for an Identity instance
 IDENTITY_KWARGS = dict(
     name="John Smith",

@@ -9,10 +9,11 @@ from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          ExtraPropertiesError, ImmutableError,
                          InvalidObjRefError, InvalidValueError,
                          MissingPropertiesError,
-                         MutuallyExclusivePropertiesError, RevokeError,
-                         UnmodifiablePropertyError)
+                         MutuallyExclusivePropertiesError)
 from .markings.utils import validate
-from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
+from .utils import NOW, format_datetime, get_timestamp
+from .utils import new_version as _new_version
+from .utils import revoke as _revoke
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
@@ -162,30 +163,10 @@ class _STIXBase(collections.Mapping):
 #  Versioning API
 
     def new_version(self, **kwargs):
-        unchangable_properties = []
-        if self.get("revoked"):
-            raise RevokeError("new_version")
-        new_obj_inner = copy.deepcopy(self._inner)
-        properties_to_change = kwargs.keys()
-        for prop in ["created", "created_by_ref", "id", "type"]:
-            if prop in properties_to_change:
-                unchangable_properties.append(prop)
-        if unchangable_properties:
-            raise UnmodifiablePropertyError(unchangable_properties)
-        cls = type(self)
-        if 'modified' not in kwargs:
-            kwargs['modified'] = get_timestamp()
-        else:
-            new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
-            if new_modified_property < self.modified:
-                raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
-        new_obj_inner.update(kwargs)
-        return cls(**new_obj_inner)
+        return _new_version(self, **kwargs)
 
     def revoke(self):
-        if self.get("revoked"):
-            raise RevokeError("revoke")
-        return self.new_version(revoked=True)
+        return _revoke(self)
 
 
 class _Observable(_STIXBase):
