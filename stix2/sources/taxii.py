@@ -1,132 +1,97 @@
-import requests
-from requests.auth import HTTPBasicAuth
+"""
+Python STIX 2.0 TAXII Source/Sink
 
-from stix2.sources import DataSource
+Classes:
+    TAXIICollectionStore
+    TAXIICollectionSink
+    TAXIICollectionSource
 
-# TODO: -Should we make properties for the TAXIIDataSource address and other
-# possible variables that are found in "self.taxii_info"
+TODO: Test everything
 
+"""
+
+import json
+
+from stix2.sources import DataSink, DataSource, DataStore, make_id
+from stix2.sources.filters import Filter
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
-test = True
 
-
-class TAXIIDataSource(DataSource):
-    """STIX 2.0 Data Source - TAXII 2.0 module"""
-
-    def __init__(self, api_root=None, auth=None, name="TAXII"):
-        super(TAXIIDataSource, self).__init__(name=name)
-
-        if not api_root:
-            api_root = "http://localhost:5000"
-        if not auth:
-            auth = {"user": "admin", "pass": "taxii"}
-
-        self.taxii_info = {
-            "api_root": {
-                "url": api_root
-            },
-            "auth": auth
-        }
-
-        if test:
-            return
-
-        try:
-            # check api-root is reachable/exists and grab api collections
-            coll_url = self.taxii_info['api_root']['url'] + "/collections/"
-            headers = {}
-
-            resp = requests.get(coll_url,
-                                headers=headers,
-                                auth=HTTPBasicAuth(self.taxii_info['auth']['user'],
-                                                   self.taxii_info['auth']['pass']))
-            # TESTING
-            # print("\n-------__init__() ----\n")
-            # print(resp.text)
-            # print("\n")
-            # print(resp.status_code)
-            # END TESTING
-
-            # raise http error if request returned error code
-            resp.raise_for_status()
-
-            resp_json = resp.json()
-
-            try:
-                self.taxii_info['api_root']['collections'] = resp_json['collections']
-            except KeyError as e:
-                if e == "collections":
-                    raise
-                    # raise type(e), type(e)(e.message +
-                    # "To connect to the TAXII collections, the API root
-                    # resource must contain a collection endpoint URL.
-                    # This was not found in the API root resource received
-                    # from the API root" ), sys.exc_info()[2]
-
-        except requests.ConnectionError as e:
-            raise
-            # raise type(e), type(e)(e.message +
-            #     "Attempting to connect to %s" % coll_url)
-
-    def get(self, id_, _composite_filters=None):
-        """Get STIX 2.0 object from TAXII source by specified 'id'
-
-        Notes:
-            Just pass _composite_filters to the query() as they are applied
-            there. de-duplication of results is also done within query()
+class TAXIICollectionStore(DataStore):
+    """
+    """
+    def __init__(self, collection, name="TAXIICollectionStore"):
+        """
+        Create a new TAXII Collection Data store
 
         Args:
-            id_ (str): id of STIX object to retrieve
-
-            _composite_filters (list): filters passed from a Composite Data
-                Source (if this data source is attached to one)
-
-        Returns:
+            collection (taxii2.Collection): Collection instance
 
         """
+        super(TAXIICollectionStore, self).__init__(name=name)
+        self.source = TAXIICollectionSource(collection)
+        self.sink = TAXIICollectionSink(collection)
 
-        # make query in TAXII query format since 'id' is TAXii field
-        query = [
-            {
-                "field": "match[id]",
-                "op": "=",
-                "value": id_
-            }
-        ]
 
-        all_data = self.query(query=query, _composite_filters=_composite_filters)
+class TAXIICollectionSink(DataSink):
+    """
+    """
+    def __init__(self, collection, name="TAXIICollectionSink"):
+        super(TAXIICollectionSink, self).__init__(name=name)
+        self.collection = collection
 
-        # reduce to most recent version
-        stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+    def add(self, stix_obj):
+        """
+        """
+        self.collection.add_objects(self.create_bundle([json.loads(str(stix_obj))]))
+
+    @staticmethod
+    def create_bundle(objects):
+        return dict(id="bundle--%s" % make_id(),
+                    objects=objects,
+                    spec_version="2.0",
+                    type="bundle")
+
+
+class TAXIICollectionSource(DataSource):
+    """
+    """
+    def __init__(self, collection, name="TAXIICollectionSource"):
+        super(TAXIICollectionSource, self).__init__(name=name)
+        self.collection = collection
+
+    def get(self, stix_id, _composite_filters=None):
+        """
+        """
+        # combine all query filters
+        query = []
+        if self.filters:
+            query.extend(self.filters.values())
+        if _composite_filters:
+            query.extend(_composite_filters)
+
+        # separate taxii query terms (can be done remotely)
+        taxii_filters = self._parse_taxii_filters(query)
+
+        stix_objs = self.collection.get_object(stix_id, taxii_filters)["objects"]
+
+        stix_obj = self.apply_common_filters(stix_objs, query)
+
+        if len(stix_obj) > 0:
+            stix_obj = stix_obj[0]
+        else:
+            stix_obj = None
 
         return stix_obj
 
-    def all_versions(self, id_, _composite_filters=None):
-        """Get all versions of STIX 2.0 object from TAXII source by
-        specified 'id'
-
-        Notes:
-            Just passes _composite_filters to the query() as they are applied
-            there. de-duplication of results is also done within query()
-
-        Args:
-            id_ (str): id of STIX objects to retrieve
-            _composite_filters (list): filters passed from a Composite Data
-                Source (if this data source is attached to one)
-
-        Returns:
-            The query results with filters applied.
+    def all_versions(self, stix_id, _composite_filters=None):
         """
-
+        """
         # make query in TAXII query format since 'id' is TAXII field
         query = [
-            {
-                "field": "match[id]",
-                "op": "=",
-                "value": id_
-            }
+            Filter("match[id]", "=", stix_id),
+            Filter("match[version]", "=", "all")
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
@@ -134,84 +99,22 @@ class TAXIIDataSource(DataSource):
         return all_data
 
     def query(self, query=None, _composite_filters=None):
-        """Query the TAXII data source for STIX objects matching the query
-
-        The final full query could contain filters from:
-            -the current API call
-            -Composite Data source filters (that are passed in via
-                '_composite_filters')
-            -TAXII data source filters that are attached
-
-        TAXII filters ['added_after', 'match[<>]'] are extracted and sent
-        to TAXII if they are present
-
-        TODO: Authentication for TAXII
-
-        Args:
-
-            query(list): list of filters (dicts) to search on
-
-            _composite_filters (list): filters passed from a
-                Composite Data Source (if this data source is attached to one)
-
-        Returns:
-
-
         """
-
-        all_data = []
-
+        """
         if query is None:
             query = []
 
         # combine all query filters
         if self.filters:
-            query += self.filters.values()
+            query.extend(self.filters.values())
         if _composite_filters:
-            query += _composite_filters
+            query.extend(_composite_filters)
 
         # separate taxii query terms (can be done remotely)
         taxii_filters = self._parse_taxii_filters(query)
 
-        # for each collection endpoint - send query request
-        for collection in self.taxii_info['api_root']['collections']:
-
-            coll_obj_url = "/".join([self.taxii_info['api_root']['url'],
-                                     "collections", str(collection['id']),
-                                     "objects"])
-            headers = {}
-            try:
-                resp = requests.get(coll_obj_url,
-                                    params=taxii_filters,
-                                    headers=headers,
-                                    auth=HTTPBasicAuth(self.taxii_info['auth']['user'],
-                                                       self.taxii_info['auth']['pass']))
-                # TESTING
-                # print("\n-------query() ----\n")
-                # print("Request that was sent: \n")
-                # print(resp.url)
-                # print("Response: \n")
-                # print(json.dumps(resp.json(),indent=4))
-                # print("\n")
-                # print(resp.status_code)
-                # print("------------------")
-                # END TESTING
-
-                # raise http error if request returned error code
-                resp.raise_for_status()
-                resp_json = resp.json()
-
-                # grab all STIX 2.0 objects in json response
-                for stix_obj in resp_json['objects']:
-                    all_data.append(stix_obj)
-
-            except requests.exceptions.RequestException as e:
-                raise e
-                # raise type(e), type(e)(e.message +
-                # "Attempting to connect to %s" % coll_url)
-
-            # TODO: Is there a way to collect exceptions while carrying
-            # on then raise all of them at the end?
+        # query TAXII collection
+        all_data = self.collection.get_objects(filters=taxii_filters)["objects"]
 
         # deduplicate data (before filtering as reduces wasted filtering)
         all_data = self.deduplicate(all_data)
@@ -222,16 +125,13 @@ class TAXIIDataSource(DataSource):
         return all_data
 
     def _parse_taxii_filters(self, query):
-        """Parse out TAXII filters that the TAXII server can filter on
+        """Parse out TAXII filters that the TAXII server can filter on.
 
-        TAXII filters should be analgous to how they are supplied
-        in the url to the TAXII endpoint. For instance
-        "?match[type]=indicator,sighting" should be in a query dict as follows
-        {
-            "field": "match[type]"
-            "op": "=",
-            "value": "indicator,sighting"
-        }
+        Notes:
+            For instance - "?match[type]=indicator,sighting" should be in a
+            query dict as follows:
+
+            Filter("type", "=", "indicator,sighting")
 
         Args:
             query (list): list of filters to extract which ones are TAXII
@@ -240,23 +140,15 @@ class TAXIIDataSource(DataSource):
         Returns:
             params (dict): dict of the TAXII filters but in format required
                 for 'requests.get()'.
-        """
 
+        """
         params = {}
 
-        for q in query:
-            if q['field'] in TAXII_FILTERS:
-                if q['field'] == 'added_after':
-                    params[q['field']] = q['value']
+        for filter_ in query:
+            if filter_.field in TAXII_FILTERS:
+                if filter_.field == "added_after":
+                    params[filter_.field] = filter_.value
                 else:
-                    taxii_field = 'match[' + q['field'] + ']'
-                    params[taxii_field] = q['value']
+                    taxii_field = "match[%s]" % filter_.field
+                    params[taxii_field] = filter_.value
         return params
-
-    def close(self):
-        """Close down the Data Source - if any clean up is required.
-
-        """
-        pass
-
-    # TODO: - getters/setters (properties) for TAXII config info

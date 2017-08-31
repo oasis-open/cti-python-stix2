@@ -81,11 +81,11 @@ def test_parse_identity_custom_property(data):
     assert identity.foo == "bar"
 
 
-@stix2.sdo.CustomObject('x-new-type', {
-    'property1': stix2.properties.StringProperty(required=True),
-    'property2': stix2.properties.IntegerProperty(),
-})
-class NewType():
+@stix2.sdo.CustomObject('x-new-type', [
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
+])
+class NewType(object):
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
@@ -128,10 +128,11 @@ def test_parse_unregistered_custom_object_type():
     assert "use the CustomObject decorator." in str(excinfo.value)
 
 
-@stix2.observables.CustomObservable('x-new-observable', {
-    'property1': stix2.properties.StringProperty(required=True),
-    'property2': stix2.properties.IntegerProperty(),
-})
+@stix2.observables.CustomObservable('x-new-observable', [
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
+    ('x_property3', stix2.properties.BooleanProperty()),
+])
 class NewObservable():
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
@@ -154,9 +155,9 @@ def test_custom_observable_object():
 
 def test_custom_observable_object_invalid_ref_property():
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomObservable('x-new-obs', {
-            'property_ref': stix2.properties.StringProperty(),
-        })
+        @stix2.observables.CustomObservable('x-new-obs', [
+            ('property_ref', stix2.properties.StringProperty()),
+        ])
         class NewObs():
             pass
     assert "is named like an object reference property but is not an ObjectReferenceProperty" in str(excinfo.value)
@@ -164,9 +165,9 @@ def test_custom_observable_object_invalid_ref_property():
 
 def test_custom_observable_object_invalid_refs_property():
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomObservable('x-new-obs', {
-            'property_refs': stix2.properties.StringProperty(),
-        })
+        @stix2.observables.CustomObservable('x-new-obs', [
+            ('property_refs', stix2.properties.StringProperty()),
+        ])
         class NewObs():
             pass
     assert "is named like an object reference list property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
@@ -174,19 +175,19 @@ def test_custom_observable_object_invalid_refs_property():
 
 def test_custom_observable_object_invalid_refs_list_property():
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomObservable('x-new-obs', {
-            'property_refs': stix2.properties.ListProperty(stix2.properties.StringProperty),
-        })
+        @stix2.observables.CustomObservable('x-new-obs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.StringProperty)),
+        ])
         class NewObs():
             pass
     assert "is named like an object reference list property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_valid_refs():
-    @stix2.observables.CustomObservable('x-new-obs', {
-        'property1': stix2.properties.StringProperty(required=True),
-        'property_ref': stix2.properties.ObjectReferenceProperty(valid_types='email-addr'),
-    })
+    @stix2.observables.CustomObservable('x-new-obs', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+        ('property_ref', stix2.properties.ObjectReferenceProperty(valid_types='email-addr')),
+    ])
     class NewObs():
         pass
 
@@ -197,13 +198,29 @@ def test_custom_observable_object_invalid_valid_refs():
     assert "must be created with _valid_refs as a dict, not a list" in str(excinfo.value)
 
 
+def test_custom_no_properties_raises_exception():
+    with pytest.raises(ValueError):
+
+        @stix2.sdo.CustomObject('x-new-object-type')
+        class NewObject1(object):
+            pass
+
+
+def test_custom_wrong_properties_arg_raises_exception():
+    with pytest.raises(ValueError):
+
+        @stix2.observables.CustomObservable('x-new-object-type', (("prop", stix2.properties.BooleanProperty())))
+        class NewObject2(object):
+            pass
+
+
 def test_parse_custom_observable_object():
     nt_string = """{
         "type": "x-new-observable",
         "property1": "something"
     }"""
 
-    nt = stix2.parse_observable(nt_string)
+    nt = stix2.parse_observable(nt_string, [])
     assert nt.property1 == 'something'
 
 

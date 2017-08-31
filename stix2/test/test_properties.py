@@ -227,27 +227,42 @@ def test_dictionary_property_valid(d):
 
 
 @pytest.mark.parametrize("d", [
-    {'a': 'something'},
-    {'a'*300: 'something'},
-    {'Hey!': 'something'},
+    [{'a': 'something'}, "Invalid dictionary key a: (shorter than 3 characters)."],
+    [{'a'*300: 'something'}, "Invalid dictionary key aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaa: (longer than 256 characters)."],
+    [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other thanlowercase a-z, "
+                            "uppercase A-Z, numerals 0-9, hyphen (-), or underscore (_))."],
 ])
 def test_dictionary_property_invalid_key(d):
     dict_prop = DictionaryProperty()
 
     with pytest.raises(DictionaryKeyError) as excinfo:
-        dict_prop.clean(d)
-    assert "Invalid dictionary key" in str(excinfo.value)
+        dict_prop.clean(d[0])
+
+    assert str(excinfo.value) == d[1]
 
 
 @pytest.mark.parametrize("d", [
-    {},
-    "{'description': 'something'}",
+    ({}, "The dictionary property must contain a non-empty dictionary"),
+    # TODO: This error message could be made more helpful. The error is caused
+    # because `json.loads()` doesn't like the *single* quotes around the key
+    # name, even though they are valid in a Python dictionary. While technically
+    # accurate (a string is not a dictionary), if we want to be able to load
+    # string-encoded "dictionaries" that are, we need a better error message
+    # or an alternative to `json.loads()` ... and preferably *not* `eval()`. :-)
+    # Changing the following to `'{"description": "something"}'` does not cause
+    # any ValueError to be raised.
+    ("{'description': 'something'}", "The dictionary property must contain a dictionary"),
 ])
 def test_dictionary_property_invalid(d):
     dict_prop = DictionaryProperty()
 
-    with pytest.raises(ValueError):
-        dict_prop.clean(d)
+    with pytest.raises(ValueError) as excinfo:
+        dict_prop.clean(d[0])
+    assert str(excinfo.value) == d[1]
 
 
 @pytest.mark.parametrize("value", [

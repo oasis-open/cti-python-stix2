@@ -128,6 +128,11 @@ def test_versioning_error_bad_modified_value():
     assert excinfo.value.prop_name == "modified"
     assert excinfo.value.reason == "The new modified datetime cannot be before the current modified datatime."
 
+    msg = "Invalid value for {0} '{1}': {2}"
+    msg = msg.format(stix2.Campaign.__name__, "modified",
+                     "The new modified datetime cannot be before the current modified datatime.")
+    assert str(excinfo.value) == msg
+
 
 def test_versioning_error_usetting_required_property():
     campaign_v1 = stix2.Campaign(
@@ -144,6 +149,10 @@ def test_versioning_error_usetting_required_property():
 
     assert excinfo.value.cls == stix2.Campaign
     assert excinfo.value.properties == ["name"]
+
+    msg = "No values for required properties for {0}: ({1})."
+    msg = msg.format(stix2.Campaign.__name__, "name")
+    assert str(excinfo.value) == msg
 
 
 def test_versioning_error_new_version_of_revoked():
@@ -163,6 +172,7 @@ def test_versioning_error_new_version_of_revoked():
     assert str(excinfo.value) == "Cannot create a new version of a revoked object."
 
     assert excinfo.value.called_by == "new_version"
+    assert str(excinfo.value) == "Cannot create a new version of a revoked object."
 
 
 def test_versioning_error_revoke_of_revoked():
@@ -182,3 +192,4 @@ def test_versioning_error_revoke_of_revoked():
     assert str(excinfo.value) == "Cannot revoke an already revoked object."
 
     assert excinfo.value.called_by == "revoke"
+    assert str(excinfo.value) == "Cannot revoke an already revoked object."
