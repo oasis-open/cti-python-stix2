@@ -6,10 +6,9 @@ except ImportError:
     from ordereddict import OrderedDict
 
 from .base import _STIXBase
-from .properties import (BooleanProperty, HashesProperty, IDProperty,
-                         ListProperty, Property, ReferenceProperty,
-                         SelectorProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
+from .properties import (HashesProperty, IDProperty, ListProperty, Property,
+                         ReferenceProperty, SelectorProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from .utils import NOW, get_dict
 
 
@@ -110,16 +109,53 @@ class MarkingDefinition(_STIXBase):
         super(MarkingDefinition, self).__init__(**kwargs)
 
 
-def register_marking(new_marking):
-    """Register a custom STIX Marking Definition type.
-    """
-    OBJ_MAP_MARKING[new_marking._type] = new_marking
-
-
 OBJ_MAP_MARKING = {
     'tlp': TLPMarking,
     'statement': StatementMarking,
 }
+
+
+def _register_marking(cls):
+    """Register a custom STIX Marking Definition type.
+    """
+    OBJ_MAP_MARKING[cls._type] = cls
+    return cls
+
+
+def CustomMarking(type='x-custom-marking', properties=None):
+    """
+    Custom STIX Marking decorator.
+
+    Examples:
+
+        @CustomMarking('x-custom-marking', [
+            ('property1', StringProperty(required=True)),
+            ('property2', IntegerProperty()),
+        ])
+        class MyNewMarkingObjectType():
+            pass
+
+    """
+    def custom_builder(cls):
+
+        class _Custom(cls, _STIXBase):
+            _type = type
+            _properties = OrderedDict()
+
+            if not properties or not isinstance(properties, list):
+                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+
+            _properties.update(properties)
+
+            def __init__(self, **kwargs):
+                _STIXBase.__init__(self, **kwargs)
+                cls.__init__(self, **kwargs)
+
+        _register_marking(_Custom)
+        return _Custom
+
+    return custom_builder
+
 
 TLP_WHITE = MarkingDefinition(
     id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
@@ -148,17 +184,3 @@ TLP_RED = MarkingDefinition(
     definition_type="tlp",
     definition=TLPMarking(tlp="red")
 )
-
-COMMON_PROPERTIES = OrderedDict()
-
-COMMON_PROPERTIES.update([
-    # 'type' and 'id' should be defined on each individual type
-    ('created_by_ref', ReferenceProperty(type="identity")),
-    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-    ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-    ('revoked', BooleanProperty()),
-    ('labels', ListProperty(StringProperty)),
-    ('external_references', ListProperty(ExternalReference)),
-    ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
-    ('granular_markings', ListProperty(GranularMarking)),
-])

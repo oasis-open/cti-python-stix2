@@ -128,6 +128,22 @@ def test_custom_observable_object():
         NewObservable(property1='something', property2=4)
 
 
+def test_custom_no_properties_raises_exception():
+    with pytest.raises(ValueError):
+
+        @stix2.sdo.CustomObject('x-new-object-type')
+        class NewObject1(object):
+            pass
+
+
+def test_custom_wrong_properties_arg_raises_exception():
+    with pytest.raises(ValueError):
+
+        @stix2.observables.CustomObservable('x-new-object-type', (("prop", stix2.properties.BooleanProperty())))
+        class NewObject2(object):
+            pass
+
+
 def test_parse_custom_observable_object():
     nt_string = """{
         "type": "x-new-observable",

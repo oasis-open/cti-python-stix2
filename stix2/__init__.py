@@ -3,7 +3,7 @@
 # flake8: noqa
 
 from . import exceptions
-from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE,
+from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
                      ExternalReference, GranularMarking, KillChainPhase,
                      MarkingDefinition, StatementMarking, TLPMarking)
 from .core import Bundle, _register_type, parse

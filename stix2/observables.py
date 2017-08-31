@@ -804,7 +804,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
                 ('type', TypeProperty(_type)),
             ])
 
-            if not properties:
+            if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
             _properties.update(properties)

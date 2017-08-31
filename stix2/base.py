@@ -38,7 +38,7 @@ def get_required_properties(properties):
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
-    def _object_properties(self):
+    def object_properties(self):
         return list(self._properties.keys())
 
     def _check_property(self, prop_name, prop, kwargs):
@@ -146,7 +146,7 @@ class _STIXBase(collections.Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        properties = self._object_properties()
+        properties = self.object_properties()
 
         def sort_by(element):
             return find_property_index(self, properties, element)
@@ -157,7 +157,7 @@ class _STIXBase(collections.Mapping):
                           separators=(",", ": "))
 
     def __repr__(self):
-        props = [(k, self[k]) for k in self._object_properties() if self.get(k)]
+        props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 

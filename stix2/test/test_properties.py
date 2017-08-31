@@ -206,15 +206,22 @@ def test_dictionary_property_valid(d):
 
 
 @pytest.mark.parametrize("d", [
-    {'a': 'something'},
-    {'a'*300: 'something'},
-    {'Hey!': 'something'},
+    [{'a': 'something'}, "Invalid dictionary key a: (shorter than 3 characters)."],
+    [{'a'*300: 'something'}, "Invalid dictionary key aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                             "aaaaaaaaaaaaaaaaaaaaaaa: (longer than 256 characters)."],
+    [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other thanlowercase a-z, "
+                            "uppercase A-Z, numerals 0-9, hyphen (-), or underscore (_))."],
 ])
 def test_dictionary_property_invalid(d):
     dict_prop = DictionaryProperty()
 
-    with pytest.raises(DictionaryKeyError):
-        dict_prop.clean(d)
+    with pytest.raises(DictionaryKeyError) as excinfo:
+        dict_prop.clean(d[0])
+
+    assert str(excinfo.value) == d[1]
 
 
 @pytest.mark.parametrize("value", [

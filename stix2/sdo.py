@@ -11,8 +11,8 @@ from .base import _STIXBase
 from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty
 from .properties import (BooleanProperty, IDProperty, IntegerProperty,
-                         ListProperty, ReferenceProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
+                         ListProperty, PatternProperty, ReferenceProperty,
+                         StringProperty, TimestampProperty, TypeProperty)
 from .utils import NOW
 
 
@@ -117,7 +117,7 @@ class Indicator(_STIXBase):
         ('labels', ListProperty(StringProperty, required=True)),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('pattern', StringProperty(required=True)),
+        ('pattern', PatternProperty(required=True)),
         ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
@@ -330,13 +330,10 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
             ])
 
-            if not properties:
+            if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
-            normal_properties = [x for x in properties if not x[0].startswith("x_")]
-            custom_properties = [x for x in properties if x[0].startswith("x_")]
-
-            _properties.update(normal_properties)
+            _properties.update([x for x in properties if not x[0].startswith("x_")])
 
             # This is to follow the general properties structure.
             _properties.update([
@@ -348,7 +345,7 @@ def CustomObject(type='x-custom-type', properties=None):
             ])
 
             # Put all custom properties at the bottom, sorted alphabetically.
-            _properties.update(sorted(custom_properties, key=lambda x: x[0]))
+            _properties.update(sorted([x for x in properties if x[0].startswith("x_")], key=lambda x: x[0]))
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)

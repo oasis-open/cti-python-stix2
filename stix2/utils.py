@@ -133,7 +133,7 @@ def find_property_index(obj, properties, tuple_to_find):
                 for item in pv:
                     if isinstance(item, _STIXBase):
                         val = find_property_index(item,
-                                                  item._object_properties(),
+                                                  item.object_properties(),
                                                   tuple_to_find)
                         if val is not None:
                             return val
@@ -146,7 +146,7 @@ def find_property_index(obj, properties, tuple_to_find):
                 for item in pv.values():
                     if isinstance(item, _STIXBase):
                         val = find_property_index(item,
-                                                  item._object_properties(),
+                                                  item.object_properties(),
                                                   tuple_to_find)
                         if val is not None:
                             return val
