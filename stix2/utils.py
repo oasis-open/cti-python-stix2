@@ -191,7 +191,8 @@ def new_version(data, **kwargs):
         if new_modified_property < old_modified_property:
             raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
     new_obj_inner.update(kwargs)
-    return cls(**new_obj_inner)
+    # Exclude properties with a value of 'None' in case data is not an instance of a _STIXBase subclass
+    return cls(**{k: v for k, v in new_obj_inner.items() if v is not None})
 
 
 def revoke(data):

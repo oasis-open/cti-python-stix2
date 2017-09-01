@@ -1,9 +1,6 @@
 """STIX 2.0 Objects that are neither SDOs nor SROs"""
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from . import exceptions
 from .base import _STIXBase

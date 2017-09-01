@@ -3,17 +3,12 @@ import pytest
 
 from stix2 import Malware, markings
 
-from .constants import FAKE_TIME, MALWARE_ID, MARKING_IDS
 from .constants import MALWARE_MORE_KWARGS as MALWARE_KWARGS_CONST
+from .constants import MARKING_IDS
 
 """Tests for the Data Markings API."""
 
 MALWARE_KWARGS = MALWARE_KWARGS_CONST.copy()
-MALWARE_KWARGS.update({
-    'id': MALWARE_ID,
-    'created': FAKE_TIME,
-    'modified': FAKE_TIME,
-})
 
 
 def test_add_marking_mark_one_selector_multiple_refs():
@@ -39,19 +34,34 @@ def test_add_marking_mark_one_selector_multiple_refs():
         assert m in after["granular_markings"]
 
 
-def test_add_marking_mark_multiple_selector_one_refs():
-    before = Malware(
-        **MALWARE_KWARGS
-    )
-    after = Malware(
-        granular_markings=[
-            {
-                "selectors": ["description", "name"],
-                "marking_ref": MARKING_IDS[0]
-            },
-        ],
-        **MALWARE_KWARGS
-    )
+@pytest.mark.parametrize("data", [
+    (
+        Malware(**MALWARE_KWARGS),
+        Malware(
+            granular_markings=[
+                {
+                    "selectors": ["description", "name"],
+                    "marking_ref": MARKING_IDS[0]
+                },
+            ],
+            **MALWARE_KWARGS),
+    ),
+    (
+        MALWARE_KWARGS,
+        dict(
+            granular_markings=[
+                {
+                    "selectors": ["description", "name"],
+                    "marking_ref": MARKING_IDS[0]
+                },
+            ],
+            **MALWARE_KWARGS),
+    ),
+])
+def test_add_marking_mark_multiple_selector_one_refs(data):
+    before = data[0]
+    after = data[1]
+
     before = markings.add_markings(before, [MARKING_IDS[0]], ["description", "name"])
 
     for m in before["granular_markings"]:
@@ -337,8 +347,8 @@ def test_get_markings_positional_arguments_combinations(data):
     assert set(markings.get_markings(data, "x.z.foo2", False, True)) == set(["10"])
 
 
-def test_remove_marking_remove_one_selector_with_multiple_refs():
-    before = Malware(
+@pytest.mark.parametrize("before", [
+    Malware(
         granular_markings=[
             {
                 "selectors": ["description"],
@@ -347,10 +357,25 @@ def test_remove_marking_remove_one_selector_with_multiple_refs():
             {
                 "selectors": ["description"],
                 "marking_ref": MARKING_IDS[1]
-            }
+            },
         ],
         **MALWARE_KWARGS
-    )
+    ),
+    dict(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[0]
+            },
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[1]
+            },
+        ],
+        **MALWARE_KWARGS
+    ),
+])
+def test_remove_marking_remove_one_selector_with_multiple_refs(before):
     before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
     assert "granular_markings" not in before
 
@@ -501,49 +526,65 @@ def test_remove_marking_bad_selector():
         markings.remove_markings(before, ["marking-definition--1", "marking-definition--2"], ["title"])
 
 
-IS_MARKED_TEST_DATA = {
-    "title": "test title",
-    "description": "test description",
-    "revision": 2,
-    "type": "test",
-    "granular_markings": [
-        {
-            "selectors": ["description"],
-            "marking_ref": "marking-definition--1"
-        },
-        {
-            "selectors": ["revision", "description"],
-            "marking_ref": "marking-definition--2"
-        },
-        {
-            "selectors": ["revision", "description"],
-            "marking_ref": "marking-definition--3"
-        },
-    ]
-}
+IS_MARKED_TEST_DATA = [
+    Malware(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[1]
+            },
+            {
+                "selectors": ["labels", "description"],
+                "marking_ref": MARKING_IDS[2]
+            },
+            {
+                "selectors": ["labels", "description"],
+                "marking_ref": MARKING_IDS[3]
+            },
+        ],
+        **MALWARE_KWARGS
+    ),
+    dict(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[1]
+            },
+            {
+                "selectors": ["labels", "description"],
+                "marking_ref": MARKING_IDS[2]
+            },
+            {
+                "selectors": ["labels", "description"],
+                "marking_ref": MARKING_IDS[3]
+            },
+        ],
+        **MALWARE_KWARGS
+    ),
+]
 
 
-@pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_smoke(data):
     """Smoke test is_marked call does not fail."""
     assert markings.is_marked(data, selectors=["description"])
-    assert markings.is_marked(data, selectors=["title"]) is False
+    assert markings.is_marked(data, selectors=["modified"]) is False
 
 
 @pytest.mark.parametrize("data,selector", [
-    (IS_MARKED_TEST_DATA, "foo"),
-    (IS_MARKED_TEST_DATA, ""),
-    (IS_MARKED_TEST_DATA, []),
-    (IS_MARKED_TEST_DATA, [""]),
-    (IS_MARKED_TEST_DATA, "x.z.[-2]"),
-    (IS_MARKED_TEST_DATA, "c.f"),
-    (IS_MARKED_TEST_DATA, "c.[2].i"),
-    (IS_MARKED_TEST_DATA, "c.[3]"),
-    (IS_MARKED_TEST_DATA, "d"),
-    (IS_MARKED_TEST_DATA, "x.[0]"),
-    (IS_MARKED_TEST_DATA, "z.y.w"),
-    (IS_MARKED_TEST_DATA, "x.z.[1]"),
-    (IS_MARKED_TEST_DATA, "x.z.foo3")
+    (IS_MARKED_TEST_DATA[0], "foo"),
+    (IS_MARKED_TEST_DATA[0], ""),
+    (IS_MARKED_TEST_DATA[0], []),
+    (IS_MARKED_TEST_DATA[0], [""]),
+    (IS_MARKED_TEST_DATA[0], "x.z.[-2]"),
+    (IS_MARKED_TEST_DATA[0], "c.f"),
+    (IS_MARKED_TEST_DATA[0], "c.[2].i"),
+    (IS_MARKED_TEST_DATA[1], "c.[3]"),
+    (IS_MARKED_TEST_DATA[1], "d"),
+    (IS_MARKED_TEST_DATA[1], "x.[0]"),
+    (IS_MARKED_TEST_DATA[1], "z.y.w"),
+    (IS_MARKED_TEST_DATA[1], "x.z.[1]"),
+    (IS_MARKED_TEST_DATA[1], "x.z.foo3")
 ])
 def test_is_marked_invalid_selector(data, selector):
     """Test invalid selector raises an error."""
@@ -551,46 +592,54 @@ def test_is_marked_invalid_selector(data, selector):
         markings.is_marked(data, selectors=selector)
 
 
-@pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_mix_selector(data):
     """Test valid selector, one marked and one not marked returns True."""
-    assert markings.is_marked(data, selectors=["description", "revision"])
+    assert markings.is_marked(data, selectors=["description", "labels"])
     assert markings.is_marked(data, selectors=["description"])
 
 
-@pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_valid_selector_no_refs(data):
     """Test that a valid selector return True when it has marking refs and False when not."""
     assert markings.is_marked(data, selectors=["description"])
-    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--3"], ["description"])
-    assert markings.is_marked(data, ["marking-definition--2"], ["description"])
-    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--8"], ["description"]) is False
+    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[3]], ["description"])
+    assert markings.is_marked(data, [MARKING_IDS[2]], ["description"])
+    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[5]], ["description"]) is False
 
 
-@pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_valid_selector_and_refs(data):
     """Test that a valid selector returns True when marking_refs match."""
-    assert markings.is_marked(data, ["marking-definition--1"], ["description"])
-    assert markings.is_marked(data, ["marking-definition--1"], ["title"]) is False
+    assert markings.is_marked(data, [MARKING_IDS[1]], ["description"])
+    assert markings.is_marked(data, [MARKING_IDS[1]], ["modified"]) is False
 
 
-@pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_valid_selector_multiple_refs(data):
     """Test that a valid selector returns True if aall marking_refs match.
         Otherwise False."""
-    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--3"], ["revision"])
-    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--1"], ["revision"]) is False
-    assert markings.is_marked(data, "marking-definition--2", ["revision"])
-    assert markings.is_marked(data, ["marking-definition--1234"], ["revision"]) is False
+    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[3]], ["labels"])
+    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[1]], ["labels"]) is False
+    assert markings.is_marked(data, MARKING_IDS[2], ["labels"])
+    assert markings.is_marked(data, ["marking-definition--1234"], ["labels"]) is False
 
 
-@pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_no_marking_refs(data):
     """Test that a valid content selector with no marking_refs returns True
         if there is a granular_marking that asserts that field, False
         otherwise."""
     assert markings.is_marked(data, selectors=["type"]) is False
-    assert markings.is_marked(data, selectors=["revision"])
+    assert markings.is_marked(data, selectors=["labels"])
+
+
+@pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
+def test_is_marked_no_selectors(data):
+    """Test that we're ensuring 'selectors' is provided."""
+    with pytest.raises(TypeError) as excinfo:
+        markings.granular_markings.is_marked(data)
+    assert "'selectors' must be provided" in str(excinfo.value)
 
 
 def test_is_marked_positional_arguments_combinations():
@@ -899,47 +948,66 @@ def test_set_marking_mark_same_property_same_marking():
         assert m in after["granular_markings"]
 
 
-CLEAR_MARKINGS_TEST_DATA = Malware(
-    granular_markings=[
-        {
-            "selectors": ["description"],
-            "marking_ref": MARKING_IDS[0]
-        },
-        {
-            "selectors": ["modified", "description"],
-            "marking_ref": MARKING_IDS[1]
-        },
-        {
-            "selectors": ["modified", "description", "type"],
-            "marking_ref": MARKING_IDS[2]
-        },
-    ],
-    **MALWARE_KWARGS
-)
+CLEAR_MARKINGS_TEST_DATA = [
+    Malware(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[0]
+            },
+            {
+                "selectors": ["modified", "description"],
+                "marking_ref": MARKING_IDS[1]
+            },
+            {
+                "selectors": ["modified", "description", "type"],
+                "marking_ref": MARKING_IDS[2]
+            },
+        ],
+        **MALWARE_KWARGS
+    ),
+    dict(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[0]
+            },
+            {
+                "selectors": ["modified", "description"],
+                "marking_ref": MARKING_IDS[1]
+            },
+            {
+                "selectors": ["modified", "description", "type"],
+                "marking_ref": MARKING_IDS[2]
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+]
 
 
-@pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
+@pytest.mark.parametrize("data", CLEAR_MARKINGS_TEST_DATA)
 def test_clear_marking_smoke(data):
     """Test clear_marking call does not fail."""
     data = markings.clear_markings(data, "modified")
     assert markings.is_marked(data, "modified") is False
 
 
-@pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
+@pytest.mark.parametrize("data", CLEAR_MARKINGS_TEST_DATA)
 def test_clear_marking_multiple_selectors(data):
     """Test clearing markings for multiple selectors effectively removes associated markings."""
     data = markings.clear_markings(data, ["type", "description"])
     assert markings.is_marked(data, ["type", "description"]) is False
 
 
-@pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
+@pytest.mark.parametrize("data", CLEAR_MARKINGS_TEST_DATA)
 def test_clear_marking_one_selector(data):
     """Test markings associated with one selector were removed."""
     data = markings.clear_markings(data, "description")
     assert markings.is_marked(data, "description") is False
 
 
-@pytest.mark.parametrize("data", [CLEAR_MARKINGS_TEST_DATA])
+@pytest.mark.parametrize("data", CLEAR_MARKINGS_TEST_DATA)
 def test_clear_marking_all_selectors(data):
     data = markings.clear_markings(data, ["description", "type", "modified"])
     assert markings.is_marked(data, "description") is False
@@ -947,10 +1015,10 @@ def test_clear_marking_all_selectors(data):
 
 
 @pytest.mark.parametrize("data,selector", [
-    (CLEAR_MARKINGS_TEST_DATA, "foo"),
-    (CLEAR_MARKINGS_TEST_DATA, ""),
-    (CLEAR_MARKINGS_TEST_DATA, []),
-    (CLEAR_MARKINGS_TEST_DATA, [""]),
+    (CLEAR_MARKINGS_TEST_DATA[0], "foo"),
+    (CLEAR_MARKINGS_TEST_DATA[0], ""),
+    (CLEAR_MARKINGS_TEST_DATA[1], []),
+    (CLEAR_MARKINGS_TEST_DATA[1], [""]),
 ])
 def test_clear_marking_bad_selector(data, selector):
     """Test bad selector raises exception."""

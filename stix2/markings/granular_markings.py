@@ -1,6 +1,7 @@
 
 from stix2 import exceptions
 from stix2.markings import utils
+from stix2.utils import new_version
 
 
 def get_markings(obj, selectors, inherited=False, descendants=False):
@@ -115,9 +116,9 @@ def remove_markings(obj, marking, selectors):
     granular_markings = utils.compress_markings(granular_markings)
 
     if granular_markings:
-        return obj.new_version(granular_markings=granular_markings)
+        return new_version(obj, granular_markings=granular_markings)
     else:
-        return obj.new_version(granular_markings=None)
+        return new_version(obj, granular_markings=None)
 
 
 def add_markings(obj, marking, selectors):
@@ -153,7 +154,7 @@ def add_markings(obj, marking, selectors):
 
     granular_marking = utils.expand_markings(granular_marking)
     granular_marking = utils.compress_markings(granular_marking)
-    return obj.new_version(granular_markings=granular_marking)
+    return new_version(obj, granular_markings=granular_marking)
 
 
 def clear_markings(obj, selectors):
@@ -208,9 +209,9 @@ def clear_markings(obj, selectors):
     granular_markings = utils.compress_markings(granular_markings)
 
     if granular_markings:
-        return obj.new_version(granular_markings=granular_markings)
+        return new_version(obj, granular_markings=granular_markings)
     else:
-        return obj.new_version(granular_markings=None)
+        return new_version(obj, granular_markings=None)
 
 
 def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=False):

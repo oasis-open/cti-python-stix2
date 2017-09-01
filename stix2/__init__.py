@@ -42,5 +42,5 @@ from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
                   Identity, Indicator, IntrusionSet, Malware, ObservedData,
                   Report, ThreatActor, Tool, Vulnerability)
 from .sro import Relationship, Sighting
-from .utils import get_dict
+from .utils import get_dict, new_version, revoke
 from .version import __version__
