@@ -1,9 +1,10 @@
 import pytest
 from taxii2client import Collection
 
+import stix2
 from stix2.sources import (CompositeDataSource, DataSink, DataSource,
                            DataStore, Filter, make_id, taxii)
-from stix2.sources.memory import MemorySource
+from stix2.sources.memory import MemorySource, MemoryStore
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 
@@ -121,7 +122,7 @@ STIX_OBJS2 = [
 ]
 
 
-def test_ds_smoke():
+def test_ds_abstract_class_smoke():
     ds1 = DataSource()
     ds2 = DataSink()
     ds3 = DataStore(source=ds1, sink=ds2)
@@ -139,14 +140,36 @@ def test_ds_smoke():
         ds3.query([Filter("id", "=", "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")])
 
 
+def test_memory_store_smoke():
+    # Initialize MemoryStore with dict
+    ms = MemoryStore(STIX_OBJS1)
+
+    # Add item to sink
+    ms.add(dict(id="bundle--%s" % make_id(),
+                objects=STIX_OBJS2,
+                spec_version="2.0",
+                type="bundle"))
+
+    resp = ms.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert len(resp) == 1
+
+    resp = ms.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
+    assert resp["id"] == "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
+
+    query = [Filter('type', '=', 'malware')]
+
+    resp = ms.query(query)
+    assert len(resp) == 0
+
+
 def test_ds_taxii(collection):
     ds = taxii.TAXIICollectionSource(collection)
-    assert ds.name == 'TAXIICollectionSource'
+    assert ds.collection is not None
 
 
 def test_ds_taxii_name(collection):
-    ds = taxii.TAXIICollectionSource(collection, name='My Data Source Name')
-    assert ds.name == "My Data Source Name"
+    ds = taxii.TAXIICollectionSource(collection)
+    assert ds.collection is not None
 
 
 def test_parse_taxii_filters():
@@ -209,7 +232,7 @@ def test_add_get_remove_filter():
 
     with pytest.raises(ValueError) as excinfo:
         ds.add_filter(invalid_filters[1])
-    assert str(excinfo.value) == "Filter operation(from 'op' field) not supported"
+    assert str(excinfo.value) == "Filter operation (from 'op' field) not supported"
 
     with pytest.raises(ValueError) as excinfo:
         ds.add_filter(invalid_filters[2])
@@ -270,6 +293,22 @@ def test_apply_common_filters():
             "source_ref": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
             "target_ref": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
             "type": "relationship"
+        },
+        {
+            "id": "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef",
+            "created": "2016-02-14T00:00:00.000Z",
+            "created_by_ref": "identity--00000000-0000-0000-0000-b8e91df99dc9",
+            "modified": "2016-02-14T00:00:00.000Z",
+            "type": "vulnerability",
+            "name": "CVE-2014-0160",
+            "description": "The (1) TLS...",
+            "external_references": [
+                {
+                    "source_name": "cve",
+                    "external_id": "CVE-2014-0160"
+                }
+            ],
+            "labels": ["heartbleed", "has-logo"]
         }
     ]
 
@@ -284,50 +323,90 @@ def test_apply_common_filters():
         Filter("object_marking_refs", "=", "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"),
         Filter("granular_markings.selectors", "in", "relationship_type"),
         Filter("granular_markings.marking_ref", "=", "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"),
+        Filter("external_references.external_id", "in", "CVE-2014-0160,CVE-2017-6608"),
+        Filter("created_by_ref", "=", "identity--00000000-0000-0000-0000-b8e91df99dc9"),
+        Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9"),
+        Filter("granular_markings.selectors", "in", "description"),
+        Filter("external_references.source_name", "=", "CVE"),
     ]
 
     ds = DataSource()
 
+    # "Return any object whose type is not relationship"
     resp = ds.apply_common_filters(stix_objs, [filters[0]])
     ids = [r['id'] for r in resp]
     assert stix_objs[0]['id'] in ids
     assert stix_objs[1]['id'] in ids
+    assert stix_objs[3]['id'] in ids
+    assert len(ids) == 3
 
+    # "Return any object that matched id relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"
     resp = ds.apply_common_filters(stix_objs, [filters[1]])
     assert resp[0]['id'] == stix_objs[2]['id']
+    assert len(resp) == 1
 
+    # "Return any object that contains remote-access-trojan in labels"
     resp = ds.apply_common_filters(stix_objs, [filters[2]])
-    assert resp[0]['id'] == stix_objs[0]['id']
-
-    resp = ds.apply_common_filters(stix_objs, [filters[3]])
     assert resp[0]['id'] == stix_objs[0]['id']
     assert len(resp) == 1
 
+    # "Return any object created after 2015-01-01T01:00:00.000Z"
+    resp = ds.apply_common_filters(stix_objs, [filters[3]])
+    assert resp[0]['id'] == stix_objs[0]['id']
+    assert len(resp) == 2
+
+    # "Return any revoked object"
     resp = ds.apply_common_filters(stix_objs, [filters[4]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
+    # "Return any object whose not revoked"
     # Note that if 'revoked' property is not present in object.
-    # Currently we can't use such an expression to filter for...
+    # Currently we can't use such an expression to filter for... :(
     resp = ds.apply_common_filters(stix_objs, [filters[5]])
     assert len(resp) == 0
 
+    # Assert unknown operator for _boolean() raises exception.
     with pytest.raises(ValueError) as excinfo:
         ds.apply_common_filters(stix_objs, [filters[6]])
 
     assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
-                                  "for specified field: {1}").format(filters[6].op,
-                                                                     filters[6].field)
+                                  "for specified field: {1}"
+                                  .format(filters[6].op, filters[6].field))
 
+    # "Return any object that matches marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9 in object_marking_refs"
     resp = ds.apply_common_filters(stix_objs, [filters[7]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
+    # "Return any object that contains relationship_type in their selectors AND
+    # also has marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed in marking_ref"
     resp = ds.apply_common_filters(stix_objs, [filters[8], filters[9]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
-    # These are used with STIX_OBJS2
+    # "Return any object that contains CVE-2014-0160,CVE-2017-6608 in their external_id"
+    resp = ds.apply_common_filters(stix_objs, [filters[10]])
+    assert resp[0]['id'] == stix_objs[3]['id']
+    assert len(resp) == 1
+
+    # "Return any object that matches created_by_ref identity--00000000-0000-0000-0000-b8e91df99dc9"
+    resp = ds.apply_common_filters(stix_objs, [filters[11]])
+    assert len(resp) == 1
+
+    # "Return any object that matches marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9 in object_marking_refs" (None)
+    resp = ds.apply_common_filters(stix_objs, [filters[12]])
+    assert len(resp) == 0
+
+    # "Return any object that contains description in its selectors" (None)
+    resp = ds.apply_common_filters(stix_objs, [filters[13]])
+    assert len(resp) == 0
+
+    # "Return any object that object that matches CVE in source_name" (None, case sensitive)
+    resp = ds.apply_common_filters(stix_objs, [filters[14]])
+    assert len(resp) == 0
+
+    # These filters are used with STIX_OBJS2 object collection.
     more_filters = [
         Filter("modified", "<", "2017-01-28T13:49:53.935Z"),
         Filter("modified", ">", "2017-01-28T13:49:53.935Z"),
@@ -339,45 +418,56 @@ def test_apply_common_filters():
         Filter("notacommonproperty", "=", "bar"),
     ]
 
+    # "Return any object modified before 2017-01-28T13:49:53.935Z"
     resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[0]])
     assert resp[0]['id'] == STIX_OBJS2[1]['id']
     assert len(resp) == 2
 
+    # "Return any object modified after 2017-01-28T13:49:53.935Z"
     resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[1]])
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 1
 
+    # "Return any object modified after or on 2017-01-28T13:49:53.935Z"
     resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[2]])
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 3
 
+    # "Return any object modified before or on 2017-01-28T13:49:53.935Z"
     resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[3]])
     assert resp[0]['id'] == STIX_OBJS2[1]['id']
     assert len(resp) == 2
 
+    # Assert unknown operator for _all() raises exception.
     with pytest.raises(ValueError) as excinfo:
         ds.apply_common_filters(STIX_OBJS2, [more_filters[4]])
 
     assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
-                                  "for specified field: {1}").format(more_filters[4].op,
-                                                                     more_filters[4].field)
+                                  "for specified field: {1}"
+                                  .format(more_filters[4].op,
+                                          more_filters[4].field))
 
+    # "Return any object whose id is not indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
     resp = ds.apply_common_filters(STIX_OBJS2, [more_filters[5]])
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 1
 
+    # Assert unknown operator for _id() raises exception.
     with pytest.raises(ValueError) as excinfo:
         ds.apply_common_filters(STIX_OBJS2, [more_filters[6]])
 
     assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
-                                  "for specified field: {1}").format(more_filters[6].op,
-                                                                     more_filters[6].field)
+                                  "for specified field: {1}"
+                                  .format(more_filters[6].op,
+                                          more_filters[6].field))
 
+    # Assert unknown field raises exception.
     with pytest.raises(ValueError) as excinfo:
         ds.apply_common_filters(STIX_OBJS2, [more_filters[7]])
 
     assert str(excinfo.value) == ("Error, field: {0} is not supported for "
-                                  "filtering on.".format(more_filters[7].field))
+                                  "filtering on."
+                                  .format(more_filters[7].field))
 
 
 def test_deduplicate():
@@ -409,12 +499,12 @@ def test_add_remove_composite_datasource():
 
     assert len(cds.get_all_data_sources()) == 2
 
-    cds.remove_data_source([ds1.id_, ds2.id_])
+    cds.remove_data_source([ds1.id, ds2.id])
 
     assert len(cds.get_all_data_sources()) == 0
 
     with pytest.raises(ValueError):
-        cds.remove_data_source([ds3.id_])
+        cds.remove_data_source([ds3.id])
 
 
 def test_composite_datasource_operations():
@@ -448,25 +538,3 @@ def test_composite_datasource_operations():
     # STIX_OBJS2 has indicator with later time, one with different id, one with
     # original time in STIX_OBJS1
     assert len(results) == 3
-
-# def test_data_source_file():
-#     ds = file.FileDataSource()
-#
-#     assert ds.name == "DataSource"
-#
-#
-# def test_data_source_name():
-#     ds = file.FileDataSource(name="My File Data Source")
-#
-#     assert ds.name == "My File Data Source"
-#
-#
-# def test_data_source_get():
-#     ds = file.FileDataSource(name="My File Data Source")
-#
-#     with pytest.raises(NotImplementedError):
-#         ds.get("foo")
-#
-# #filter testing
-# def test_add_filter():
-#     ds = file.FileDataSource()

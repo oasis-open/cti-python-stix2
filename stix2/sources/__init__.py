@@ -70,17 +70,21 @@ class DataStore(object):
     An implementer will create a concrete subclass from
     this abstract class for the specific data store.
 
+    Attributes:
+        id (str): A unique UUIDv4 to identify this DataStore.
+        source (DataStore): An object that implements DataStore class.
+        sink (DataSink): An object that implements DataSink class.
+
     """
-    def __init__(self, name="DataStore", source=None, sink=None):
-        self.name = name
-        self.id_ = make_id()
+    def __init__(self, source=None, sink=None):
+        self.id = make_id()
         self.source = source
         self.sink = sink
 
     def get(self, stix_id):
         """
-        Implement:
-            Translate API get() call to the appropriate DataSource call
+        Notes:
+            Translate API get() call to the appropriate DataSource call.
 
         Args:
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
@@ -103,9 +107,6 @@ class DataStore(object):
                 return a single object, the most recent version of the object
                 specified by the "id".
 
-            _composite_filters (list): list of filters passed along from
-                the Composite Data Filter.
-
         Returns:
             stix_objs (list): a list of STIX objects (where each object is a
                 STIX object)
@@ -115,9 +116,9 @@ class DataStore(object):
 
     def query(self, query):
         """
-        Fill:
+        Notes:
             Implement the specific data source API calls, processing,
-            functionality required for retrieving query from the data source
+            functionality required for retrieving query from the data source.
 
         Args:
             query (list): a list of filters (which collectively are the query)
@@ -132,8 +133,8 @@ class DataStore(object):
 
     def add(self, stix_objs):
         """
-        Fill:
-            -translate add() to the appropriate DataSink call()
+        Notes:
+            Translate add() to the appropriate DataSink call().
 
         """
         return self.sink.add(stix_objs=stix_objs)
@@ -145,18 +146,15 @@ class DataSink(object):
     different sink components.
 
     Attributes:
-        id_ (str): A unique UUIDv4 to identify this DataSink.
-        name (str): The descriptive name that identifies this DataSink.
+        id (str): A unique UUIDv4 to identify this DataSink.
 
     """
-
-    def __init__(self, name="DataSink"):
-        self.name = name
-        self.id_ = make_id()
+    def __init__(self):
+        self.id = make_id()
 
     def add(self, stix_objs):
         """
-        Fill:
+        Notes:
             Implement the specific data sink API calls, processing,
             functionality required for adding data to the sink
 
@@ -170,15 +168,12 @@ class DataSource(object):
     different source components.
 
     Attributes:
-        id_ (str): A unique UUIDv4 to identify this DataSource.
-        name (str): The descriptive name that identifies this DataSource.
+        id (str): A unique UUIDv4 to identify this DataSource.
         filters (set): A collection of filters present in this DataSource.
 
     """
-
-    def __init__(self, name="DataSource"):
-        self.name = name
-        self.id_ = make_id()
+    def __init__(self):
+        self.id = make_id()
         self.filters = set()
 
     def get(self, stix_id, _composite_filters=None):
@@ -203,12 +198,11 @@ class DataSource(object):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        Fill:
-            -Similar to get() except returns list of all object versions of
-                the specified "id".
-
-            -implement the specific data source API calls, processing,
-            functionality required for retrieving data from the data source
+        Notes:
+            Similar to get() except returns list of all object versions of
+            the specified "id". In addition, implement the specific data
+            source API calls, processing, functionality required for retrieving
+            data from the data source.
 
         Args:
             stix_id (str): The id of the STIX 2.0 object to retrieve. Should
@@ -249,26 +243,24 @@ class DataSource(object):
         Args:
             filters (list): list of filters (dict) to add to the Data Source.
         """
-        for filter_ in filters:
-            self.add_filter(filter_)
+        for filter in filters:
+            self.add_filter(filter)
 
-    def add_filter(self, filter_):
+    def add_filter(self, filter):
         """Add a filter."""
         # check filter field is a supported STIX 2.0 common field
-        if filter_.field not in STIX_COMMON_FIELDS:
+        if filter.field not in STIX_COMMON_FIELDS:
             raise ValueError("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
 
         # check filter operator is supported
-        if filter_.op not in FILTER_OPS:
-            raise ValueError("Filter operation(from 'op' field) not supported")
+        if filter.op not in FILTER_OPS:
+            raise ValueError("Filter operation (from 'op' field) not supported")
 
         # check filter value type is supported
-        if type(filter_.value) not in FILTER_VALUE_TYPES:
+        if type(filter.value) not in FILTER_VALUE_TYPES:
             raise ValueError("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
-        self.filters.add(filter_)
-
-    # TODO: Do we need a remove_filter function?
+        self.filters.add(filter)
 
     def apply_common_filters(self, stix_objs, query):
         """Evaluates filters against a set of STIX 2.0 objects
@@ -289,19 +281,19 @@ class DataSource(object):
         # evaluate objects against filter
         for stix_obj in stix_objs:
             clean = True
-            for filter_ in query:
+            for filter in query:
                 try:
                     # skip filter as filter was identified (when added) as
                     # not a common filter
-                    if filter_.field not in STIX_COMMON_FIELDS:
-                        raise Exception("Error, field: {0} is not supported for filtering on.".format(filter_.field))
+                    if filter.field not in STIX_COMMON_FIELDS:
+                        raise Exception("Error, field: {0} is not supported for filtering on.".format(filter.field))
 
                     # For properties like granular_markings and external_references
                     # need to break the first property from the string.
-                    if "." in filter_.field:
-                        field = filter_.field.split(".")[0]
+                    if "." in filter.field:
+                        field = filter.field.split(".")[0]
                     else:
-                        field = filter_.field
+                        field = filter.field
 
                     # check filter "field" is in STIX object - if cant be
                     # applied due to STIX object, STIX object is discarded
@@ -310,12 +302,12 @@ class DataSource(object):
                         clean = False
                         break
 
-                    match = getattr(STIXCommonPropertyFilters, field)(filter_, stix_obj)
+                    match = getattr(STIXCommonPropertyFilters, field)(filter, stix_obj)
                     if not match:
                         clean = False
                         break
                     elif match == -1:
-                        raise Exception("Error, filter operator: {0} not supported for specified field: {1}".format(filter_.op, filter_.field))
+                        raise Exception("Error, filter operator: {0} not supported for specified field: {1}".format(filter.op, filter.field))
                 except Exception as e:
                     raise ValueError(e)
 
@@ -361,7 +353,7 @@ class CompositeDataSource(DataSource):
             controlled and used by the Data Source Controller object.
 
     """
-    def __init__(self, name="CompositeDataSource"):
+    def __init__(self):
         """
         Creates a new STIX Data Source.
 
@@ -370,7 +362,7 @@ class CompositeDataSource(DataSource):
                 CompositeDataSource instance.
 
         """
-        super(CompositeDataSource, self).__init__(name=name)
+        super(CompositeDataSource, self).__init__()
         self.data_sources = {}
 
     def get(self, stix_id, _composite_filters=None):
@@ -498,13 +490,13 @@ class CompositeDataSource(DataSource):
         """
         for ds in data_sources:
             if issubclass(ds.__class__, DataSource):
-                if ds.id_ in self.data_sources:
+                if ds.id in self.data_sources:
                     # data source already attached to Composite Data Source
                     continue
 
                 # add data source to Composite Data Source
                 # (its id will be its key identifier)
-                self.data_sources[ds.id_] = ds
+                self.data_sources[ds.id] = ds
             else:
                 # the Data Source object is not a proper subclass
                 # of DataSource Abstract Class
@@ -520,9 +512,9 @@ class CompositeDataSource(DataSource):
             data_source_ids (list): a list of Data Source identifiers.
 
         """
-        for id_ in data_source_ids:
-            if id_ in self.data_sources:
-                del self.data_sources[id_]
+        for id in data_source_ids:
+            if id in self.data_sources:
+                del self.data_sources[id]
             else:
                 raise ValueError("DataSource 'id' not found in CompositeDataSource collection.")
         return
@@ -538,63 +530,63 @@ class STIXCommonPropertyFilters(object):
     """
     """
     @classmethod
-    def _all(cls, filter_, stix_obj_field):
+    def _all(cls, filter, stix_obj_field):
         """all filter operations (for filters whose value type can be applied to any operation type)"""
-        if filter_.op == "=":
-            return stix_obj_field == filter_.value
-        elif filter_.op == "!=":
-            return stix_obj_field != filter_.value
-        elif filter_.op == "in":
-            return stix_obj_field in filter_.value
-        elif filter_.op == ">":
-            return stix_obj_field > filter_.value
-        elif filter_.op == "<":
-            return stix_obj_field < filter_.value
-        elif filter_.op == ">=":
-            return stix_obj_field >= filter_.value
-        elif filter_.op == "<=":
-            return stix_obj_field <= filter_.value
+        if filter.op == "=":
+            return stix_obj_field == filter.value
+        elif filter.op == "!=":
+            return stix_obj_field != filter.value
+        elif filter.op == "in":
+            return stix_obj_field in filter.value
+        elif filter.op == ">":
+            return stix_obj_field > filter.value
+        elif filter.op == "<":
+            return stix_obj_field < filter.value
+        elif filter.op == ">=":
+            return stix_obj_field >= filter.value
+        elif filter.op == "<=":
+            return stix_obj_field <= filter.value
         else:
             return -1
 
     @classmethod
-    def _id(cls, filter_, stix_obj_id):
+    def _id(cls, filter, stix_obj_id):
         """base filter types"""
-        if filter_.op == "=":
-            return stix_obj_id == filter_.value
-        elif filter_.op == "!=":
-            return stix_obj_id != filter_.value
+        if filter.op == "=":
+            return stix_obj_id == filter.value
+        elif filter.op == "!=":
+            return stix_obj_id != filter.value
         else:
             return -1
 
     @classmethod
-    def _boolean(cls, filter_, stix_obj_field):
-        if filter_.op == "=":
-            return stix_obj_field == filter_.value
-        elif filter_.op == "!=":
-            return stix_obj_field != filter_.value
+    def _boolean(cls, filter, stix_obj_field):
+        if filter.op == "=":
+            return stix_obj_field == filter.value
+        elif filter.op == "!=":
+            return stix_obj_field != filter.value
         else:
             return -1
 
     @classmethod
-    def _string(cls, filter_, stix_obj_field):
-        return cls._all(filter_, stix_obj_field)
+    def _string(cls, filter, stix_obj_field):
+        return cls._all(filter, stix_obj_field)
 
     @classmethod
-    def _timestamp(cls, filter_, stix_obj_timestamp):
-        return cls._all(filter_, stix_obj_timestamp)
+    def _timestamp(cls, filter, stix_obj_timestamp):
+        return cls._all(filter, stix_obj_timestamp)
 
     # STIX 2.0 Common Property filters
     @classmethod
-    def created(cls, filter_, stix_obj):
-        return cls._timestamp(filter_, stix_obj["created"])
+    def created(cls, filter, stix_obj):
+        return cls._timestamp(filter, stix_obj["created"])
 
     @classmethod
-    def created_by_ref(cls, filter_, stix_obj):
-        return cls._id(filter_, stix_obj["created_by_ref"])
+    def created_by_ref(cls, filter, stix_obj):
+        return cls._id(filter, stix_obj["created_by_ref"])
 
     @classmethod
-    def external_references(cls, filter_, stix_obj):
+    def external_references(cls, filter, stix_obj):
         """
         STIX object's can have a list of external references
 
@@ -608,14 +600,14 @@ class STIXCommonPropertyFilters(object):
         """
         for er in stix_obj["external_references"]:
             # grab er property name from filter field
-            filter_field = filter_.field.split(".")[1]
-            r = cls._string(filter_, er[filter_field])
+            filter_field = filter.field.split(".")[1]
+            r = cls._string(filter, er[filter_field])
             if r:
                 return r
         return False
 
     @classmethod
-    def granular_markings(cls, filter_, stix_obj):
+    def granular_markings(cls, filter, stix_obj):
         """
         STIX object's can have a list of granular marking references
 
@@ -626,46 +618,46 @@ class STIXCommonPropertyFilters(object):
         """
         for gm in stix_obj["granular_markings"]:
             # grab gm property name from filter field
-            filter_field = filter_.field.split(".")[1]
+            filter_field = filter.field.split(".")[1]
 
             if filter_field == "marking_ref":
-                return cls._id(filter_, gm[filter_field])
+                return cls._id(filter, gm[filter_field])
 
             elif filter_field == "selectors":
                 for selector in gm[filter_field]:
-                    r = cls._string(filter_, selector)
+                    r = cls._string(filter, selector)
                     if r:
                         return r
         return False
 
     @classmethod
-    def id(cls, filter_, stix_obj):
-        return cls._id(filter_, stix_obj["id"])
+    def id(cls, filter, stix_obj):
+        return cls._id(filter, stix_obj["id"])
 
     @classmethod
-    def labels(cls, filter_, stix_obj):
+    def labels(cls, filter, stix_obj):
         for label in stix_obj["labels"]:
-            r = cls._string(filter_, label)
+            r = cls._string(filter, label)
             if r:
                 return r
         return False
 
     @classmethod
-    def modified(cls, filter_, stix_obj):
-        return cls._timestamp(filter_, stix_obj["modified"])
+    def modified(cls, filter, stix_obj):
+        return cls._timestamp(filter, stix_obj["modified"])
 
     @classmethod
-    def object_marking_refs(cls, filter_, stix_obj):
+    def object_marking_refs(cls, filter, stix_obj):
         for marking_id in stix_obj["object_marking_refs"]:
-            r = cls._id(filter_, marking_id)
+            r = cls._id(filter, marking_id)
             if r:
                 return r
         return False
 
     @classmethod
-    def revoked(cls, filter_, stix_obj):
-        return cls._boolean(filter_, stix_obj["revoked"])
+    def revoked(cls, filter, stix_obj):
+        return cls._boolean(filter, stix_obj["revoked"])
 
     @classmethod
-    def type(cls, filter_, stix_obj):
-        return cls._string(filter_, stix_obj["type"])
+    def type(cls, filter, stix_obj):
+        return cls._string(filter, stix_obj["type"])
