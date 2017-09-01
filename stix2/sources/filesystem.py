@@ -13,7 +13,8 @@ import json
 import os
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore, Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter
 
 
 class FileSystemStore(DataStore):
@@ -89,8 +90,7 @@ class FileSystemSource(DataSource):
         """
         Notes:
             Since FileSystem sources/sinks don't handle multiple versions
-            of a STIX object, this operation is futile. Pass call to get().
-            (Approved by G.B.)
+            of a STIX object, this operation is unnecessary. Pass call to get().
 
         """
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]

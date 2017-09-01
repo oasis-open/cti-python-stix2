@@ -169,6 +169,7 @@ def test_versioning_error_new_version_of_revoked():
 
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
         campaign_v2.new_version(name="barney")
+    assert str(excinfo.value) == "Cannot create a new version of a revoked object."
 
     assert excinfo.value.called_by == "new_version"
     assert str(excinfo.value) == "Cannot create a new version of a revoked object."
@@ -188,6 +189,7 @@ def test_versioning_error_revoke_of_revoked():
 
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
         campaign_v2.revoke()
+    assert str(excinfo.value) == "Cannot revoke an already revoked object."
 
     assert excinfo.value.called_by == "revoke"
     assert str(excinfo.value) == "Cannot revoke an already revoked object."

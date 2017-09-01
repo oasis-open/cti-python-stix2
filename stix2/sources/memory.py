@@ -25,7 +25,8 @@ import os
 from stix2validator import validate_instance
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore, Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter
 
 
 def _add(store, stix_data):
@@ -155,19 +156,16 @@ class MemorySource(DataSource):
     def all_versions(self, stix_id, _composite_filters=None):
         """
         Notes:
-            Similar to get() except returns list of all object versions of
-            the specified "id".
+            Since Memory sources/sinks don't handle multiple versions of a
+            STIX object, this operation is unnecessary. Translate call to get().
 
         Args:
             stix_id (str): The id of the STIX 2.0 object to retrieve. Should
                 return a list of objects, all the versions of the object
                 specified by the "id".
 
-            _composite_filters (list): list of filters passed from the
-                Composite Data Source.
-
         Returns:
-            stix_objs (list): STIX objects that matched ``stix_id``.
+            (list): STIX object that matched ``stix_id``.
 
         """
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
