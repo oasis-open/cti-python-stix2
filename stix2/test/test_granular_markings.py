@@ -33,7 +33,7 @@ def test_add_marking_mark_one_selector_multiple_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.add_markings(before, ["description"], [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -52,7 +52,7 @@ def test_add_marking_mark_multiple_selector_one_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.add_markings(before, ["description", "name"], [MARKING_IDS[0]])
+    before = markings.add_markings(before, [MARKING_IDS[0]], ["description", "name"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -75,7 +75,7 @@ def test_add_marking_mark_multiple_selector_multiple_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.add_markings(before, ["description", "name"], [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "name"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -100,7 +100,7 @@ def test_add_marking_mark_another_property_same_marking():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.add_markings(before, ["name"], [MARKING_IDS[0]])
+    before = markings.add_markings(before, [MARKING_IDS[0]], ["name"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -125,7 +125,7 @@ def test_add_marking_mark_same_property_same_marking():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.add_markings(before, ["description"], [MARKING_IDS[0]])
+    before = markings.add_markings(before, [MARKING_IDS[0]], ["description"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -351,7 +351,7 @@ def test_remove_marking_remove_one_selector_with_multiple_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["description"], [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
     assert "granular_markings" not in before
 
 
@@ -365,7 +365,7 @@ def test_remove_marking_remove_multiple_selector_one_ref():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["description", "modified"], MARKING_IDS[0])
+    before = markings.remove_markings(before, MARKING_IDS[0], ["description", "modified"])
     assert "granular_markings" not in before
 
 
@@ -388,7 +388,7 @@ def test_remove_marking_mark_one_selector_from_multiple_ones():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["modified"], MARKING_IDS[0])
+    before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -420,7 +420,7 @@ def test_remove_marking_mark_one_selector_markings_from_multiple_ones():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["modified"], [MARKING_IDS[0]])
+    before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -439,7 +439,7 @@ def test_remove_marking_mark_mutilple_selector_multiple_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["description", "modified"], [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "modified"])
     assert "granular_markings" not in before
 
 
@@ -466,7 +466,7 @@ def test_remove_marking_mark_another_property_same_marking():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["modified"], [MARKING_IDS[0]])
+    before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -481,7 +481,7 @@ def test_remove_marking_mark_same_property_same_marking():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.remove_markings(before, ["description"], [MARKING_IDS[0]])
+    before = markings.remove_markings(before, [MARKING_IDS[0]], ["description"])
     assert "granular_markings" not in before
 
 
@@ -489,7 +489,7 @@ def test_remove_no_markings():
     before = {
         "description": "test description",
     }
-    after = markings.remove_markings(before, ["description"], ["marking-definition--1"])
+    after = markings.remove_markings(before, ["marking-definition--1"], ["description"])
     assert before == after
 
 
@@ -498,7 +498,7 @@ def test_remove_marking_bad_selector():
         "description": "test description",
     }
     with pytest.raises(AssertionError):
-        markings.remove_markings(before, ["title"], ["marking-definition--1", "marking-definition--2"])
+        markings.remove_markings(before, ["marking-definition--1", "marking-definition--2"], ["title"])
 
 
 IS_MARKED_TEST_DATA = {
@@ -526,8 +526,8 @@ IS_MARKED_TEST_DATA = {
 @pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
 def test_is_marked_smoke(data):
     """Smoke test is_marked call does not fail."""
-    assert markings.is_marked(data, ["description"])
-    assert markings.is_marked(data, ["title"]) is False
+    assert markings.is_marked(data, selectors=["description"])
+    assert markings.is_marked(data, selectors=["title"]) is False
 
 
 @pytest.mark.parametrize("data,selector", [
@@ -548,40 +548,40 @@ def test_is_marked_smoke(data):
 def test_is_marked_invalid_selector(data, selector):
     """Test invalid selector raises an error."""
     with pytest.raises(AssertionError):
-        markings.is_marked(data, selector)
+        markings.is_marked(data, selectors=selector)
 
 
 @pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
 def test_is_marked_mix_selector(data):
     """Test valid selector, one marked and one not marked returns True."""
-    assert markings.is_marked(data, ["description", "revision"])
-    assert markings.is_marked(data, ["description"])
+    assert markings.is_marked(data, selectors=["description", "revision"])
+    assert markings.is_marked(data, selectors=["description"])
 
 
 @pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
 def test_is_marked_valid_selector_no_refs(data):
     """Test that a valid selector return True when it has marking refs and False when not."""
-    assert markings.is_marked(data, ["description"])
-    assert markings.is_marked(data, ["description"], ["marking-definition--2", "marking-definition--3"])
-    assert markings.is_marked(data, ["description"], ["marking-definition--2"])
-    assert markings.is_marked(data, ["description"], ["marking-definition--2", "marking-definition--8"]) is False
+    assert markings.is_marked(data, selectors=["description"])
+    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--3"], ["description"])
+    assert markings.is_marked(data, ["marking-definition--2"], ["description"])
+    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--8"], ["description"]) is False
 
 
 @pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
 def test_is_marked_valid_selector_and_refs(data):
     """Test that a valid selector returns True when marking_refs match."""
-    assert markings.is_marked(data, ["description"], ["marking-definition--1"])
-    assert markings.is_marked(data, ["title"], ["marking-definition--1"]) is False
+    assert markings.is_marked(data, ["marking-definition--1"], ["description"])
+    assert markings.is_marked(data, ["marking-definition--1"], ["title"]) is False
 
 
 @pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
 def test_is_marked_valid_selector_multiple_refs(data):
     """Test that a valid selector returns True if aall marking_refs match.
         Otherwise False."""
-    assert markings.is_marked(data, ["revision"], ["marking-definition--2", "marking-definition--3"])
-    assert markings.is_marked(data, ["revision"], ["marking-definition--2", "marking-definition--1"]) is False
-    assert markings.is_marked(data, ["revision"], "marking-definition--2")
-    assert markings.is_marked(data, ["revision"], ["marking-definition--1234"]) is False
+    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--3"], ["revision"])
+    assert markings.is_marked(data, ["marking-definition--2", "marking-definition--1"], ["revision"]) is False
+    assert markings.is_marked(data, "marking-definition--2", ["revision"])
+    assert markings.is_marked(data, ["marking-definition--1234"], ["revision"]) is False
 
 
 @pytest.mark.parametrize("data", [IS_MARKED_TEST_DATA])
@@ -589,8 +589,8 @@ def test_is_marked_no_marking_refs(data):
     """Test that a valid content selector with no marking_refs returns True
         if there is a granular_marking that asserts that field, False
         otherwise."""
-    assert markings.is_marked(data, ["type"]) is False
-    assert markings.is_marked(data, ["revision"])
+    assert markings.is_marked(data, selectors=["type"]) is False
+    assert markings.is_marked(data, selectors=["revision"])
 
 
 def test_is_marked_positional_arguments_combinations():
@@ -661,75 +661,75 @@ def test_is_marked_positional_arguments_combinations():
             ]
         }
 
-    assert markings.is_marked(test_sdo, "a", ["1"], False, False)
-    assert markings.is_marked(test_sdo, "a", ["1"], True, False)
-    assert markings.is_marked(test_sdo, "a", ["1"], True, True)
-    assert markings.is_marked(test_sdo, "a", ["1"], False, True)
+    assert markings.is_marked(test_sdo, ["1"], "a", False, False)
+    assert markings.is_marked(test_sdo, ["1"], "a", True, False)
+    assert markings.is_marked(test_sdo, ["1"], "a", True, True)
+    assert markings.is_marked(test_sdo, ["1"], "a", False, True)
 
     assert markings.is_marked(test_sdo, "b", inherited=False, descendants=False) is False
     assert markings.is_marked(test_sdo, "b", inherited=True, descendants=False) is False
     assert markings.is_marked(test_sdo, "b", inherited=True, descendants=True) is False
     assert markings.is_marked(test_sdo, "b", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_sdo, "c", ["2"], False, False)
-    assert markings.is_marked(test_sdo, "c", ["2"], True, False)
-    assert markings.is_marked(test_sdo, "c", ["2", "3", "4", "5"], True, True)
-    assert markings.is_marked(test_sdo, "c", ["2", "3", "4", "5"], False, True)
+    assert markings.is_marked(test_sdo, ["2"], "c", False, False)
+    assert markings.is_marked(test_sdo, ["2"], "c", True, False)
+    assert markings.is_marked(test_sdo, ["2", "3", "4", "5"], "c", True, True)
+    assert markings.is_marked(test_sdo, ["2", "3", "4", "5"], "c", False, True)
 
     assert markings.is_marked(test_sdo, "c.[0]", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_sdo, "c.[0]", ["2"], True, False)
-    assert markings.is_marked(test_sdo, "c.[0]", ["2"], True, True)
+    assert markings.is_marked(test_sdo, ["2"], "c.[0]", True, False)
+    assert markings.is_marked(test_sdo, ["2"], "c.[0]", True, True)
     assert markings.is_marked(test_sdo, "c.[0]", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_sdo, "c.[1]", ["3"], False, False)
-    assert markings.is_marked(test_sdo, "c.[1]", ["2", "3"], True, False)
-    assert markings.is_marked(test_sdo, "c.[1]", ["2", "3"], True, True)
-    assert markings.is_marked(test_sdo, "c.[1]", ["3"], False, True)
+    assert markings.is_marked(test_sdo, ["3"], "c.[1]", False, False)
+    assert markings.is_marked(test_sdo, ["2", "3"], "c.[1]", True, False)
+    assert markings.is_marked(test_sdo, ["2", "3"], "c.[1]", True, True)
+    assert markings.is_marked(test_sdo, ["3"], "c.[1]", False, True)
 
-    assert markings.is_marked(test_sdo, "c.[2]", ["4"], False, False)
-    assert markings.is_marked(test_sdo, "c.[2]", ["2", "4"], True, False)
-    assert markings.is_marked(test_sdo, "c.[2]", ["2", "4", "5"], True, True)
-    assert markings.is_marked(test_sdo, "c.[2]", ["4", "5"], False, True)
+    assert markings.is_marked(test_sdo, ["4"], "c.[2]", False, False)
+    assert markings.is_marked(test_sdo, ["2", "4"], "c.[2]", True, False)
+    assert markings.is_marked(test_sdo, ["2", "4", "5"], "c.[2]", True, True)
+    assert markings.is_marked(test_sdo, ["4", "5"], "c.[2]", False, True)
 
-    assert markings.is_marked(test_sdo, "c.[2].g", ["5"], False, False)
-    assert markings.is_marked(test_sdo, "c.[2].g", ["2", "4", "5"], True, False)
-    assert markings.is_marked(test_sdo, "c.[2].g", ["2", "4", "5"], True, True)
-    assert markings.is_marked(test_sdo, "c.[2].g", ["5"], False, True)
+    assert markings.is_marked(test_sdo, ["5"], "c.[2].g", False, False)
+    assert markings.is_marked(test_sdo, ["2", "4", "5"], "c.[2].g", True, False)
+    assert markings.is_marked(test_sdo, ["2", "4", "5"], "c.[2].g", True, True)
+    assert markings.is_marked(test_sdo, ["5"], "c.[2].g", False, True)
 
-    assert markings.is_marked(test_sdo, "x", ["6"], False, False)
-    assert markings.is_marked(test_sdo, "x", ["6"], True, False)
-    assert markings.is_marked(test_sdo, "x", ["6", "7", "8", "9", "10"], True, True)
-    assert markings.is_marked(test_sdo, "x", ["6", "7", "8", "9", "10"], False, True)
+    assert markings.is_marked(test_sdo, ["6"], "x", False, False)
+    assert markings.is_marked(test_sdo, ["6"], "x", True, False)
+    assert markings.is_marked(test_sdo, ["6", "7", "8", "9", "10"], "x", True, True)
+    assert markings.is_marked(test_sdo, ["6", "7", "8", "9", "10"], "x", False, True)
 
-    assert markings.is_marked(test_sdo, "x.y", ["7"], False, False)
-    assert markings.is_marked(test_sdo, "x.y", ["6", "7"], True, False)
-    assert markings.is_marked(test_sdo, "x.y", ["6", "7", "8"], True, True)
-    assert markings.is_marked(test_sdo, "x.y", ["7", "8"], False, True)
+    assert markings.is_marked(test_sdo, ["7"], "x.y", False, False)
+    assert markings.is_marked(test_sdo, ["6", "7"], "x.y", True, False)
+    assert markings.is_marked(test_sdo, ["6", "7", "8"], "x.y", True, True)
+    assert markings.is_marked(test_sdo, ["7", "8"], "x.y", False, True)
 
     assert markings.is_marked(test_sdo, "x.y.[0]", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_sdo, "x.y.[0]", ["6", "7"], True, False)
-    assert markings.is_marked(test_sdo, "x.y.[0]", ["6", "7"], True, True)
+    assert markings.is_marked(test_sdo, ["6", "7"], "x.y.[0]", True, False)
+    assert markings.is_marked(test_sdo, ["6", "7"], "x.y.[0]", True, True)
     assert markings.is_marked(test_sdo, "x.y.[0]", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_sdo, "x.y.[1]", ["8"], False, False)
-    assert markings.is_marked(test_sdo, "x.y.[1]", ["6", "7", "8"], True, False)
-    assert markings.is_marked(test_sdo, "x.y.[1]", ["6", "7", "8"], True, True)
-    assert markings.is_marked(test_sdo, "x.y.[1]", ["8"], False, True)
+    assert markings.is_marked(test_sdo, ["8"], "x.y.[1]", False, False)
+    assert markings.is_marked(test_sdo, ["6", "7", "8"], "x.y.[1]", True, False)
+    assert markings.is_marked(test_sdo, ["6", "7", "8"], "x.y.[1]", True, True)
+    assert markings.is_marked(test_sdo, ["8"], "x.y.[1]", False, True)
 
-    assert markings.is_marked(test_sdo, "x.z", ["9"], False, False)
-    assert markings.is_marked(test_sdo, "x.z", ["6", "9"], True, False)
-    assert markings.is_marked(test_sdo, "x.z", ["6", "9", "10"], True, True)
-    assert markings.is_marked(test_sdo, "x.z", ["9", "10"], False, True)
+    assert markings.is_marked(test_sdo, ["9"], "x.z", False, False)
+    assert markings.is_marked(test_sdo, ["6", "9"], "x.z", True, False)
+    assert markings.is_marked(test_sdo, ["6", "9", "10"], "x.z", True, True)
+    assert markings.is_marked(test_sdo, ["9", "10"], "x.z", False, True)
 
     assert markings.is_marked(test_sdo, "x.z.foo1", inherited=False, descendants=False) is False
-    assert markings.is_marked(test_sdo, "x.z.foo1", ["6", "9"], True, False)
-    assert markings.is_marked(test_sdo, "x.z.foo1", ["6", "9"], True, True)
+    assert markings.is_marked(test_sdo, ["6", "9"], "x.z.foo1", True, False)
+    assert markings.is_marked(test_sdo, ["6", "9"], "x.z.foo1", True, True)
     assert markings.is_marked(test_sdo, "x.z.foo1", inherited=False, descendants=True) is False
 
-    assert markings.is_marked(test_sdo, "x.z.foo2", ["10"], False, False)
-    assert markings.is_marked(test_sdo, "x.z.foo2", ["6", "9", "10"], True, False)
-    assert markings.is_marked(test_sdo, "x.z.foo2", ["6", "9", "10"], True, True)
-    assert markings.is_marked(test_sdo, "x.z.foo2", ["10"], False, True)
+    assert markings.is_marked(test_sdo, ["10"], "x.z.foo2", False, False)
+    assert markings.is_marked(test_sdo, ["6", "9", "10"], "x.z.foo2", True, False)
+    assert markings.is_marked(test_sdo, ["6", "9", "10"], "x.z.foo2", True, True)
+    assert markings.is_marked(test_sdo, ["10"], "x.z.foo2", False, True)
 
 
 def test_create_sdo_with_invalid_marking():
@@ -763,7 +763,7 @@ def test_set_marking_mark_one_selector_multiple_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.set_markings(before, ["description"], [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.set_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -787,7 +787,7 @@ def test_set_marking_mark_multiple_selector_one_refs():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.set_markings(before, ["description", "modified"], [MARKING_IDS[0]])
+    before = markings.set_markings(before, [MARKING_IDS[0]], ["description", "modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -809,7 +809,7 @@ def test_set_marking_mark_multiple_selector_multiple_refs_from_none():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.set_markings(before, ["description", "modified"], [MARKING_IDS[0], MARKING_IDS[1]])
+    before = markings.set_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -837,17 +837,17 @@ def test_set_marking_mark_another_property_same_marking():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.set_markings(before, ["description"], [MARKING_IDS[1], MARKING_IDS[2]])
+    before = markings.set_markings(before, [MARKING_IDS[1], MARKING_IDS[2]], ["description"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
 
 @pytest.mark.parametrize("marking", [
-    (["foo"], [MARKING_IDS[4], MARKING_IDS[5]]),
-    ("", [MARKING_IDS[4], MARKING_IDS[5]]),
-    ([], [MARKING_IDS[4], MARKING_IDS[5]]),
-    ([""], [MARKING_IDS[4], MARKING_IDS[5]]),
+    ([MARKING_IDS[4], MARKING_IDS[5]], ["foo"]),
+    ([MARKING_IDS[4], MARKING_IDS[5]], ""),
+    ([MARKING_IDS[4], MARKING_IDS[5]], []),
+    ([MARKING_IDS[4], MARKING_IDS[5]], [""]),
 ])
 def test_set_marking_bad_selector(marking):
     before = Malware(
@@ -894,7 +894,7 @@ def test_set_marking_mark_same_property_same_marking():
         ],
         **MALWARE_KWARGS
     )
-    before = markings.set_markings(before, ["description"], [MARKING_IDS[0]])
+    before = markings.set_markings(before, [MARKING_IDS[0]], ["description"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 

@@ -4,7 +4,7 @@ import pytest
 import pytz
 
 import stix2
-from stix2 import TLP_WHITE, markings
+from stix2 import TLP_WHITE
 
 from .constants import MARKING_DEFINITION_ID
 
@@ -156,8 +156,6 @@ def test_campaign_with_granular_markings_example():
                 marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
                 selectors=["description"])
             ])
-    print(markings.get_markings(campaign, None))
-    print(markings.add_markings(campaign, None, "marking-definition--00000000-0000-0000-0000-000000000000"))
     assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS
 
 

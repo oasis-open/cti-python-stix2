@@ -45,7 +45,7 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
     return list(results)
 
 
-def set_markings(obj, selectors, marking):
+def set_markings(obj, marking, selectors):
     """
     Removes all markings associated with selectors and appends a new granular
     marking. Refer to `clear_markings` and `add_markings` for details.
@@ -63,10 +63,10 @@ def set_markings(obj, selectors, marking):
 
     """
     obj = clear_markings(obj, selectors)
-    return add_markings(obj, selectors, marking)
+    return add_markings(obj, marking, selectors)
 
 
-def remove_markings(obj, selectors, marking):
+def remove_markings(obj, marking, selectors):
     """
     Removes granular_marking from the granular_markings collection.
 
@@ -120,7 +120,7 @@ def remove_markings(obj, selectors, marking):
         return obj.new_version(granular_markings=None)
 
 
-def add_markings(obj, selectors, marking):
+def add_markings(obj, marking, selectors):
     """
     Appends a granular_marking to the granular_markings collection.
 
@@ -213,7 +213,7 @@ def clear_markings(obj, selectors):
         return obj.new_version(granular_markings=None)
 
 
-def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
+def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=False):
     """
     Checks if field is marked by any marking or by specific marking(s).
 
@@ -239,6 +239,9 @@ def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
         marking identifiers match, True is returned.
 
     """
+    if selectors is None:
+        raise TypeError("Required argument 'selectors' must be provided")
+
     selectors = utils.convert_to_list(selectors)
     marking = utils.convert_to_list(marking)
     utils.validate(obj, selectors)

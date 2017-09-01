@@ -8,7 +8,7 @@ granular markings unless otherwise noted in each of the functions.
 from stix2.markings import granular_markings, object_markings
 
 
-def get_markings(obj, selectors, inherited=False, descendants=False):
+def get_markings(obj, selectors=None, inherited=False, descendants=False):
     """
     Get all markings associated to the field(s).
 
@@ -45,7 +45,7 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
     return list(set(results))
 
 
-def set_markings(obj, selectors, marking):
+def set_markings(obj, marking, selectors=None):
     """
     Removes all markings associated with selectors and appends a new granular
     marking. Refer to `clear_markings` and `add_markings` for details.
@@ -69,10 +69,10 @@ def set_markings(obj, selectors, marking):
     if selectors is None:
         return object_markings.set_markings(obj, marking)
     else:
-        return granular_markings.set_markings(obj, selectors, marking)
+        return granular_markings.set_markings(obj, marking, selectors)
 
 
-def remove_markings(obj, selectors, marking):
+def remove_markings(obj, marking, selectors=None):
     """
     Removes granular_marking from the granular_markings collection.
 
@@ -99,10 +99,10 @@ def remove_markings(obj, selectors, marking):
     if selectors is None:
         return object_markings.remove_markings(obj, marking)
     else:
-        return granular_markings.remove_markings(obj, selectors, marking)
+        return granular_markings.remove_markings(obj, marking, selectors)
 
 
-def add_markings(obj, selectors, marking):
+def add_markings(obj, marking, selectors=None):
     """
     Appends a granular_marking to the granular_markings collection.
 
@@ -127,10 +127,10 @@ def add_markings(obj, selectors, marking):
     if selectors is None:
         return object_markings.add_markings(obj, marking)
     else:
-        return granular_markings.add_markings(obj, selectors, marking)
+        return granular_markings.add_markings(obj, marking, selectors)
 
 
-def clear_markings(obj, selectors):
+def clear_markings(obj, selectors=None):
     """
     Removes all granular_marking associated with the selectors.
 
@@ -158,7 +158,7 @@ def clear_markings(obj, selectors):
         return granular_markings.clear_markings(obj, selectors)
 
 
-def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
+def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=False):
     """
     Checks if field(s) is marked by any marking or by specific marking(s).
 
@@ -190,8 +190,8 @@ def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
 
     result = granular_markings.is_marked(
         obj,
-        selectors,
         marking,
+        selectors,
         inherited,
         descendants
     )
@@ -203,8 +203,8 @@ def is_marked(obj, selectors, marking=None, inherited=False, descendants=False):
         if granular_marks:
             result = granular_markings.is_marked(
                 obj,
-                selectors,
                 granular_marks,
+                selectors,
                 inherited,
                 descendants
             )
