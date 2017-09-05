@@ -20,6 +20,26 @@ TOOL_ID = "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 VULNERABILITY_ID = "vulnerability--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 
+MARKING_IDS = [
+    "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+    "marking-definition--443eb5c3-a76c-4a0a-8caa-e93998e7bc09",
+    "marking-definition--57fcd772-9c1d-41b0-8d1f-3d47713415d9",
+    "marking-definition--462bf1a6-03d2-419c-b74e-eee2238b2de4",
+    "marking-definition--68520ae2-fefe-43a9-84ee-2c2a934d2c7d",
+    "marking-definition--2802dfb1-1019-40a8-8848-68d0ec0e417f",
+]
+
+# All required args for a Campaign instance, plus some optional args
+CAMPAIGN_MORE_KWARGS = dict(
+    type='campaign',
+    id=CAMPAIGN_ID,
+    created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    created="2016-04-06T20:03:00.000Z",
+    modified="2016-04-06T20:03:00.000Z",
+    name="Green Group Attacks Against Finance",
+    description="Campaign by Green Group against a series of targets in the financial services sector.",
+)
+
 # Minimum required args for an Identity instance
 IDENTITY_KWARGS = dict(
     name="John Smith",
@@ -36,6 +56,17 @@ INDICATOR_KWARGS = dict(
 MALWARE_KWARGS = dict(
     labels=['ransomware'],
     name="Cryptolocker",
+)
+
+# All required args for a Malware instance, plus some optional args
+MALWARE_MORE_KWARGS = dict(
+    type='malware',
+    id=MALWARE_ID,
+    created="2016-04-06T20:03:00.000Z",
+    modified="2016-04-06T20:03:00.000Z",
+    labels=['ransomware'],
+    name="Cryptolocker",
+    description="A ransomware related to ..."
 )
 
 # Minimum required args for a Relationship instance

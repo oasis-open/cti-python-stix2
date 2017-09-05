@@ -103,7 +103,7 @@ def test_marking_def_invalid_type():
         stix2.MarkingDefinition(
             id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
             created="2017-01-20T00:00:00.000Z",
-            definition_type="my-definiition-type",
+            definition_type="my-definition-type",
             definition=stix2.StatementMarking("Copyright 2016, Example Corp")
         )
 

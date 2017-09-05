@@ -312,6 +312,7 @@ class ReferenceProperty(Property):
     def clean(self, value):
         if isinstance(value, _STIXBase):
             value = value.id
+        value = str(value)
         if self.type:
             if not value.startswith(self.type):
                 raise ValueError("must start with '{0}'.".format(self.type))
