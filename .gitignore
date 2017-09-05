@@ -57,9 +57,12 @@ docs/_build/
 # PyBuilder
 target/
 
+# External data cache
+cache.sqlite
+
 # Vim
 *.swp
-#
+
 # PyCharm
 .idea/
 

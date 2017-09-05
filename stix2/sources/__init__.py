@@ -33,17 +33,21 @@ class DataStore(object):
     An implementer will create a concrete subclass from
     this abstract class for the specific data store.
 
+    Attributes:
+        id (str): A unique UUIDv4 to identify this DataStore.
+        source (DataStore): An object that implements DataStore class.
+        sink (DataSink): An object that implements DataSink class.
+
     """
-    def __init__(self, name="DataStore", source=None, sink=None):
-        self.name = name
-        self.id_ = make_id()
+    def __init__(self, source=None, sink=None):
+        self.id = make_id()
         self.source = source
         self.sink = sink
 
     def get(self, stix_id):
         """
-        Implement:
-            Translate API get() call to the appropriate DataSource call
+        Notes:
+            Translate API get() call to the appropriate DataSource call.
 
         Args:
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
@@ -54,7 +58,7 @@ class DataStore(object):
             stix_obj (dictionary): the STIX object to be returned
 
         """
-        return self.source.get(stix_id=stix_id)
+        return self.source.get(stix_id)
 
     def all_versions(self, stix_id):
         """
@@ -66,21 +70,18 @@ class DataStore(object):
                 return a single object, the most recent version of the object
                 specified by the "id".
 
-            _composite_filters (list): list of filters passed along from
-                the Composite Data Filter.
-
         Returns:
             stix_objs (list): a list of STIX objects (where each object is a
                 STIX object)
 
         """
-        return self.source.all_versions(stix_id=stix_id)
+        return self.source.all_versions(stix_id)
 
     def query(self, query):
         """
-        Fill:
+        Notes:
             Implement the specific data source API calls, processing,
-            functionality required for retrieving query from the data source
+            functionality required for retrieving query from the data source.
 
         Args:
             query (list): a list of filters (which collectively are the query)
@@ -95,11 +96,11 @@ class DataStore(object):
 
     def add(self, stix_objs):
         """
-        Fill:
-            -translate add() to the appropriate DataSink call()
+        Notes:
+            Translate add() to the appropriate DataSink call().
 
         """
-        return self.sink.add(stix_objs=stix_objs)
+        return self.sink.add(stix_objs)
 
 
 class DataSink(object):
@@ -108,18 +109,15 @@ class DataSink(object):
     different sink components.
 
     Attributes:
-        id_ (str): A unique UUIDv4 to identify this DataSink.
-        name (str): The descriptive name that identifies this DataSink.
+        id (str): A unique UUIDv4 to identify this DataSink.
 
     """
-
-    def __init__(self, name="DataSink"):
-        self.name = name
-        self.id_ = make_id()
+    def __init__(self):
+        self.id = make_id()
 
     def add(self, stix_objs):
         """
-        Fill:
+        Notes:
             Implement the specific data sink API calls, processing,
             functionality required for adding data to the sink
 
@@ -133,15 +131,12 @@ class DataSource(object):
     different source components.
 
     Attributes:
-        id_ (str): A unique UUIDv4 to identify this DataSource.
-        name (str): The descriptive name that identifies this DataSource.
+        id (str): A unique UUIDv4 to identify this DataSource.
         filters (set): A collection of filters present in this DataSource.
 
     """
-
-    def __init__(self, name="DataSource"):
-        self.name = name
-        self.id_ = make_id()
+    def __init__(self):
+        self.id = make_id()
         self.filters = set()
 
     def get(self, stix_id, _composite_filters=None):
@@ -166,12 +161,11 @@ class DataSource(object):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        Fill:
-            -Similar to get() except returns list of all object versions of
-                the specified "id".
-
-            -implement the specific data source API calls, processing,
-            functionality required for retrieving data from the data source
+        Notes:
+            Similar to get() except returns list of all object versions of
+            the specified "id". In addition, implement the specific data
+            source API calls, processing, functionality required for retrieving
+            data from the data source.
 
         Args:
             stix_id (str): The id of the STIX 2.0 object to retrieve. Should
@@ -212,26 +206,24 @@ class DataSource(object):
         Args:
             filters (list): list of filters (dict) to add to the Data Source.
         """
-        for filter_ in filters:
-            self.add_filter(filter_)
+        for filter in filters:
+            self.add_filter(filter)
 
-    def add_filter(self, filter_):
+    def add_filter(self, filter):
         """Add a filter."""
         # check filter field is a supported STIX 2.0 common field
-        if filter_.field not in STIX_COMMON_FIELDS:
+        if filter.field not in STIX_COMMON_FIELDS:
             raise ValueError("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
 
         # check filter operator is supported
-        if filter_.op not in FILTER_OPS:
-            raise ValueError("Filter operation(from 'op' field) not supported")
+        if filter.op not in FILTER_OPS:
+            raise ValueError("Filter operation (from 'op' field) not supported")
 
         # check filter value type is supported
-        if type(filter_.value) not in FILTER_VALUE_TYPES:
+        if type(filter.value) not in FILTER_VALUE_TYPES:
             raise ValueError("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
 
-        self.filters.add(filter_)
-
-    # TODO: Do we need a remove_filter function?
+        self.filters.add(filter)
 
     def apply_common_filters(self, stix_objs, query):
         """Evaluates filters against a set of STIX 2.0 objects
@@ -321,7 +313,7 @@ class CompositeDataSource(DataSource):
             controlled and used by the Data Source Controller object.
 
     """
-    def __init__(self, name="CompositeDataSource"):
+    def __init__(self):
         """
         Creates a new STIX Data Source.
 
@@ -330,7 +322,7 @@ class CompositeDataSource(DataSource):
                 CompositeDataSource instance.
 
         """
-        super(CompositeDataSource, self).__init__(name=name)
+        super(CompositeDataSource, self).__init__()
         self.data_sources = {}
 
     def get(self, stix_id, _composite_filters=None):
@@ -458,13 +450,13 @@ class CompositeDataSource(DataSource):
         """
         for ds in data_sources:
             if issubclass(ds.__class__, DataSource):
-                if ds.id_ in self.data_sources:
+                if ds.id in self.data_sources:
                     # data source already attached to Composite Data Source
                     continue
 
                 # add data source to Composite Data Source
                 # (its id will be its key identifier)
-                self.data_sources[ds.id_] = ds
+                self.data_sources[ds.id] = ds
             else:
                 # the Data Source object is not a proper subclass
                 # of DataSource Abstract Class
@@ -480,9 +472,9 @@ class CompositeDataSource(DataSource):
             data_source_ids (list): a list of Data Source identifiers.
 
         """
-        for id_ in data_source_ids:
-            if id_ in self.data_sources:
-                del self.data_sources[id_]
+        for id in data_source_ids:
+            if id in self.data_sources:
+                del self.data_sources[id]
             else:
                 raise ValueError("DataSource 'id' not found in CompositeDataSource collection.")
         return

@@ -13,14 +13,15 @@ import json
 import os
 
 from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore, Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter
 
 
 class FileSystemStore(DataStore):
     """
     """
-    def __init__(self, name="FileSystemStore", stix_dir="stix_data"):
-        super(FileSystemStore, self).__init__(name=name)
+    def __init__(self, stix_dir="stix_data"):
+        super(FileSystemStore, self).__init__()
         self.source = FileSystemSource(stix_dir=stix_dir)
         self.sink = FileSystemSink(stix_dir=stix_dir)
 
@@ -28,8 +29,8 @@ class FileSystemStore(DataStore):
 class FileSystemSink(DataSink):
     """
     """
-    def __init__(self, name="FileSystemSink", stix_dir="stix_data"):
-        super(FileSystemSink, self).__init__(name=name)
+    def __init__(self, stix_dir="stix_data"):
+        super(FileSystemSink, self).__init__()
         self.stix_dir = os.path.abspath(stix_dir)
 
         # check directory path exists
@@ -58,8 +59,8 @@ class FileSystemSink(DataSink):
 class FileSystemSource(DataSource):
     """
     """
-    def __init__(self, name="FileSystemSource", stix_dir="stix_data"):
-        super(FileSystemSource, self).__init__(name=name)
+    def __init__(self, stix_dir="stix_data"):
+        super(FileSystemSource, self).__init__()
         self.stix_dir = os.path.abspath(stix_dir)
 
         # check directory path exists
@@ -71,8 +72,8 @@ class FileSystemSource(DataSource):
         return self.stix_dir
 
     @stix_dir.setter
-    def stix_dir(self, dir_):
-        self.stix_dir = dir_
+    def stix_dir(self, dir):
+        self.stix_dir = dir
 
     def get(self, stix_id, _composite_filters=None):
         """
@@ -92,7 +93,6 @@ class FileSystemSource(DataSource):
             of a STIX object, this operation is unnecessary. Pass call to get().
 
         """
-
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
     def query(self, query=None, _composite_filters=None):
@@ -121,13 +121,13 @@ class FileSystemSource(DataSource):
         # the corresponding subdirectories as well
         include_paths = []
         declude_paths = []
-        if "type" in [filter_.field for filter_ in file_filters]:
-            for filter_ in file_filters:
-                if filter_.field == "type":
-                    if filter_.op == "=":
-                        include_paths.append(os.path.join(self.stix_dir, filter_.value))
-                    elif filter_.op == "!=":
-                        declude_paths.append(os.path.join(self.stix_dir, filter_.value))
+        if "type" in [filter.field for filter in file_filters]:
+            for filter in file_filters:
+                if filter.field == "type":
+                    if filter.op == "=":
+                        include_paths.append(os.path.join(self.stix_dir, filter.value))
+                    elif filter.op == "!=":
+                        declude_paths.append(os.path.join(self.stix_dir, filter.value))
         else:
             # have to walk entire STIX directory
             include_paths.append(self.stix_dir)
@@ -144,35 +144,35 @@ class FileSystemSource(DataSource):
             # user has specified types that are not wanted (i.e. "!=")
             # so query will look in all STIX directories that are not
             # the specified type. Compile correct dir paths
-            for dir_ in os.listdir(self.stix_dir):
-                if os.path.abspath(dir_) not in declude_paths:
-                    include_paths.append(os.path.abspath(dir_))
+            for dir in os.listdir(self.stix_dir):
+                if os.path.abspath(dir) not in declude_paths:
+                    include_paths.append(os.path.abspath(dir))
 
         # grab stix object ID as well - if present in filters, as
         # may forgo the loading of STIX content into memory
-        if "id" in [filter_.field for filter_ in file_filters]:
-            for filter_ in file_filters:
-                if filter_.field == "id" and filter_.op == "=":
-                    id_ = filter_.value
+        if "id" in [filter.field for filter in file_filters]:
+            for filter in file_filters:
+                if filter.field == "id" and filter.op == "=":
+                    id = filter.value
                     break
             else:
-                id_ = None
+                id = None
         else:
-            id_ = None
+            id = None
 
         # now iterate through all STIX objs
         for path in include_paths:
             for root, dirs, files in os.walk(path):
-                for file_ in files:
-                    if id_:
-                        if id_ == file_.split(".")[0]:
+                for file in files:
+                    if id:
+                        if id == file.split(".")[0]:
                             # since ID is specified in one of filters, can evaluate against filename first without loading
-                            stix_obj = json.load(file_)["objects"]
+                            stix_obj = json.load(file)["objects"]
                             # check against other filters, add if match
                             all_data.extend(self.apply_common_filters([stix_obj], query))
                     else:
                         # have to load into memory regardless to evaluate other filters
-                        stix_obj = json.load(file_)["objects"]
+                        stix_obj = json.load(file)["objects"]
                         all_data.extend(self.apply_common_filters([stix_obj], query))
 
         all_data = self.deduplicate(all_data)
@@ -182,7 +182,7 @@ class FileSystemSource(DataSource):
         """
         """
         file_filters = []
-        for filter_ in query:
-            if filter_.field == "id" or filter_.field == "type":
-                file_filters.append(filter_)
+        for filter in query:
+            if filter.field == "id" or filter.field == "type":
+                file_filters.append(filter)
         return file_filters

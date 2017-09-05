@@ -242,7 +242,7 @@ def test_artifact_example_dependency_error():
         stix2.Artifact(url="http://example.com/sirvizio.exe")
 
     assert excinfo.value.dependencies == [("hashes", "url")]
-    assert str(excinfo.value) == "The property dependencies for Artifact: (hashes) are not met."
+    assert str(excinfo.value) == "The property dependencies for Artifact: (hashes, url) are not met."
 
 
 @pytest.mark.parametrize("data", [

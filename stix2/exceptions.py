@@ -121,7 +121,7 @@ class DependentPropertiesError(STIXError, TypeError):
     def __str__(self):
         msg = "The property dependencies for {0}: ({1}) are not met."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x, y in self.dependencies))
+                          ", ".join(name for x in self.dependencies for name in x))
 
 
 class AtLeastOnePropertyError(STIXError, TypeError):
