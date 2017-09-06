@@ -5,7 +5,7 @@ Classes:
     DataStore
     DataSink
     DataSource
-    STIXCommonPropertyFilters
+    CompositeDataSource
 
 TODO:Test everything
 
@@ -226,7 +226,7 @@ class DataSource(object):
         self.filters.add(filter)
 
     def apply_common_filters(self, stix_objs, query):
-        """Evaluates filters against a set of STIX 2.0 objects
+        """Evaluate filters against a set of STIX 2.0 objects.
 
         Supports only STIX 2.0 common property fields
 
@@ -300,11 +300,10 @@ class DataSource(object):
 
 
 class CompositeDataSource(DataSource):
-    """Composite Data Source
+    """Controller for all the defined/configured STIX Data Sources.
 
-    Acts as a controller for all the defined/configured STIX Data Sources
-    e.g. a user can define n Data Sources - creating Data Source (objects)
-    for each. There is only one instance of this for any python STIX 2.0
+    E.g. a user can define n Data Sources - creating Data Source (objects)
+    for each. There is only one instance of this for any Python STIX 2.0
     application.
 
     Attributes:
@@ -314,8 +313,7 @@ class CompositeDataSource(DataSource):
 
     """
     def __init__(self):
-        """
-        Creates a new STIX Data Source.
+        """Create a new STIX Data Source.
 
         Args:
             name (str): A string containing the name to attach in the
@@ -448,6 +446,8 @@ class CompositeDataSource(DataSource):
                 to the Composite Data Source
 
         """
+        if not isinstance(data_sources, list):
+            data_sources = [data_sources]
         for ds in data_sources:
             if issubclass(ds.__class__, DataSource):
                 if ds.id in self.data_sources:

@@ -1,11 +1,10 @@
 import copy
 
+from .sources import CompositeDataSource
+
 
 class ObjectFactory(object):
-    """Object Factory
-
-    Used to easily create STIX objects with default values for certain
-    properties.
+    """Easily create STIX objects with default values for certain properties.
 
     Args:
         created_by_ref: Default created_by_ref value to apply to all
@@ -66,3 +65,60 @@ class ObjectFactory(object):
             properties.update(**kwargs)
 
         return cls(**properties)
+
+
+class Environment(object):
+    """
+
+    Args:
+        factory (ObjectFactory): Factory for creating objects with common
+            defaults for certain properties.
+        store (DataStore): Data store providing the source and sink for the
+            environment.
+        source (DataSource): Source for retrieving STIX objects.
+        sink (DataSink): Destination for saving STIX objects.
+            Invalid if `store` is also provided.
+    """
+
+    def __init__(self, factory=None, store=None, source=None, sink=None):
+        self.factory = factory
+        self.source = CompositeDataSource()
+        if store:
+            self.source.add_data_source(store.source)
+            self.sink = store.sink
+        if source:
+            self.source.add_data_source(source)
+        if sink:
+            if store:
+                raise ValueError("Data store already provided! Environment may only have one data sink.")
+            self.sink = sink
+
+        def create(self, *args, **kwargs):
+            """Use the object factory to create a STIX object with default property values.
+            """
+            return self.factory.create(*args, **kwargs)
+
+        def get(self, *args, **kwargs):
+            """Retrieve the most recent version of a single STIX object by ID.
+            """
+            return self.source.get(*args, **kwargs)
+
+        def all_versions(self, *args, **kwargs):
+            """Retrieve all versions of a single STIX object by ID.
+            """
+            return self.source.all_versions(*args, **kwargs)
+
+        def query(self, *args, **kwargs):
+            """Retrieve STIX objects matching a set of filters.
+            """
+            return self.source.query(*args, **kwargs)
+
+        def add_filter(self, *args, **kwargs):
+            """Add a filter to be applied to all queries for STIX objects from this environment.
+            """
+            return self.source.add_filter(*args, **kwargs)
+
+        def add(self, *args, **kwargs):
+            """Store a STIX object.
+            """
+            return self.sink.add(*args, **kwargs)
