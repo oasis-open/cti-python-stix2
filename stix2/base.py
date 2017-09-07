@@ -3,15 +3,18 @@
 import collections
 import copy
 import datetime as dt
-import json
+
+import simplejson as json
 
 from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
                          ExtraPropertiesError, ImmutableError,
                          InvalidObjRefError, InvalidValueError,
                          MissingPropertiesError,
-                         MutuallyExclusivePropertiesError, RevokeError,
-                         UnmodifiablePropertyError)
-from .utils import NOW, format_datetime, get_timestamp, parse_into_datetime
+                         MutuallyExclusivePropertiesError)
+from .markings.utils import validate
+from .utils import NOW, find_property_index, format_datetime, get_timestamp
+from .utils import new_version as _new_version
+from .utils import revoke as _revoke
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
@@ -35,6 +38,9 @@ def get_required_properties(properties):
 
 class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
+
+    def object_properties(self):
+        return list(self._properties.keys())
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
@@ -80,8 +86,7 @@ class _STIXBase(collections.Mapping):
 
     def _check_object_constraints(self):
         for m in self.get("granular_markings", []):
-            # TODO: check selectors
-            pass
+            validate(self, m.get("selectors"))
 
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
@@ -141,12 +146,18 @@ class _STIXBase(collections.Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        # TODO: put keys in specific order. Probably need custom JSON encoder.
-        return json.dumps(self, indent=4, sort_keys=True, cls=STIXJSONEncoder,
-                          separators=(",", ": "))  # Don't include spaces after commas.
+        properties = self.object_properties()
+
+        def sort_by(element):
+            return find_property_index(self, properties, element)
+
+        # separators kwarg -> don't include spaces after commas.
+        return json.dumps(self, indent=4, cls=STIXJSONEncoder,
+                          item_sort_key=sort_by,
+                          separators=(",", ": "))
 
     def __repr__(self):
-        props = [(k, self[k]) for k in sorted(self._properties) if self.get(k)]
+        props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
         return "{0}({1})".format(self.__class__.__name__,
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 
@@ -162,30 +173,10 @@ class _STIXBase(collections.Mapping):
 #  Versioning API
 
     def new_version(self, **kwargs):
-        unchangable_properties = []
-        if self.get("revoked"):
-            raise RevokeError("new_version")
-        new_obj_inner = copy.deepcopy(self._inner)
-        properties_to_change = kwargs.keys()
-        for prop in ["created", "created_by_ref", "id", "type"]:
-            if prop in properties_to_change:
-                unchangable_properties.append(prop)
-        if unchangable_properties:
-            raise UnmodifiablePropertyError(unchangable_properties)
-        cls = type(self)
-        if 'modified' not in kwargs:
-            kwargs['modified'] = get_timestamp()
-        else:
-            new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
-            if new_modified_property < self.modified:
-                raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
-        new_obj_inner.update(kwargs)
-        return cls(**new_obj_inner)
+        return _new_version(self, **kwargs)
 
     def revoke(self):
-        if self.get("revoked"):
-            raise RevokeError("revoke")
-        return self.new_version(revoked=True)
+        return _revoke(self)
 
 
 class _Observable(_STIXBase):
@@ -205,18 +196,14 @@ class _Observable(_STIXBase):
         try:
             allowed_types = prop.contained.valid_types
         except AttributeError:
-            try:
-                allowed_types = prop.valid_types
-            except AttributeError:
-                raise ValueError("'%s' is named like an object reference property but "
-                                 "is not an ObjectReferenceProperty or a ListProperty "
-                                 "containing ObjectReferenceProperty." % prop_name)
+            allowed_types = prop.valid_types
+
+        try:
+            ref_type = self._STIXBase__valid_refs[ref]
+        except TypeError:
+            raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
 
         if allowed_types:
-            try:
-                ref_type = self._STIXBase__valid_refs[ref]
-            except TypeError:
-                raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
             if ref_type not in allowed_types:
                 raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 

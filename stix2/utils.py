@@ -1,10 +1,15 @@
 """Utility functions and classes for the stix2 library."""
 
+from collections import Mapping
+import copy
 import datetime as dt
 import json
 
 from dateutil import parser
 import pytz
+
+from .exceptions import (InvalidValueError, RevokeError,
+                         UnmodifiablePropertyError)
 
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
@@ -23,6 +28,9 @@ class STIXdatetime(dt.datetime):
         self = dt.datetime.__new__(cls, *args, **kwargs)
         self.precision = precision
         return self
+
+    def __repr__(self):
+        return "'%s'" % format_datetime(self)
 
 
 def get_timestamp():
@@ -77,7 +85,7 @@ def parse_into_datetime(value, precision=None):
 
     # Ensure correct precision
     if not precision:
-        return ts
+        return STIXdatetime(ts, precision=precision)
     ms = ts.microsecond
     if precision == 'second':
         ts = ts.replace(microsecond=0)
@@ -112,3 +120,86 @@ def get_dict(data):
             return dict(data)
         except (ValueError, TypeError):
             raise ValueError("Cannot convert '%s' to dictionary." % str(data))
+
+
+def find_property_index(obj, properties, tuple_to_find):
+    """Recursively find the property in the object model, return the index
+    according to the _properties OrderedDict. If its a list look for
+    individual objects.
+    """
+    from .base import _STIXBase
+    try:
+        if tuple_to_find[1] in obj._inner.values():
+            return properties.index(tuple_to_find[0])
+        raise ValueError
+    except ValueError:
+        for pv in obj._inner.values():
+            if isinstance(pv, list):
+                for item in pv:
+                    if isinstance(item, _STIXBase):
+                        val = find_property_index(item,
+                                                  item.object_properties(),
+                                                  tuple_to_find)
+                        if val is not None:
+                            return val
+            elif isinstance(pv, dict):
+                if pv.get(tuple_to_find[0]) is not None:
+                    try:
+                        return int(tuple_to_find[0])
+                    except ValueError:
+                        return len(tuple_to_find[0])
+                for item in pv.values():
+                    if isinstance(item, _STIXBase):
+                        val = find_property_index(item,
+                                                  item.object_properties(),
+                                                  tuple_to_find)
+                        if val is not None:
+                            return val
+
+
+def new_version(data, **kwargs):
+    """Create a new version of a STIX object, by modifying properties and
+    updating the `modified` property.
+    """
+
+    if not isinstance(data, Mapping):
+        raise ValueError('cannot create new version of object of this type! '
+                         'Try a dictionary or instance of an SDO or SRO class.')
+
+    unchangable_properties = []
+    if data.get("revoked"):
+        raise RevokeError("new_version")
+    try:
+        new_obj_inner = copy.deepcopy(data._inner)
+    except AttributeError:
+        new_obj_inner = copy.deepcopy(data)
+    properties_to_change = kwargs.keys()
+
+    # Make sure certain properties aren't trying to change
+    for prop in ["created", "created_by_ref", "id", "type"]:
+        if prop in properties_to_change:
+            unchangable_properties.append(prop)
+    if unchangable_properties:
+        raise UnmodifiablePropertyError(unchangable_properties)
+
+    cls = type(data)
+    if 'modified' not in kwargs:
+        kwargs['modified'] = get_timestamp()
+    elif 'modified' in data:
+        old_modified_property = parse_into_datetime(data.get('modified'), precision='millisecond')
+        new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
+        if new_modified_property < old_modified_property:
+            raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
+    new_obj_inner.update(kwargs)
+    # Exclude properties with a value of 'None' in case data is not an instance of a _STIXBase subclass
+    return cls(**{k: v for k, v in new_obj_inner.items() if v is not None})
+
+
+def revoke(data):
+    if not isinstance(data, Mapping):
+        raise ValueError('cannot revoke object of this type! Try a dictionary '
+                         'or instance of an SDO or SRO class.')
+
+    if data.get("revoked"):
+        raise RevokeError("revoke")
+    return new_version(data, revoked=True)

@@ -121,7 +121,7 @@ class DependentPropertiesError(STIXError, TypeError):
     def __str__(self):
         msg = "The property dependencies for {0}: ({1}) are not met."
         return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.dependencies))
+                          ", ".join(name for x in self.dependencies for name in x))
 
 
 class AtLeastOnePropertyError(STIXError, TypeError):
@@ -157,3 +157,29 @@ class ParseError(STIXError, ValueError):
 
     def __init__(self, msg):
         super(ParseError, self).__init__(msg)
+
+
+class InvalidSelectorError(STIXError, AssertionError):
+    """Granular Marking selector violation. The selector must resolve into an existing STIX object property."""
+
+    def __init__(self, cls, key):
+        super(InvalidSelectorError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Selector {0} in {1} is not valid!"
+        return msg.format(self.key, self.cls.__class__.__name__)
+
+
+class MarkingNotFoundError(STIXError, AssertionError):
+    """Marking violation. The marking reference must be present in SDO or SRO."""
+
+    def __init__(self, cls, key):
+        super(MarkingNotFoundError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Marking {0} was not found in {1}!"
+        return msg.format(self.key, self.cls.__class__.__name__)

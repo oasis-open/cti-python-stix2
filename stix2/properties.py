@@ -6,6 +6,7 @@ import re
 import uuid
 
 from six import string_types, text_type
+from stix2patterns.validator import run_validator
 
 from .base import _STIXBase
 from .exceptions import DictionaryKeyError
@@ -118,6 +119,9 @@ class ListProperty(Property):
 
             if type(self.contained) is EmbeddedObjectProperty:
                 obj_type = self.contained.type
+            elif type(self.contained).__name__ is 'STIXObjectProperty':
+                # ^ this way of checking doesn't require a circular import
+                obj_type = type(valid)
             else:
                 obj_type = self.contained
 
@@ -308,6 +312,7 @@ class ReferenceProperty(Property):
     def clean(self, value):
         if isinstance(value, _STIXBase):
             value = value.id
+        value = str(value)
         if self.type:
             if not value.startswith(self.type):
                 raise ValueError("must start with '{0}'.".format(self.type))
@@ -366,4 +371,18 @@ class EnumProperty(StringProperty):
         value = super(EnumProperty, self).clean(value)
         if value not in self.allowed:
             raise ValueError("value '%s' is not valid for this enumeration." % value)
+        return self.string_type(value)
+
+
+class PatternProperty(StringProperty):
+
+    def __init__(self, **kwargs):
+        super(PatternProperty, self).__init__(**kwargs)
+
+    def clean(self, value):
+        str_value = super(PatternProperty, self).clean(value)
+        errors = run_validator(str_value)
+        if errors:
+            raise ValueError(str(errors[0]))
+
         return self.string_type(value)

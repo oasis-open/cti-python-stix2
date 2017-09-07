@@ -9,18 +9,18 @@ from .constants import ATTACK_PATTERN_ID
 
 
 EXPECTED = """{
+    "type": "attack-pattern",
+    "id": "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
     "created": "2016-05-12T08:17:27.000Z",
+    "modified": "2016-05-12T08:17:27.000Z",
+    "name": "Spear Phishing",
     "description": "...",
     "external_references": [
         {
-            "external_id": "CAPEC-163",
-            "source_name": "capec"
+            "source_name": "capec",
+            "external_id": "CAPEC-163"
         }
-    ],
-    "id": "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
-    "modified": "2016-05-12T08:17:27.000Z",
-    "name": "Spear Phishing",
-    "type": "attack-pattern"
+    ]
 }"""
 
 
