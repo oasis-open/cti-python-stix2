@@ -45,30 +45,29 @@ class DataStore(object):
         self.sink = sink
 
     def get(self, stix_id):
-        """
+        """Retrieve the most recent version of a single STIX object by ID.
+
         Notes:
             Translate API get() call to the appropriate DataSource call.
 
         Args:
-            stix_id (str): the id of the STIX 2.0 object to retrieve. Should
-                return a single object, the most recent version of the object
-                specified by the "id".
+            stix_id (str): the id of the STIX 2.0 object to retrieve.
 
         Returns:
-            stix_obj (dictionary): the STIX object to be returned
+            stix_obj (dictionary): the single most recent version of the STIX
+                object specified by the "id".
 
         """
         return self.source.get(stix_id)
 
     def all_versions(self, stix_id):
-        """
+        """Retrieve all versions of a single STIX object by ID.
+
         Implement:
             Translate all_versions() call to the appropriate DataSource call
 
         Args:
-            stix_id (str): the id of the STIX 2.0 object to retrieve. Should
-                return a single object, the most recent version of the object
-                specified by the "id".
+            stix_id (str): the id of the STIX 2.0 object to retrieve.
 
         Returns:
             stix_objs (list): a list of STIX objects (where each object is a
@@ -78,7 +77,8 @@ class DataStore(object):
         return self.source.all_versions(stix_id)
 
     def query(self, query):
-        """
+        """Retrieve STIX objects matching a set of filters.
+
         Notes:
             Implement the specific data source API calls, processing,
             functionality required for retrieving query from the data source.
@@ -95,9 +95,14 @@ class DataStore(object):
         return self.source.query(query=query)
 
     def add(self, stix_objs):
-        """
+        """Store STIX objects.
+
         Notes:
             Translate add() to the appropriate DataSink call().
+
+        Args:
+            stix_objs (list): a list of STIX objects (where each object is a
+                STIX object)
 
         """
         return self.sink.add(stix_objs)
@@ -116,10 +121,15 @@ class DataSink(object):
         self.id = make_id()
 
     def add(self, stix_objs):
-        """
+        """Store STIX objects.
+
         Notes:
             Implement the specific data sink API calls, processing,
             functionality required for adding data to the sink
+
+        Args:
+            stix_objs (list): a list of STIX objects (where each object is a
+                STIX object)
 
         """
         raise NotImplementedError()
@@ -201,16 +211,22 @@ class DataSource(object):
         raise NotImplementedError()
 
     def add_filters(self, filters):
-        """Add multiple filters to the DataSource.
+        """Add multiple filters to be applied to all queries for STIX objects.
 
         Args:
             filters (list): list of filters (dict) to add to the Data Source.
+
         """
         for filter in filters:
             self.add_filter(filter)
 
     def add_filter(self, filter):
-        """Add a filter."""
+        """Add a filter to be applied to all queries for STIX objects.
+
+        Args:
+            filter: filter to add to the Data Source.
+
+        """
         # check filter field is a supported STIX 2.0 common field
         if filter.field not in STIX_COMMON_FIELDS:
             raise ValueError("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
@@ -407,9 +423,7 @@ class CompositeDataSource(DataSource):
         return all_data
 
     def query(self, query=None, _composite_filters=None):
-        """Composite data source query
-
-        Federate the query to all Data Sources attached to the
+        """Federate the query to all Data Sources attached to the
         Composite Data Source.
 
         Args:
