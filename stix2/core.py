@@ -75,13 +75,13 @@ def parse(data, allow_custom=False):
     """Deserialize a string or file-like object into a STIX object.
 
     Args:
-        data: The STIX 2 string to be parsed.
+        data (str, dict, file-like object): The STIX 2 content to be parsed.
         allow_custom (bool): Whether to allow custom properties or not. Default: False.
 
     Returns:
         An instantiated Python STIX object.
-    """
 
+    """
     obj = get_dict(data)
 
     if 'type' not in obj:
@@ -96,6 +96,6 @@ def parse(data, allow_custom=False):
 
 def _register_type(new_type):
     """Register a custom STIX Object type.
-    """
 
+    """
     OBJ_MAP[new_type._type] = new_type

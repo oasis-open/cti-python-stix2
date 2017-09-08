@@ -1,5 +1,6 @@
 import copy
 
+from .core import parse as _parse
 from .sources import CompositeDataSource, DataSource, DataStore
 
 
@@ -149,3 +150,7 @@ class Environment(object):
         except AttributeError:
             raise AttributeError('Environment has no data sink to put objects in')
     add.__doc__ = DataStore.add.__doc__
+
+    def parse(self, *args, **kwargs):
+        return _parse(*args, **kwargs)
+    parse.__doc__ = _parse.__doc__

@@ -3,7 +3,7 @@ import pytest
 import stix2
 
 from .constants import (FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
-                        INDICATOR_KWARGS)
+                        INDICATOR_KWARGS, MALWARE_ID)
 
 
 def test_object_factory_created_by_ref_str():
@@ -164,3 +164,25 @@ def test_environment_datastore_and_no_object_factory():
     env = stix2.Environment(store=stix2.MemoryStore())
     ind = env.create(stix2.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
     assert ind.id == INDICATOR_ID
+
+
+def test_parse_malware():
+    env = stix2.Environment()
+    data = """{
+        "type": "malware",
+        "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+        "created": "2017-01-01T12:34:56.000Z",
+        "modified": "2017-01-01T12:34:56.000Z",
+        "name": "Cryptolocker",
+        "labels": [
+            "ransomware"
+        ]
+    }"""
+    mal = env.parse(data)
+
+    assert mal.type == 'malware'
+    assert mal.id == MALWARE_ID
+    assert mal.created == FAKE_TIME
+    assert mal.modified == FAKE_TIME
+    assert mal.labels == ['ransomware']
+    assert mal.name == "Cryptolocker"
