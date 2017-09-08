@@ -346,6 +346,9 @@ class CompositeDataSource(DataSource):
             stix_obj (dict): the STIX object to be returned.
 
         """
+        if not self.get_all_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
         all_data = []
 
         # for every configured Data Source, call its retrieve handler
@@ -382,6 +385,9 @@ class CompositeDataSource(DataSource):
             all_data (list): list of STIX objects that have the specified id
 
         """
+        if not self.get_all_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
         all_data = []
         all_filters = self.filters
 
@@ -416,6 +422,9 @@ class CompositeDataSource(DataSource):
             all_data (list): list of STIX objects to be returned
 
         """
+        if not self.get_all_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
         if not query:
             query = []
 

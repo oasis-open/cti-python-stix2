@@ -80,7 +80,7 @@ class Environment(object):
             Invalid if `store` is also provided.
     """
 
-    def __init__(self, factory=None, store=None, source=None, sink=None):
+    def __init__(self, factory=ObjectFactory(), store=None, source=None, sink=None):
         self.factory = factory
         self.source = CompositeDataSource()
         if store:
@@ -93,32 +93,55 @@ class Environment(object):
                 raise ValueError("Data store already provided! Environment may only have one data sink.")
             self.sink = sink
 
-        def create(self, *args, **kwargs):
-            """Use the object factory to create a STIX object with default property values.
-            """
-            return self.factory.create(*args, **kwargs)
+    def create(self, *args, **kwargs):
+        """Use the object factory to create a STIX object with default property values.
+        """
+        return self.factory.create(*args, **kwargs)
 
-        def get(self, *args, **kwargs):
-            """Retrieve the most recent version of a single STIX object by ID.
-            """
+    def get(self, *args, **kwargs):
+        """Retrieve the most recent version of a single STIX object by ID.
+        """
+        try:
             return self.source.get(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source to query')
 
-        def all_versions(self, *args, **kwargs):
-            """Retrieve all versions of a single STIX object by ID.
-            """
+    def all_versions(self, *args, **kwargs):
+        """Retrieve all versions of a single STIX object by ID.
+        """
+        try:
             return self.source.all_versions(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source to query')
 
-        def query(self, *args, **kwargs):
-            """Retrieve STIX objects matching a set of filters.
-            """
+    def query(self, *args, **kwargs):
+        """Retrieve STIX objects matching a set of filters.
+        """
+        try:
             return self.source.query(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source to query')
 
-        def add_filter(self, *args, **kwargs):
-            """Add a filter to be applied to all queries for STIX objects from this environment.
-            """
+    def add_filters(self, *args, **kwargs):
+        """Add multiple filters to be applied to all queries for STIX objects from this environment.
+        """
+        try:
+            return self.source.add_filters(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source')
+
+    def add_filter(self, *args, **kwargs):
+        """Add a filter to be applied to all queries for STIX objects from this environment.
+        """
+        try:
             return self.source.add_filter(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source')
 
-        def add(self, *args, **kwargs):
-            """Store a STIX object.
-            """
+    def add(self, *args, **kwargs):
+        """Store a STIX object.
+        """
+        try:
             return self.sink.add(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data sink to put objects in')
