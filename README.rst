@@ -49,17 +49,25 @@ not provided as keyword arguments:
    type. You can also provide the type explicitly, but this is not
    necessary:
 
-``python   indicator = Indicator(type='indicator', ...)``
+.. code:: python
+
+    indicator = Indicator(type='indicator', ...)
 
 Passing a value for ``type`` that does not match the class being
 constructed will cause an error:
 
-``python   >>> indicator = Indicator(type='xxx', ...)   stix2.exceptions.InvalidValueError: Invalid value for Indicator 'type': must equal 'indicator'.``
+.. code:: python
+
+    >>> indicator = Indicator(type='xxx', ...)
+    stix2.exceptions.InvalidValueError: Invalid value for Indicator 'type': must equal 'indicator'.
 
 -  If not provided, ``id`` will be generated randomly. If you provide an
    ``id`` argument, it must begin with the correct prefix:
 
-``python   >>> indicator = Indicator(id="campaign--63ce9068-b5ab-47fa-a2cf-a602ea01f21a")   stix2.exceptions.InvalidValueError: Invalid value for Indicator 'id': must start with 'indicator--'.``
+.. code:: python
+
+    >>> indicator = Indicator(id="campaign--63ce9068-b5ab-47fa-a2cf-a602ea01f21a")
+    stix2.exceptions.InvalidValueError: Invalid value for Indicator 'id': must start with 'indicator--'.
 
 -  If not provided, ``created`` and ``modified`` will be set to the
    (same) current time.
