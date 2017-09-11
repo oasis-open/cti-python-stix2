@@ -37,7 +37,8 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
                        OrObservationExpression, ParentheticalExpression,
                        QualifiedObservationExpression,
                        ReferenceObjectPathComponent, RepeatQualifier,
-                       StartStopQualifier, StringConstant, WithinQualifier)
+                       StartStopQualifier, StringConstant, TimestampConstant,
+                       WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
                   Identity, Indicator, IntrusionSet, Malware, ObservedData,
                   Report, ThreatActor, Tool, Vulnerability)
