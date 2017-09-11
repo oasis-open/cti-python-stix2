@@ -27,7 +27,6 @@ class TimestampConstant(_Constant):
         return "'%s'" % escape_quotes_and_backslashes(self.value)
 
 
-
 class IntegerConstant(_Constant):
     def __init__(self, value):
         try:
