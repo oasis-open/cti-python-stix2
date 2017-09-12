@@ -1,22 +1,22 @@
 import copy
 
+from .core import parse as _parse
+from .sources import CompositeDataSource, DataSource, DataStore
+
 
 class ObjectFactory(object):
-    """Object Factory
-
-    Used to easily create STIX objects with default values for certain
-    properties.
+    """Easily create STIX objects with default values for certain properties.
 
     Args:
-        created_by_ref: Default created_by_ref value to apply to all
+        created_by_ref (optional): Default created_by_ref value to apply to all
             objects created by this factory.
-        created: Default created value to apply to all
+        created (optional): Default created value to apply to all
             objects created by this factory.
-        external_references: Default `external_references` value to apply
+        external_references (optional): Default `external_references` value to apply
             to all objects created by this factory.
-        object_marking_refs: Default `object_marking_refs` value to apply
+        object_marking_refs (optional): Default `object_marking_refs` value to apply
             to all objects created by this factory.
-        list_append: When a default is set for a list property like
+        list_append (bool, optional): When a default is set for a list property like
             `external_references` or `object_marking_refs` and a value for
             that property is passed into `create()`, if this is set to True,
             that value will be added to the list alongside the default. If
@@ -44,6 +44,13 @@ class ObjectFactory(object):
         self._list_properties = ['external_references', 'object_marking_refs']
 
     def create(self, cls, **kwargs):
+        """Create a STIX object using object factory defaults.
+
+        Args:
+            cls: the python-stix2 class of the object to be created (eg. Indicator)
+            **kwargs: The property/value pairs of the STIX object to be created
+        """
+
         # Use self.defaults as the base, but update with any explicit args
         # provided by the user.
         properties = copy.deepcopy(self._defaults)
@@ -66,3 +73,84 @@ class ObjectFactory(object):
             properties.update(**kwargs)
 
         return cls(**properties)
+
+
+class Environment(object):
+    """
+
+    Args:
+        factory (ObjectFactory, optional): Factory for creating objects with common
+            defaults for certain properties.
+        store (DataStore, optional): Data store providing the source and sink for the
+            environment.
+        source (DataSource, optional): Source for retrieving STIX objects.
+        sink (DataSink, optional): Destination for saving STIX objects.
+            Invalid if `store` is also provided.
+    """
+
+    def __init__(self, factory=ObjectFactory(), store=None, source=None, sink=None):
+        self.factory = factory
+        self.source = CompositeDataSource()
+        if store:
+            self.source.add_data_source(store.source)
+            self.sink = store.sink
+        if source:
+            self.source.add_data_source(source)
+        if sink:
+            if store:
+                raise ValueError("Data store already provided! Environment may only have one data sink.")
+            self.sink = sink
+
+    def create(self, *args, **kwargs):
+        return self.factory.create(*args, **kwargs)
+    create.__doc__ = ObjectFactory.create.__doc__
+
+    def get(self, *args, **kwargs):
+        try:
+            return self.source.get(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source to query')
+    get.__doc__ = DataStore.get.__doc__
+
+    def all_versions(self, *args, **kwargs):
+        """Retrieve all versions of a single STIX object by ID.
+        """
+        try:
+            return self.source.all_versions(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source to query')
+    all_versions.__doc__ = DataStore.all_versions.__doc__
+
+    def query(self, *args, **kwargs):
+        """Retrieve STIX objects matching a set of filters.
+        """
+        try:
+            return self.source.query(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source to query')
+    query.__doc__ = DataStore.query.__doc__
+
+    def add_filters(self, *args, **kwargs):
+        try:
+            return self.source.add_filters(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source')
+    add_filters.__doc__ = DataSource.add_filters.__doc__
+
+    def add_filter(self, *args, **kwargs):
+        try:
+            return self.source.add_filter(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source')
+    add_filter.__doc__ = DataSource.add_filter.__doc__
+
+    def add(self, *args, **kwargs):
+        try:
+            return self.sink.add(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data sink to put objects in')
+    add.__doc__ = DataStore.add.__doc__
+
+    def parse(self, *args, **kwargs):
+        return _parse(*args, **kwargs)
+    parse.__doc__ = _parse.__doc__

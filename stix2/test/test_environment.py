@@ -1,7 +1,9 @@
+import pytest
+
 import stix2
 
-from .constants import (FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS,
-                        INDICATOR_KWARGS)
+from .constants import (FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
+                        INDICATOR_KWARGS, MALWARE_ID)
 
 
 def test_object_factory_created_by_ref_str():
@@ -81,3 +83,106 @@ def test_object_factory_list_replace():
     ind = factory.create(stix2.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
     assert len(ind.external_references) == 1
     assert ind.external_references[0].source_name == "Yet Another Threat Report"
+
+
+def test_environment_functions():
+    env = stix2.Environment(stix2.ObjectFactory(created_by_ref=IDENTITY_ID),
+                            stix2.MemoryStore())
+
+    # Create a STIX object
+    ind = env.create(stix2.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
+    assert ind.created_by_ref == IDENTITY_ID
+
+    # Add objects to datastore
+    ind2 = ind.new_version(labels=['benign'])
+    env.add([ind, ind2])
+
+    # Get both versions of the object
+    resp = env.all_versions(INDICATOR_ID)
+    assert len(resp) == 1  # should be 2, but MemoryStore only keeps 1 version of objects
+
+    # Get just the most recent version of the object
+    resp = env.get(INDICATOR_ID)
+    assert resp['labels'][0] == 'benign'
+
+    # Search on something other than id
+    query = [stix2.Filter('type', '=', 'vulnerability')]
+    resp = env.query(query)
+    assert len(resp) == 0
+
+    # See different results after adding filters to the environment
+    env.add_filters([stix2.Filter('type', '=', 'indicator'),
+                    stix2.Filter('created_by_ref', '=', IDENTITY_ID)])
+    env.add_filter(stix2.Filter('labels', '=', 'benign'))  # should be 'malicious-activity'
+    resp = env.get(INDICATOR_ID)
+    assert resp['labels'][0] == 'benign'  # should be 'malicious-activity'
+
+
+def test_environment_source_and_sink():
+    ind = stix2.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    env = stix2.Environment(source=stix2.MemorySource([ind]), sink=stix2.MemorySink([ind]))
+    assert env.get(INDICATOR_ID).labels[0] == 'malicious-activity'
+
+
+def test_environment_datastore_and_sink():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.Environment(factory=stix2.ObjectFactory(),
+                          store=stix2.MemoryStore(), sink=stix2.MemorySink)
+    assert 'Data store already provided' in str(excinfo.value)
+
+
+def test_environment_no_datastore():
+    env = stix2.Environment(factory=stix2.ObjectFactory())
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.add(stix2.Indicator(**INDICATOR_KWARGS))
+    assert 'Environment has no data sink to put objects in' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.get(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.all_versions(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.query(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.add_filters(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.add_filter(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+
+def test_environment_datastore_and_no_object_factory():
+    # Uses a default object factory
+    env = stix2.Environment(store=stix2.MemoryStore())
+    ind = env.create(stix2.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
+    assert ind.id == INDICATOR_ID
+
+
+def test_parse_malware():
+    env = stix2.Environment()
+    data = """{
+        "type": "malware",
+        "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+        "created": "2017-01-01T12:34:56.000Z",
+        "modified": "2017-01-01T12:34:56.000Z",
+        "name": "Cryptolocker",
+        "labels": [
+            "ransomware"
+        ]
+    }"""
+    mal = env.parse(data)
+
+    assert mal.type == 'malware'
+    assert mal.id == MALWARE_ID
+    assert mal.created == FAKE_TIME
+    assert mal.modified == FAKE_TIME
+    assert mal.labels == ['ransomware']
+    assert mal.name == "Cryptolocker"

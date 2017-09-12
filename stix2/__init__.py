@@ -7,7 +7,7 @@ from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
                      ExternalReference, GranularMarking, KillChainPhase,
                      MarkingDefinition, StatementMarking, TLPMarking)
 from .core import Bundle, _register_type, parse
-from .environment import ObjectFactory
+from .environment import Environment, ObjectFactory
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, CustomObservable, Directory,
                           DomainName, EmailAddress, EmailMessage,
@@ -42,6 +42,13 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
 from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
                   Identity, Indicator, IntrusionSet, Malware, ObservedData,
                   Report, ThreatActor, Tool, Vulnerability)
+from .sources import CompositeDataSource
+from .sources.filesystem import (FileSystemSink, FileSystemSource,
+                                 FileSystemStore)
+from .sources.filters import Filter
+from .sources.memory import MemorySink, MemorySource, MemoryStore
+from .sources.taxii import (TAXIICollectionSink, TAXIICollectionSource,
+                            TAXIICollectionStore)
 from .sro import Relationship, Sighting
 from .utils import get_dict, new_version, revoke
 from .version import __version__
