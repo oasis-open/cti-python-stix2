@@ -11,8 +11,13 @@ Welcome to stix2's documentation!
    :caption: Contents:
 
    overview
-   roadmap
+   creating
+   serializing
+   parsing
+   versioning
+   markings
    datastore_api
+   roadmap
    contributing
 
 

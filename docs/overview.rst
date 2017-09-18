@@ -66,7 +66,7 @@ The **Environment Layer** adds several components that make it easier to handle
 STIX 2 data as part of a larger application and as part of a larger cyber threat
 intelligence ecosystem.
 
-- ``Data Source``s represent locations from which STIX data can be retrieved,
+- ``Data Source``\s represent locations from which STIX data can be retrieved,
   such as a TAXII server, database, or local filesystem. The Data Source API
   abstracts differences between these storage location, giving a common API to
   get objects by ID or query by various properties, as well as allowing

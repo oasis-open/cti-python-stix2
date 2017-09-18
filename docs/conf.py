@@ -1,5 +1,6 @@
 extensions = [
     'sphinx-prompt',
+    'nbsphinx',
 ]
 templates_path = ['_templates']
 source_suffix = '.rst'
