@@ -9,8 +9,8 @@ from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
 from .core import Bundle, _register_type, parse
 from .environment import Environment, ObjectFactory
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
-                          AutonomousSystem, CustomObservable, Directory,
-                          DomainName, EmailAddress, EmailMessage,
+                          AutonomousSystem, CustomExtension, CustomObservable,
+                          Directory, DomainName, EmailAddress, EmailMessage,
                           EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
                           IPv4Address, IPv6Address, MACAddress, Mutex,
                           NetworkTraffic, NTFSExt, PDFExt, Process,

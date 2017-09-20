@@ -346,7 +346,14 @@ def CustomObject(type='x-custom-type', properties=None):
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
-                cls.__init__(self, **kwargs)
+                try:
+                    cls.__init__(self, **kwargs)
+                except (AttributeError, TypeError) as e:
+                    # Don't accidentally catch errors raised in a custom __init__()
+                    if ("has no attribute '__init__'" in str(e) or
+                            str(e) == "object.__init__() takes no parameters"):
+                        return
+                    raise e
 
         stix2._register_type(_Custom)
         return _Custom
