@@ -16,6 +16,7 @@ Welcome to stix2's documentation!
    parsing
    versioning
    markings
+   custom
    datastore_api
    roadmap
    contributing
