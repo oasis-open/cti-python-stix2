@@ -7,16 +7,12 @@ Welcome to stix2's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    overview
-   creating
-   serializing
-   parsing
-   versioning
-   markings
-   custom
+   guide
+   api_ref
    datastore_api
    roadmap
    contributing

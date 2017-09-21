@@ -1,4 +1,4 @@
-"""Base class for type definitions in the stix2 library."""
+"""Base classes for type definitions in the stix2 library."""
 
 import collections
 import copy

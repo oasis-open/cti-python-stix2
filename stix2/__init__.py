@@ -1,4 +1,20 @@
-"""Python APIs for STIX 2."""
+"""Python APIs for STIX 2.
+
+.. autosummary::
+   :toctree: api
+
+   base
+   common
+   core
+   environment
+   exceptions
+   observables
+   patterns
+   properties
+   sdo
+   sro
+   utils
+"""
 
 # flake8: noqa
 
