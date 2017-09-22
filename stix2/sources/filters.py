@@ -4,10 +4,6 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 Classes:
     Filter
 
-TODO: The script at the bottom of the module works (to capture
-all the callable filter methods), however it causes this module
-to be imported by itself twice. Not sure how big of deal that is,
-or if cleaner solution possible.
 """
 
 import collections
@@ -15,6 +11,8 @@ import types
 
 # Currently, only STIX 2.0 common SDO fields (that are not complex objects)
 # are supported for filtering on
+
+"""Supported STIX properties"""
 STIX_COMMON_FIELDS = [
     "created",
     "created_by_ref",
@@ -30,14 +28,13 @@ STIX_COMMON_FIELDS = [
     "modified",
     "object_marking_refs",
     "revoked",
-    "type",
-    "granular_markings"
+    "type"
 ]
 
-# Supported filter operations
+"""Supported filter operations"""
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
 
-# Supported filter value types
+"""Supported filter value types"""
 FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
 
 # filter lookup map - STIX 2 common fields -> filter method
@@ -45,6 +42,24 @@ STIX_COMMON_FILTERS_MAP = {}
 
 
 class Filter(collections.namedtuple("Filter", ['field', 'op', 'value'])):
+    """Filter
+
+    STIX 2 filters that support the querying functionality of STIX 2
+    DataStores and DataSources.
+
+    Initialized in the manner of python tuples
+
+    Args:
+        field (str): filter field name, corresponds to STIX 2 object property
+
+        op (str): operator of the filter
+
+        value (str): filter field value
+
+    Example:
+        Filter("id", "=", "malware--0f862b01-99da-47cc-9bdb-db4a86a95bb1")
+
+    """
     __slots__ = ()
 
     def __new__(cls, field, op, value):
@@ -55,7 +70,8 @@ class Filter(collections.namedtuple("Filter", ['field', 'op', 'value'])):
         return self
 
 
-# primitive type filters
+"""Base type filters"""
+
 
 def _all_filter(filter_, stix_obj_field):
     """all filter operations (for filters whose value type can be applied to any operation type)"""
@@ -78,7 +94,7 @@ def _all_filter(filter_, stix_obj_field):
 
 
 def _id_filter(filter_, stix_obj_id):
-    """base filter types"""
+    """base STIX id filter"""
     if filter_.op == "=":
         return stix_obj_id == filter_.value
     elif filter_.op == "!=":
@@ -88,6 +104,7 @@ def _id_filter(filter_, stix_obj_id):
 
 
 def _boolean_filter(filter_, stix_obj_field):
+    """base boolean filter"""
     if filter_.op == "=":
         return stix_obj_field == filter_.value
     elif filter_.op == "!=":
@@ -97,19 +114,25 @@ def _boolean_filter(filter_, stix_obj_field):
 
 
 def _string_filter(filter_, stix_obj_field):
+    """base string filter"""
     return _all_filter(filter_, stix_obj_field)
 
 
 def _timestamp_filter(filter_, stix_obj_timestamp):
+    """base STIX 2 timestamp filter"""
     return _all_filter(filter_, stix_obj_timestamp)
 
-# STIX 2.0 Common Property filters
-# The naming of these functions is important as
-# they are used to index a mapping dictionary from
-# STIX common field names to these filter functions.
-#
-# REQUIRED naming scheme:
-# "check_<STIX field name>_filter"
+
+"""STIX 2.0 Common Property Filters
+
+The naming of these functions is important as
+they are used to index a mapping dictionary from
+STIX common field names to these filter functions.
+
+REQUIRED naming scheme:
+    "check_<STIX field name>_filter"
+
+"""
 
 
 def check_created_filter(filter_, stix_obj):
@@ -124,12 +147,14 @@ def check_external_references_filter(filter_, stix_obj):
     """
     STIX object's can have a list of external references
 
-    external_references properties:
+    external_references properties supported:
         external_references.source_name (string)
         external_references.description (string)
         external_references.url (string)
-        external_references.hashes (hash, but for filtering purposes, a string)
         external_references.external_id  (string)
+
+    external_references properties not supported:
+        external_references.hashes
 
     """
     for er in stix_obj["external_references"]:

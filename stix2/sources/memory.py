@@ -6,7 +6,8 @@ Classes:
     MemorySink
     MemorySource
 
-TODO: Test everything.
+
+TODO: Run through tests again, lot of changes.
 
 TODO: Use deduplicate() calls only when memory corpus is dirty (been added to)
       can save a lot of time for successive queries
@@ -18,49 +19,88 @@ Notes:
 
 """
 
-import collections
 import json
 import os
 
-from stix2 import Bundle
-from stix2.sources import DataSink, DataSource, DataStore
+from stix2.base import _STIXBase
+from stix2.core import Bundle, parse
+from stix2.sources import DataSink, DataSource, DataStore, apply_common_filters
 from stix2.sources.filters import Filter
 
 
 def _add(store, stix_data=None):
-    """Adds stix objects to MemoryStore/Source/Sink."""
-    if isinstance(stix_data, collections.Mapping):
-        # stix objects are in a bundle
-        # make dictionary of the objects for easy lookup
-        for stix_obj in stix_data["objects"]:
-            store.data[stix_obj["id"]] = stix_obj
+    """Adds STIX objects to MemoryStore/Sink.
+
+    Adds STIX objects to an in-memory dictionary for fast lookup.
+    Recursive function, breaks down STIX Bundles and lists.
+
+    Args:
+        stix_data (list OR dict OR STIX object): STIX objects to be added
+    """
+
+    if isinstance(stix_data, _STIXBase):
+        # adding a python STIX object
+        store._data[stix_data["id"]] = stix_data
+
+    elif isinstance(stix_data, dict):
+        if stix_data["type"] == "bundle":
+            # adding a json bundle - so just grab STIX objects
+            for stix_obj in stix_data["objects"]:
+                _add(store, stix_obj)
+        else:
+            # adding a json STIX object
+            store._data[stix_data["id"]] = stix_data
+
+    elif isinstance(stix_data, str):
+        # adding json encoded string of STIX content
+        stix_data = parse(stix_data)
+        if stix_data["type"] == "bundle":
+            # recurse on each STIX object in bundle
+            for stix_obj in stix_data:
+                _add(store, stix_obj)
+        else:
+            _add(store, stix_data)
+
     elif isinstance(stix_data, list):
-        # stix objects are in a list
+        # STIX objects are in a list- recurse on each object
         for stix_obj in stix_data:
-            store.data[stix_obj["id"]] = stix_obj
+            _add(store, stix_obj)
     else:
-        raise ValueError("stix_data must be in bundle format or raw list")
+        raise ValueError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
 
 
 class MemoryStore(DataStore):
-    """
-    """
-    def __init__(self, stix_data=None):
-        """
-        Notes:
-            It doesn't make sense to create a MemoryStore by passing
-            in existing MemorySource and MemorySink because there could
-            be data concurrency issues. Just as easy to create new MemoryStore.
+    """MemoryStore
 
-        """
+    Provides an interface to an in-memory dictionary
+    of STIX objects. MemoryStore is a wrapper around a paired
+    MemorySink and MemorySource
+
+    Note: It doesn't make sense to create a MemoryStore by passing
+    in existing MemorySource and MemorySink because there could
+    be data concurrency issues. As well, just as easy to create new MemoryStore.
+
+    Args:
+        stix_data (list OR dict OR STIX object): STIX content to be added
+
+    Attributes:
+        _data (dict): the in-memory dict that holds STIX objects
+
+        source (MemorySource): MemorySource
+
+        sink (MemorySink): MemorySink
+
+    """
+
+    def __init__(self, stix_data=None):
         super(MemoryStore, self).__init__()
-        self.data = {}
+        self._data = {}
 
         if stix_data:
             _add(self, stix_data)
 
-        self.source = MemorySource(stix_data=self.data, _store=True)
-        self.sink = MemorySink(stix_data=self.data, _store=True)
+        self.source = MemorySource(stix_data=self._data, _store=True)
+        self.sink = MemorySink(stix_data=self._data, _store=True)
 
     def save_to_file(self, file_path):
         return self.sink.save_to_file(file_path=file_path)
@@ -70,64 +110,111 @@ class MemoryStore(DataStore):
 
 
 class MemorySink(DataSink):
-    """
-    """
-    def __init__(self, stix_data=None, _store=False):
-        """
-        Args:
-            stix_data (dictionary OR list): valid STIX 2.0 content in
-                bundle or a list.
-            _store (bool): if the MemorySink is a part of a DataStore,
-                in which case "stix_data" is a direct reference to
-                shared memory with DataSource.
+    """MemorySink
 
-        """
+    Provides an interface for adding/pushing STIX objects
+    to an in-memory dictionary.
+
+    Designed to be paired with a MemorySource, together as the two
+    components of a MemoryStore.
+
+    Args:
+        stix_data (dict OR list): valid STIX 2.0 content in
+            bundle or a list.
+
+        _store (bool): if the MemorySink is a part of a DataStore,
+            in which case "stix_data" is a direct reference to
+            shared memory with DataSource. Not user supplied
+
+    Attributes:
+        _data (dict): the in-memory dict that holds STIX objects.
+            If apart of a MemoryStore, dict is shared between with
+            a MemorySource
+    """
+
+    def __init__(self, stix_data=None, _store=False):
         super(MemorySink, self).__init__()
-        self.data = {}
+        self._data = {}
 
         if _store:
-            self.data = stix_data
+            self._data = stix_data
         elif stix_data:
-            self.add(stix_data)
+            _add(self, stix_data)
 
     def add(self, stix_data):
-        """
+        """add STIX objects to in-memory dictionary maintained by
+        the MemorySink (MemoryStore)
+
+        see "_add()" for args documentation
         """
         _add(self, stix_data)
 
     def save_to_file(self, file_path):
+        """write SITX objects in in-memory dictionary to json file, as a STIX Bundle
+
+        Args:
+            file_path (str): file path to write STIX data to
+
         """
-        """
-        json.dump(Bundle(self.data.values()), file_path, indent=4)
+        file_path = os.path.abspath(file_path)
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
+        with open(file_path, "w") as f:
+            f.write(str(Bundle(self._data.values())))
 
 
 class MemorySource(DataSource):
+    """MemorySource
+
+    Provides an interface for searching/retrieving
+    STIX objects from an in-memory dictionary.
+
+    Designed to be paired with a MemorySink, together as the two
+    components of a MemoryStore.
+
+    Args:
+        stix_data (dict OR list OR STIX object): valid STIX 2.0 content in
+            bundle or list.
+
+        _store (bool): if the MemorySource is a part of a DataStore,
+            in which case "stix_data" is a direct reference to shared
+            memory with DataSink. Not user supplied
+
+    Attributes:
+        _data (dict): the in-memory dict that holds STIX objects.
+            If apart of a MemoryStore, dict is shared between with
+            a MemorySink
+    """
 
     def __init__(self, stix_data=None, _store=False):
-        """
-        Args:
-            stix_data (dictionary OR list): valid STIX 2.0 content in
-                bundle or list.
-            _store (bool): if the MemorySource is a part of a DataStore,
-                in which case "stix_data" is a direct reference to shared
-                memory with DataSink.
-
-        """
         super(MemorySource, self).__init__()
-        self.data = {}
+        self._data = {}
 
         if _store:
-            self.data = stix_data
+            self._data = stix_data
         elif stix_data:
             _add(self, stix_data)
 
     def get(self, stix_id, _composite_filters=None):
+        """retrieve STIX object from in-memory dict via STIX ID
+
+        Args:
+            stix_id (str): The STIX ID of the STIX object to be retrieved.
+
+            composite_filters (set): set of filters passed from the parent
+                CompositeDataSource, not user supplied
+
+        Returns:
+            (dict OR STIX object): STIX object that has the supplied
+                ID. As the MemoryStore(i.e. MemorySink) adds STIX objects to memory
+                as they are supplied (either as python dictionary or STIX object), it
+                is returned in the same form as it as added
         """
-        """
+
         if _composite_filters is None:
             # if get call is only based on 'id', no need to search, just retrieve from dict
             try:
-                stix_obj = self.data[stix_id]
+                stix_obj = self._data[stix_id]
             except KeyError:
                 stix_obj = None
             return stix_obj
@@ -143,44 +230,75 @@ class MemorySource(DataSource):
         return stix_obj
 
     def all_versions(self, stix_id, _composite_filters=None):
-        """
-        Notes:
-            Since Memory sources/sinks don't handle multiple versions of a
-            STIX object, this operation is unnecessary. Translate call to get().
+        """retrieve STIX objects from in-memory dict via STIX ID, all versions of it
+
+        Note: Since Memory sources/sinks don't handle multiple versions of a
+        STIX object, this operation is unnecessary. Translate call to get().
 
         Args:
-            stix_id (str): The id of the STIX 2.0 object to retrieve. Should
-                return a list of objects, all the versions of the object
-                specified by the "id".
+            stix_id (str): The STIX ID of the STIX 2 object to retrieve.
+
+            composite_filters (set): set of filters passed from the parent
+                CompositeDataSource, not user supplied
 
         Returns:
-            (list): STIX object that matched ``stix_id``.
+            (list): list of STIX objects that has the supplied ID. As the
+                MemoryStore(i.e. MemorySink) adds STIX objects to memory as they
+                are supplied (either as python dictionary or STIX object), it
+                is returned in the same form as it as added
 
         """
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
     def query(self, query=None, _composite_filters=None):
-        """
+        """search and retrieve STIX objects based on the complete query
+
+        A "complete query" includes the filters from the query, the filters
+        attached to MemorySource, and any filters passed from a
+        CompositeDataSource (i.e. _composite_filters)
+
+        Args:
+            query (list): list of filters to search on
+
+            composite_filters (set): set of filters passed from the
+                CompositeDataSource, not user supplied
+
+        Returns:
+            (list): list of STIX objects that matches the supplied
+                query. As the MemoryStore(i.e. MemorySink) adds STIX objects to memory
+                as they are supplied (either as python dictionary or STIX object), it
+                is returned in the same form as it as added
+
         """
         if query is None:
-            query = []
+            query = set()
+        else:
+            if not isinstance(query, list):
+                # make sure dont make set from a Filter object,
+                # need to make a set from a list of Filter objects (even if just one Filter)
+                query = list(query)
+            query = set(query)
 
         # combine all query filters
-        if self.filters:
-            query.extend(list(self.filters))
+        if self._filters:
+            query.update(self._filters)
         if _composite_filters:
-            query.extend(_composite_filters)
+            query.update(_composite_filters)
 
         # Apply STIX common property filters.
-        all_data = self.apply_common_filters(self.data.values(), query)
+        all_data = apply_common_filters(self._data.values(), query)
 
         return all_data
 
     def load_from_file(self, file_path):
-        """
+        """load STIX data from json file
+
+        File format is expected to be a single json
+        STIX object or json STIX bundle
+
+        Args:
+            file_path (str): file path to load STIX data from
         """
         file_path = os.path.abspath(file_path)
         stix_data = json.load(open(file_path, "r"))
-
-        for stix_obj in stix_data["objects"]:
-            self.data[stix_obj["id"]] = stix_obj
+        _add(self, stix_data)

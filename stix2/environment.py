@@ -137,13 +137,6 @@ class Environment(object):
             raise AttributeError('Environment has no data source')
     add_filters.__doc__ = DataSource.add_filters.__doc__
 
-    def add_filter(self, *args, **kwargs):
-        try:
-            return self.source.add_filter(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data source')
-    add_filter.__doc__ = DataSource.add_filter.__doc__
-
     def add(self, *args, **kwargs):
         try:
             return self.sink.add(*args, **kwargs)
