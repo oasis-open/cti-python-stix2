@@ -6,7 +6,8 @@ Classes:
     FileSystemSink
     FileSystemSource
 
-TODO: Test everything
+TODO:
+    Test everything
 """
 
 import json
@@ -88,7 +89,7 @@ class FileSystemSource(DataSource):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        Notes:
+        Note:
             Since FileSystem sources/sinks don't handle multiple versions
             of a STIX object, this operation is unnecessary. Pass call to get().
 

@@ -6,12 +6,14 @@ Classes:
     MemorySink
     MemorySource
 
-TODO: Test everything.
+TODO:
+    Test everything.
 
-TODO: Use deduplicate() calls only when memory corpus is dirty (been added to)
-      can save a lot of time for successive queries
+TODO:
+    Use deduplicate() calls only when memory corpus is dirty (been added to)
+    can save a lot of time for successive queries
 
-Notes:
+Note:
     Not worrying about STIX versioning. The in memory STIX data at anytime
     will only hold one version of a STIX object. As such, when save() is called,
     the single versions of all the STIX objects are what is written to file.
@@ -47,7 +49,7 @@ class MemoryStore(DataStore):
     """
     def __init__(self, stix_data=None):
         """
-        Notes:
+        Note:
             It doesn't make sense to create a MemoryStore by passing
             in existing MemorySource and MemorySink because there could
             be data concurrency issues. Just as easy to create new MemoryStore.
@@ -144,7 +146,7 @@ class MemorySource(DataSource):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        Notes:
+        Note:
             Since Memory sources/sinks don't handle multiple versions of a
             STIX object, this operation is unnecessary. Translate call to get().
 

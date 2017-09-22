@@ -7,14 +7,14 @@ from stix2 import exceptions
 
 
 def _evaluate_expression(obj, selector):
-    """
-    Walks an SDO or SRO generating selectors to match against ``selector``. If
-    a match is found and the the value of this property is present in the
+    """Walks an SDO or SRO generating selectors to match against ``selector``.
+
+    If a match is found and the the value of this property is present in the
     objects. Matching value of the property will be returned.
 
     Args:
         obj: An SDO or SRO object.
-        selector: A string following the selector syntax.
+        selector (str): A string following the selector syntax.
 
     Returns:
         list: Values contained in matching property. Otherwise empty list.
@@ -58,28 +58,26 @@ def convert_to_list(data):
 
 
 def compress_markings(granular_markings):
-    """
-    Compress granular markings list. If there is more than one marking
-    identifier matches. It will collapse into a single granular marking.
+    """Compress granular markings list.
 
-    Examples:
-        Input:
-        [
-            {
-                "selectors": [
-                    "description"
-                ],
-                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
-            },
-            {
-                "selectors": [
-                    "name"
-                ],
-                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
-            }
-        ]
+    If there is more than one marking identifier matches. It will collapse into
+    a single granular marking.
 
-        Output:
+    Example:
+        >>> compress_markings([
+        ...     {
+        ...         "selectors": [
+        ...             "description"
+        ...         ],
+        ...         "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+        ...     },
+        ...     {
+        ...         "selectors": [
+        ...             "name"
+        ...         ],
+        ...         "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+        ...     }
+        ... ])
         [
             {
                 "selectors": [
@@ -117,23 +115,21 @@ def compress_markings(granular_markings):
 
 
 def expand_markings(granular_markings):
-    """
-    Expands granular markings list. If there is more than one selector per
-    granular marking. It will be expanded using the same marking_ref.
+    """Expands granular markings list.
 
-    Examples:
-        Input:
-        [
-            {
-                "selectors": [
-                    "description",
-                    "name"
-                ],
-                "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
-            }
-        ]
+    If there is more than one selector per granular marking. It will be
+    expanded using the same marking_ref.
 
-        Output:
+    Example:
+        >>> expand_markings([
+        ...     {
+        ...         "selectors": [
+        ...             "description",
+        ...             "name"
+        ...         ],
+        ...         "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+        ...     }
+        ... ])
         [
             {
                 "selectors": [
@@ -174,15 +170,16 @@ def expand_markings(granular_markings):
 
 
 def build_granular_marking(granular_marking):
-    """Returns a dictionary with the required structure for a granular
-    marking"""
+    """Returns a dictionary with the required structure for a granular marking.
+    """
     return {"granular_markings": expand_markings(granular_marking)}
 
 
 def iterpath(obj, path=None):
-    """
-    Generator which walks the input ``obj`` model. Each iteration yields a
-    tuple containing a list of ancestors and the property value.
+    """Generator which walks the input ``obj`` model.
+
+    Each iteration yields a tuple containing a list of ancestors and the
+    property value.
 
     Args:
         obj: An SDO or SRO object.

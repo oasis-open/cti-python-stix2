@@ -4,10 +4,11 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 Classes:
     Filter
 
-TODO: The script at the bottom of the module works (to capture
-all the callable filter methods), however it causes this module
-to be imported by itself twice. Not sure how big of deal that is,
-or if cleaner solution possible.
+TODO:
+    The script at the bottom of the module works (to capture
+    all the callable filter methods), however it causes this module
+    to be imported by itself twice. Not sure how big of deal that is,
+    or if cleaner solution possible.
 """
 
 import collections

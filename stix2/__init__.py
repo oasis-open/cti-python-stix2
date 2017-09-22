@@ -8,10 +8,12 @@
    core
    environment
    exceptions
+   markings
    observables
    patterns
    properties
    sdo
+   sources
    sro
    utils
 """

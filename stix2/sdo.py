@@ -288,30 +288,28 @@ class Vulnerability(_STIXBase):
 
 
 def CustomObject(type='x-custom-type', properties=None):
-    """Custom STIX Object type decorator
+    """Custom STIX Object type decorator.
 
-    Example 1:
-
-    @CustomObject('x-type-name', [
-        ('property1', StringProperty(required=True)),
-        ('property2', IntegerProperty()),
-    ])
-    class MyNewObjectType():
-        pass
+    Example:
+        >>> @CustomObject('x-type-name', [
+        ...     ('property1', StringProperty(required=True)),
+        ...     ('property2', IntegerProperty()),
+        ... ])
+        ... class MyNewObjectType():
+        ...     pass
 
     Supply an __init__() function to add any special validations to the custom
     type. Don't call super().__init__() though - doing so will cause an error.
 
-    Example 2:
-
-    @CustomObject('x-type-name', [
-        ('property1', StringProperty(required=True)),
-        ('property2', IntegerProperty()),
-    ])
-    class MyNewObjectType():
-        def __init__(self, property2=None, **kwargs):
-            if property2 and property2 < 10:
-                raise ValueError("'property2' is too small.")
+    Example:
+        >>> @CustomObject('x-type-name', [
+        ...     ('property1', StringProperty(required=True)),
+        ...     ('property2', IntegerProperty()),
+        ... ])
+        ... class MyNewObjectType():
+        ...     def __init__(self, property2=None, **kwargs):
+        ...         if property2 and property2 < 10:
+        ...             raise ValueError("'property2' is too small.")
     """
 
     def custom_builder(cls):

@@ -6,7 +6,8 @@ Classes:
     TAXIICollectionSink
     TAXIICollectionSource
 
-TODO: Test everything
+TODO:
+    Test everything
 
 """
 
@@ -127,7 +128,7 @@ class TAXIICollectionSource(DataSource):
     def _parse_taxii_filters(self, query):
         """Parse out TAXII filters that the TAXII server can filter on.
 
-        Notes:
+        Note:
             For instance - "?match[type]=indicator,sighting" should be in a
             query dict as follows:
 

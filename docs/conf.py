@@ -9,6 +9,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
+    'sphinx.ext.todo',
 ]
 autodoc_default_flags = [
     'show-inheritance',

@@ -3,6 +3,18 @@ Python STIX 2.0 Data Markings API.
 
 These high level functions will operate on both object level markings and
 granular markings unless otherwise noted in each of the functions.
+
+
+.. autosummary::
+   :toctree: api
+
+   granular_markings
+   object_markings
+   utils
+
+.. raw:: html
+
+   <br/><hr/><br/>
 """
 
 from stix2.markings import granular_markings, object_markings

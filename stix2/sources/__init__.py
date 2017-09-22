@@ -1,5 +1,4 @@
-"""
-Python STIX 2.0 Sources
+"""Python STIX 2.0 Sources
 
 Classes:
     DataStore
@@ -7,13 +6,26 @@ Classes:
     DataSource
     CompositeDataSource
 
-TODO:Test everything
+TODO:
+    Test everything
 
-Notes:
+Note:
     add_filter(), remove_filter(), deduplicate() - if these functions remain
     the exact same for DataSource, DataSink, CompositeDataSource etc... -> just
     make those functions an interface to inherit?
 
+
+.. autosummary::
+   :toctree: api
+
+   filters
+   filesystem
+   memory
+   taxii
+
+.. raw:: html
+
+   <br/><hr/><br/>
 """
 
 import uuid
@@ -29,8 +41,7 @@ def make_id():
 
 
 class DataStore(object):
-    """
-    An implementer will create a concrete subclass from
+    """An implementer will create a concrete subclass from
     this abstract class for the specific data store.
 
     Attributes:
@@ -47,7 +58,7 @@ class DataStore(object):
     def get(self, stix_id):
         """Retrieve the most recent version of a single STIX object by ID.
 
-        Notes:
+        Note:
             Translate API get() call to the appropriate DataSource call.
 
         Args:
@@ -79,7 +90,7 @@ class DataStore(object):
     def query(self, query):
         """Retrieve STIX objects matching a set of filters.
 
-        Notes:
+        Note:
             Implement the specific data source API calls, processing,
             functionality required for retrieving query from the data source.
 
@@ -97,7 +108,7 @@ class DataStore(object):
     def add(self, stix_objs):
         """Store STIX objects.
 
-        Notes:
+        Note:
             Translate add() to the appropriate DataSink call().
 
         Args:
@@ -109,9 +120,9 @@ class DataStore(object):
 
 
 class DataSink(object):
-    """
-    Abstract class for defining a data sink. Intended for subclassing into
-    different sink components.
+    """Abstract class for defining a data sink.
+
+    Intended for subclassing into different sink components.
 
     Attributes:
         id (str): A unique UUIDv4 to identify this DataSink.
@@ -123,7 +134,7 @@ class DataSink(object):
     def add(self, stix_objs):
         """Store STIX objects.
 
-        Notes:
+        Note:
             Implement the specific data sink API calls, processing,
             functionality required for adding data to the sink
 
@@ -136,9 +147,9 @@ class DataSink(object):
 
 
 class DataSource(object):
-    """
-    Abstract class for defining a data source. Intended for subclassing into
-    different source components.
+    """Abstract class for defining a data source.
+
+    Intended for subclassing into different source components.
 
     Attributes:
         id (str): A unique UUIDv4 to identify this DataSource.
@@ -171,7 +182,7 @@ class DataSource(object):
 
     def all_versions(self, stix_id, _composite_filters=None):
         """
-        Notes:
+        Note:
             Similar to get() except returns list of all object versions of
             the specified "id". In addition, implement the specific data
             source API calls, processing, functionality required for retrieving
@@ -294,7 +305,7 @@ class DataSource(object):
         return filtered_stix_objs
 
     def deduplicate(self, stix_obj_list):
-        """Deduplicate a list of STIX objects to a unique set
+        """Deduplicate a list of STIX objects to a unique set.
 
         Reduces a set of STIX objects to unique set by looking
         at 'id' and 'modified' fields - as a unique object version
@@ -348,7 +359,7 @@ class CompositeDataSource(DataSource):
         function does a federated retrieval and consolidation of the data
         returned from all the STIX data sources.
 
-        Notes:
+        Note:
              A composite data source will pass its attached filters to
              each configured data source, pushing filtering to them to handle.
 
@@ -387,7 +398,7 @@ class CompositeDataSource(DataSource):
         Federated all_versions retrieve method - iterates through all STIX data
         sources defined in "data_sources"
 
-        Notes:
+        Note:
             A composite data source will pass its attached filters to
             each configured data source, pushing filtering to them to handle
 
