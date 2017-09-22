@@ -1,8 +1,8 @@
-"""STIX 2.0 Cyber Observable Objects
+"""STIX 2.0 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
-embedded in Email Message objects, inherit from _STIXBase instead of Observable
-and do not have a '_type' attribute.
+embedded in Email Message objects, inherit from ``_STIXBase`` instead of
+Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
@@ -19,6 +19,8 @@ from .utils import get_dict
 
 
 class ObservableProperty(Property):
+    """Property for holding Cyber Observable Objects.
+    """
 
     def clean(self, value):
         try:
@@ -39,7 +41,7 @@ class ObservableProperty(Property):
 
 
 class ExtensionsProperty(DictionaryProperty):
-    """ Property for representing extensions on Observable objects
+    """Property for representing extensions on Observable objects.
     """
 
     def __init__(self, enclosing_type=None, required=False):
@@ -138,7 +140,6 @@ class EmailAddress(_Observable):
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
-
     ])
 
 
@@ -798,16 +799,15 @@ def _register_observable(new_observable):
 
 
 def CustomObservable(type='x-custom-observable', properties=None):
-    """Custom STIX Cyber Observable type decorator
+    """Custom STIX Cyber Observable Object type decorator.
 
-    Example 1:
-
-    @CustomObservable('x-custom-observable', [
-        ('property1', StringProperty(required=True)),
-        ('property2', IntegerProperty()),
-    ])
-    class MyNewObservableType():
-        pass
+    Example:
+        >>> @CustomObservable('x-custom-observable', [
+        ...     ('property1', StringProperty(required=True)),
+        ...     ('property2', IntegerProperty()),
+        ... ])
+        ... class MyNewObservableType():
+        ...     pass
     """
 
     def custom_builder(cls):
@@ -873,7 +873,7 @@ def _register_extension(observable, new_extension):
 
 
 def CustomExtension(observable=None, type='x-custom-observable', properties={}):
-    """Decorator for custom extensions to STIX Cyber Observables
+    """Decorator for custom extensions to STIX Cyber Observables.
     """
 
     if not observable or not issubclass(observable, _Observable):

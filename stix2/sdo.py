@@ -298,8 +298,8 @@ def CustomObject(type='x-custom-type', properties=None):
         ... class MyNewObjectType():
         ...     pass
 
-    Supply an __init__() function to add any special validations to the custom
-    type. Don't call super().__init__() though - doing so will cause an error.
+    Supply an ``__init__()`` function to add any special validations to the custom
+    type. Don't call ``super().__init__()`` though - doing so will cause an error.
 
     Example:
         >>> @CustomObject('x-type-name', [

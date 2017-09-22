@@ -19,6 +19,7 @@ autodoc_member_order = 'groupwise'
 autosummary_generate = True
 napoleon_numpy_docstring = False  # Force consistency, leave only Google
 napoleon_use_rtype = False
+add_module_names = False
 
 templates_path = ['_templates']
 source_suffix = '.rst'

@@ -65,7 +65,7 @@ class StatementMarking(_STIXBase):
 
 
 class MarkingProperty(Property):
-    """Represent the marking objects in the `definition` property of
+    """Represent the marking objects in the ``definition`` property of
     marking-definition objects.
     """
 
@@ -120,17 +120,15 @@ def _register_marking(cls):
 
 
 def CustomMarking(type='x-custom-marking', properties=None):
-    """
-    Custom STIX Marking decorator.
+    """Custom STIX Marking decorator.
 
-    Examples:
-
-        @CustomMarking('x-custom-marking', [
-            ('property1', StringProperty(required=True)),
-            ('property2', IntegerProperty()),
-        ])
-        class MyNewMarkingObjectType():
-            pass
+    Example:
+        >>> @CustomMarking('x-custom-marking', [
+        ...     ('property1', StringProperty(required=True)),
+        ...     ('property2', IntegerProperty()),
+        ... ])
+        ... class MyNewMarkingObjectType():
+        ...     pass
 
     """
     def custom_builder(cls):
