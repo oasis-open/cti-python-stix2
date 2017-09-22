@@ -2,7 +2,8 @@ import pytest
 from taxii2client import Collection
 
 from stix2.sources import (CompositeDataSource, DataSink, DataSource,
-                           DataStore, make_id, taxii)
+                           DataStore, apply_common_filters, deduplicate,
+                           make_id, taxii)
 from stix2.sources.filters import Filter
 from stix2.sources.memory import MemorySource, MemoryStore
 
@@ -212,39 +213,39 @@ def test_add_get_remove_filter(ds):
         Filter('created', '=', object()),
     ]
 
-    assert len(ds.filters) == 0
+    assert len(ds._filters) == 0
 
-    ds.add_filter(valid_filters[0])
-    assert len(ds.filters) == 1
+    ds.add_filters(valid_filters[0])
+    assert len(ds._filters) == 1
 
     # Addin the same filter again will have no effect since `filters` uses a set
-    ds.add_filter(valid_filters[0])
-    assert len(ds.filters) == 1
+    ds.add_filters(valid_filters[0])
+    assert len(ds._filters) == 1
 
-    ds.add_filter(valid_filters[1])
-    assert len(ds.filters) == 2
-    ds.add_filter(valid_filters[2])
-    assert len(ds.filters) == 3
+    ds.add_filters(valid_filters[1])
+    assert len(ds._filters) == 2
+    ds.add_filters(valid_filters[2])
+    assert len(ds._filters) == 3
 
     # TODO: make better error messages
     with pytest.raises(ValueError) as excinfo:
-        ds.add_filter(invalid_filters[0])
+        ds.add_filters(invalid_filters[0])
     assert str(excinfo.value) == "Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported"
 
     with pytest.raises(ValueError) as excinfo:
-        ds.add_filter(invalid_filters[1])
+        ds.add_filters(invalid_filters[1])
     assert str(excinfo.value) == "Filter operation (from 'op' field) not supported"
 
     with pytest.raises(ValueError) as excinfo:
-        ds.add_filter(invalid_filters[2])
+        ds.add_filters(invalid_filters[2])
     assert str(excinfo.value) == "Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary"
 
-    assert set(valid_filters) == ds.filters
+    assert set(valid_filters) == ds._filters
 
     # remove
-    ds.filters.remove(valid_filters[0])
+    ds._filters.remove(valid_filters[0])
 
-    assert len(ds.filters) == 2
+    assert len(ds._filters) == 2
 
     ds.add_filters(valid_filters)
 
@@ -332,7 +333,7 @@ def test_apply_common_filters(ds):
     ]
 
     # "Return any object whose type is not relationship"
-    resp = ds.apply_common_filters(stix_objs, [filters[0]])
+    resp = apply_common_filters(stix_objs, [filters[0]])
     ids = [r['id'] for r in resp]
     assert stix_objs[0]['id'] in ids
     assert stix_objs[1]['id'] in ids
@@ -340,96 +341,96 @@ def test_apply_common_filters(ds):
     assert len(ids) == 3
 
     # "Return any object that matched id relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"
-    resp = ds.apply_common_filters(stix_objs, [filters[1]])
+    resp = apply_common_filters(stix_objs, [filters[1]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
     # "Return any object that contains remote-access-trojan in labels"
-    resp = ds.apply_common_filters(stix_objs, [filters[2]])
+    resp = apply_common_filters(stix_objs, [filters[2]])
     assert resp[0]['id'] == stix_objs[0]['id']
     assert len(resp) == 1
 
     # "Return any object created after 2015-01-01T01:00:00.000Z"
-    resp = ds.apply_common_filters(stix_objs, [filters[3]])
+    resp = apply_common_filters(stix_objs, [filters[3]])
     assert resp[0]['id'] == stix_objs[0]['id']
     assert len(resp) == 2
 
     # "Return any revoked object"
-    resp = ds.apply_common_filters(stix_objs, [filters[4]])
+    resp = apply_common_filters(stix_objs, [filters[4]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
     # "Return any object whose not revoked"
     # Note that if 'revoked' property is not present in object.
     # Currently we can't use such an expression to filter for... :(
-    resp = ds.apply_common_filters(stix_objs, [filters[5]])
+    resp = apply_common_filters(stix_objs, [filters[5]])
     assert len(resp) == 0
 
     # Assert unknown operator for _boolean() raises exception.
     with pytest.raises(ValueError) as excinfo:
-        ds.apply_common_filters(stix_objs, [filters[6]])
+        apply_common_filters(stix_objs, [filters[6]])
 
     assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
                                   "for specified field: {1}"
                                   .format(filters[6].op, filters[6].field))
 
     # "Return any object that matches marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9 in object_marking_refs"
-    resp = ds.apply_common_filters(stix_objs, [filters[7]])
+    resp = apply_common_filters(stix_objs, [filters[7]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
     # "Return any object that contains relationship_type in their selectors AND
     # also has marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed in marking_ref"
-    resp = ds.apply_common_filters(stix_objs, [filters[8], filters[9]])
+    resp = apply_common_filters(stix_objs, [filters[8], filters[9]])
     assert resp[0]['id'] == stix_objs[2]['id']
     assert len(resp) == 1
 
     # "Return any object that contains CVE-2014-0160,CVE-2017-6608 in their external_id"
-    resp = ds.apply_common_filters(stix_objs, [filters[10]])
+    resp = apply_common_filters(stix_objs, [filters[10]])
     assert resp[0]['id'] == stix_objs[3]['id']
     assert len(resp) == 1
 
     # "Return any object that matches created_by_ref identity--00000000-0000-0000-0000-b8e91df99dc9"
-    resp = ds.apply_common_filters(stix_objs, [filters[11]])
+    resp = apply_common_filters(stix_objs, [filters[11]])
     assert len(resp) == 1
 
     # "Return any object that matches marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9 in object_marking_refs" (None)
-    resp = ds.apply_common_filters(stix_objs, [filters[12]])
+    resp = apply_common_filters(stix_objs, [filters[12]])
     assert len(resp) == 0
 
     # "Return any object that contains description in its selectors" (None)
-    resp = ds.apply_common_filters(stix_objs, [filters[13]])
+    resp = apply_common_filters(stix_objs, [filters[13]])
     assert len(resp) == 0
 
     # "Return any object that object that matches CVE in source_name" (None, case sensitive)
-    resp = ds.apply_common_filters(stix_objs, [filters[14]])
+    resp = apply_common_filters(stix_objs, [filters[14]])
     assert len(resp) == 0
 
 
 def test_filters0(ds):
     # "Return any object modified before 2017-01-28T13:49:53.935Z"
-    resp = ds.apply_common_filters(STIX_OBJS2, [Filter("modified", "<", "2017-01-28T13:49:53.935Z")])
+    resp = apply_common_filters(STIX_OBJS2, [Filter("modified", "<", "2017-01-28T13:49:53.935Z")])
     assert resp[0]['id'] == STIX_OBJS2[1]['id']
     assert len(resp) == 2
 
 
 def test_filters1(ds):
     # "Return any object modified after 2017-01-28T13:49:53.935Z"
-    resp = ds.apply_common_filters(STIX_OBJS2, [Filter("modified", ">", "2017-01-28T13:49:53.935Z")])
+    resp = apply_common_filters(STIX_OBJS2, [Filter("modified", ">", "2017-01-28T13:49:53.935Z")])
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 1
 
 
 def test_filters2(ds):
     # "Return any object modified after or on 2017-01-28T13:49:53.935Z"
-    resp = ds.apply_common_filters(STIX_OBJS2, [Filter("modified", ">=", "2017-01-27T13:49:53.935Z")])
+    resp = apply_common_filters(STIX_OBJS2, [Filter("modified", ">=", "2017-01-27T13:49:53.935Z")])
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 3
 
 
 def test_filters3(ds):
     # "Return any object modified before or on 2017-01-28T13:49:53.935Z"
-    resp = ds.apply_common_filters(STIX_OBJS2, [Filter("modified", "<=", "2017-01-27T13:49:53.935Z")])
+    resp = apply_common_filters(STIX_OBJS2, [Filter("modified", "<=", "2017-01-27T13:49:53.935Z")])
     assert resp[0]['id'] == STIX_OBJS2[1]['id']
     assert len(resp) == 2
 
@@ -438,14 +439,14 @@ def test_filters4(ds):
     fltr4 = Filter("modified", "?", "2017-01-27T13:49:53.935Z")
     # Assert unknown operator for _all() raises exception.
     with pytest.raises(ValueError) as excinfo:
-        ds.apply_common_filters(STIX_OBJS2, [fltr4])
+        apply_common_filters(STIX_OBJS2, [fltr4])
     assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
                                   "for specified field: {1}").format(fltr4.op, fltr4.field)
 
 
 def test_filters5(ds):
     # "Return any object whose id is not indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
-    resp = ds.apply_common_filters(STIX_OBJS2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")])
+    resp = apply_common_filters(STIX_OBJS2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")])
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 1
 
@@ -454,7 +455,7 @@ def test_filters6(ds):
     fltr6 = Filter("id", "?", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
     # Assert unknown operator for _id() raises exception.
     with pytest.raises(ValueError) as excinfo:
-        ds.apply_common_filters(STIX_OBJS2, [fltr6])
+        apply_common_filters(STIX_OBJS2, [fltr6])
 
     assert str(excinfo.value) == ("Error, filter operator: {0} not supported "
                                   "for specified field: {1}").format(fltr6.op, fltr6.field)
@@ -464,14 +465,14 @@ def test_filters7(ds):
     fltr7 = Filter("notacommonproperty", "=", "bar")
     # Assert unknown field raises exception.
     with pytest.raises(ValueError) as excinfo:
-        ds.apply_common_filters(STIX_OBJS2, [fltr7])
+        apply_common_filters(STIX_OBJS2, [fltr7])
 
     assert str(excinfo.value) == ("Error, field: {0} is not supported for "
                                   "filtering on.").format(fltr7.field)
 
 
 def test_deduplicate(ds):
-    unique = ds.deduplicate(STIX_OBJS1)
+    unique = deduplicate(STIX_OBJS1)
 
     # Only 3 objects are unique
     # 2 id's vary
