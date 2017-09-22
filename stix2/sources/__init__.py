@@ -16,7 +16,7 @@ Note:
 
 
 .. autosummary::
-   :toctree: api
+   :toctree: sources
 
    filters
    filesystem

@@ -6,7 +6,7 @@ granular markings unless otherwise noted in each of the functions.
 
 
 .. autosummary::
-   :toctree: api
+   :toctree: markings
 
    granular_markings
    object_markings
