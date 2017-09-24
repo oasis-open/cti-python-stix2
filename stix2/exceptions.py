@@ -3,7 +3,7 @@ class STIXError(Exception):
 
 
 class InvalidValueError(STIXError, ValueError):
-    """An invalid value was provided to a STIX object's __init__."""
+    """An invalid value was provided to a STIX object's ``__init__``."""
 
     def __init__(self, cls, prop_name, reason):
         super(InvalidValueError, self).__init__()
@@ -45,7 +45,7 @@ class ExtraPropertiesError(STIXError, TypeError):
 
 
 class ImmutableError(STIXError, ValueError):
-    """Attempted to modify an object after creation"""
+    """Attempted to modify an object after creation."""
 
     def __init__(self, cls, key):
         super(ImmutableError, self).__init__()
@@ -85,7 +85,7 @@ class InvalidObjRefError(STIXError, ValueError):
 
 
 class UnmodifiablePropertyError(STIXError, ValueError):
-    """Attempted to modify an unmodifiable property of object when creating a new version"""
+    """Attempted to modify an unmodifiable property of object when creating a new version."""
 
     def __init__(self, unchangable_properties):
         super(UnmodifiablePropertyError, self).__init__()
@@ -139,7 +139,7 @@ class AtLeastOnePropertyError(STIXError, TypeError):
 
 
 class RevokeError(STIXError, ValueError):
-    """Attempted to an operation on a revoked object"""
+    """Attempted to an operation on a revoked object."""
 
     def __init__(self, called_by):
         super(RevokeError, self).__init__()
@@ -153,7 +153,7 @@ class RevokeError(STIXError, ValueError):
 
 
 class ParseError(STIXError, ValueError):
-    """Could not parse object"""
+    """Could not parse object."""
 
     def __init__(self, msg):
         super(ParseError, self).__init__(msg)

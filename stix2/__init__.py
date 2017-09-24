@@ -3,7 +3,6 @@
 .. autosummary::
    :toctree: api
 
-   base
    common
    core
    environment
