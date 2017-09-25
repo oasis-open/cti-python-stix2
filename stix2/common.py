@@ -1,4 +1,4 @@
-"""STIX 2 Common Data Types and Properties"""
+"""STIX 2 Common Data Types and Properties."""
 
 from collections import OrderedDict
 
