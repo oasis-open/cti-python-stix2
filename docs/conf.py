@@ -33,7 +33,7 @@ version = '0.2.0'
 release = '0.2.0'
 
 language = None
-exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', '.ipynb_checkpoints']
+exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
 pygments_style = 'sphinx'
 todo_include_todos = False
 
