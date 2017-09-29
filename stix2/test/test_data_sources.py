@@ -220,7 +220,9 @@ def test_add_get_remove_filter(ds):
     with pytest.raises(TypeError) as excinfo:
         # create Filter that has a value type that is not allowed
         Filter('created', '=', object())
-    assert str(excinfo.value) == "Filter value type '<type 'object'>' is not supported. The type must be a python immutable type or dictionary"
+    # On Python 2, the type of object() is `<type 'object'>` On Python 3, it's `<class 'object'>`.
+    assert str(excinfo.value).startswith("Filter value type")
+    assert str(excinfo.value).endswith("is not supported. The type must be a python immutable type or dictionary")
 
     assert len(ds.filters) == 0
 
