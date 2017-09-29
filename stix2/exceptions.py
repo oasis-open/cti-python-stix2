@@ -1,3 +1,7 @@
+"""STIX 2 error classes.
+"""
+
+
 class STIXError(Exception):
     """Base class for errors generated in the stix2 library."""
 

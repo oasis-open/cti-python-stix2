@@ -1,3 +1,6 @@
+"""Classes to aid in working with the STIX 2 patterning language.
+"""
+
 import base64
 import binascii
 import re

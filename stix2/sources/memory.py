@@ -6,7 +6,8 @@ Classes:
     MemorySink
     MemorySource
 
-TODO: Run through tests again, lot of changes.
+TODO:
+    Run through tests again, lot of changes.
 
 TODO:
     Use deduplicate() calls only when memory corpus is dirty (been added to)

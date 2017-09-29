@@ -1,5 +1,5 @@
 """
-Python STIX 2.0 Data Markings API.
+Functions and classes for working with STIX 2 Data Markings.
 
 These high level functions will operate on both object level markings and
 granular markings unless otherwise noted in each of the functions.

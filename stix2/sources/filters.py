@@ -117,7 +117,6 @@ def apply_common_filters(stix_objs, query):
 
     Args:
         stix_objs (list): list of STIX objects to apply the query to
-
         query (set): set of filters (combined form complete query)
 
     Returns:
@@ -125,7 +124,6 @@ def apply_common_filters(stix_objs, query):
             the query.
 
     """
-
     for stix_obj in stix_objs:
         clean = True
         for filter_ in query:
