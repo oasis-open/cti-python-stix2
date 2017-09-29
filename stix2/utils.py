@@ -33,6 +33,34 @@ class STIXdatetime(dt.datetime):
         return "'%s'" % format_datetime(self)
 
 
+def deduplicate(stix_obj_list):
+    """Deduplicate a list of STIX objects to a unique set
+
+    Reduces a set of STIX objects to unique set by looking
+    at 'id' and 'modified' fields - as a unique object version
+    is determined by the combination of those fields
+
+    Note: Be aware, as can be seen in the implementation
+    of deduplicate(),that if the "stix_obj_list" argument has
+    multiple STIX objects of the same version, the last object
+    version found in the list will be the one that is returned.
+    ()
+
+    Args:
+        stix_obj_list (list): list of STIX objects (dicts)
+
+    Returns:
+        A list with a unique set of the passed list of STIX objects.
+
+    """
+    unique_objs = {}
+
+    for obj in stix_obj_list:
+        unique_objs[(obj['id'], obj['modified'])] = obj
+
+    return list(unique_objs.values())
+
+
 def get_timestamp():
     return STIXdatetime.now(tz=pytz.UTC)
 
