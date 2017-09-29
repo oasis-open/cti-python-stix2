@@ -24,8 +24,8 @@ import os
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.sources import DataSink, DataSource, DataStore, apply_common_filters
-from stix2.sources.filters import Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter, apply_common_filters
 
 
 def _add(store, stix_data=None):
@@ -65,14 +65,13 @@ def _add(store, stix_data=None):
         # STIX objects are in a list- recurse on each object
         for stix_obj in stix_data:
             _add(store, stix_obj)
+
     else:
-        raise ValueError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
+        raise TypeError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
 
 
 class MemoryStore(DataStore):
-    """MemoryStore
-
-    Provides an interface to an in-memory dictionary
+    """Provides an interface to an in-memory dictionary
     of STIX objects. MemoryStore is a wrapper around a paired
     MemorySink and MemorySource
 
@@ -110,9 +109,7 @@ class MemoryStore(DataStore):
 
 
 class MemorySink(DataSink):
-    """MemorySink
-
-    Provides an interface for adding/pushing STIX objects
+    """Provides an interface for adding/pushing STIX objects
     to an in-memory dictionary.
 
     Designed to be paired with a MemorySource, together as the two
@@ -164,9 +161,7 @@ class MemorySink(DataSink):
 
 
 class MemorySource(DataSource):
-    """MemorySource
-
-    Provides an interface for searching/retrieving
+    """Provides an interface for searching/retrieving
     STIX objects from an in-memory dictionary.
 
     Designed to be paired with a MemorySink, together as the two
@@ -280,13 +275,13 @@ class MemorySource(DataSource):
             query = set(query)
 
         # combine all query filters
-        if self._filters:
-            query.update(self._filters)
+        if self.filters:
+            query.update(self.filters)
         if _composite_filters:
             query.update(_composite_filters)
 
         # Apply STIX common property filters.
-        all_data = apply_common_filters(self._data.values(), query)
+        all_data = [stix_obj for stix_obj in apply_common_filters(self._data.values(), query)]
 
         return all_data
 

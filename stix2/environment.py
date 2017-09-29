@@ -1,7 +1,7 @@
 import copy
 
 from .core import parse as _parse
-from .sources import CompositeDataSource, DataSource, DataStore
+from .sources import CompositeDataSource, DataStore
 
 
 class ObjectFactory(object):
@@ -132,10 +132,15 @@ class Environment(object):
 
     def add_filters(self, *args, **kwargs):
         try:
-            return self.source.add_filters(*args, **kwargs)
+            return self.source.filters.update(*args, **kwargs)
         except AttributeError:
             raise AttributeError('Environment has no data source')
-    add_filters.__doc__ = DataSource.add_filters.__doc__
+
+    def add_filter(self, *args, **kwargs):
+        try:
+            return self.source.filters.add(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source')
 
     def add(self, *args, **kwargs):
         try:

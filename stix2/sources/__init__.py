@@ -7,103 +7,20 @@ Classes:
     DataSource
     CompositeDataSource
 
-Notes:
-    Q: We have add_filters() but no remove_filter()
 
 """
 
 import uuid
 
-from six import iteritems
-
-from stix2.sources.filters import (FILTER_OPS, FILTER_VALUE_TYPES,
-                                   STIX_COMMON_FIELDS, STIX_COMMON_FILTERS_MAP)
+from stix2.utils import deduplicate
 
 
 def make_id():
     return str(uuid.uuid4())
 
 
-def apply_common_filters(stix_objs, query):
-    """Evaluate filters against a set of STIX 2.0 objects.
-
-    Supports only STIX 2.0 common property fields
-
-    Args:
-        stix_objs (list): list of STIX objects to apply the query to
-
-        query (set): set of filters (combined form complete query)
-
-    Returns:
-        (list): list of STIX objects that successfully evaluate against
-            the query.
-
-    """
-    filtered_stix_objs = []
-
-    # evaluate objects against filter
-    for stix_obj in stix_objs:
-        clean = True
-        for filter_ in query:
-            # skip filter as filter was identified (when added) as
-            # not a common filter
-            if filter_.field not in STIX_COMMON_FIELDS:
-                raise ValueError("Error, field: {0} is not supported for filtering on.".format(filter_.field))
-
-            # For properties like granular_markings and external_references
-            # need to break the first property from the string.
-            if "." in filter_.field:
-                field = filter_.field.split(".")[0]
-            else:
-                field = filter_.field
-
-            # check filter "field" is in STIX object - if cant be
-            # applied due to STIX object, STIX object is discarded
-            # (i.e. did not make it through the filter)
-            if field not in stix_obj.keys():
-                clean = False
-                break
-
-            match = STIX_COMMON_FILTERS_MAP[filter_.field.split('.')[0]](filter_, stix_obj)
-            if not match:
-                clean = False
-                break
-            elif match == -1:
-                raise ValueError("Error, filter operator: {0} not supported for specified field: {1}".format(filter_.op, filter_.field))
-
-        # if object unmarked after all filters, add it
-        if clean:
-            filtered_stix_objs.append(stix_obj)
-
-    return filtered_stix_objs
-
-
-def deduplicate(stix_obj_list):
-    """Deduplicate a list of STIX objects to a unique set
-
-    Reduces a set of STIX objects to unique set by looking
-    at 'id' and 'modified' fields - as a unique object version
-    is determined by the combination of those fields
-
-    Args:
-        stix_obj_list (list): list of STIX objects (dicts)
-
-    Returns:
-        A list with a unique set of the passed list of STIX objects.
-
-    """
-    unique_objs = {}
-
-    for obj in stix_obj_list:
-        unique_objs[(obj['id'], obj['modified'])] = obj
-
-    return list(unique_objs.values())
-
-
 class DataStore(object):
-    """DataStore
-
-    An implementer will create a concrete subclass from
+    """An implementer will create a concrete subclass from
     this class for the specific DataStore.
 
     Args:
@@ -181,22 +98,9 @@ class DataStore(object):
         """
         return self.sink.add(stix_objs)
 
-    def add_filters(self, filters):
-        """add query filters (to DataSource component)
-
-        Translates add_filters() to appropriate DataSource call.
-
-        Args:
-            filters (list or Filter obj): Filters to be added to DataStore
-
-        """
-        return self.source.add_filters(filters)
-
 
 class DataSink(object):
-    """DataSink
-
-    An implementer will create a concrete subclass from
+    """An implementer will create a concrete subclass from
     this class for the specific DataSink.
 
     Attributes:
@@ -221,9 +125,7 @@ class DataSink(object):
 
 
 class DataSource(object):
-    """DataSource
-
-    An implementer will create a concrete subclass from
+    """An implementer will create a concrete subclass from
     this class for the specific DataSource.
 
     Attributes:
@@ -234,7 +136,7 @@ class DataSource(object):
     """
     def __init__(self):
         self.id = make_id()
-        self._filters = set()
+        self.filters = set()
 
     def get(self, stix_id, _composite_filters=None):
         """
@@ -294,37 +196,9 @@ class DataSource(object):
         """
         raise NotImplementedError()
 
-    def add_filters(self, filters):
-        """Add a filter to be applied to all queries for STIX objects.
-
-        Args:
-            filters (list or Filter obj): filter(s) to add to the Data Source.
-
-        """
-        if isinstance(filters, list) or isinstance(filters, set):
-            for filter_ in filters:
-                self.add_filters(filter_)
-        else:
-            filter_ = filters
-            # check filter field is a supported STIX 2.0 common field
-            if filter_.field not in STIX_COMMON_FIELDS:
-                raise ValueError("Filter 'field' is not a STIX 2.0 common property. Currently only STIX object common properties supported")
-
-            # check filter operator is supported
-            if filter_.op not in FILTER_OPS:
-                raise ValueError("Filter operation (from 'op' field) not supported")
-
-            # check filter value type is supported
-            if type(filter_.value) not in FILTER_VALUE_TYPES:
-                raise ValueError("Filter 'value' type is not supported. The type(value) must be python immutable type or dictionary")
-
-            self._filters.add(filter_)
-
 
 class CompositeDataSource(DataSource):
-    """CompostiteDataSource
-
-    Controller for all the attached DataSources.
+    """Controller for all the attached DataSources.
 
     A user can have a single CompositeDataSource as an interface
     the a set of DataSources. When an API call is made to the
@@ -335,7 +209,6 @@ class CompositeDataSource(DataSource):
     of reasons, e.g. common filters, organization, less API calls.
 
     Attributes:
-        name (str): The name that identifies this CompositeDataSource.
 
         data_sources (dict): A dictionary of DataSource objects; to be
             controlled and used by the Data Source Controller object.
@@ -345,12 +218,10 @@ class CompositeDataSource(DataSource):
         """Create a new STIX Data Source.
 
         Args:
-            name (str): A string containing the name to attach in the
-                CompositeDataSource instance.
 
         """
         super(CompositeDataSource, self).__init__()
-        self.data_sources = {}
+        self.data_sources = []
 
     def get(self, stix_id, _composite_filters=None):
         """Retrieve STIX object by STIX ID
@@ -375,18 +246,18 @@ class CompositeDataSource(DataSource):
             stix_obj: the STIX object to be returned.
 
         """
-        if not self.get_all_data_sources():
+        if not self.has_data_sources():
             raise AttributeError('CompositeDataSource has no data sources')
 
         all_data = []
         all_filters = set()
-        all_filters.update(self._filters)
+        all_filters.update(self.filters)
 
         if _composite_filters:
             all_filters.update(_composite_filters)
 
         # for every configured Data Source, call its retrieve handler
-        for ds_id, ds in iteritems(self.data_sources):
+        for ds in self.data_sources:
             data = ds.get(stix_id=stix_id, _composite_filters=all_filters)
             all_data.append(data)
 
@@ -419,19 +290,19 @@ class CompositeDataSource(DataSource):
             all_data (list): list of STIX objects that have the specified id
 
         """
-        if not self.get_all_data_sources():
+        if not self.has_data_sources():
             raise AttributeError('CompositeDataSource has no data sources')
 
         all_data = []
         all_filters = set()
 
-        all_filters.update(self._filters)
+        all_filters.update(self.filters)
 
         if _composite_filters:
             all_filters.update(_composite_filters)
 
         # retrieve STIX objects from all configured data sources
-        for ds_id, ds in iteritems(self.data_sources):
+        for ds in self.data_sources:
             data = ds.all_versions(stix_id=stix_id, _composite_filters=all_filters)
             all_data.extend(data)
 
@@ -459,7 +330,7 @@ class CompositeDataSource(DataSource):
             all_data (list): list of STIX objects to be returned
 
         """
-        if not self.get_all_data_sources():
+        if not self.has_data_sources():
             raise AttributeError('CompositeDataSource has no data sources')
 
         if not query:
@@ -470,14 +341,14 @@ class CompositeDataSource(DataSource):
         all_data = []
 
         all_filters = set()
-        all_filters.update(self._filters)
+        all_filters.update(self.filters)
 
         if _composite_filters:
             all_filters.update(_composite_filters)
 
         # federate query to all attached data sources,
         # pass composite filters to id
-        for ds_id, ds in iteritems(self.data_sources):
+        for ds in self.data_sources:
             data = ds.query(query=query, _composite_filters=all_filters)
             all_data.extend(data)
 
@@ -488,45 +359,61 @@ class CompositeDataSource(DataSource):
 
         return all_data
 
-    def add_data_source(self, data_sources):
-        """Attach a DataSource to the CompositeDataSource instance
+    def add_data_source(self, data_source):
+        """Attach a DataSource to CompositeDataSource instance
 
         Args:
-            data_sources (list): a list of DataSource(s) to attach
+            data_source (DataSource): a stix2.DataSource to attach
                 to the CompositeDataSource
 
         """
-        if not isinstance(data_sources, list):
-            data_sources = [data_sources]
-        for ds in data_sources:
-            if issubclass(ds.__class__, DataSource):
-                if ds.id in self.data_sources:
-                    # DataSource already attached to CompositeDataSource
-                    continue
-
-                # add DataSource to CompositeDataSource, its ID is used as key
-                self.data_sources[ds.id] = ds
-            else:
-                # the Data Source object not a subclass of DataSource
-                # TODO: maybe log error?
-                continue
+        if issubclass(data_source.__class__, DataSource):
+            if data_source.id not in [ds_.id for ds_ in self.data_sources]:
+                # check DataSource not already attached CompositeDataSource
+                self.data_sources.append(data_source)
+        else:
+            raise TypeError("DataSource (to be added) is not of type stix2.DataSource. DataSource type is '%s'" % type(data_source))
 
         return
 
-    def remove_data_source(self, data_source_ids):
+    def add_data_sources(self, data_sources):
+        """Attach list of DataSources to CompositeDataSource instance
+
+        Args:
+            data_sources (list): stix2.DataSources to attach to
+                CompositeDataSource
+        """
+        for ds in data_sources:
+            self.add_data_source(ds)
+        return
+
+    def remove_data_source(self, data_source_id):
         """Remove DataSource from the CompositeDataSource instance
 
         Args:
-            data_source_ids (list): a list of Data Source id(s).
+            data_source_id (str): DataSource IDs.
 
         """
-        for id in data_source_ids:
-            if id in self.data_sources:
-                del self.data_sources[id]
-            else:
-                raise ValueError("DataSource 'id' not found in CompositeDataSource.data_sources ")
+        def _match(ds_id, candidate_ds_id):
+            return ds_id == candidate_ds_id
+
+        self.data_sources[:] = [ds for ds in self.data_sources if not _match(ds.id, data_source_id)]
+
         return
 
+    def remove_data_sources(self, data_source_ids):
+        """Remove DataSources from the CompositeDataSource instance
+
+        Args:
+            data_source_ids (list): DataSource IDs
+
+        """
+        for ds_id in data_source_ids:
+            self.remove_data_source(ds_id)
+        return
+
+    def has_data_sources(self):
+        return len(self.data_sources)
+
     def get_all_data_sources(self):
-        """Return all attached DataSource(s)"""
-        return self.data_sources.values()
+        return self.data_sources

@@ -14,9 +14,9 @@ import os
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.sources import (DataSink, DataSource, DataStore,
-                           apply_common_filters, deduplicate)
-from stix2.sources.filters import Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter, apply_common_filters
+from stix2.utils import deduplicate
 
 
 class FileSystemStore(DataStore):
@@ -35,7 +35,7 @@ class FileSystemStore(DataStore):
         sink (FileSystemSink): FileSystemSink
 
     """
-    def __init__(self, stix_dir="stix_data"):
+    def __init__(self, stix_dir):
         super(FileSystemStore, self).__init__()
         self.source = FileSystemSource(stix_dir=stix_dir)
         self.sink = FileSystemSink(stix_dir=stix_dir)
@@ -54,12 +54,12 @@ class FileSystemSink(DataSink):
         stix_dir (str): path to directory of STIX objects
 
     """
-    def __init__(self, stix_dir="stix_data"):
+    def __init__(self, stix_dir):
         super(FileSystemSink, self).__init__()
         self._stix_dir = os.path.abspath(stix_dir)
 
         if not os.path.exists(self._stix_dir):
-            print("Error: directory path for STIX data does not exist")
+            raise ValueError("directory path for STIX data does not exist")
 
     @property
     def stix_dir(self):
@@ -111,6 +111,7 @@ class FileSystemSink(DataSink):
             # if list, recurse call on individual STIX objects
             for stix_obj in stix_data:
                 self.add(stix_obj)
+
         else:
             raise ValueError("stix_data must be a STIX object(or list of, json formatted STIX(or list of) or a json formatted STIX bundle")
 
@@ -128,7 +129,7 @@ class FileSystemSource(DataSource):
         stix_dir (str): path to directory of STIX objects
 
     """
-    def __init__(self, stix_dir="stix_data"):
+    def __init__(self, stix_dir):
         super(FileSystemSource, self).__init__()
         self._stix_dir = os.path.abspath(stix_dir)
 
@@ -213,8 +214,8 @@ class FileSystemSource(DataSource):
             query = set(query)
 
         # combine all query filters
-        if self._filters:
-            query.update(self._filters)
+        if self.filters:
+            query.update(self.filters)
         if _composite_filters:
             query.update(_composite_filters)
 
@@ -278,11 +279,13 @@ class FileSystemSource(DataSource):
                             # since ID is specified in one of filters, can evaluate against filename first without loading
                             stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
                             # check against other filters, add if match
-                            all_data.extend(apply_common_filters([stix_obj], query))
+                            matches = [stix_obj_ for stix_obj_ in apply_common_filters([stix_obj], query)]
+                            all_data.extend(matches)
                     else:
                         # have to load into memory regardless to evaluate other filters
                         stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
-                        all_data.extend(apply_common_filters([stix_obj], query))
+                        matches = [stix_obj_ for stix_obj_ in apply_common_filters([stix_obj], query)]
+                        all_data.extend(matches)
 
         all_data = deduplicate(all_data)
 

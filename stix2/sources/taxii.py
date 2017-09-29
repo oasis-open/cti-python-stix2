@@ -12,16 +12,15 @@ TODO: Test everything
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.sources import DataSink, DataSource, DataStore, make_id
-from stix2.sources.filters import Filter
+from stix2.sources import DataSink, DataSource, DataStore
+from stix2.sources.filters import Filter, apply_common_filters
+from stix2.utils import deduplicate
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
 
 class TAXIICollectionStore(DataStore):
-    """TAXIICollectionStore
-
-    Provides an interface to a local/remote TAXII Collection
+    """Provides an interface to a local/remote TAXII Collection
     of STIX data. TAXIICollectionStore is a wrapper
     around a paired TAXIICollectionSink and TAXIICollectionSource.
 
@@ -35,9 +34,7 @@ class TAXIICollectionStore(DataStore):
 
 
 class TAXIICollectionSink(DataSink):
-    """TAXIICollectionSink
-
-    Provides an interface for pushing STIX objects to a local/remote
+    """Provides an interface for pushing STIX objects to a local/remote
     TAXII Collection endpoint.
 
     Args:
@@ -73,6 +70,7 @@ class TAXIICollectionSink(DataSink):
             # adding list of something - recurse on each
             for obj in stix_data:
                 self.add(obj)
+
         elif isinstance(stix_data, str):
             # adding json encoded string of STIX content
             stix_data = parse(stix_data)
@@ -81,21 +79,14 @@ class TAXIICollectionSink(DataSink):
             else:
                 bundle = dict(Bundle(stix_data))
 
-        self.collection.add_objects(bundle)
+        else:
+            raise TypeError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
 
-    @staticmethod
-    def create_bundle(objects):
-        """TODO: Remove?"""
-        return dict(id="bundle--%s" % make_id(),
-                    objects=objects,
-                    spec_version="2.0",
-                    type="bundle")
+        self.collection.add_objects(bundle)
 
 
 class TAXIICollectionSource(DataSource):
-    """TAXIICollectionSource
-
-    Provides an interface for searching/retrieving STIX objects
+    """Provides an interface for searching/retrieving STIX objects
     from a local/remote TAXII Collection endpoint.
 
     Args:
@@ -125,8 +116,8 @@ class TAXIICollectionSource(DataSource):
         """
         # combine all query filters
         query = set()
-        if self._filters:
-            query.update(self._filters)
+        if self.filters:
+            query.update(self.filters)
         if _composite_filters:
             query.update(_composite_filters)
 
@@ -135,9 +126,9 @@ class TAXIICollectionSource(DataSource):
 
         stix_objs = self.collection.get_object(stix_id, taxii_filters)["objects"]
 
-        stix_obj = self.apply_common_filters(stix_objs, query)
+        stix_obj = [stix_obj for stix_obj in apply_common_filters(stix_objs, query)]
 
-        if len(stix_obj) > 0:
+        if len(stix_obj):
             stix_obj = stix_obj[0]
         else:
             stix_obj = None
@@ -198,8 +189,8 @@ class TAXIICollectionSource(DataSource):
             query = set(query)
 
         # combine all query filters
-        if self._filters:
-            query.update(self.filters.values())
+        if self.filters:
+            query.update(self.filters)
         if _composite_filters:
             query.update(_composite_filters)
 
@@ -210,10 +201,10 @@ class TAXIICollectionSource(DataSource):
         all_data = self.collection.get_objects(filters=taxii_filters)["objects"]
 
         # deduplicate data (before filtering as reduces wasted filtering)
-        all_data = self.deduplicate(all_data)
+        all_data = deduplicate(all_data)
 
         # apply local (CompositeDataSource, TAXIICollectionSource and query filters)
-        all_data = self.apply_common_filters(all_data, query)
+        all_data = [stix_obj for stix_obj in apply_common_filters(all_data, query)]
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict) for stix_obj_dict in all_data]
