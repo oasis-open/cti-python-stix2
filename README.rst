@@ -60,7 +60,7 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
     }""")
     print(indicator)
 
-For more in-depth documentation, please see [https://stix2.readthedocs.io/](https://stix2.readthedocs.io/).
+For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
 Governance
 ----------
