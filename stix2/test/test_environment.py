@@ -150,13 +150,11 @@ def test_environment_no_datastore():
         env.query(INDICATOR_ID)
     assert 'Environment has no data source' in str(excinfo.value)
 
-    with pytest.raises(AttributeError) as excinfo:
-        env.add_filters(INDICATOR_ID)
-    assert 'Environment has no data source' in str(excinfo.value)
 
-    with pytest.raises(AttributeError) as excinfo:
-        env.add_filter(INDICATOR_ID)
-    assert 'Environment has no data source' in str(excinfo.value)
+def test_environment_add_filters():
+    env = stix2.Environment(factory=stix2.ObjectFactory())
+    env.add_filters([INDICATOR_ID])
+    env.add_filter(INDICATOR_ID)
 
 
 def test_environment_datastore_and_no_object_factory():
