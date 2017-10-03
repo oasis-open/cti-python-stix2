@@ -11,7 +11,11 @@ from .properties import (BooleanProperty, IDProperty, IntegerProperty,
 from .utils import NOW
 
 
-class Relationship(_STIXBase, MarkingsMixin):
+class STIXRelationshipObject(_STIXBase, MarkingsMixin):
+    pass
+
+
+class Relationship(STIXRelationshipObject):
 
     _type = 'relationship'
     _properties = OrderedDict()
@@ -46,7 +50,7 @@ class Relationship(_STIXBase, MarkingsMixin):
         super(Relationship, self).__init__(**kwargs)
 
 
-class Sighting(_STIXBase, MarkingsMixin):
+class Sighting(STIXRelationshipObject):
     _type = 'sighting'
     _properties = OrderedDict()
     _properties.update([
