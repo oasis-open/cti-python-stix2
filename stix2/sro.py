@@ -4,13 +4,14 @@ from collections import OrderedDict
 
 from .base import _STIXBase
 from .common import ExternalReference, GranularMarking
+from .markings import MarkingsMixin
 from .properties import (BooleanProperty, IDProperty, IntegerProperty,
                          ListProperty, ReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
 from .utils import NOW
 
 
-class Relationship(_STIXBase):
+class Relationship(_STIXBase, MarkingsMixin):
 
     _type = 'relationship'
     _properties = OrderedDict()
@@ -45,7 +46,7 @@ class Relationship(_STIXBase):
         super(Relationship, self).__init__(**kwargs)
 
 
-class Sighting(_STIXBase):
+class Sighting(_STIXBase, MarkingsMixin):
     _type = 'sighting'
     _properties = OrderedDict()
     _properties.update([
