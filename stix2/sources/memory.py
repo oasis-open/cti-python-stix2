@@ -281,7 +281,7 @@ class MemorySource(DataSource):
             query.update(_composite_filters)
 
         # Apply STIX common property filters.
-        all_data = [stix_obj for stix_obj in apply_common_filters(self._data.values(), query)]
+        all_data = list(apply_common_filters(self._data.values(), query))
 
         return all_data
 
