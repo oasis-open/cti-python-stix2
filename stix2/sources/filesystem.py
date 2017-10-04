@@ -279,13 +279,11 @@ class FileSystemSource(DataSource):
                             # since ID is specified in one of filters, can evaluate against filename first without loading
                             stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
                             # check against other filters, add if match
-                            matches = list(apply_common_filters([stix_obj], query))
-                            all_data.extend(matches)
+                            all_data.extend(apply_common_filters([stix_obj], query))
                     else:
                         # have to load into memory regardless to evaluate other filters
                         stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
-                        matches = list(apply_common_filters([stix_obj], query))
-                        all_data.extend(matches)
+                        all_data.extend(apply_common_filters([stix_obj], query))
 
         all_data = deduplicate(all_data)
 
