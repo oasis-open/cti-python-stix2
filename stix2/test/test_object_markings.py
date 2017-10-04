@@ -1,7 +1,7 @@
 
 import pytest
 
-from stix2 import Malware, exceptions, markings
+from stix2 import TLP_AMBER, Malware, exceptions, markings
 
 from .constants import FAKE_TIME, MALWARE_ID, MARKING_IDS
 from .constants import MALWARE_KWARGS as MALWARE_KWARGS_CONST
@@ -21,18 +21,26 @@ MALWARE_KWARGS.update({
         Malware(**MALWARE_KWARGS),
         Malware(object_marking_refs=[MARKING_IDS[0]],
                 **MALWARE_KWARGS),
+        MARKING_IDS[0],
     ),
     (
         MALWARE_KWARGS,
         dict(object_marking_refs=[MARKING_IDS[0]],
              **MALWARE_KWARGS),
+        MARKING_IDS[0],
+    ),
+    (
+        Malware(**MALWARE_KWARGS),
+        Malware(object_marking_refs=[TLP_AMBER.id],
+                **MALWARE_KWARGS),
+        TLP_AMBER,
     ),
 ])
 def test_add_markings_one_marking(data):
     before = data[0]
     after = data[1]
 
-    before = markings.add_markings(before, MARKING_IDS[0], None)
+    before = markings.add_markings(before, data[2], None)
 
     for m in before["object_marking_refs"]:
         assert m in after["object_marking_refs"]
@@ -280,19 +288,28 @@ def test_remove_markings_object_level(data):
                 **MALWARE_KWARGS),
         Malware(object_marking_refs=[MARKING_IDS[1]],
                 **MALWARE_KWARGS),
+        [MARKING_IDS[0], MARKING_IDS[2]],
     ),
     (
         dict(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
              **MALWARE_KWARGS),
         dict(object_marking_refs=[MARKING_IDS[1]],
              **MALWARE_KWARGS),
+        [MARKING_IDS[0], MARKING_IDS[2]],
+    ),
+    (
+        Malware(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], TLP_AMBER.id],
+                **MALWARE_KWARGS),
+        Malware(object_marking_refs=[MARKING_IDS[1]],
+                **MALWARE_KWARGS),
+        [MARKING_IDS[0], TLP_AMBER],
     ),
 ])
 def test_remove_markings_multiple(data):
     before = data[0]
     after = data[1]
 
-    before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_IDS[2]], None)
+    before = markings.remove_markings(before, data[2], None)
 
     assert before['object_marking_refs'] == after['object_marking_refs']
 

@@ -39,6 +39,12 @@ def _validate_selector(obj, selector):
         return True
 
 
+def _get_marking_id(marking):
+    if type(marking).__name__ is 'MarkingDefinition':  # avoid circular import
+        return marking.id
+    return marking
+
+
 def validate(obj, selectors):
     """Given an SDO or SRO, check that each selector is valid."""
     if selectors:
@@ -57,6 +63,15 @@ def convert_to_list(data):
             return data
         else:
             return [data]
+
+
+def convert_to_marking_list(data):
+    """Convert input into a list of marking identifiers."""
+    if data is not None:
+        if isinstance(data, list):
+            return [_get_marking_id(x) for x in data]
+        else:
+            return [_get_marking_id(data)]
 
 
 def compress_markings(granular_markings):

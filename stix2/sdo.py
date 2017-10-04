@@ -6,6 +6,7 @@ import stix2
 
 from .base import _STIXBase
 from .common import ExternalReference, GranularMarking, KillChainPhase
+from .markings import MarkingsMixin
 from .observables import ObservableProperty
 from .properties import (BooleanProperty, IDProperty, IntegerProperty,
                          ListProperty, PatternProperty, ReferenceProperty,
@@ -13,7 +14,11 @@ from .properties import (BooleanProperty, IDProperty, IntegerProperty,
 from .utils import NOW
 
 
-class AttackPattern(_STIXBase):
+class STIXDomainObject(_STIXBase, MarkingsMixin):
+    pass
+
+
+class AttackPattern(STIXDomainObject):
 
     _type = 'attack-pattern'
     _properties = OrderedDict()
@@ -34,7 +39,7 @@ class AttackPattern(_STIXBase):
     ])
 
 
-class Campaign(_STIXBase):
+class Campaign(STIXDomainObject):
 
     _type = 'campaign'
     _properties = OrderedDict()
@@ -58,7 +63,7 @@ class Campaign(_STIXBase):
     ])
 
 
-class CourseOfAction(_STIXBase):
+class CourseOfAction(STIXDomainObject):
 
     _type = 'course-of-action'
     _properties = OrderedDict()
@@ -78,7 +83,7 @@ class CourseOfAction(_STIXBase):
     ])
 
 
-class Identity(_STIXBase):
+class Identity(STIXDomainObject):
 
     _type = 'identity'
     _properties = OrderedDict()
@@ -101,7 +106,7 @@ class Identity(_STIXBase):
     ])
 
 
-class Indicator(_STIXBase):
+class Indicator(STIXDomainObject):
 
     _type = 'indicator'
     _properties = OrderedDict()
@@ -125,7 +130,7 @@ class Indicator(_STIXBase):
     ])
 
 
-class IntrusionSet(_STIXBase):
+class IntrusionSet(STIXDomainObject):
 
     _type = 'intrusion-set'
     _properties = OrderedDict()
@@ -152,7 +157,7 @@ class IntrusionSet(_STIXBase):
     ])
 
 
-class Malware(_STIXBase):
+class Malware(STIXDomainObject):
 
     _type = 'malware'
     _properties = OrderedDict()
@@ -173,7 +178,7 @@ class Malware(_STIXBase):
     ])
 
 
-class ObservedData(_STIXBase):
+class ObservedData(STIXDomainObject):
 
     _type = 'observed-data'
     _properties = OrderedDict()
@@ -195,7 +200,7 @@ class ObservedData(_STIXBase):
     ])
 
 
-class Report(_STIXBase):
+class Report(STIXDomainObject):
 
     _type = 'report'
     _properties = OrderedDict()
@@ -217,7 +222,7 @@ class Report(_STIXBase):
     ])
 
 
-class ThreatActor(_STIXBase):
+class ThreatActor(STIXDomainObject):
 
     _type = 'threat-actor'
     _properties = OrderedDict()
@@ -245,7 +250,7 @@ class ThreatActor(_STIXBase):
     ])
 
 
-class Tool(_STIXBase):
+class Tool(STIXDomainObject):
 
     _type = 'tool'
     _properties = OrderedDict()
@@ -267,7 +272,7 @@ class Tool(_STIXBase):
     ])
 
 
-class Vulnerability(_STIXBase):
+class Vulnerability(STIXDomainObject):
 
     _type = 'vulnerability'
     _properties = OrderedDict()
@@ -314,7 +319,7 @@ def CustomObject(type='x-custom-type', properties=None):
 
     def custom_builder(cls):
 
-        class _Custom(cls, _STIXBase):
+        class _Custom(cls, STIXDomainObject):
             _type = type
             _properties = OrderedDict()
             _properties.update([
