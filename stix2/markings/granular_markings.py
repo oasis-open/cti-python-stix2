@@ -88,6 +88,7 @@ def remove_markings(obj, marking, selectors):
 
     """
     selectors = utils.convert_to_list(selectors)
+    marking = utils.convert_to_marking_list(marking)
     utils.validate(obj, selectors)
 
     granular_markings = obj.get("granular_markings")
@@ -97,12 +98,9 @@ def remove_markings(obj, marking, selectors):
 
     granular_markings = utils.expand_markings(granular_markings)
 
-    if isinstance(marking, list):
-        to_remove = []
-        for m in marking:
-            to_remove.append({"marking_ref": m, "selectors": selectors})
-    else:
-        to_remove = [{"marking_ref": marking, "selectors": selectors}]
+    to_remove = []
+    for m in marking:
+        to_remove.append({"marking_ref": m, "selectors": selectors})
 
     remove = utils.build_granular_marking(to_remove).get("granular_markings")
 
@@ -140,14 +138,12 @@ def add_markings(obj, marking, selectors):
 
     """
     selectors = utils.convert_to_list(selectors)
+    marking = utils.convert_to_marking_list(marking)
     utils.validate(obj, selectors)
 
-    if isinstance(marking, list):
-        granular_marking = []
-        for m in marking:
-            granular_marking.append({"marking_ref": m, "selectors": sorted(selectors)})
-    else:
-        granular_marking = [{"marking_ref": marking, "selectors": sorted(selectors)}]
+    granular_marking = []
+    for m in marking:
+        granular_marking.append({"marking_ref": m, "selectors": sorted(selectors)})
 
     if obj.get("granular_markings"):
         granular_marking.extend(obj.get("granular_markings"))
@@ -244,7 +240,7 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
         raise TypeError("Required argument 'selectors' must be provided")
 
     selectors = utils.convert_to_list(selectors)
-    marking = utils.convert_to_list(marking)
+    marking = utils.convert_to_marking_list(marking)
     utils.validate(obj, selectors)
 
     granular_markings = obj.get("granular_markings", [])

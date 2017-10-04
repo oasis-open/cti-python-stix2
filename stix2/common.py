@@ -3,6 +3,7 @@
 from collections import OrderedDict
 
 from .base import _STIXBase
+from .markings import MarkingsMixin
 from .properties import (HashesProperty, IDProperty, ListProperty, Property,
                          ReferenceProperty, SelectorProperty, StringProperty,
                          TimestampProperty, TypeProperty)
@@ -76,7 +77,7 @@ class MarkingProperty(Property):
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
-class MarkingDefinition(_STIXBase):
+class MarkingDefinition(_STIXBase, MarkingsMixin):
     _type = 'marking-definition'
     _properties = OrderedDict()
     _properties.update([
