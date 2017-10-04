@@ -33,7 +33,7 @@ def add_markings(obj, marking):
         A new version of the given SDO or SRO with specified markings added.
 
     """
-    marking = utils.convert_to_list(marking)
+    marking = utils.convert_to_marking_list(marking)
 
     object_markings = set(obj.get("object_marking_refs", []) + marking)
 
@@ -57,7 +57,7 @@ def remove_markings(obj, marking):
         A new version of the given SDO or SRO with specified markings removed.
 
     """
-    marking = utils.convert_to_list(marking)
+    marking = utils.convert_to_marking_list(marking)
 
     object_markings = obj.get("object_marking_refs", [])
 
@@ -123,7 +123,7 @@ def is_marked(obj, marking=None):
         provided marking refs match, True is returned.
 
     """
-    marking = utils.convert_to_list(marking)
+    marking = utils.convert_to_marking_list(marking)
     object_markings = obj.get("object_marking_refs", [])
 
     if marking:
