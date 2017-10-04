@@ -257,7 +257,8 @@ class CompositeDataSource(DataSource):
         # for every configured Data Source, call its retrieve handler
         for ds in self.data_sources:
             data = ds.get(stix_id=stix_id, _composite_filters=all_filters)
-            all_data.append(data)
+            if data:
+                all_data.append(data)
 
         # remove duplicate versions
         if len(all_data) > 0:

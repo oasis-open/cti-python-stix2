@@ -135,7 +135,7 @@ class FileSystemSource(DataSource):
         self._stix_dir = os.path.abspath(stix_dir)
 
         if not os.path.exists(self._stix_dir):
-            print("Error: directory path for STIX data does not exist")
+            raise ValueError("directory path for STIX data does not exist: %s" % self._stix_dir)
 
     @property
     def stix_dir(self):
@@ -160,9 +160,12 @@ class FileSystemSource(DataSource):
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
-        stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+        if len(all_data):
+            stix_obj = parse(sorted(all_data, key=lambda k: k['modified'])[0])
+        else:
+            stix_obj = None
 
-        return parse(stix_obj)
+        return stix_obj
 
     def all_versions(self, stix_id, _composite_filters=None):
         """retrieve STIX object from file directory via STIX ID, all versions

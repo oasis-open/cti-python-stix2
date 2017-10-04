@@ -124,7 +124,6 @@ class TAXIICollectionSource(DataSource):
 
         # dont extract TAXII filters from query (to send to TAXII endpoint)
         # as directly retrieveing a STIX object by ID
-
         stix_objs = self.collection.get_object(stix_id)["objects"]
 
         stix_obj = [stix_obj for stix_obj in apply_common_filters(stix_objs, query)]
