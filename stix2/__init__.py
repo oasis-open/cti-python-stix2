@@ -8,6 +8,8 @@ from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
                      MarkingDefinition, StatementMarking, TLPMarking)
 from .core import Bundle, _register_type, parse
 from .environment import Environment, ObjectFactory
+from .markings import (add_markings, clear_markings, get_markings, is_marked,
+                       remove_markings, set_markings)
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, CustomObservable, Directory,
                           DomainName, EmailAddress, EmailMessage,
