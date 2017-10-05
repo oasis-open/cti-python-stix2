@@ -1,10 +1,12 @@
 """Python STIX 2.0 Sources
 
-Classes:
-    DataStore
-    DataSink
-    DataSource
-    CompositeDataSource
+.. autosummary::
+   :toctree: sources
+
+   filesystem
+   filters
+   memory
+   taxii
 
 """
 
