@@ -170,3 +170,18 @@ def test_set_op():
     exp = stix2.ObservationExpression(stix2.IsSubsetComparisonExpression("network-traffic:dst_ref.value",
                                                                          "2001:0db8:dead:beef:0000:0000:0000:0000/64"))
     assert str(exp) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
+
+
+# [(file:name = 'pdf.exe' OR file:size = '371712') AND file:created = t'2014-01-13T07:03:17Z']
+def test_timestamp():
+    exp_or = stix2.OrBooleanExpression([stix2.EqualityComparisonExpression("file:name",
+                                                                            "pdf.exe"),
+                                        stix2.EqualityComparisonExpression("file:size",
+                                                                            stix2.IntegerConstant('371712'))])
+    exp_paren = stix2.ParentheticalExpression(exp_or)
+    exp_and = stix2.AndBooleanExpression([exp_paren,
+                                          stix2.EqualityComparisonExpression("file:created",
+                                                                             stix2.TimestampConstant('2014-01-13T07:03:17Z'))])
+    exp = stix2.ObservationExpression(exp_and)
+    assert str(exp) == "[(file:name = 'pdf.exe' OR file:size = 371712) AND file:created = t'2014-01-13T07:03:17Z']"
+
