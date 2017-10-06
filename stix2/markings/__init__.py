@@ -224,14 +224,14 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
     return result
 
 
-class MarkingsMixin():
+class _MarkingsMixin():
     pass
 
 
 # Note that all of these methods will return a new object because of immutability
-MarkingsMixin.get_markings = get_markings
-MarkingsMixin.set_markings = set_markings
-MarkingsMixin.remove_markings = remove_markings
-MarkingsMixin.add_markings = add_markings
-MarkingsMixin.clear_markings = clear_markings
-MarkingsMixin.is_marked = is_marked
+_MarkingsMixin.get_markings = get_markings
+_MarkingsMixin.set_markings = set_markings
+_MarkingsMixin.remove_markings = remove_markings
+_MarkingsMixin.add_markings = add_markings
+_MarkingsMixin.clear_markings = clear_markings
+_MarkingsMixin.is_marked = is_marked

@@ -6,7 +6,7 @@ import stix2
 
 from .base import _STIXBase
 from .common import ExternalReference, GranularMarking, KillChainPhase
-from .markings import MarkingsMixin
+from .markings import _MarkingsMixin
 from .observables import ObservableProperty
 from .properties import (BooleanProperty, IDProperty, IntegerProperty,
                          ListProperty, PatternProperty, ReferenceProperty,
@@ -14,7 +14,7 @@ from .properties import (BooleanProperty, IDProperty, IntegerProperty,
 from .utils import NOW
 
 
-class STIXDomainObject(_STIXBase, MarkingsMixin):
+class STIXDomainObject(_STIXBase, _MarkingsMixin):
     pass
 
 
