@@ -366,7 +366,15 @@ def test_custom_extension_invalid_observable():
 
 def test_custom_extension_no_properties():
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext', None)
+        @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', None)
+        class BarExtension():
+            pass
+    assert "'properties' must be a dict!" in str(excinfo.value)
+
+
+def test_custom_extension_empty_properties():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', {})
         class BarExtension():
             pass
     assert "'properties' must be a dict!" in str(excinfo.value)

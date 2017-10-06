@@ -916,7 +916,7 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
                 'extensions': ExtensionsProperty(enclosing_type=_type),
             }
 
-            if not isinstance(properties, dict):
+            if not isinstance(properties, dict) or not properties:
                 raise ValueError("'properties' must be a dict!")
 
             _properties.update(properties)
