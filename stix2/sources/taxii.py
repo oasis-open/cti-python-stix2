@@ -1,11 +1,6 @@
 """
 Python STIX 2.0 TAXII Source/Sink
 
-Classes:
-    TAXIICollectionStore
-    TAXIICollectionSink
-    TAXIICollectionSource
-
 TODO:
     Test everything
 

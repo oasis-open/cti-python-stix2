@@ -1,11 +1,6 @@
 """
 Python STIX 2.0 FileSystem Source/Sink
 
-Classes:
-    FileSystemStore
-    FileSystemSink
-    FileSystemSource
-
 TODO:
     Test everything
 """
@@ -160,8 +155,9 @@ class FileSystemSource(DataSource):
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
-        if len(all_data):
-            stix_obj = parse(sorted(all_data, key=lambda k: k['modified'])[0])
+        if all_data:
+            stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+            stix_obj = parse(stix_obj)
         else:
             stix_obj = None
 

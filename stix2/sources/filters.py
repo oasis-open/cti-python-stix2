@@ -1,9 +1,6 @@
 """
 Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 
-Classes:
-    Filter
-
 """
 
 import collections

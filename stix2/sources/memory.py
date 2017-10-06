@@ -1,11 +1,6 @@
 """
 Python STIX 2.0 Memory Source/Sink
 
-Classes:
-    MemoryStore
-    MemorySink
-    MemorySource
-
 TODO:
     Run through tests again, lot of changes.
 
