@@ -703,7 +703,7 @@ def test_filesystem_store():
 
     # add()
     camp1 = Campaign(name="Great Heathen Army",
-                     objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of Englang",
+                     objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
                      aliases=["Ragnar"])
     fs_store.add(camp1)
 

@@ -185,7 +185,7 @@ class FileSystemSource(DataSource):
                 a python STIX objects and then returned
 
         """
-        return list(self.get(stix_id=stix_id, _composite_filters=_composite_filters))
+        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
     def query(self, query=None, _composite_filters=None):
         """search and retrieve STIX objects based on the complete query
