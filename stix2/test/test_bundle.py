@@ -13,11 +13,11 @@ EXPECTED_BUNDLE = """{
             "id": "indicator--00000000-0000-0000-0000-000000000001",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
+            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "valid_from": "2017-01-01T12:34:56Z",
             "labels": [
                 "malicious-activity"
-            ],
-            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-            "valid_from": "2017-01-01T12:34:56Z"
+            ]
         },
         {
             "type": "malware",
