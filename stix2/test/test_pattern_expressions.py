@@ -170,3 +170,8 @@ def test_set_op():
     exp = stix2.ObservationExpression(stix2.IsSubsetComparisonExpression("network-traffic:dst_ref.value",
                                                                          "2001:0db8:dead:beef:0000:0000:0000:0000/64"))
     assert str(exp) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
+
+
+def test_timestamp():
+    ts = stix2.TimestampConstant('2014-01-13T07:03:17Z')
+    assert str(ts) == "t'2014-01-13T07:03:17Z'"

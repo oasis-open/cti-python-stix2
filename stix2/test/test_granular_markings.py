@@ -1,7 +1,7 @@
 
 import pytest
 
-from stix2 import Malware, markings
+from stix2 import TLP_RED, Malware, markings
 
 from .constants import MALWARE_MORE_KWARGS as MALWARE_KWARGS_CONST
 from .constants import MARKING_IDS
@@ -45,6 +45,7 @@ def test_add_marking_mark_one_selector_multiple_refs():
                 },
             ],
             **MALWARE_KWARGS),
+        MARKING_IDS[0],
     ),
     (
         MALWARE_KWARGS,
@@ -56,13 +57,26 @@ def test_add_marking_mark_one_selector_multiple_refs():
                 },
             ],
             **MALWARE_KWARGS),
+        MARKING_IDS[0],
+    ),
+    (
+        Malware(**MALWARE_KWARGS),
+        Malware(
+            granular_markings=[
+                {
+                    "selectors": ["description", "name"],
+                    "marking_ref": TLP_RED.id,
+                },
+            ],
+            **MALWARE_KWARGS),
+        TLP_RED,
     ),
 ])
 def test_add_marking_mark_multiple_selector_one_refs(data):
     before = data[0]
     after = data[1]
 
-    before = markings.add_markings(before, [MARKING_IDS[0]], ["description", "name"])
+    before = markings.add_markings(before, data[2], ["description", "name"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -347,36 +361,42 @@ def test_get_markings_positional_arguments_combinations(data):
     assert set(markings.get_markings(data, "x.z.foo2", False, True)) == set(["10"])
 
 
-@pytest.mark.parametrize("before", [
-    Malware(
-        granular_markings=[
-            {
-                "selectors": ["description"],
-                "marking_ref": MARKING_IDS[0]
-            },
-            {
-                "selectors": ["description"],
-                "marking_ref": MARKING_IDS[1]
-            },
-        ],
-        **MALWARE_KWARGS
+@pytest.mark.parametrize("data", [
+    (
+        Malware(
+            granular_markings=[
+                {
+                    "selectors": ["description"],
+                    "marking_ref": MARKING_IDS[0]
+                },
+                {
+                    "selectors": ["description"],
+                    "marking_ref": MARKING_IDS[1]
+                },
+            ],
+            **MALWARE_KWARGS
+        ),
+        [MARKING_IDS[0], MARKING_IDS[1]],
     ),
-    dict(
-        granular_markings=[
-            {
-                "selectors": ["description"],
-                "marking_ref": MARKING_IDS[0]
-            },
-            {
-                "selectors": ["description"],
-                "marking_ref": MARKING_IDS[1]
-            },
-        ],
-        **MALWARE_KWARGS
+    (
+        dict(
+            granular_markings=[
+                {
+                    "selectors": ["description"],
+                    "marking_ref": MARKING_IDS[0]
+                },
+                {
+                    "selectors": ["description"],
+                    "marking_ref": MARKING_IDS[1]
+                },
+            ],
+            **MALWARE_KWARGS
+        ),
+        [MARKING_IDS[0], MARKING_IDS[1]],
     ),
 ])
-def test_remove_marking_remove_one_selector_with_multiple_refs(before):
-    before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
+def test_remove_marking_remove_one_selector_with_multiple_refs(data):
+    before = markings.remove_markings(data[0], data[1], ["description"])
     assert "granular_markings" not in before
 
 
