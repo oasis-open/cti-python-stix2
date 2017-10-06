@@ -364,6 +364,14 @@ def test_custom_extension_invalid_observable():
     assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
 
 
+def test_custom_extension_no_properties():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext', None)
+        class BarExtension():
+            pass
+    assert "'properties' must be a dict!" in str(excinfo.value)
+
+
 def test_parse_observable_with_custom_extension():
     input_str = """{
         "type": "domain-name",
