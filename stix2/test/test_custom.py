@@ -104,6 +104,26 @@ def test_custom_object_type():
     assert "'property2' is too small." in str(excinfo.value)
 
 
+def test_custom_object_no_init():
+    @stix2.sdo.CustomObject('x-new-obj', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
+    class NewObj():
+        pass
+
+    no = NewObj(property1='something')
+    assert no.property1 == 'something'
+
+    @stix2.sdo.CustomObject('x-new-obj2', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
+    class NewObj2(object):
+        pass
+
+    no2 = NewObj2(property1='something')
+    assert no2.property1 == 'something'
+
+
 def test_parse_custom_object_type():
     nt_string = """{
         "type": "x-new-type",
@@ -151,6 +171,26 @@ def test_custom_observable_object():
     with pytest.raises(ValueError) as excinfo:
         NewObservable(property1='something', property2=4)
     assert "'property2' is too small." in str(excinfo.value)
+
+
+def test_custom_observable_object_no_init():
+    @stix2.observables.CustomObservable('x-new-observable', [
+        ('property1', stix2.properties.StringProperty()),
+    ])
+    class NewObs():
+        pass
+
+    no = NewObs(property1='something')
+    assert no.property1 == 'something'
+
+    @stix2.observables.CustomObservable('x-new-obs2', [
+        ('property1', stix2.properties.StringProperty()),
+    ])
+    class NewObs2(object):
+        pass
+
+    no2 = NewObs2(property1='something')
+    assert no2.property1 == 'something'
 
 
 def test_custom_observable_object_invalid_ref_property():
@@ -378,6 +418,26 @@ def test_custom_extension_empty_properties():
         class BarExtension():
             pass
     assert "'properties' must be a dict!" in str(excinfo.value)
+
+
+def test_custom_extension_no_init():
+    @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-extension', {
+        'property1': stix2.properties.StringProperty(required=True),
+    })
+    class NewExt():
+        pass
+
+    ne = NewExt(property1="foobar")
+    assert ne.property1 == "foobar"
+
+    @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', {
+        'property1': stix2.properties.StringProperty(required=True),
+    })
+    class NewExt2(object):
+        pass
+
+    ne2 = NewExt2(property1="foobar")
+    assert ne2.property1 == "foobar"
 
 
 def test_parse_observable_with_custom_extension():
