@@ -248,7 +248,6 @@ def check_external_references_filter(filter_, stix_obj):
 
     """
     for er in stix_obj["external_references"]:
-        print(str(er))
         # grab er property name from filter field
         filter_field = filter_.field.split(".")[1]
         if filter_field in er:
