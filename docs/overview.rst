@@ -80,7 +80,7 @@ Each of these components can be used individually, or combined as part of an
 ``Environment``. These ``Environment`` objects allow different settings to be
 used by different users of a multi-user application (such as a web application).
 
-*This layer is currently being developed.*
+*This layer is mostly complete.*
 
 Workbench Layer
 ^^^^^^^^^^^^^^^
@@ -94,4 +94,4 @@ Python, the Workbench Layer makes it easy to quickly interact with STIX data
 from a variety of sources without needing to write and run one-off Python
 scripts.
 
-*This layer has not yet been started.*
+*This layer is currently being developed.*
