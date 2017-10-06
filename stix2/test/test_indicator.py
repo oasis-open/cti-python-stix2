@@ -14,11 +14,11 @@ EXPECTED_INDICATOR = """{
     "id": "indicator--01234567-89ab-cdef-0123-456789abcdef",
     "created": "2017-01-01T00:00:01.000Z",
     "modified": "2017-01-01T00:00:01.000Z",
+    "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+    "valid_from": "1970-01-01T00:00:01Z",
     "labels": [
         "malicious-activity"
-    ],
-    "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-    "valid_from": "1970-01-01T00:00:01Z"
+    ]
 }"""
 
 EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
@@ -26,9 +26,9 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
     id='indicator--01234567-89ab-cdef-0123-456789abcdef',
     created='2017-01-01T00:00:01.000Z',
     modified='2017-01-01T00:00:01.000Z',
-    labels=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-    valid_from='1970-01-01T00:00:01Z'
+    valid_from='1970-01-01T00:00:01Z',
+    labels=['malicious-activity']
 """.split()) + ")"
 
 
@@ -39,11 +39,11 @@ def test_indicator_with_all_required_properties():
     ind = stix2.Indicator(
         type="indicator",
         id=INDICATOR_ID,
-        labels=['malicious-activity'],
-        pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
         created=now,
         modified=now,
+        pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
         valid_from=epoch,
+        labels=['malicious-activity'],
     )
 
     assert str(ind) == EXPECTED_INDICATOR
