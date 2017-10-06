@@ -30,7 +30,6 @@ class ObservableProperty(Property):
 
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
-        # from .__init__ import parse_observable  # avoid circular import
         for key, obj in dictified.items():
             parsed_obj = parse_observable(obj, valid_refs)
             dictified[key] = parsed_obj
@@ -73,6 +72,7 @@ class ExtensionsProperty(DictionaryProperty):
 
 
 class Artifact(_Observable):
+
     _type = 'artifact'
     _properties = OrderedDict()
     _properties.update([
@@ -91,6 +91,7 @@ class Artifact(_Observable):
 
 
 class AutonomousSystem(_Observable):
+
     _type = 'autonomous-system'
     _properties = OrderedDict()
     _properties.update([
@@ -103,6 +104,7 @@ class AutonomousSystem(_Observable):
 
 
 class Directory(_Observable):
+
     _type = 'directory'
     _properties = OrderedDict()
     _properties.update([
@@ -119,6 +121,7 @@ class Directory(_Observable):
 
 
 class DomainName(_Observable):
+
     _type = 'domain-name'
     _properties = OrderedDict()
     _properties.update([
@@ -130,6 +133,7 @@ class DomainName(_Observable):
 
 
 class EmailAddress(_Observable):
+
     _type = 'email-addr'
     _properties = OrderedDict()
     _properties.update([
@@ -138,11 +142,11 @@ class EmailAddress(_Observable):
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
-
     ])
 
 
 class EmailMIMEComponent(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('body', StringProperty()),
@@ -157,6 +161,7 @@ class EmailMIMEComponent(_STIXBase):
 
 
 class EmailMessage(_Observable):
+
     _type = 'email-message'
     _properties = OrderedDict()
     _properties.update([
@@ -187,6 +192,7 @@ class EmailMessage(_Observable):
 
 
 class ArchiveExt(_Extension):
+
     _type = 'archive-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -197,6 +203,7 @@ class ArchiveExt(_Extension):
 
 
 class AlternateDataStream(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('name', StringProperty(required=True)),
@@ -206,6 +213,7 @@ class AlternateDataStream(_STIXBase):
 
 
 class NTFSExt(_Extension):
+
     _type = 'ntfs-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -215,6 +223,7 @@ class NTFSExt(_Extension):
 
 
 class PDFExt(_Extension):
+
     _type = 'pdf-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -227,6 +236,7 @@ class PDFExt(_Extension):
 
 
 class RasterImageExt(_Extension):
+
     _type = 'raster-image-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -239,6 +249,7 @@ class RasterImageExt(_Extension):
 
 
 class WindowsPEOptionalHeaderType(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('magic_hex', HexProperty()),
@@ -280,6 +291,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
 
 
 class WindowsPESection(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('name', StringProperty(required=True)),
@@ -290,6 +302,7 @@ class WindowsPESection(_STIXBase):
 
 
 class WindowsPEBinaryExt(_Extension):
+
     _type = 'windows-pebinary-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -309,11 +322,11 @@ class WindowsPEBinaryExt(_Extension):
 
 
 class File(_Observable):
+
     _type = 'file'
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('hashes', HashesProperty()),
         ('size', IntegerProperty()),
         ('name', StringProperty()),
@@ -330,6 +343,7 @@ class File(_Observable):
         ('decryption_key', StringProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty)),
         ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -339,6 +353,7 @@ class File(_Observable):
 
 
 class IPv4Address(_Observable):
+
     _type = 'ipv4-addr'
     _properties = OrderedDict()
     _properties.update([
@@ -351,6 +366,7 @@ class IPv4Address(_Observable):
 
 
 class IPv6Address(_Observable):
+
     _type = 'ipv6-addr'
     _properties = OrderedDict()
     _properties.update([
@@ -363,6 +379,7 @@ class IPv6Address(_Observable):
 
 
 class MACAddress(_Observable):
+
     _type = 'mac-addr'
     _properties = OrderedDict()
     _properties.update([
@@ -373,16 +390,18 @@ class MACAddress(_Observable):
 
 
 class Mutex(_Observable):
+
     _type = 'mutex'
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
-        ('name', StringProperty()),
+        ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
 class HTTPRequestExt(_Extension):
+
     _type = 'http-request-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -396,6 +415,7 @@ class HTTPRequestExt(_Extension):
 
 
 class ICMPExt(_Extension):
+
     _type = 'icmp-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -405,10 +425,11 @@ class ICMPExt(_Extension):
 
 
 class SocketExt(_Extension):
+
     _type = 'socket-ext'
     _properties = OrderedDict()
     _properties.update([
-        ('address_family', EnumProperty([
+        ('address_family', EnumProperty(allowed=[
             "AF_UNSPEC",
             "AF_INET",
             "AF_IPX",
@@ -420,7 +441,7 @@ class SocketExt(_Extension):
         ], required=True)),
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
-        ('protocol_family', EnumProperty([
+        ('protocol_family', EnumProperty(allowed=[
             "PF_INET",
             "PF_IPX",
             "PF_APPLETALK",
@@ -429,7 +450,7 @@ class SocketExt(_Extension):
             "PF_NETROM"
         ])),
         ('options', DictionaryProperty()),
-        ('socket_type', EnumProperty([
+        ('socket_type', EnumProperty(allowed=[
             "SOCK_STREAM",
             "SOCK_DGRAM",
             "SOCK_RAW",
@@ -440,6 +461,7 @@ class SocketExt(_Extension):
 
 
 class TCPExt(_Extension):
+
     _type = 'tcp-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -449,11 +471,11 @@ class TCPExt(_Extension):
 
 
 class NetworkTraffic(_Observable):
+
     _type = 'network-traffic'
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
@@ -471,6 +493,7 @@ class NetworkTraffic(_Observable):
         ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('encapsulates_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -479,6 +502,7 @@ class NetworkTraffic(_Observable):
 
 
 class WindowsProcessExt(_Extension):
+
     _type = 'windows-process-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -492,6 +516,7 @@ class WindowsProcessExt(_Extension):
 
 
 class WindowsServiceExt(_Extension):
+
     _type = 'windows-service-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -499,7 +524,7 @@ class WindowsServiceExt(_Extension):
         ('descriptions', ListProperty(StringProperty)),
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
-        ('start_type', EnumProperty([
+        ('start_type', EnumProperty(allowed=[
             "SERVICE_AUTO_START",
             "SERVICE_BOOT_START",
             "SERVICE_DEMAND_START",
@@ -507,13 +532,13 @@ class WindowsServiceExt(_Extension):
             "SERVICE_SYSTEM_ALERT",
         ])),
         ('service_dll_refs', ListProperty(ObjectReferenceProperty(valid_types='file'))),
-        ('service_type', EnumProperty([
+        ('service_type', EnumProperty(allowed=[
             "SERVICE_KERNEL_DRIVER",
             "SERVICE_FILE_SYSTEM_DRIVER",
             "SERVICE_WIN32_OWN_PROCESS",
             "SERVICE_WIN32_SHARE_PROCESS",
         ])),
-        ('service_status', EnumProperty([
+        ('service_status', EnumProperty(allowed=[
             "SERVICE_CONTINUE_PENDING",
             "SERVICE_PAUSE_PENDING",
             "SERVICE_PAUSED",
@@ -526,11 +551,11 @@ class WindowsServiceExt(_Extension):
 
 
 class Process(_Observable):
+
     _type = 'process'
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
         ('name', StringProperty()),
@@ -545,6 +570,7 @@ class Process(_Observable):
         ('binary_ref', ObjectReferenceProperty(valid_types='file')),
         ('parent_ref', ObjectReferenceProperty(valid_types='process')),
         ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -563,6 +589,7 @@ class Process(_Observable):
 
 
 class Software(_Observable):
+
     _type = 'software'
     _properties = OrderedDict()
     _properties.update([
@@ -577,6 +604,7 @@ class Software(_Observable):
 
 
 class URL(_Observable):
+
     _type = 'url'
     _properties = OrderedDict()
     _properties.update([
@@ -587,6 +615,7 @@ class URL(_Observable):
 
 
 class UNIXAccountExt(_Extension):
+
     _type = 'unix-account-ext'
     _properties = OrderedDict()
     _properties.update([
@@ -598,11 +627,11 @@ class UNIXAccountExt(_Extension):
 
 
 class UserAccount(_Observable):
+
     _type = 'user-account'
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
         ('user_id', StringProperty(required=True)),
         ('account_login', StringProperty()),
         ('account_type', StringProperty()),   # open vocab
@@ -616,16 +645,18 @@ class UserAccount(_Observable):
         ('password_last_changed', TimestampProperty()),
         ('account_first_login', TimestampProperty()),
         ('account_last_login', TimestampProperty()),
+        ('extensions', ExtensionsProperty(enclosing_type=_type)),
     ])
 
 
 class WindowsRegistryValueType(_STIXBase):
+
     _type = 'windows-registry-value-type'
     _properties = OrderedDict()
     _properties.update([
         ('name', StringProperty(required=True)),
         ('data', StringProperty()),
-        ('data_type', EnumProperty([
+        ('data_type', EnumProperty(allowed=[
             'REG_NONE',
             'REG_SZ',
             'REG_EXPAND_SZ',
@@ -644,6 +675,7 @@ class WindowsRegistryValueType(_STIXBase):
 
 
 class WindowsRegistryKey(_Observable):
+
     _type = 'windows-registry-key'
     _properties = OrderedDict()
     _properties.update([
@@ -664,6 +696,7 @@ class WindowsRegistryKey(_Observable):
 
 
 class X509V3ExtenstionsType(_STIXBase):
+
     _type = 'x509-v3-extensions-type'
     _properties = OrderedDict()
     _properties.update([
@@ -687,6 +720,7 @@ class X509V3ExtenstionsType(_STIXBase):
 
 
 class X509Certificate(_Observable):
+
     _type = 'x509-certificate'
     _properties = OrderedDict()
     _properties.update([
@@ -813,6 +847,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
     def custom_builder(cls):
 
         class _Custom(cls, _Observable):
+
             _type = type
             _properties = OrderedDict()
             _properties.update([
@@ -865,7 +900,7 @@ def _register_extension(observable, new_extension):
             EXT_MAP[observable_type] = {new_extension._type: new_extension}
 
 
-def CustomExtension(observable=None, type='x-custom-observable', properties={}):
+def CustomExtension(observable=None, type='x-custom-observable', properties=None):
     """Decorator for custom extensions to STIX Cyber Observables
     """
 
@@ -875,10 +910,15 @@ def CustomExtension(observable=None, type='x-custom-observable', properties={}):
     def custom_builder(cls):
 
         class _Custom(cls, _Extension):
+
             _type = type
             _properties = {
                 'extensions': ExtensionsProperty(enclosing_type=_type),
             }
+
+            if not isinstance(properties, dict) or not properties:
+                raise ValueError("'properties' must be a dict!")
+
             _properties.update(properties)
 
             def __init__(self, **kwargs):
