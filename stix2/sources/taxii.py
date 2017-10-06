@@ -1,12 +1,8 @@
 """
 Python STIX 2.0 TAXII Source/Sink
 
-Classes:
-    TAXIICollectionStore
-    TAXIICollectionSink
-    TAXIICollectionSource
-
-TODO: Test everything
+TODO:
+    Test everything
 
 """
 
@@ -121,10 +117,9 @@ class TAXIICollectionSource(DataSource):
         if _composite_filters:
             query.update(_composite_filters)
 
-        # separate taxii query terms (can be done remotely)
-        taxii_filters = self._parse_taxii_filters(query)
-
-        stix_objs = self.collection.get_object(stix_id, taxii_filters)["objects"]
+        # dont extract TAXII filters from query (to send to TAXII endpoint)
+        # as directly retrieveing a STIX object by ID
+        stix_objs = self.collection.get_object(stix_id)["objects"]
 
         stix_obj = list(apply_common_filters(stix_objs, query))
 
@@ -215,7 +210,7 @@ class TAXIICollectionSource(DataSource):
     def _parse_taxii_filters(self, query):
         """Parse out TAXII filters that the TAXII server can filter on.
 
-        Notes:
+        Note:
             For instance - "?match[type]=indicator,sighting" should be in a
             query dict as follows:
 

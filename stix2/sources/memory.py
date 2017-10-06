@@ -1,18 +1,14 @@
 """
 Python STIX 2.0 Memory Source/Sink
 
-Classes:
-    MemoryStore
-    MemorySink
-    MemorySource
+TODO:
+    Run through tests again, lot of changes.
 
+TODO:
+    Use deduplicate() calls only when memory corpus is dirty (been added to)
+    can save a lot of time for successive queries
 
-TODO: Run through tests again, lot of changes.
-
-TODO: Use deduplicate() calls only when memory corpus is dirty (been added to)
-      can save a lot of time for successive queries
-
-Notes:
+Note:
     Not worrying about STIX versioning. The in memory STIX data at anytime
     will only hold one version of a STIX object. As such, when save() is called,
     the single versions of all the STIX objects are what is written to file.

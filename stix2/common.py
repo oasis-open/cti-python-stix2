@@ -1,9 +1,9 @@
-"""STIX 2 Common Data Types and Properties"""
+"""STIX 2 Common Data Types and Properties."""
 
 from collections import OrderedDict
 
 from .base import _STIXBase
-from .markings import MarkingsMixin
+from .markings import _MarkingsMixin
 from .properties import (HashesProperty, IDProperty, ListProperty, Property,
                          ReferenceProperty, SelectorProperty, StringProperty,
                          TimestampProperty, TypeProperty)
@@ -66,7 +66,7 @@ class StatementMarking(_STIXBase):
 
 
 class MarkingProperty(Property):
-    """Represent the marking objects in the `definition` property of
+    """Represent the marking objects in the ``definition`` property of
     marking-definition objects.
     """
 
@@ -77,7 +77,7 @@ class MarkingProperty(Property):
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
-class MarkingDefinition(_STIXBase, MarkingsMixin):
+class MarkingDefinition(_STIXBase, _MarkingsMixin):
     _type = 'marking-definition'
     _properties = OrderedDict()
     _properties.update([
@@ -121,17 +121,15 @@ def _register_marking(cls):
 
 
 def CustomMarking(type='x-custom-marking', properties=None):
-    """
-    Custom STIX Marking decorator.
+    """Custom STIX Marking decorator.
 
-    Examples:
-
-        @CustomMarking('x-custom-marking', [
-            ('property1', StringProperty(required=True)),
-            ('property2', IntegerProperty()),
-        ])
-        class MyNewMarkingObjectType():
-            pass
+    Example:
+        >>> @CustomMarking('x-custom-marking', [
+        ...     ('property1', StringProperty(required=True)),
+        ...     ('property2', IntegerProperty()),
+        ... ])
+        ... class MyNewMarkingObjectType():
+        ...     pass
 
     """
     def custom_builder(cls):
