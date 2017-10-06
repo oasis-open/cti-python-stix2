@@ -102,7 +102,7 @@ class FileSystemSink(DataSink):
             # adding json encoded string of STIX content
             stix_data = parse(stix_data)
             if stix_data["type"] == "bundle":
-                for stix_obj in stix_data:
+                for stix_obj in stix_data["objects"]:
                     self.add(stix_obj)
             else:
                 self.add(stix_data)
@@ -113,7 +113,7 @@ class FileSystemSink(DataSink):
                 self.add(stix_obj)
 
         else:
-            raise ValueError("stix_data must be a STIX object(or list of, json formatted STIX(or list of) or a json formatted STIX bundle")
+            raise ValueError("stix_data must be a STIX object(or list of), json formatted STIX(or list of) or a json formatted STIX bundle")
 
 
 class FileSystemSource(DataSource):
@@ -159,9 +159,13 @@ class FileSystemSource(DataSource):
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
-        stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+        if all_data:
+            stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+            stix_obj = parse(stix_obj)
+        else:
+            stix_obj = None
 
-        return parse(stix_obj)
+        return stix_obj
 
     def all_versions(self, stix_id, _composite_filters=None):
         """retrieve STIX object from file directory via STIX ID, all versions
