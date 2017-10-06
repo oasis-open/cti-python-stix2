@@ -130,10 +130,11 @@ class TAXIICollectionSource(DataSource):
 
         if len(stix_obj):
             stix_obj = stix_obj[0]
+            stix_obj = parse(stix_obj)
         else:
             stix_obj = None
 
-        return parse(stix_obj)
+        return stix_obj
 
     def all_versions(self, stix_id, _composite_filters=None):
         """retrieve STIX object from local/remote TAXII Collection
