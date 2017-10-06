@@ -42,8 +42,9 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
                        StartStopQualifier, StringConstant, TimestampConstant,
                        WithinQualifier)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
-                  Identity, Indicator, IntrusionSet, Malware, ObservedData,
-                  Report, ThreatActor, Tool, Vulnerability)
+                  Identity, Indicator, IntrusionSet, Location, Malware, Note,
+                  ObservedData, Opinion, Report, ThreatActor, Tool,
+                  Vulnerability)
 from .sources import CompositeDataSource
 from .sources.filesystem import (FileSystemSink, FileSystemSource,
                                  FileSystemStore)

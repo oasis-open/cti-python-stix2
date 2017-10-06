@@ -11,6 +11,7 @@ from .utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('source_name', StringProperty(required=True)),
@@ -26,6 +27,7 @@ class ExternalReference(_STIXBase):
 
 
 class KillChainPhase(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('kill_chain_name', StringProperty(required=True)),
@@ -34,6 +36,7 @@ class KillChainPhase(_STIXBase):
 
 
 class GranularMarking(_STIXBase):
+
     _properties = OrderedDict()
     _properties.update([
         ('marking_ref', ReferenceProperty(required=True, type="marking-definition")),
@@ -42,7 +45,7 @@ class GranularMarking(_STIXBase):
 
 
 class TLPMarking(_STIXBase):
-    # TODO: don't allow the creation of any other TLPMarkings than the ones below
+
     _type = 'tlp'
     _properties = OrderedDict()
     _properties.update([
@@ -51,6 +54,7 @@ class TLPMarking(_STIXBase):
 
 
 class StatementMarking(_STIXBase):
+
     _type = 'statement'
     _properties = OrderedDict()
     _properties.update([
@@ -78,6 +82,7 @@ class MarkingProperty(Property):
 
 
 class MarkingDefinition(_STIXBase, MarkingsMixin):
+
     _type = 'marking-definition'
     _properties = OrderedDict()
     _properties.update([
@@ -137,6 +142,7 @@ def CustomMarking(type='x-custom-marking', properties=None):
     def custom_builder(cls):
 
         class _Custom(cls, _STIXBase):
+
             _type = type
             _properties = OrderedDict()
 
@@ -154,6 +160,8 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
     return custom_builder
 
+
+# TODO: don't allow the creation of any other TLPMarkings than the ones below
 
 TLP_WHITE = MarkingDefinition(
     id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",

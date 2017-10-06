@@ -31,6 +31,8 @@ class Relationship(STIXRelationshipObject):
         ('target_ref', ReferenceProperty(required=True)),
         ('revoked', BooleanProperty()),
         ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -51,6 +53,7 @@ class Relationship(STIXRelationshipObject):
 
 
 class Sighting(STIXRelationshipObject):
+
     _type = 'sighting'
     _properties = OrderedDict()
     _properties.update([
@@ -68,6 +71,8 @@ class Sighting(STIXRelationshipObject):
         ('summary', BooleanProperty()),
         ('revoked', BooleanProperty()),
         ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
         ('granular_markings', ListProperty(GranularMarking)),
