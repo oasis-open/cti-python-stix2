@@ -126,7 +126,7 @@ class TAXIICollectionSource(DataSource):
 
         stix_objs = self.collection.get_object(stix_id, taxii_filters)["objects"]
 
-        stix_obj = [stix_obj for stix_obj in apply_common_filters(stix_objs, query)]
+        stix_obj = list(apply_common_filters(stix_objs, query))
 
         if len(stix_obj):
             stix_obj = stix_obj[0]
@@ -204,7 +204,7 @@ class TAXIICollectionSource(DataSource):
         all_data = deduplicate(all_data)
 
         # apply local (CompositeDataSource, TAXIICollectionSource and query filters)
-        all_data = [stix_obj for stix_obj in apply_common_filters(all_data, query)]
+        all_data = list(apply_common_filters(all_data, query))
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict) for stix_obj_dict in all_data]

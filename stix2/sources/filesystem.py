@@ -181,7 +181,7 @@ class FileSystemSource(DataSource):
                 a python STIX objects and then returned
 
         """
-        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
+        return list(self.get(stix_id=stix_id, _composite_filters=_composite_filters))
 
     def query(self, query=None, _composite_filters=None):
         """search and retrieve STIX objects based on the complete query
@@ -279,13 +279,11 @@ class FileSystemSource(DataSource):
                             # since ID is specified in one of filters, can evaluate against filename first without loading
                             stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
                             # check against other filters, add if match
-                            matches = [stix_obj_ for stix_obj_ in apply_common_filters([stix_obj], query)]
-                            all_data.extend(matches)
+                            all_data.extend(apply_common_filters([stix_obj], query))
                     else:
                         # have to load into memory regardless to evaluate other filters
                         stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
-                        matches = [stix_obj_ for stix_obj_ in apply_common_filters([stix_obj], query)]
-                        all_data.extend(matches)
+                        all_data.extend(apply_common_filters([stix_obj], query))
 
         all_data = deduplicate(all_data)
 
