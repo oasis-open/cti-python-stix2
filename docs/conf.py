@@ -12,7 +12,6 @@ extensions = [
     'sphinx.ext.todo',
 ]
 autodoc_default_flags = [
-    'show-inheritance',
     'undoc-members',
 ]
 autodoc_member_order = 'groupwise'

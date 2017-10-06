@@ -8,6 +8,7 @@
    memory
    taxii
 
+|
 """
 
 import uuid

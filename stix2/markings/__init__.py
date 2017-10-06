@@ -12,9 +12,7 @@ granular markings unless otherwise noted in each of the functions.
    object_markings
    utils
 
-.. raw:: html
-
-   <br/><hr/><br/>
+|
 """
 
 from stix2.markings import granular_markings, object_markings
