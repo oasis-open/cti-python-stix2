@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+0.3.0 - 2017-10-06
+
+* Adds data stores, object factory, and the environment layer.
+* Supports pattern expressions and data markings.
+* Fixes some bugs with timestamp precision and parsing of bundles.
+* Includes support for custom object types, custom properties, custom observable
+  objects, and custom observable extensions.
+
+0.2.0 - 2017-05-31
+
+* Adds a TAXII data source.
+
 0.1.0 - 2017-05-22
 
 * Include support for serializing/deserializing all STIX objects and Cyber

@@ -1,4 +1,4 @@
-"""STIX 2.0 Objects that are neither SDOs nor SROs"""
+"""STIX 2.0 Objects that are neither SDOs nor SROs."""
 
 from collections import OrderedDict
 

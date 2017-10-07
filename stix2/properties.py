@@ -1,3 +1,5 @@
+"""Classes for representing properties of STIX Objects and Cyber Observables.
+"""
 import base64
 import binascii
 import collections
@@ -17,43 +19,44 @@ class Property(object):
     """Represent a property of STIX data type.
 
     Subclasses can define the following attributes as keyword arguments to
-    __init__():
+    ``__init__()``.
 
-    - `required` - If `True`, the property must be provided when creating an
-        object with that property. No default value exists for these properties.
-        (Default: `False`)
-    - `fixed` - This provides a constant default value. Users are free to
-        provide this value explicity when constructing an object (which allows
-        you to copy *all* values from an existing object to a new object), but
-        if the user provides a value other than the `fixed` value, it will raise
-        an error. This is semantically equivalent to defining both:
-        - a `clean()` function that checks if the value matches the fixed
-          value, and
-        - a `default()` function that returns the fixed value.
-        (Default: `None`)
+    Args:
+        required (bool): If ``True``, the property must be provided when creating an
+            object with that property. No default value exists for these properties.
+            (Default: ``False``)
+        fixed: This provides a constant default value. Users are free to
+            provide this value explicity when constructing an object (which allows
+            you to copy **all** values from an existing object to a new object), but
+            if the user provides a value other than the ``fixed`` value, it will raise
+            an error. This is semantically equivalent to defining both:
 
-    Subclasses can also define the following functions.
+            - a ``clean()`` function that checks if the value matches the fixed
+              value, and
+            - a ``default()`` function that returns the fixed value.
 
-    - `def clean(self, value) -> any:`
-        - Return a value that is valid for this property. If `value` is not
+    Subclasses can also define the following functions:
+
+    - ``def clean(self, value) -> any:``
+        - Return a value that is valid for this property. If ``value`` is not
           valid for this property, this will attempt to transform it first. If
-          `value` is not valid and no such transformation is possible, it should
+          ``value`` is not valid and no such transformation is possible, it should
           raise a ValueError.
-    - `def default(self):`
+    - ``def default(self):``
         - provide a default value for this property.
-        - `default()` can return the special value `NOW` to use the current
+        - ``default()`` can return the special value ``NOW`` to use the current
             time. This is useful when several timestamps in the same object need
             to use the same default value, so calling now() for each property--
             likely several microseconds apart-- does not work.
 
-    Subclasses can instead provide a lambda function for `default` as a keyword
-    argument. `clean` should not be provided as a lambda since lambdas cannot
+    Subclasses can instead provide a lambda function for ``default`` as a keyword
+    argument. ``clean`` should not be provided as a lambda since lambdas cannot
     raise their own exceptions.
 
-    When instantiating Properties, `required` and `default` should not be used
-    together. `default` implies that the property is required in the specification
+    When instantiating Properties, ``required`` and ``default`` should not be used
+    together. ``default`` implies that the property is required in the specification
     so this function will be used to supply a value if none is provided.
-    `required` means that the user must provide this; it is required in the
+    ``required`` means that the user must provide this; it is required in the
     specification and we can't or don't want to create a default value.
     """
 
@@ -86,7 +89,7 @@ class ListProperty(Property):
 
     def __init__(self, contained, **kwargs):
         """
-        Contained should be a function which returns an object from the value.
+        ``contained`` should be a function which returns an object from the value.
         """
         if inspect.isclass(contained) and issubclass(contained, Property):
             # If it's a class and not an instance, instantiate it so that

@@ -62,16 +62,21 @@ def deduplicate(stix_obj_list):
 
 
 def get_timestamp():
+    """Return a STIX timestamp of the current date and time."""
     return STIXdatetime.now(tz=pytz.UTC)
 
 
 def format_datetime(dttm):
-    # 1. Convert to timezone-aware
-    # 2. Convert to UTC
-    # 3. Format in ISO format
-    # 4. Ensure correct precision
-    # 4a. Add subsecond value if non-zero and precision not defined
-    # 5. Add "Z"
+    """Convert a datetime object into a valid STIX timestamp string.
+
+    1. Convert to timezone-aware
+    2. Convert to UTC
+    3. Format in ISO format
+    4. Ensure correct precision
+       a. Add subsecond value if non-zero and precision not defined
+    5. Add "Z"
+
+    """
 
     if dttm.tzinfo is None or dttm.tzinfo.utcoffset(dttm) is None:
         # dttm is timezone-naive; assume UTC
@@ -91,6 +96,8 @@ def format_datetime(dttm):
 
 
 def parse_into_datetime(value, precision=None):
+    """Parse a value into a valid STIX timestamp object.
+    """
     if isinstance(value, dt.date):
         if hasattr(value, 'hour'):
             ts = value
@@ -130,6 +137,7 @@ def parse_into_datetime(value, precision=None):
 
 def get_dict(data):
     """Return data as a dictionary.
+
     Input can be a dictionary, string, or file-like object.
     """
 
@@ -152,7 +160,7 @@ def get_dict(data):
 
 def find_property_index(obj, properties, tuple_to_find):
     """Recursively find the property in the object model, return the index
-    according to the _properties OrderedDict. If its a list look for
+    according to the _properties OrderedDict. If it's a list look for
     individual objects.
     """
     from .base import _STIXBase
@@ -187,7 +195,7 @@ def find_property_index(obj, properties, tuple_to_find):
 
 def new_version(data, **kwargs):
     """Create a new version of a STIX object, by modifying properties and
-    updating the `modified` property.
+    updating the ``modified`` property.
     """
 
     if not isinstance(data, Mapping):
@@ -224,6 +232,11 @@ def new_version(data, **kwargs):
 
 
 def revoke(data):
+    """Revoke a STIX object.
+
+    Returns:
+        A new version of the object with ``revoked`` set to ``True``.
+    """
     if not isinstance(data, Mapping):
         raise ValueError('cannot revoke object of this type! Try a dictionary '
                          'or instance of an SDO or SRO class.')

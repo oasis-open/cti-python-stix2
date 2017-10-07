@@ -1,12 +1,8 @@
 """
 Python STIX 2.0 FileSystem Source/Sink
 
-Classes:
-    FileSystemStore
-    FileSystemSink
-    FileSystemSource
-
-TODO: Test everything
+TODO:
+    Test everything
 """
 
 import json
@@ -134,7 +130,7 @@ class FileSystemSource(DataSource):
         self._stix_dir = os.path.abspath(stix_dir)
 
         if not os.path.exists(self._stix_dir):
-            print("Error: directory path for STIX data does not exist")
+            raise ValueError("directory path for STIX data does not exist: %s" % self._stix_dir)
 
     @property
     def stix_dir(self):
@@ -183,7 +179,6 @@ class FileSystemSource(DataSource):
             (list): of STIX objects that has the supplied STIX ID.
                 The STIX objects are loaded from their json files, parsed into
                 a python STIX objects and then returned
-
         """
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 

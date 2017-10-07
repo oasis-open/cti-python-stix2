@@ -1,8 +1,8 @@
-"""STIX 2.0 Cyber Observable Objects
+"""STIX 2.0 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
-embedded in Email Message objects, inherit from _STIXBase instead of Observable
-and do not have a '_type' attribute.
+embedded in Email Message objects, inherit from ``_STIXBase`` instead of
+Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
@@ -19,6 +19,8 @@ from .utils import get_dict
 
 
 class ObservableProperty(Property):
+    """Property for holding Cyber Observable Objects.
+    """
 
     def clean(self, value):
         try:
@@ -38,7 +40,7 @@ class ObservableProperty(Property):
 
 
 class ExtensionsProperty(DictionaryProperty):
-    """ Property for representing extensions on Observable objects
+    """Property for representing extensions on Observable objects.
     """
 
     def __init__(self, enclosing_type=None, required=False):
@@ -832,16 +834,15 @@ def _register_observable(new_observable):
 
 
 def CustomObservable(type='x-custom-observable', properties=None):
-    """Custom STIX Cyber Observable type decorator
+    """Custom STIX Cyber Observable Object type decorator.
 
-    Example 1:
-
-    @CustomObservable('x-custom-observable', [
-        ('property1', StringProperty(required=True)),
-        ('property2', IntegerProperty()),
-    ])
-    class MyNewObservableType():
-        pass
+    Example:
+        >>> @CustomObservable('x-custom-observable', [
+        ...     ('property1', StringProperty(required=True)),
+        ...     ('property2', IntegerProperty()),
+        ... ])
+        ... class MyNewObservableType():
+        ...     pass
     """
 
     def custom_builder(cls):
@@ -871,7 +872,14 @@ def CustomObservable(type='x-custom-observable', properties=None):
 
             def __init__(self, **kwargs):
                 _Observable.__init__(self, **kwargs)
-                cls.__init__(self, **kwargs)
+                try:
+                    cls.__init__(self, **kwargs)
+                except (AttributeError, TypeError) as e:
+                    # Don't accidentally catch errors raised in a custom __init__()
+                    if ("has no attribute '__init__'" in str(e) or
+                            str(e) == "object.__init__() takes no parameters"):
+                        return
+                    raise e
 
         _register_observable(_Custom)
         return _Custom
@@ -901,7 +909,7 @@ def _register_extension(observable, new_extension):
 
 
 def CustomExtension(observable=None, type='x-custom-observable', properties=None):
-    """Decorator for custom extensions to STIX Cyber Observables
+    """Decorator for custom extensions to STIX Cyber Observables.
     """
 
     if not observable or not issubclass(observable, _Observable):
@@ -916,14 +924,21 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
                 'extensions': ExtensionsProperty(enclosing_type=_type),
             }
 
-            if not isinstance(properties, dict):
+            if not isinstance(properties, dict) or not properties:
                 raise ValueError("'properties' must be a dict!")
 
             _properties.update(properties)
 
             def __init__(self, **kwargs):
                 _Extension.__init__(self, **kwargs)
-                cls.__init__(self, **kwargs)
+                try:
+                    cls.__init__(self, **kwargs)
+                except (AttributeError, TypeError) as e:
+                    # Don't accidentally catch errors raised in a custom __init__()
+                    if ("has no attribute '__init__'" in str(e) or
+                            str(e) == "object.__init__() takes no parameters"):
+                        return
+                    raise e
 
         _register_extension(observable, _Custom)
         return _Custom

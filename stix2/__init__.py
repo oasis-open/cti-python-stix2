@@ -1,4 +1,21 @@
-"""Python APIs for STIX 2."""
+"""Python APIs for STIX 2.
+
+.. autosummary::
+   :toctree: api
+
+   common
+   core
+   environment
+   exceptions
+   markings
+   observables
+   patterns
+   properties
+   sdo
+   sources
+   sro
+   utils
+"""
 
 # flake8: noqa
 
@@ -11,8 +28,8 @@ from .environment import Environment, ObjectFactory
 from .markings import (add_markings, clear_markings, get_markings, is_marked,
                        remove_markings, set_markings)
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
-                          AutonomousSystem, CustomObservable, Directory,
-                          DomainName, EmailAddress, EmailMessage,
+                          AutonomousSystem, CustomExtension, CustomObservable,
+                          Directory, DomainName, EmailAddress, EmailMessage,
                           EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
                           IPv4Address, IPv6Address, MACAddress, Mutex,
                           NetworkTraffic, NTFSExt, PDFExt, Process,
