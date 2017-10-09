@@ -124,7 +124,11 @@ class ListProperty(Property):
                 obj_type = self.contained.type
             elif type(self.contained).__name__ is 'STIXObjectProperty':
                 # ^ this way of checking doesn't require a circular import
-                obj_type = type(valid)
+                # valid is already an instance of a python-stix2 class; no need
+                # to turn it into a dictionary and then pass it to the class
+                # constructor again
+                result.append(valid)
+                continue
             else:
                 obj_type = self.contained
 
