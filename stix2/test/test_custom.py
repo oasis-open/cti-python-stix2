@@ -81,6 +81,18 @@ def test_parse_identity_custom_property(data):
     assert identity.foo == "bar"
 
 
+def test_custom_property_in_bundled_object():
+    identity = stix2.Identity(
+        name="John Smith",
+        identity_class="individual",
+        x_foo="bar",
+        allow_custom=True,
+    )
+    bundle = stix2.Bundle(identity, allow_custom=True)
+
+    assert bundle.objects[0].x_foo == "bar"
+
+
 @stix2.sdo.CustomObject('x-new-type', [
     ('property1', stix2.properties.StringProperty(required=True)),
     ('property2', stix2.properties.IntegerProperty()),
