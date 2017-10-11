@@ -15,6 +15,10 @@ from .utils import get_dict
 
 class STIXObjectProperty(Property):
 
+    def __init__(self, allow_custom=False):
+        self.allow_custom = allow_custom
+        super(STIXObjectProperty, self).__init__()
+
     def clean(self, value):
         try:
             dictified = get_dict(value)
@@ -25,7 +29,10 @@ class STIXObjectProperty(Property):
         if 'type' in dictified and dictified['type'] == 'bundle':
             raise ValueError('This property may not contain a Bundle object')
 
-        parsed_obj = parse(dictified)
+        if self.allow_custom:
+            parsed_obj = parse(dictified, allow_custom=True)
+        else:
+            parsed_obj = parse(dictified)
         return parsed_obj
 
 
@@ -47,6 +54,10 @@ class Bundle(_STIXBase):
                 kwargs['objects'] = args[0] + list(args[1:]) + kwargs.get('objects', [])
             else:
                 kwargs['objects'] = list(args) + kwargs.get('objects', [])
+
+        allow_custom = kwargs.get('allow_custom', False)
+        if allow_custom:
+            self._properties['objects'] = ListProperty(STIXObjectProperty(True))
 
         super(Bundle, self).__init__(**kwargs)
 
