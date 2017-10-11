@@ -7,8 +7,8 @@ from .base import _STIXBase
 from .common import MarkingDefinition
 from .properties import IDProperty, ListProperty, Property, TypeProperty
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
-                  IntrusionSet, Malware, ObservedData, Report, ThreatActor,
-                  Tool, Vulnerability)
+                  IntrusionSet, Location, Malware, Note, ObservedData, Opinion,
+                  Report, ThreatActor, Tool, Vulnerability)
 from .sro import Relationship, Sighting
 from .utils import get_dict
 
@@ -70,9 +70,12 @@ OBJ_MAP = {
     'identity': Identity,
     'indicator': Indicator,
     'intrusion-set': IntrusionSet,
+    'location': Location,
     'malware': Malware,
+    'note': Note,
     'marking-definition': MarkingDefinition,
     'observed-data': ObservedData,
+    'opinion': Opinion,
     'report': Report,
     'relationship': Relationship,
     'threat-actor': ThreatActor,
