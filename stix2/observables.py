@@ -98,7 +98,7 @@ class AutonomousSystem(_Observable):
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
-        ('number', IntegerProperty()),
+        ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
         ('rir', StringProperty()),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
@@ -459,6 +459,8 @@ class SocketExt(_Extension):
             "SOCK_RDM",
             "SOCK_SEQPACKET",
         ])),
+        ('socket_descriptor', IntegerProperty()),
+        ('socket_handle', IntegerProperty())
     ])
 
 
