@@ -7,12 +7,16 @@ def none_low_med_high_to_value(scale_value):
     This method will transform a string value from the None / Low / Med /
     High scale to its confidence integer representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            "None" -> 0
-            "Low" -> 15
-            "Med" -> 50
-            "High" -> 85
+    The scale for this confidence representation is the following:
+    ====================    =====================
+    None/ Low/ Med/ High    STIX Confidence Value
+    ====================    =====================
+    Not Specified           Not Specified
+    None                    0
+    Low                     15
+    Med                     50
+    High                    85
+    ====================    =====================
 
     Args:
         scale_value: A string value from the scale. Accepted strings are
@@ -42,12 +46,15 @@ def value_to_none_low_medium_high(confidence_value):
     This method will transform an integer value into the None / Low / Med /
     High scale string representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            0 -> "None"
-            1-29 -> "Low"
-            30-69 -> "Med"
-            70-100 -> "High"
+    The scale for this confidence representation is the following:
+    =============== ====================
+    Range of Values None/ Low/ Med/ High
+    =============== ====================
+    0               None
+    1-29            Low
+    30-69           Med
+    70-100          High
+    =============== ====================
 
     Args:
         confidence_value: An integer value between 0 and 100.
@@ -76,19 +83,22 @@ def zero_ten_to_value(scale_value):
     This method will transform a string value from the 0-10 scale to its
     confidence integer representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            "0" -> 0
-            "1" -> 10
-            "2" -> 20
-            "3" -> 30
-            "4" -> 40
-            "5" -> 50
-            "6" -> 60
-            "7" -> 70
-            "8" -> 80
-            "9" -> 90
-            "10" -> 100
+    The scale for this confidence representation is the following:
+    ====================    =====================
+    0-10 Scale              STIX Confidence Value
+    ====================    =====================
+    0                       0
+    1                       10
+    2                       20
+    3                       30
+    4                       40
+    5                       50
+    6                       60
+    7                       70
+    8                       80
+    9                       90
+    10                      100
+    ====================    =====================
 
     Args:
         scale_value: A string value from the scale. Accepted strings are "0"
@@ -133,19 +143,22 @@ def value_to_zero_ten(confidence_value):
     This method will transform an integer value into the 0-10 scale string
     representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            0-4 -> "0"
-            5-14 -> "1"
-            15-24 -> "2"
-            25-34 -> "3"
-            35-44 -> "4"
-            45-54 -> "5"
-            55-64 -> "6"
-            65-74 -> "7"
-            75-84 -> "8"
-            85-94 -> "9"
-            95-100 -> "10"
+    The scale for this confidence representation is the following:
+    =============== ==========
+    Range of Values 0-10 Scale
+    =============== ==========
+    0-4             0
+    5-14            1
+    15-24           2
+    25-34           3
+    35-44           4
+    45-54           5
+    55-64           6
+    65-74           7
+    75-84           8
+    85-94           9
+    95-100          10
+    =============== ==========
 
     Args:
         confidence_value: An integer value between 0 and 100.
@@ -188,14 +201,17 @@ def admiralty_credibility_to_value(scale_value):
     This method will transform a string value from the Admiralty Credibility
     scale to its confidence integer representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            "6 - Truth cannot be judged" -> N/A
-            "5 - Improbable" -> 10
-            "4 - Doubtful" -> 30
-            "3 - Possibly True" -> 50
-            "2 - Probably True" -> 70
-            "1 - Confirmed by other sources" -> 90
+    The scale for this confidence representation is the following:
+    ==============================  =====================
+    Admiralty Credibility           STIX Confidence Value
+    ==============================  =====================
+    6 - Truth cannot be judged      (Not present)
+    5 - Improbable                  10
+    4 - Doubtful                    30
+    3 - Possibly True               50
+    2 - Probably True               70
+    1 - Confirmed by other sources  90
+    ==============================  =====================
 
     Args:
         scale_value: A string value from the scale. Accepted strings are
@@ -232,14 +248,17 @@ def value_to_admiralty_credibility(confidence_value):
     This method will transform an integer value into the Admiralty Credibility
     scale string representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            N/A -> "6 - Truth cannot be judged"
-            0-19 -> "5 - Improbable"
-            20-39 -> "4 - Doubtful"
-            40-59 -> "3 - Possibly True"
-            60-79 -> "2 - Probably True"
-            80-100 -> "1 - Confirmed by other sources"
+    The scale for this confidence representation is the following:
+    =============== ==============================
+    Range of Values Admiralty Credibility
+    =============== ==============================
+    N/A             6 - Truth cannot be judged
+    0-19            5 - Improbable
+    20-39           4 - Doubtful
+    40-59           3 - Possibly True
+    60-79           2 - Probably True
+    80-100          1 - Confirmed by other sources
+    =============== ==============================
 
     Args:
         confidence_value: An integer value between 0 and 100.
@@ -271,15 +290,18 @@ def wep_to_value(scale_value):
     This method will transform a string value from the WEP scale to its
     confidence integer representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            "Impossible" -> 0
-            "Highly Unlikely/Almost Certainly Not" -> 10
-            "Unlikely/Probably Not" -> 20
-            "Even Chance" -> 50
-            "Likely/Probable" -> 70
-            "Highly likely/Almost Certain" -> 90
-            "Certain" -> 100
+    The scale for this confidence representation is the following:
+    ====================================    =====================
+    WEP                                     STIX Confidence Value
+    ====================================    =====================
+    Impossible                              0
+    Highly Unlikely/Almost Certainly Not    10
+    Unlikely/Probably Not                   20
+    Even Chance                             50
+    Likely/Probable                         70
+    Highly likely/Almost Certain            90
+    Certain                                 100
+    ====================================    =====================
 
     Args:
         scale_value: A string value from the scale. Accepted strings are
@@ -319,15 +341,18 @@ def value_to_wep(confidence_value):
     This method will transform an integer value into the WEP scale string
     representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            0 -> "Impossible"
-            1-19 -> "Highly Unlikely/Almost Certainly Not"
-            20-39 -> "Unlikely/Probably Not"
-            40-59 -> "Even Chance"
-            60-79 -> "Likely/Probable"
-            80-99 -> "Highly likely/Almost Certain"
-            100 -> "Certain"
+    The scale for this confidence representation is the following:
+    =============== ====================================
+    Range of Values WEP
+    =============== ====================================
+    0               Impossible
+    1-19            Highly Unlikely/Almost Certainly Not
+    20-39           Unlikely/Probably Not
+    40-59           Even Chance
+    60-79           Likely/Probable
+    80-99           Highly likely/Almost Certain
+    100             Certain
+    =============== ====================================
 
     Args:
         confidence_value: An integer value between 0 and 100.
@@ -362,15 +387,18 @@ def dni_to_value(scale_value):
     This method will transform a string value from the DNI scale to its
     confidence integer representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            "Almost No Chance / Remote" -> 5
-            "Very Unlikely / Highly Improbable" -> 15
-            "Unlikely / Improbable" -> 30
-            "Roughly Even Change / Roughly Even Odds" -> 50
-            "Likely / Probable" -> 70
-            "Very Likely / Highly Probable" -> 85
-            "Almost Certain / Nearly Certain" -> 95
+    The scale for this confidence representation is the following:
+    ======================================= =====================
+    DNI Scale                               STIX Confidence Value
+    ======================================= =====================
+    Almost No Chance / Remote               5
+    Very Unlikely / Highly Improbable       15
+    Unlikely / Improbable                   30
+    Roughly Even Change / Roughly Even Odds 50
+    Likely / Probable                       70
+    Very Likely / Highly Probable           85
+    Almost Certain / Nearly Certain         95
+    ======================================= =====================
 
     Args:
         scale_value: A string value from the scale. Accepted strings are
@@ -410,15 +438,18 @@ def value_to_dni(confidence_value):
     This method will transform an integer value into the DNI scale string
     representation.
 
-    Notes:
-        The scale for this confidence representation is the following.
-            0-9 -> "Almost No Chance / Remote"
-            10-19 -> "Very Unlikely / Highly Improbable"
-            20-39 -> "Unlikely / Improbable"
-            40-59 -> "Roughly Even Change / Roughly Even Odds"
-            60-79 -> "Likely / Probable"
-            80-89 -> "Very Likely / Highly Probable"
-            90-100 -> "Almost Certain / Nearly Certain"
+    The scale for this confidence representation is the following:
+    =============== =======================================
+    Range of Values DNI Scale
+    =============== =======================================
+    0-9             Almost No Chance / Remote
+    10-19           Very Unlikely / Highly Improbable
+    20-39           Unlikely / Improbable
+    40-59           Roughly Even Change / Roughly Even Odds
+    60-79           Likely / Probable
+    80-89           Very Likely / Highly Probable
+    90-100          Almost Certain / Nearly Certain
+    =============== =======================================
 
     Args:
         confidence_value: An integer value between 0 and 100.
