@@ -158,3 +158,11 @@ def test_parse_unknown_type():
     with pytest.raises(stix2.exceptions.ParseError) as excinfo:
         stix2.parse(unknown)
     assert str(excinfo.value) == "Can't parse unknown object type 'other'! For custom types, use the CustomObject decorator."
+
+
+def test_stix_object_property():
+    prop = stix2.core.STIXObjectProperty()
+
+    identity = stix2.Identity(name="test", identity_class="individual")
+    assert prop.clean(identity) == identity
+    assert prop.clean(identity) is identity

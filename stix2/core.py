@@ -7,9 +7,9 @@ from .base import _STIXBase
 from .common import MarkingDefinition
 from .properties import IDProperty, ListProperty, Property, TypeProperty
 from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
-                  IntrusionSet, Malware, ObservedData, Report, ThreatActor,
-                  Tool, Vulnerability)
-from .sro import Relationship, Sighting
+                  IntrusionSet, Malware, ObservedData, Report,
+                  STIXDomainObject, ThreatActor, Tool, Vulnerability)
+from .sro import Relationship, Sighting, STIXRelationshipObject
 from .utils import get_dict
 
 
@@ -20,6 +20,11 @@ class STIXObjectProperty(Property):
         super(STIXObjectProperty, self).__init__()
 
     def clean(self, value):
+        # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
+        # a bundle with no further checks.
+        if isinstance(value, (STIXDomainObject, STIXRelationshipObject,
+                              MarkingDefinition)):
+            return value
         try:
             dictified = get_dict(value)
         except ValueError:
