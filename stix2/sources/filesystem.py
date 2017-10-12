@@ -8,10 +8,12 @@ TODO:
 import json
 import os
 
-from stix2.base import _STIXBase
+from stix2.common import MarkingDefinition
 from stix2.core import Bundle, parse
+from stix2.sdo import STIXDomainObject
 from stix2.sources import DataSink, DataSource, DataStore
 from stix2.sources.filters import Filter, apply_common_filters
+from stix2.sro import STIXRelationshipObject
 from stix2.utils import deduplicate
 
 
@@ -81,7 +83,7 @@ class FileSystemSink(DataSink):
                 # Bundle() can take dict or STIX obj as argument
                 f.write(str(Bundle(stix_obj)))
 
-        if isinstance(stix_data, _STIXBase):
+        if isinstance(stix_data, (STIXDomainObject, STIXRelationshipObject, MarkingDefinition)):
             # adding python STIX object
             _check_path_and_write(self._stix_dir, stix_data)
 
@@ -94,11 +96,11 @@ class FileSystemSink(DataSink):
                 # adding json-formatted STIX
                 _check_path_and_write(self._stix_dir, stix_data)
 
-        elif isinstance(stix_data, str):
+        elif isinstance(stix_data, (str, Bundle)):
             # adding json encoded string of STIX content
             stix_data = parse(stix_data)
             if stix_data["type"] == "bundle":
-                for stix_obj in stix_data["objects"]:
+                for stix_obj in stix_data.get("objects", []):
                     self.add(stix_obj)
             else:
                 self.add(stix_data)

@@ -1,10 +1,11 @@
 import os
+import shutil
 
 import pytest
 from taxii2client import Collection
 
-from stix2 import (Campaign, FileSystemSink, FileSystemSource, FileSystemStore,
-                   Filter, MemorySource, MemoryStore)
+from stix2 import (Bundle, Campaign, FileSystemSink, FileSystemSource,
+                   FileSystemStore, Filter, MemorySource, MemoryStore)
 from stix2.sources import (CompositeDataSource, DataSink, DataSource,
                            DataStore, make_id, taxii)
 from stix2.sources.filters import apply_common_filters
@@ -27,6 +28,15 @@ def collection():
 @pytest.fixture
 def ds():
     return DataSource()
+
+
+@pytest.fixture
+def fs_store():
+    # create
+    yield FileSystemStore(FS_PATH)
+
+    # remove campaign dir
+    shutil.rmtree(os.path.join(FS_PATH, "campaign"))
 
 
 IND1 = {
@@ -681,10 +691,7 @@ def test_filesystem_sink():
     os.rmdir(os.path.join(FS_PATH, "campaign"))
 
 
-def test_filesystem_store():
-    # creation
-    fs_store = FileSystemStore(FS_PATH)
-
+def test_filesystem_store(fs_store):
     # get()
     coa = fs_store.get("course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd")
     assert coa.id == "course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd"
@@ -716,3 +723,8 @@ def test_filesystem_store():
 
     # remove campaign dir
     os.rmdir(os.path.join(FS_PATH, "campaign"))
+
+
+def test_filesystem_add_object_with_custom_property_in_bundle(fs_store):
+    bundle = Bundle()
+    fs_store.add(bundle)
