@@ -1,7 +1,7 @@
 import pytest
 from taxii2client import Collection
 
-from stix2 import Filter, MemorySource, MemoryStore
+from stix2 import Filter, MemorySource
 from stix2.sources import (CompositeDataSource, DataSink, DataSource,
                            DataStore, make_id, taxii)
 from stix2.sources.filters import apply_common_filters
@@ -142,28 +142,6 @@ def test_ds_abstract_class_smoke():
 
     with pytest.raises(NotImplementedError):
         ds3.query([Filter("id", "=", "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")])
-
-
-def test_memory_store_smoke():
-    # Initialize MemoryStore with dict
-    ms = MemoryStore(STIX_OBJS1)
-
-    # Add item to sink
-    ms.add(dict(id="bundle--%s" % make_id(),
-                objects=STIX_OBJS2,
-                spec_version="2.0",
-                type="bundle"))
-
-    resp = ms.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
-    assert len(resp) == 1
-
-    resp = ms.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
-    assert resp["id"] == "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
-
-    query = [Filter('type', '=', 'malware')]
-
-    resp = ms.query(query)
-    assert len(resp) == 0
 
 
 def test_ds_taxii(collection):
