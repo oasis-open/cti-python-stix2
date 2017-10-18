@@ -3,8 +3,8 @@ import shutil
 
 import pytest
 
-from stix2 import (Bundle, Campaign, FileSystemSink, FileSystemSource,
-                   FileSystemStore, Filter)
+from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
+                   FileSystemSource, FileSystemStore, Filter, properties)
 
 FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
@@ -213,8 +213,13 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     os.remove(os.path.join(FS_PATH, "campaign", camp7_r.id + ".json"))
 
 
-def test_filesystem_store_get(fs_store):
-    # get()
+def test_filesystem_store_get_stored_as_bundle(fs_store):
+    coa = fs_store.get("course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f")
+    assert coa.id == "course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f"
+    assert coa.type == "course-of-action"
+
+
+def test_filesystem_store_get_stored_as_object(fs_store):
     coa = fs_store.get("course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd")
     assert coa.id == "course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd"
     assert coa.type == "course-of-action"
@@ -250,6 +255,51 @@ def test_filesystem_store_add(fs_store):
     os.remove(os.path.join(FS_PATH, "campaign", camp1_r.id + ".json"))
 
 
-def test_filesystem_add_object_with_custom_property_in_bundle(fs_store):
+def test_filesystem_add_bundle_object(fs_store):
     bundle = Bundle()
     fs_store.add(bundle)
+
+
+def test_filesystem_object_with_custom_property(fs_store):
+    camp = Campaign(name="Scipio Africanus",
+                    objective="Defeat the Carthaginians",
+                    x_empire="Roman",
+                    allow_custom=True)
+
+    fs_store.add(camp, True)
+
+    camp_r = fs_store.get(camp.id, True)
+    assert camp_r.id == camp.id
+    assert camp_r.x_empire == camp.x_empire
+
+
+def test_filesystem_object_with_custom_property_in_bundle(fs_store):
+    camp = Campaign(name="Scipio Africanus",
+                    objective="Defeat the Carthaginians",
+                    x_empire="Roman",
+                    allow_custom=True)
+
+    bundle = Bundle(camp, allow_custom=True)
+    fs_store.add(bundle, True)
+
+    camp_r = fs_store.get(camp.id, True)
+    assert camp_r.id == camp.id
+    assert camp_r.x_empire == camp.x_empire
+
+
+def test_filesystem_custom_object(fs_store):
+    @CustomObject('x-new-obj', [
+        ('property1', properties.StringProperty(required=True)),
+    ])
+    class NewObj():
+        pass
+
+    newobj = NewObj(property1='something')
+    fs_store.add(newobj, True)
+
+    newobj_r = fs_store.get(newobj.id, True)
+    assert newobj_r.id == newobj.id
+    assert newobj_r.property1 == 'something'
+
+    # remove dir
+    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj"), True)
