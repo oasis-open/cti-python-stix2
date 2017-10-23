@@ -460,7 +460,7 @@ class SocketExt(_Extension):
             "SOCK_SEQPACKET",
         ])),
         ('socket_descriptor', IntegerProperty()),
-        ('socket_handle', IntegerProperty())
+        ('socket_handle', IntegerProperty()),
     ])
 
 

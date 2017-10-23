@@ -281,7 +281,7 @@ class Opinion(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type="identity")),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('description', StringProperty),
+        ('description', StringProperty()),
         ('authors', ListProperty(StringProperty)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
         ('opinion', EnumProperty(allowed=[

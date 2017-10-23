@@ -87,7 +87,7 @@ def format_datetime(dttm):
     ms = zoned.strftime("%f")
     precision = getattr(dttm, "precision", None)
     if precision == 'second':
-        pass  # Alredy precise to the second
+        pass  # Already precise to the second
     elif precision == "millisecond":
         ts = ts + '.' + ms[:3]
     elif zoned.microsecond > 0:
@@ -191,6 +191,10 @@ def find_property_index(obj, properties, tuple_to_find):
                                                   tuple_to_find)
                         if val is not None:
                             return val
+                    elif isinstance(item, dict) and tuple_to_find[0] in item:
+                        for num, t in enumerate(item.keys(), start=1):
+                            if t == tuple_to_find[0]:
+                                return num
 
 
 def new_version(data, **kwargs):
