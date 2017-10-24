@@ -138,9 +138,32 @@ def test_memory_store_all_versions(mem_store):
 
 def test_memory_store_query(mem_store):
     query = [Filter('type', '=', 'malware')]
-
     resp = mem_store.query(query)
     assert len(resp) == 0
+
+
+def test_memory_store_query_single_filter(mem_store):
+    query = Filter('id', '=', 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f')
+    resp = mem_store.query(query)
+    assert len(resp) == 1
+
+
+def test_memory_store_query_empty_query(mem_store):
+    resp = mem_store.query()
+    # sort since returned in random order
+    resp = sorted(resp, key=lambda k: k['id'])
+    assert len(resp) == 2
+    assert resp[0]['id'] == 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f'
+    assert resp[0]['modified'] == '2017-01-27T13:49:53.935Z'
+    assert resp[1]['id'] == 'indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f'
+    assert resp[1]['modified'] == '2017-01-27T13:49:53.936Z'
+
+
+def test_memory_store_query_multiple_filters(mem_store):
+    mem_store.source.filters.add(Filter('type', '=', 'indicator'))
+    query = Filter('id', '=', 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f')
+    resp = mem_store.query(query)
+    assert len(resp) == 1
 
 
 def test_memory_store_add_stix_object_str(mem_store):
@@ -192,6 +215,16 @@ def test_memory_store_add_stix_bundle_str(mem_store):
     assert camp_r["id"] == camp_id
     assert camp_r["name"] == camp_name
     assert camp_alias in camp_r["aliases"]
+
+
+def test_memory_store_add_invalid_object(mem_store):
+    ind = ('indicator', IND1)  # tuple isn't valid
+    with pytest.raises(TypeError) as excinfo:
+        mem_store.add(ind)
+    assert 'stix_data must be' in str(excinfo.value)
+    assert 'a STIX object' in str(excinfo.value)
+    assert 'JSON formatted STIX' in str(excinfo.value)
+    assert 'JSON formatted STIX bundle' in str(excinfo.value)
 
 
 def test_memory_store_object_with_custom_property(mem_store):

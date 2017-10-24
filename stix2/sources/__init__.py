@@ -77,7 +77,7 @@ class DataStore(object):
         """
         return self.source.all_versions(stix_id, allow_custom=allow_custom)
 
-    def query(self, query, allow_custom=False):
+    def query(self, query=None, allow_custom=False):
         """Retrieve STIX objects matching a set of filters.
 
         Implement: Specific data source API calls, processing,
@@ -191,7 +191,7 @@ class DataSource(object):
         """
         raise NotImplementedError()
 
-    def query(self, query, _composite_filters=None, allow_custom=False):
+    def query(self, query=None, _composite_filters=None, allow_custom=False):
         """
         Implement:Implement the specific data source API calls, processing,
         functionality required for retrieving query from the data source

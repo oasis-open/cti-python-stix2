@@ -65,7 +65,7 @@ def _add(store, stix_data=None, allow_custom=False):
             _add(store, stix_obj, allow_custom=allow_custom)
 
     else:
-        raise TypeError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
+        raise TypeError("stix_data must be a STIX object (or list of), JSON formatted STIX (or list of), or a JSON formatted STIX bundle")
 
 
 class MemoryStore(DataStore):
@@ -283,7 +283,7 @@ class MemorySource(DataSource):
             if not isinstance(query, list):
                 # make sure dont make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
-                query = list(query)
+                query = [query]
             query = set(query)
 
         # combine all query filters
