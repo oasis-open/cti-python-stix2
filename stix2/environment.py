@@ -153,7 +153,7 @@ class Environment(object):
         return _parse(*args, **kwargs)
     parse.__doc__ = _parse.__doc__
 
-    def created_by(self, obj):
+    def creator_of(self, obj):
         """Retrieve the Identity refered to by the object's `created_by_ref`.
 
         Args:
@@ -161,8 +161,13 @@ class Environment(object):
                 up.
 
         Returns:
-            The STIX object's creator.
-        """
+            The STIX object's creator, or
+            None, if the object contains no `created_by_ref` property or the
+                object's creator cannot be found.
 
+        """
         creator_id = obj.get('created_by_ref', '')
-        return self.get(creator_id)
+        if creator_id:
+            return self.get(creator_id)
+        else:
+            return None
