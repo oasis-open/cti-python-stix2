@@ -32,8 +32,10 @@ def _add(store, stix_data=None, allow_custom=False):
 
     Args:
         stix_data (list OR dict OR STIX object): STIX objects to be added
-    """
+        allow_custom (bool): whether to allow custom objects/properties or
+            not. Default: False.
 
+    """
     if isinstance(stix_data, _STIXBase):
         # adding a python STIX object
         store._data[stix_data["id"]] = stix_data
@@ -77,16 +79,15 @@ class MemoryStore(DataStore):
 
     Args:
         stix_data (list OR dict OR STIX object): STIX content to be added
+        allow_custom (bool): whether to allow custom objects/properties or
+            not. Default: False.
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects
-
         source (MemorySource): MemorySource
-
         sink (MemorySink): MemorySink
 
     """
-
     def __init__(self, stix_data=None, allow_custom=False):
         super(MemoryStore, self).__init__()
         self._data = {}
@@ -98,9 +99,29 @@ class MemoryStore(DataStore):
         self.sink = MemorySink(stix_data=self._data, _store=True, allow_custom=allow_custom)
 
     def save_to_file(self, file_path, allow_custom=False):
+        """Write SITX objects from in-memory dictionary to JSON file, as a STIX
+        Bundle.
+
+        Args:
+            file_path (str): file path to write STIX data to
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
+
+        """
         return self.sink.save_to_file(file_path=file_path, allow_custom=allow_custom)
 
     def load_from_file(self, file_path, allow_custom=False):
+        """Load STIX data from JSON file.
+
+        File format is expected to be a single JSON
+        STIX object or JSON STIX bundle.
+
+        Args:
+            file_path (str): file path to load STIX data from
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
+
+        """
         return self.source.load_from_file(file_path=file_path, allow_custom=allow_custom)
 
 
@@ -113,17 +134,18 @@ class MemorySink(DataSink):
     Args:
         stix_data (dict OR list): valid STIX 2.0 content in
             bundle or a list.
-
         _store (bool): if the MemorySink is a part of a DataStore,
             in which case "stix_data" is a direct reference to
             shared memory with DataSource. Not user supplied
+        allow_custom (bool): whether to allow custom objects/properties or
+            not. Default: False.
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects.
             If apart of a MemoryStore, dict is shared between with
             a MemorySource
-    """
 
+    """
     def __init__(self, stix_data=None, _store=False, allow_custom=False):
         super(MemorySink, self).__init__()
         self._data = {}
@@ -134,25 +156,16 @@ class MemorySink(DataSink):
             _add(self, stix_data, allow_custom=allow_custom)
 
     def add(self, stix_data, allow_custom=False):
-        """add STIX objects to in-memory dictionary maintained by
-        the MemorySink (MemoryStore)
-
-        see "_add()" for args documentation
-        """
         _add(self, stix_data, allow_custom=allow_custom)
+    add.__doc__ = _add.__doc__
 
     def save_to_file(self, file_path, allow_custom=False):
-        """write SITX objects in in-memory dictionary to json file, as a STIX Bundle
-
-        Args:
-            file_path (str): file path to write STIX data to
-
-        """
         file_path = os.path.abspath(file_path)
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
         with open(file_path, "w") as f:
             f.write(str(Bundle(self._data.values(), allow_custom=allow_custom)))
+    save_to_file.__doc__ = MemoryStore.save_to_file.__doc__
 
 
 class MemorySource(DataSource):
@@ -165,17 +178,18 @@ class MemorySource(DataSource):
     Args:
         stix_data (dict OR list OR STIX object): valid STIX 2.0 content in
             bundle or list.
-
         _store (bool): if the MemorySource is a part of a DataStore,
             in which case "stix_data" is a direct reference to shared
             memory with DataSink. Not user supplied
+        allow_custom (bool): whether to allow custom objects/properties or
+            not. Default: False.
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects.
             If apart of a MemoryStore, dict is shared between with
             a MemorySink
-    """
 
+    """
     def __init__(self, stix_data=None, _store=False, allow_custom=False):
         super(MemorySource, self).__init__()
         self._data = {}
@@ -190,9 +204,10 @@ class MemorySource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (dict OR STIX object): STIX object that has the supplied
@@ -227,9 +242,10 @@ class MemorySource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX 2 object to retrieve.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that has the supplied ID. As the
@@ -249,15 +265,16 @@ class MemorySource(DataSource):
 
         Args:
             query (list): list of filters to search on
-
             composite_filters (set): set of filters passed from the
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that matches the supplied
                 query. As the MemoryStore(i.e. MemorySink) adds STIX objects to memory
                 as they are supplied (either as python dictionary or STIX object), it
-                is returned in the same form as it as added
+                is returned in the same form as it as added.
 
         """
         if query is None:
@@ -281,15 +298,7 @@ class MemorySource(DataSource):
         return all_data
 
     def load_from_file(self, file_path, allow_custom=False):
-        """Load STIX data from json file.
-
-        File format is expected to be a single json
-        STIX object or json STIX bundle
-
-        Args:
-            file_path (str): file path to load STIX data from
-
-        """
         file_path = os.path.abspath(file_path)
         stix_data = json.load(open(file_path, "r"))
         _add(self, stix_data, allow_custom=allow_custom)
+    load_from_file.__doc__ = MemoryStore.load_from_file.__doc__

@@ -67,6 +67,8 @@ class FileSystemSink(DataSink):
             stix_data (STIX object OR dict OR str OR list): valid STIX 2.0 content
                 in a STIX object (or list of), dict (or list of), or a STIX 2.0
                 json encoded string.
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
 
         Note:
             ``stix_data`` can be a Bundle object, but each object in it will be
@@ -140,9 +142,10 @@ class FileSystemSource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (STIX object): STIX object that has the supplied STIX ID.
@@ -169,9 +172,10 @@ class FileSystemSource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX objects to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (list): of STIX objects that has the supplied STIX ID.
@@ -190,9 +194,10 @@ class FileSystemSource(DataSource):
 
         Args:
             query (list): list of filters to search on
-
             composite_filters (set): set of filters passed from the
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that matches the supplied

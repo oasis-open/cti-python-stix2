@@ -21,7 +21,7 @@ class TAXIICollectionStore(DataStore):
     around a paired TAXIICollectionSink and TAXIICollectionSource.
 
     Args:
-            collection (taxii2.Collection): TAXII Collection instance
+        collection (taxii2.Collection): TAXII Collection instance
     """
     def __init__(self, collection):
         super(TAXIICollectionStore, self).__init__()
@@ -42,15 +42,16 @@ class TAXIICollectionSink(DataSink):
         self.collection = collection
 
     def add(self, stix_data, allow_custom=False):
-        """add/push STIX content to TAXII Collection endpoint
+        """Add/push STIX content to TAXII Collection endpoint
 
         Args:
             stix_data (STIX object OR dict OR str OR list): valid STIX 2.0 content
                 in a STIX object (or Bundle), STIX onject dict (or Bundle dict), or a STIX 2.0
                 json encoded string, or list of any of the following
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
 
         """
-
         if isinstance(stix_data, _STIXBase):
             # adding python STIX object
             bundle = dict(Bundle(stix_data, allow_custom=allow_custom))
@@ -94,20 +95,20 @@ class TAXIICollectionSource(DataSource):
         self.collection = collection
 
     def get(self, stix_id, _composite_filters=None, allow_custom=False):
-        """retrieve STIX object from local/remote STIX Collection
+        """Retrieve STIX object from local/remote STIX Collection
         endpoint.
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (STIX object): STIX object that has the supplied STIX ID.
                 The STIX object is received from TAXII has dict, parsed into
                 a python STIX object and then returned
-
 
         """
         # combine all query filters
@@ -132,14 +133,15 @@ class TAXIICollectionSource(DataSource):
         return stix_obj
 
     def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
-        """retrieve STIX object from local/remote TAXII Collection
+        """Retrieve STIX object from local/remote TAXII Collection
         endpoint, all versions of it
 
         Args:
             stix_id (str): The STIX ID of the STIX objects to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (see query() as all_versions() is just a wrapper)
@@ -156,7 +158,7 @@ class TAXIICollectionSource(DataSource):
         return all_data
 
     def query(self, query=None, _composite_filters=None, allow_custom=False):
-        """search and retreive STIX objects based on the complete query
+        """Search and retreive STIX objects based on the complete query
 
         A "complete query" includes the filters from the query, the filters
         attached to MemorySource, and any filters passed from a
@@ -164,9 +166,10 @@ class TAXIICollectionSource(DataSource):
 
         Args:
             query (list): list of filters to search on
-
             composite_filters (set): set of filters passed from the
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that matches the supplied
@@ -174,7 +177,6 @@ class TAXIICollectionSource(DataSource):
                 parsed into python STIX objects and then returned.
 
         """
-
         if query is None:
             query = set()
         else:
@@ -225,7 +227,6 @@ class TAXIICollectionSource(DataSource):
                 for 'requests.get()'.
 
         """
-
         params = {}
 
         for filter_ in query:
