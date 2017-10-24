@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Functions to perform conversions between the different Confidence scales.
 As specified in STIX™ Version 2.1. Part 1: STIX Core Concepts - Appendix B"""
 
