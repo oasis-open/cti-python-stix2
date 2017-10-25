@@ -1,5 +1,5 @@
 """
-Python STIX 2.x 
+Python STIX 2.x
 Classes:
     TAXIICollectionStore
     TAXIICollectionSink
