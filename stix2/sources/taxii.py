@@ -1,8 +1,9 @@
 """
-Python STIX 2.0 TAXII Source/Sink
-
-TODO:
-    Test everything
+Python STIX 2.x 
+Classes:
+    TAXIICollectionStore
+    TAXIICollectionSink
+    TAXIICollectionSource
 
 """
 
@@ -121,11 +122,13 @@ class TAXIICollectionSource(DataSource):
         # as directly retrieveing a STIX object by ID
         stix_objs = self.collection.get_object(stix_id)["objects"]
 
-        stix_obj = list(apply_common_filters(stix_objs, query))
+        stix_obj = [apply_common_filters(stix_objs, query)]
 
         if len(stix_obj):
-            stix_obj = stix_obj[0]
-            stix_obj = parse(stix_obj)
+            stix_obj = parse(stix_obj[0])
+            if stix_obj.id != stix_id:
+                # check - was added to handle erroneous TAXII servers
+                stix_obj = None
         else:
             stix_obj = None
 
@@ -153,7 +156,13 @@ class TAXIICollectionSource(DataSource):
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
-        return all_data
+        # parse STIX objects from TAXII returned json
+        all_data = [parse(stix_obj) for stix_obj in all_data]
+
+        # check - was added to handle erroneous TAXII servers
+        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj.id == stix_id]
+
+        return all_data_clean
 
     def query(self, query=None, _composite_filters=None):
         """search and retreive STIX objects based on the complete query
