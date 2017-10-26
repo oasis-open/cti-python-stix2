@@ -216,7 +216,6 @@ class MemorySource(DataSource):
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
         if all_data:
-            print(all_data)
             # reduce to most recent version
             stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
 
