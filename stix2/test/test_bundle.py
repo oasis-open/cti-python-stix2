@@ -132,8 +132,9 @@ def test_create_bundle_invalid(indicator, malware, relationship):
     assert excinfo.value.reason == 'This property may not contain a Bundle object'
 
 
-def test_parse_bundle():
-    bundle = stix2.parse(EXPECTED_BUNDLE)
+@pytest.mark.parametrize("version", ["2.0"])
+def test_parse_bundle(version):
+    bundle = stix2.parse(EXPECTED_BUNDLE, version=version)
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")

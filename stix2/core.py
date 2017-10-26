@@ -1,15 +1,12 @@
 """STIX 2.0 Objects that are neither SDOs nor SROs."""
 
 from collections import OrderedDict
+import importlib
+import pkgutil
 
 from . import exceptions
 from .base import _STIXBase
-from .common import MarkingDefinition
 from .properties import IDProperty, ListProperty, Property, TypeProperty
-from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
-                  IntrusionSet, Malware, ObservedData, Report, ThreatActor,
-                  Tool, Vulnerability)
-from .sro import Relationship, Sighting
 from .utils import get_dict
 
 
@@ -62,37 +59,30 @@ class Bundle(_STIXBase):
         super(Bundle, self).__init__(**kwargs)
 
 
-OBJ_MAP = {
-    'attack-pattern': AttackPattern,
-    'bundle': Bundle,
-    'campaign': Campaign,
-    'course-of-action': CourseOfAction,
-    'identity': Identity,
-    'indicator': Indicator,
-    'intrusion-set': IntrusionSet,
-    'malware': Malware,
-    'marking-definition': MarkingDefinition,
-    'observed-data': ObservedData,
-    'report': Report,
-    'relationship': Relationship,
-    'threat-actor': ThreatActor,
-    'tool': Tool,
-    'sighting': Sighting,
-    'vulnerability': Vulnerability,
-}
+STIX2_OBJ_MAPS = {}
 
 
-def parse(data, allow_custom=False):
+def parse(data, allow_custom=False, version=None):
     """Deserialize a string or file-like object into a STIX object.
 
     Args:
         data (str, dict, file-like object): The STIX 2 content to be parsed.
-        allow_custom (bool): Whether to allow custom properties or not. Default: False.
+        allow_custom (bool): Whether to allow custom properties or not.
+            Default: False.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+            None, use latest version.
 
     Returns:
         An instantiated Python STIX object.
 
     """
+    if not version:
+        # Use latest version
+        OBJ_MAP = STIX2_OBJ_MAPS[sorted(STIX2_OBJ_MAPS.keys())[-1]]
+    else:
+        v = 'v' + version.replace('.', '')
+        OBJ_MAP = STIX2_OBJ_MAPS[v]
+
     obj = get_dict(data)
 
     if 'type' not in obj:
@@ -105,8 +95,34 @@ def parse(data, allow_custom=False):
     return obj_class(allow_custom=allow_custom, **obj)
 
 
-def _register_type(new_type):
+def _register_type(new_type, version=None):
     """Register a custom STIX Object type.
 
+    Args:
+        new_type (class): A class to register in the Object map.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+            None, use latest version.
     """
+    if not version:
+        # Use latest version
+        OBJ_MAP = STIX2_OBJ_MAPS[sorted(STIX2_OBJ_MAPS.keys())[-1]]
+    else:
+        v = 'v' + version.replace('.', '')
+        OBJ_MAP = STIX2_OBJ_MAPS[v]
+
     OBJ_MAP[new_type._type] = new_type
+
+
+def _collect_stix2_obj_maps():
+    """Navigate the package once and retrieve all OBJ_MAP dicts for each v2X
+    package."""
+    if not STIX2_OBJ_MAPS:
+        top_level_module = importlib.import_module('stix2')
+        path = top_level_module.__path__
+        prefix = str(top_level_module.__name__) + '.'
+
+        for module_loader, name, is_pkg in pkgutil.walk_packages(path=path,
+                                                                 prefix=prefix):
+            if name.startswith('stix2.v2') and is_pkg:
+                mod = importlib.import_module(name, top_level_module)
+                STIX2_OBJ_MAPS[name.split('.')[-1]] = mod.OBJ_MAP
