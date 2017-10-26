@@ -124,5 +124,5 @@ def _collect_stix2_obj_maps():
         for module_loader, name, is_pkg in pkgutil.walk_packages(path=path,
                                                                  prefix=prefix):
             if name.startswith('stix2.v2') and is_pkg:
-                mod = importlib.import_module(name, top_level_module)
+                mod = importlib.import_module(name, str(top_level_module.__name__))
                 STIX2_OBJ_MAPS[name.split('.')[-1]] = mod.OBJ_MAP
