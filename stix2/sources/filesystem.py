@@ -61,13 +61,17 @@ class FileSystemSink(DataSink):
     def stix_dir(self):
         return self._stix_dir
 
-    def add(self, stix_data=None):
+    def add(self, stix_data=None, allow_custom=False, version=None):
         """add STIX objects to file directory
 
         Args:
             stix_data (STIX object OR dict OR str OR list): valid STIX 2.0 content
                 in a STIX object(or list of), dict (or list of), or a STIX 2.0
                 json encoded string
+            allow_custom (bool): Whether to allow custom properties or not.
+                Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         TODO: Bundlify STIX content or no? When dumping to disk.
         """
@@ -96,7 +100,7 @@ class FileSystemSink(DataSink):
 
         elif isinstance(stix_data, str):
             # adding json encoded string of STIX content
-            stix_data = parse(stix_data)
+            stix_data = parse(stix_data, allow_custom, version)
             if stix_data["type"] == "bundle":
                 for stix_obj in stix_data["objects"]:
                     self.add(stix_obj)
@@ -136,14 +140,18 @@ class FileSystemSource(DataSource):
     def stix_dir(self):
         return self._stix_dir
 
-    def get(self, stix_id, _composite_filters=None):
+    def get(self, stix_id, _composite_filters=None, allow_custom=False, version=None):
         """retrieve STIX object from file directory via STIX ID
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
 
-            composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
+            _composite_filters (set): set of filters passed from the parent
+                CompositeDataSource, not user supplied.
+            allow_custom (bool): Whether to allow custom properties or not.
+                Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         Returns:
             (STIX object): STIX object that has the supplied STIX ID.
@@ -157,7 +165,7 @@ class FileSystemSource(DataSource):
 
         if all_data:
             stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
-            stix_obj = parse(stix_obj)
+            stix_obj = parse(stix_obj, allow_custom, version)
         else:
             stix_obj = None
 
@@ -182,7 +190,7 @@ class FileSystemSource(DataSource):
         """
         return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
-    def query(self, query=None, _composite_filters=None):
+    def query(self, query=None, _composite_filters=None, allow_custom=False, version=None):
         """search and retrieve STIX objects based on the complete query
 
         A "complete query" includes the filters from the query, the filters
@@ -190,10 +198,13 @@ class FileSystemSource(DataSource):
         CompositeDataSource (i.e. _composite_filters)
 
         Args:
-            query (list): list of filters to search on
-
-            composite_filters (set): set of filters passed from the
-                CompositeDataSource, not user supplied
+            query (list): list of filters to search on.
+            _composite_filters (set): set of filters passed from the
+                CompositeDataSource, not user supplied.
+            allow_custom (bool): Whether to allow custom properties or not.
+                Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         Returns:
             (list): list of STIX objects that matches the supplied
@@ -287,7 +298,7 @@ class FileSystemSource(DataSource):
         all_data = deduplicate(all_data)
 
         # parse python STIX objects from the STIX object dicts
-        stix_objs = [parse(stix_obj_dict) for stix_obj_dict in all_data]
+        stix_objs = [parse(stix_obj_dict, allow_custom, version) for stix_obj_dict in all_data]
 
         return stix_objs
 

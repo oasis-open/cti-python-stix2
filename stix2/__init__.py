@@ -19,7 +19,6 @@
 
 # flake8: noqa
 
-from . import exceptions, v20
 from .core import Bundle, _collect_stix2_obj_maps, _register_type, parse
 from .environment import Environment, ObjectFactory
 from .markings import (add_markings, clear_markings, get_markings, is_marked,
