@@ -255,6 +255,24 @@ def test_filesystem_store_add(fs_store):
     os.remove(os.path.join(FS_PATH, "campaign", camp1_r.id + ".json"))
 
 
+def test_filesystem_store_add_as_bundle():
+    fs_store = FileSystemStore(FS_PATH, bundlify=True)
+
+    camp1 = Campaign(name="Great Heathen Army",
+                     objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
+                     aliases=["Ragnar"])
+    fs_store.add(camp1)
+
+    with open(os.path.join(FS_PATH, "campaign", camp1.id + ".json")) as bundle_file:
+        assert '"type": "bundle"' in bundle_file.read()
+
+    camp1_r = fs_store.get(camp1.id)
+    assert camp1_r.id == camp1.id
+    assert camp1_r.name == camp1.name
+
+    shutil.rmtree(os.path.join(FS_PATH, "campaign"), True)
+
+
 def test_filesystem_add_bundle_object(fs_store):
     bundle = Bundle()
     fs_store.add(bundle)

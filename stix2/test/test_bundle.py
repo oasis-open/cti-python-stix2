@@ -164,5 +164,4 @@ def test_stix_object_property():
     prop = stix2.core.STIXObjectProperty()
 
     identity = stix2.Identity(name="test", identity_class="individual")
-    assert prop.clean(identity) == identity
     assert prop.clean(identity) is identity

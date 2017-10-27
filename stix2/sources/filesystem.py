@@ -25,17 +25,18 @@ class FileSystemStore(DataStore):
 
     Args:
         stix_dir (str): path to directory of STIX objects
+        bundlify (bool): Whether to wrap objects in bundles when saving them.
+            Default: False.
 
     Attributes:
         source (FileSystemSource): FuleSystemSource
-
         sink (FileSystemSink): FileSystemSink
 
     """
-    def __init__(self, stix_dir):
+    def __init__(self, stix_dir, bundlify=False):
         super(FileSystemStore, self).__init__()
         self.source = FileSystemSource(stix_dir=stix_dir)
-        self.sink = FileSystemSink(stix_dir=stix_dir)
+        self.sink = FileSystemSink(stix_dir=stix_dir, bundlify=bundlify)
 
 
 class FileSystemSink(DataSink):
@@ -46,12 +47,15 @@ class FileSystemSink(DataSink):
     components of a FileSystemStore.
 
     Args:
-        stix_dir (str): path to directory of STIX objects
+        stix_dir (str): path to directory of STIX objects.
+        bundlify (bool): Whether to wrap objects in bundles when saving them.
+            Default: False.
 
     """
-    def __init__(self, stix_dir):
+    def __init__(self, stix_dir, bundlify=False):
         super(FileSystemSink, self).__init__()
         self._stix_dir = os.path.abspath(stix_dir)
+        self.bundlify = bundlify
 
         if not os.path.exists(self._stix_dir):
             raise ValueError("directory path for STIX data does not exist")
@@ -59,6 +63,20 @@ class FileSystemSink(DataSink):
     @property
     def stix_dir(self):
         return self._stix_dir
+
+    def _check_path_and_write(self, stix_obj):
+        """Write the given STIX object to a file in the STIX file directory.
+        """
+        path = os.path.join(self._stix_dir, stix_obj["type"], stix_obj["id"] + ".json")
+
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        if self.bundlify:
+            stix_obj = Bundle(stix_obj)
+
+        with open(path, "w") as f:
+            f.write(str(stix_obj))
 
     def add(self, stix_data=None, allow_custom=False):
         """Add STIX objects to file directory.
@@ -76,18 +94,9 @@ class FileSystemSink(DataSink):
             the Bundle contained, but not the Bundle itself.
 
         """
-        def _check_path_and_write(stix_dir, stix_obj):
-            path = os.path.join(stix_dir, stix_obj["type"], stix_obj["id"] + ".json")
-
-            if not os.path.exists(os.path.dirname(path)):
-                os.makedirs(os.path.dirname(path))
-
-            with open(path, "w") as f:
-                f.write(str(stix_obj))
-
         if isinstance(stix_data, (STIXDomainObject, STIXRelationshipObject, MarkingDefinition)):
             # adding python STIX object
-            _check_path_and_write(self._stix_dir, stix_data)
+            self._check_path_and_write(stix_data)
 
         elif isinstance(stix_data, (str, dict)):
             stix_data = parse(stix_data, allow_custom)
@@ -97,7 +106,7 @@ class FileSystemSink(DataSink):
                     self.add(stix_obj)
             else:
                 # adding json-formatted STIX
-                _check_path_and_write(self._stix_dir, stix_data)
+                self._check_path_and_write(stix_data)
 
         elif isinstance(stix_data, Bundle):
             # recursively add individual STIX objects
