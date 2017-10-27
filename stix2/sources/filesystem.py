@@ -119,9 +119,9 @@ class FileSystemSink(DataSink):
                 self.add(stix_obj)
 
         else:
-            raise ValueError("stix_data must be a STIX object (or list of), "
-                             "json formatted STIX (or list of), "
-                             "or a json formatted STIX bundle")
+            raise TypeError("stix_data must be a STIX object (or list of), "
+                            "JSON formatted STIX (or list of), "
+                            "or a JSON formatted STIX bundle")
 
 
 class FileSystemSource(DataSource):
@@ -198,8 +198,8 @@ class FileSystemSource(DataSource):
         """Search and retrieve STIX objects based on the complete query.
 
         A "complete query" includes the filters from the query, the filters
-        attached to MemorySource, and any filters passed from a
-        CompositeDataSource (i.e. _composite_filters)
+        attached to this FileSystemSource, and any filters passed from a
+        CompositeDataSource (i.e. _composite_filters).
 
         Args:
             query (list): list of filters to search on
@@ -222,7 +222,7 @@ class FileSystemSource(DataSource):
             if not isinstance(query, list):
                 # make sure dont make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
-                query = list(query)
+                query = [query]
             query = set(query)
 
         # combine all query filters
@@ -267,8 +267,8 @@ class FileSystemSource(DataSource):
             # so query will look in all STIX directories that are not
             # the specified type. Compile correct dir paths
             for dir in os.listdir(self._stix_dir):
-                if os.path.abspath(dir) not in declude_paths:
-                    include_paths.append(os.path.abspath(dir))
+                if os.path.abspath(os.path.join(self._stix_dir, dir)) not in declude_paths:
+                    include_paths.append(os.path.abspath(os.path.join(self._stix_dir, dir)))
 
         # grab stix object ID as well - if present in filters, as
         # may forgo the loading of STIX content into memory

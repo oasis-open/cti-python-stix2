@@ -260,8 +260,8 @@ class MemorySource(DataSource):
         """Search and retrieve STIX objects based on the complete query.
 
         A "complete query" includes the filters from the query, the filters
-        attached to MemorySource, and any filters passed from a
-        CompositeDataSource (i.e. _composite_filters)
+        attached to this MemorySource, and any filters passed from a
+        CompositeDataSource (i.e. _composite_filters).
 
         Args:
             query (list): list of filters to search on

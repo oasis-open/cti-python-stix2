@@ -40,11 +40,28 @@ def fs_sink():
     shutil.rmtree(os.path.join(FS_PATH, "campaign"), True)
 
 
+def test_filesystem_source_nonexistent_folder():
+    with pytest.raises(ValueError) as excinfo:
+        FileSystemSource('nonexistent-folder')
+    assert "for STIX data does not exist" in str(excinfo)
+
+
+def test_filesystem_sink_nonexistent_folder():
+    with pytest.raises(ValueError) as excinfo:
+        FileSystemSink('nonexistent-folder')
+    assert "for STIX data does not exist" in str(excinfo)
+
+
 def test_filesytem_source_get_object(fs_source):
     # get object
     mal = fs_source.get("malware--6b616fc1-1505-48e3-8b2c-0d19337bff38")
     assert mal.id == "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"
     assert mal.name == "Rover"
+
+
+def test_filesytem_source_get_nonexistent_object(fs_source):
+    ind = fs_source.get("indicator--6b616fc1-1505-48e3-8b2c-0d19337bff38")
+    assert ind is None
 
 
 def test_filesytem_source_all_versions(fs_source):
@@ -240,6 +257,33 @@ def test_filesystem_store_query(fs_store):
     assert "tool--03342581-f790-4f03-ba41-e82e67392e23" in [tool.id for tool in tools]
 
 
+def test_filesystem_store_query_single_filter(fs_store):
+    query = Filter("labels", "in", "tool")
+    tools = fs_store.query(query)
+    assert len(tools) == 2
+    assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [tool.id for tool in tools]
+    assert "tool--03342581-f790-4f03-ba41-e82e67392e23" in [tool.id for tool in tools]
+
+
+def test_filesystem_store_empty_query(fs_store):
+    results = fs_store.query()  # returns all
+    assert len(results) == 26
+    assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj.id for obj in results]
+    assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj.id for obj in results]
+
+
+def test_filesystem_store_query_multiple_filters(fs_store):
+    fs_store.source.filters.add(Filter("labels", "in", "tool"))
+    tools = fs_store.query(Filter("id", "=", "tool--242f3da3-4425-4d11-8f5c-b842886da966"))
+    assert len(tools) == 1
+    assert tools[0].id == "tool--242f3da3-4425-4d11-8f5c-b842886da966"
+
+
+def test_filesystem_store_query_dont_include_type_folder(fs_store):
+    results = fs_store.query(Filter("type", "!=", "tool"))
+    assert len(results) == 24
+
+
 def test_filesystem_store_add(fs_store):
     # add()
     camp1 = Campaign(name="Great Heathen Army",
@@ -276,6 +320,16 @@ def test_filesystem_store_add_as_bundle():
 def test_filesystem_add_bundle_object(fs_store):
     bundle = Bundle()
     fs_store.add(bundle)
+
+
+def test_filesystem_store_add_invalid_object(fs_store):
+    ind = ('campaign', 'campaign--111111b6-1112-4fb0-111b-b111107ca70a')  # tuple isn't valid
+    with pytest.raises(TypeError) as excinfo:
+        fs_store.add(ind)
+    assert 'stix_data must be' in str(excinfo.value)
+    assert 'a STIX object' in str(excinfo.value)
+    assert 'JSON formatted STIX' in str(excinfo.value)
+    assert 'JSON formatted STIX bundle' in str(excinfo.value)
 
 
 def test_filesystem_object_with_custom_property(fs_store):
