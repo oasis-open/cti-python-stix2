@@ -16,6 +16,7 @@ Welcome to stix2's documentation!
    datastore_api
    roadmap
    contributing
+   ts_support
 
 
 Indices and tables

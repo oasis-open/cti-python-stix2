@@ -62,6 +62,15 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
+STIX 2.X Technical Specification Support
+----------------------------------------
+
+The `stix2` Python library is built to support multiple versions of the STIX
+Technical Specification. With every major release of stix2 the ``import stix2``
+statement will automatically load the SDO/SROs equivalent to the most recent
+supported 2.X Technical Specification. Please see the library documentation
+for more details.
+
 Governance
 ----------
 
