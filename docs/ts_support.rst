@@ -112,20 +112,23 @@ How will custom work
 
 CustomObjects, CustomObservable, CustomMarking and CustomExtensions must be
 registered explicitly by STIX version. This is a design decision since properties
-or requirements may chance as the STIX Technical Specification advances.
+or requirements may change as the STIX Technical Specification advances.
 
 You can perform this by,
 
 .. code:: python
 
+    import stix2
+
     # Make my custom observable available in STIX 2.0
     @stix2.v20.observables.CustomObservable('x-new-object-type',
                                         (("prop", stix2.properties.BooleanProperty())))
-        class NewObject2(object):
-            pass
+    class NewObject2(object):
+        pass
+
 
     # Make my custom observable available in STIX 2.1
     @stix2.v21.observables.CustomObservable('x-new-object-type',
                                         (("prop", stix2.properties.BooleanProperty())))
-        class NewObject2(object):
-            pass
+    class NewObject2(object):
+        pass
