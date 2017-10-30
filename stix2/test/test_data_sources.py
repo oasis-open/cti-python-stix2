@@ -226,7 +226,7 @@ def test_add_get_remove_filter(ds):
         Filter('created', '=', object())
     # On Python 2, the type of object() is `<type 'object'>` On Python 3, it's `<class 'object'>`.
     assert str(excinfo.value).startswith("Filter value type")
-    assert str(excinfo.value).endswith("is not supported. The type must be a python immutable type or dictionary")
+    assert str(excinfo.value).endswith("is not supported. The type must be a Python immutable type or dictionary")
 
     assert len(ds.filters) == 0
 
@@ -440,6 +440,52 @@ def test_filters5(ds):
     # "Return any object whose id is not indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
     resp = list(apply_common_filters(STIX_OBJS2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")]))
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    assert len(resp) == 1
+
+
+def test_filters6(ds):
+    # Test filtering on non-common property
+    resp = list(apply_common_filters(STIX_OBJS2, [Filter("name", "=", "Malicious site hosting downloader")]))
+    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    assert len(resp) == 3
+
+
+def test_filters7(ds):
+    # Test filtering on embedded property
+    stix_objects = list(STIX_OBJS2) + [{
+        "type": "observed-data",
+        "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        "created": "2016-04-06T19:58:16.000Z",
+        "modified": "2016-04-06T19:58:16.000Z",
+        "first_observed": "2015-12-21T19:00:00Z",
+        "last_observed": "2015-12-21T19:00:00Z",
+        "number_observed": 50,
+        "objects": {
+            "0": {
+                "type": "file",
+                "hashes": {
+                    "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+                },
+                "extensions": {
+                    "pdf-ext": {
+                        "version": "1.7",
+                        "document_info_dict": {
+                            "Title": "Sample document",
+                            "Author": "Adobe Systems Incorporated",
+                            "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+                            "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+                            "CreationDate": "20070412090123-02"
+                        },
+                        "pdfid0": "DFCE52BD827ECF765649852119D",
+                        "pdfid1": "57A1E0F9ED2AE523E313C"
+                    }
+                }
+            }
+        }
+    }]
+    resp = list(apply_common_filters(stix_objects, [Filter("objects.0.extensions.pdf-ext.version", ">", "1.2")]))
+    assert resp[0]['id'] == stix_objects[3]['id']
     assert len(resp) == 1
 
 
