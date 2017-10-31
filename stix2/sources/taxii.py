@@ -1,10 +1,5 @@
 """
-Python STIX 2.x
-Classes:
-    TAXIICollectionStore
-    TAXIICollectionSink
-    TAXIICollectionSource
-
+Python STIX 2.x TaxiiCollectionStore
 """
 
 from stix2.base import _STIXBase
@@ -122,7 +117,7 @@ class TAXIICollectionSource(DataSource):
         # as directly retrieveing a STIX object by ID
         stix_objs = self.collection.get_object(stix_id)["objects"]
 
-        stix_obj = [apply_common_filters(stix_objs, query)]
+        stix_obj = list(apply_common_filters(stix_objs, query))
 
         if len(stix_obj):
             stix_obj = parse(stix_obj[0])
@@ -190,7 +185,7 @@ class TAXIICollectionSource(DataSource):
             if not isinstance(query, list):
                 # make sure dont make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
-                query = list(query)
+                query = [query]
             query = set(query)
 
         # combine all query filters
