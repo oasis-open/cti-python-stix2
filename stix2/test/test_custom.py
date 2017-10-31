@@ -91,6 +91,7 @@ def test_custom_property_in_bundled_object():
     bundle = stix2.Bundle(identity, allow_custom=True)
 
     assert bundle.objects[0].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(bundle)
 
 
 @stix2.sdo.CustomObject('x-new-type', [
