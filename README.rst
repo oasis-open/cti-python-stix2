@@ -13,7 +13,7 @@ including data markings, versioning, and for resolving STIX IDs across
 multiple data sources.
 
 For more information, see `the
-documentation <https://stix2.readthedocs.io/en/latest/>`__ on
+documentation <https://stix2.readthedocs.io/>`__ on
 ReadTheDocs.
 
 Installation

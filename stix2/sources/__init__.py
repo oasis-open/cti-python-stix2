@@ -280,6 +280,8 @@ class CompositeDataSource(DataSource):
         # remove duplicate versions
         if len(all_data) > 0:
             all_data = deduplicate(all_data)
+        else:
+            return None
 
         # reduce to most recent version
         stix_obj = sorted(all_data, key=lambda k: k['modified'], reverse=True)[0]

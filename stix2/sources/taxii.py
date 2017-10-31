@@ -1,9 +1,5 @@
 """
-Python STIX 2.0 TAXII Source/Sink
-
-TODO:
-    Test everything
-
+Python STIX 2.x TaxiiCollectionStore
 """
 
 from stix2.base import _STIXBase
@@ -125,8 +121,10 @@ class TAXIICollectionSource(DataSource):
         stix_obj = list(apply_common_filters(stix_objs, query))
 
         if len(stix_obj):
-            stix_obj = stix_obj[0]
-            stix_obj = parse(stix_obj, allow_custom=allow_custom)
+            stix_obj = parse(stix_obj[0], allow_custom=allow_custom)
+            if stix_obj.id != stix_id:
+                # check - was added to handle erroneous TAXII servers
+                stix_obj = None
         else:
             stix_obj = None
 
@@ -155,7 +153,13 @@ class TAXIICollectionSource(DataSource):
 
         all_data = self.query(query=query, _composite_filters=_composite_filters, allow_custom=allow_custom)
 
-        return all_data
+        # parse STIX objects from TAXII returned json
+        all_data = [parse(stix_obj) for stix_obj in all_data]
+
+        # check - was added to handle erroneous TAXII servers
+        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj.id == stix_id]
+
+        return all_data_clean
 
     def query(self, query=None, _composite_filters=None, allow_custom=False):
         """Search and retreive STIX objects based on the complete query
@@ -183,7 +187,7 @@ class TAXIICollectionSource(DataSource):
             if not isinstance(query, list):
                 # make sure dont make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
-                query = list(query)
+                query = [query]
             query = set(query)
 
         # combine all query filters

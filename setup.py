@@ -53,7 +53,6 @@ setup(
         'simplejson',
         'six',
         'stix2-patterns',
-        'stix2-validator',
         'taxii2-client',
     ],
 )

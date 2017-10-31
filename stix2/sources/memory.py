@@ -229,10 +229,13 @@ class MemorySource(DataSource):
 
         all_data = self.query(query=query, _composite_filters=_composite_filters, allow_custom=allow_custom)
 
-        # reduce to most recent version
-        stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+        if all_data:
+            # reduce to most recent version
+            stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
 
-        return stix_obj
+            return stix_obj
+        else:
+            return None
 
     def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
         """Retrieve STIX objects from in-memory dict via STIX ID, all versions of it
