@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import pytest
 
 from stix2 import (Bundle, Campaign, CustomObject, Filter, MemorySource,
@@ -164,6 +167,22 @@ def test_memory_store_query_multiple_filters(mem_store):
     query = Filter('id', '=', 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f')
     resp = mem_store.query(query)
     assert len(resp) == 1
+
+
+def test_memory_store_save_load_file(mem_store):
+    filename = 'memory_test/mem_store.json'
+    mem_store.save_to_file(filename)
+    contents = open(os.path.abspath(filename)).read()
+
+    assert '"id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",' in contents
+    assert '"id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",' in contents
+
+    mem_store2 = MemoryStore()
+    mem_store2.load_from_file(filename)
+    assert mem_store2.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
+    assert mem_store2.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+
+    shutil.rmtree(os.path.dirname(filename))
 
 
 def test_memory_store_add_stix_object_str(mem_store):
