@@ -4,7 +4,9 @@ from collections import OrderedDict
 import importlib
 import pkgutil
 
-from . import DEFAULT_VERSION, exceptions
+import stix2
+
+from . import exceptions
 from .base import _STIXBase
 from .properties import IDProperty, ListProperty, Property, TypeProperty
 from .utils import get_dict
@@ -78,7 +80,7 @@ def parse(data, allow_custom=False, version=None):
     """
     if not version:
         # Use latest version
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
+        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
     else:
         v = 'v' + version.replace('.', '')
 
@@ -105,7 +107,7 @@ def _register_type(new_type, version=None):
     """
     if not version:
         # Use latest version
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
+        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
     else:
         v = 'v' + version.replace('.', '')
 
