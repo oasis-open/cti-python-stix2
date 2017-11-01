@@ -4,7 +4,7 @@ from collections import OrderedDict
 import importlib
 import pkgutil
 
-from . import exceptions
+from . import DEFAULT_VERSION, exceptions
 from .base import _STIXBase
 from .properties import IDProperty, ListProperty, Property, TypeProperty
 from .utils import get_dict
@@ -78,11 +78,11 @@ def parse(data, allow_custom=False, version=None):
     """
     if not version:
         # Use latest version
-        OBJ_MAP = STIX2_OBJ_MAPS[sorted(STIX2_OBJ_MAPS.keys())[-1]]
+        v = 'v' + DEFAULT_VERSION.replace('.', '')
     else:
         v = 'v' + version.replace('.', '')
-        OBJ_MAP = STIX2_OBJ_MAPS[v]
 
+    OBJ_MAP = STIX2_OBJ_MAPS[v]
     obj = get_dict(data)
 
     if 'type' not in obj:
@@ -105,11 +105,11 @@ def _register_type(new_type, version=None):
     """
     if not version:
         # Use latest version
-        OBJ_MAP = STIX2_OBJ_MAPS[sorted(STIX2_OBJ_MAPS.keys())[-1]]
+        v = 'v' + DEFAULT_VERSION.replace('.', '')
     else:
         v = 'v' + version.replace('.', '')
-        OBJ_MAP = STIX2_OBJ_MAPS[v]
 
+    OBJ_MAP = STIX2_OBJ_MAPS[v]
     OBJ_MAP[new_type._type] = new_type
 
 
