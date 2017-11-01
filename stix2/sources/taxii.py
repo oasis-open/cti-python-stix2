@@ -1,9 +1,5 @@
 """
-Python STIX 2.0 TAXII Source/Sink
-
-TODO:
-    Test everything
-
+Python STIX 2.x TaxiiCollectionStore
 """
 
 from stix2.base import _STIXBase
@@ -21,7 +17,7 @@ class TAXIICollectionStore(DataStore):
     around a paired TAXIICollectionSink and TAXIICollectionSource.
 
     Args:
-            collection (taxii2.Collection): TAXII Collection instance
+        collection (taxii2.Collection): TAXII Collection instance
     """
     def __init__(self, collection):
         super(TAXIICollectionStore, self).__init__()
@@ -41,39 +37,40 @@ class TAXIICollectionSink(DataSink):
         super(TAXIICollectionSink, self).__init__()
         self.collection = collection
 
-    def add(self, stix_data):
-        """add/push STIX content to TAXII Collection endpoint
+    def add(self, stix_data, allow_custom=False):
+        """Add/push STIX content to TAXII Collection endpoint
 
         Args:
             stix_data (STIX object OR dict OR str OR list): valid STIX 2.0 content
                 in a STIX object (or Bundle), STIX onject dict (or Bundle dict), or a STIX 2.0
                 json encoded string, or list of any of the following
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
 
         """
-
         if isinstance(stix_data, _STIXBase):
             # adding python STIX object
-            bundle = dict(Bundle(stix_data))
+            bundle = dict(Bundle(stix_data, allow_custom=allow_custom))
 
         elif isinstance(stix_data, dict):
             # adding python dict (of either Bundle or STIX obj)
             if stix_data["type"] == "bundle":
                 bundle = stix_data
             else:
-                bundle = dict(Bundle(stix_data))
+                bundle = dict(Bundle(stix_data, allow_custom=allow_custom))
 
         elif isinstance(stix_data, list):
             # adding list of something - recurse on each
             for obj in stix_data:
-                self.add(obj)
+                self.add(obj, allow_custom=allow_custom)
 
         elif isinstance(stix_data, str):
             # adding json encoded string of STIX content
-            stix_data = parse(stix_data)
+            stix_data = parse(stix_data, allow_custom=allow_custom)
             if stix_data["type"] == "bundle":
                 bundle = dict(stix_data)
             else:
-                bundle = dict(Bundle(stix_data))
+                bundle = dict(Bundle(stix_data, allow_custom=allow_custom))
 
         else:
             raise TypeError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
@@ -93,21 +90,21 @@ class TAXIICollectionSource(DataSource):
         super(TAXIICollectionSource, self).__init__()
         self.collection = collection
 
-    def get(self, stix_id, _composite_filters=None):
-        """retrieve STIX object from local/remote STIX Collection
+    def get(self, stix_id, _composite_filters=None, allow_custom=False):
+        """Retrieve STIX object from local/remote STIX Collection
         endpoint.
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (STIX object): STIX object that has the supplied STIX ID.
                 The STIX object is received from TAXII has dict, parsed into
                 a python STIX object and then returned
-
 
         """
         # combine all query filters
@@ -124,22 +121,25 @@ class TAXIICollectionSource(DataSource):
         stix_obj = list(apply_common_filters(stix_objs, query))
 
         if len(stix_obj):
-            stix_obj = stix_obj[0]
-            stix_obj = parse(stix_obj)
+            stix_obj = parse(stix_obj[0], allow_custom=allow_custom)
+            if stix_obj.id != stix_id:
+                # check - was added to handle erroneous TAXII servers
+                stix_obj = None
         else:
             stix_obj = None
 
         return stix_obj
 
-    def all_versions(self, stix_id, _composite_filters=None):
-        """retrieve STIX object from local/remote TAXII Collection
+    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
+        """Retrieve STIX object from local/remote TAXII Collection
         endpoint, all versions of it
 
         Args:
             stix_id (str): The STIX ID of the STIX objects to be retrieved.
-
             composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (see query() as all_versions() is just a wrapper)
@@ -151,12 +151,18 @@ class TAXIICollectionSource(DataSource):
             Filter("match[version]", "=", "all")
         ]
 
-        all_data = self.query(query=query, _composite_filters=_composite_filters)
+        all_data = self.query(query=query, _composite_filters=_composite_filters, allow_custom=allow_custom)
 
-        return all_data
+        # parse STIX objects from TAXII returned json
+        all_data = [parse(stix_obj) for stix_obj in all_data]
 
-    def query(self, query=None, _composite_filters=None):
-        """search and retreive STIX objects based on the complete query
+        # check - was added to handle erroneous TAXII servers
+        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj.id == stix_id]
+
+        return all_data_clean
+
+    def query(self, query=None, _composite_filters=None, allow_custom=False):
+        """Search and retreive STIX objects based on the complete query
 
         A "complete query" includes the filters from the query, the filters
         attached to MemorySource, and any filters passed from a
@@ -164,9 +170,10 @@ class TAXIICollectionSource(DataSource):
 
         Args:
             query (list): list of filters to search on
-
             composite_filters (set): set of filters passed from the
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that matches the supplied
@@ -174,14 +181,13 @@ class TAXIICollectionSource(DataSource):
                 parsed into python STIX objects and then returned.
 
         """
-
         if query is None:
             query = set()
         else:
             if not isinstance(query, list):
                 # make sure dont make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
-                query = list(query)
+                query = [query]
             query = set(query)
 
         # combine all query filters
@@ -194,7 +200,7 @@ class TAXIICollectionSource(DataSource):
         taxii_filters = self._parse_taxii_filters(query)
 
         # query TAXII collection
-        all_data = self.collection.get_objects(filters=taxii_filters)["objects"]
+        all_data = self.collection.get_objects(filters=taxii_filters, allow_custom=allow_custom)["objects"]
 
         # deduplicate data (before filtering as reduces wasted filtering)
         all_data = deduplicate(all_data)
@@ -203,7 +209,7 @@ class TAXIICollectionSource(DataSource):
         all_data = list(apply_common_filters(all_data, query))
 
         # parse python STIX objects from the STIX object dicts
-        stix_objs = [parse(stix_obj_dict) for stix_obj_dict in all_data]
+        stix_objs = [parse(stix_obj_dict, allow_custom=allow_custom) for stix_obj_dict in all_data]
 
         return stix_objs
 
@@ -225,7 +231,6 @@ class TAXIICollectionSource(DataSource):
                 for 'requests.get()'.
 
         """
-
         params = {}
 
         for filter_ in query:

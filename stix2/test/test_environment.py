@@ -184,3 +184,35 @@ def test_parse_malware():
     assert mal.modified == FAKE_TIME
     assert mal.labels == ['ransomware']
     assert mal.name == "Cryptolocker"
+
+
+def test_created_by():
+    identity = stix2.Identity(**IDENTITY_KWARGS)
+    factory = stix2.ObjectFactory(created_by_ref=identity.id)
+    env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
+    env.add(identity)
+
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    creator = env.creator_of(ind)
+    assert creator is identity
+
+
+def test_created_by_no_datasource():
+    identity = stix2.Identity(**IDENTITY_KWARGS)
+    factory = stix2.ObjectFactory(created_by_ref=identity.id)
+    env = stix2.Environment(factory=factory)
+
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    with pytest.raises(AttributeError) as excinfo:
+        env.creator_of(ind)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+
+def test_created_by_not_found():
+    identity = stix2.Identity(**IDENTITY_KWARGS)
+    factory = stix2.ObjectFactory(created_by_ref=identity.id)
+    env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
+
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    creator = env.creator_of(ind)
+    assert creator is None

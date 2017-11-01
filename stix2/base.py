@@ -40,7 +40,14 @@ class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):
-        return list(self._properties.keys())
+        props = set(self._properties.keys())
+        custom_props = list(set(self._inner.keys()) - props)
+        custom_props.sort()
+
+        all_properties = list(self._properties.keys())
+        all_properties.extend(custom_props)  # Any custom properties to the bottom
+
+        return all_properties
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:

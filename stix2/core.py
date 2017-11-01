@@ -9,7 +9,7 @@ import stix2
 from . import exceptions
 from .base import _STIXBase
 from .properties import IDProperty, ListProperty, Property, TypeProperty
-from .utils import get_dict
+from .utils import get_class_hierarchy_names, get_dict
 
 
 class STIXObjectProperty(Property):
@@ -19,6 +19,11 @@ class STIXObjectProperty(Property):
         super(STIXObjectProperty, self).__init__()
 
     def clean(self, value):
+        # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
+        # a bundle with no further checks.
+        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
+               for x in get_class_hierarchy_names(value)):
+            return value
         try:
             dictified = get_dict(value)
         except ValueError:

@@ -18,9 +18,9 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           WindowsRegistryValueType, WindowsServiceExt,
                           X509Certificate, X509V3ExtenstionsType,
                           parse_observable)
-from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
-                  IntrusionSet, Malware, ObservedData, Report, ThreatActor,
-                  Tool, Vulnerability)
+from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
+                  Identity, Indicator, IntrusionSet, Malware, ObservedData,
+                  Report, ThreatActor, Tool, Vulnerability)
 from .sro import Relationship, Sighting
 
 OBJ_MAP = {
