@@ -205,7 +205,7 @@ def test_parse_taxii_filters():
 
 def test_add_get_remove_filter(ds):
 
-    # First 3 filters are valid, remaining fields are erroneous in some way
+    # First 3 filters are valid, remaining properties are erroneous in some way
     valid_filters = [
         Filter('type', '=', 'malware'),
         Filter('id', '!=', 'stix object id'),
@@ -219,7 +219,7 @@ def test_add_get_remove_filter(ds):
     with pytest.raises(ValueError) as excinfo:
         # create Filter that has an operator that is not allowed
         Filter('modified', '*', 'not supported operator - just place holder')
-    assert str(excinfo.value) == "Filter operator '*' not supported for specified field: 'modified'"
+    assert str(excinfo.value) == "Filter operator '*' not supported for specified property: 'modified'"
 
     with pytest.raises(TypeError) as excinfo:
         # create Filter that has a value type that is not allowed
@@ -433,7 +433,7 @@ def test_filters4(ds):
     with pytest.raises(ValueError) as excinfo:
         Filter("modified", "?", "2017-01-27T13:49:53.935Z")
     assert str(excinfo.value) == ("Filter operator '?' not supported "
-                                  "for specified field: 'modified'")
+                                  "for specified property: 'modified'")
 
 
 def test_filters5(ds):

@@ -225,14 +225,14 @@ class FileSystemSource(DataSource):
         file_filters = self._parse_file_filters(query)
 
         # establish which subdirectories can be avoided in query
-        # by decluding as many as possible. A filter with "type" as the field
+        # by decluding as many as possible. A filter with "type" as the property
         # means that certain STIX object types can be ruled out, and thus
         # the corresponding subdirectories as well
         include_paths = []
         declude_paths = []
-        if "type" in [filter.field for filter in file_filters]:
+        if "type" in [filter.property for filter in file_filters]:
             for filter in file_filters:
-                if filter.field == "type":
+                if filter.property == "type":
                     if filter.op == "=":
                         include_paths.append(os.path.join(self._stix_dir, filter.value))
                     elif filter.op == "!=":
@@ -259,9 +259,9 @@ class FileSystemSource(DataSource):
 
         # grab stix object ID as well - if present in filters, as
         # may forgo the loading of STIX content into memory
-        if "id" in [filter.field for filter in file_filters]:
+        if "id" in [filter.property for filter in file_filters]:
             for filter in file_filters:
-                if filter.field == "id" and filter.op == "=":
+                if filter.property == "id" and filter.op == "=":
                     id_ = filter.value
                     break
             else:
@@ -296,7 +296,7 @@ class FileSystemSource(DataSource):
         that can used to possibly speed up querying STIX objects
         from the file system
 
-        Extracts filters that are for the "id" and "type" field of
+        Extracts filters that are for the "id" and "type" property of
         a STIX object. As the file directory is organized by STIX
         object type with filenames that are equivalent to the STIX
         object ID, these filters can be used first to reduce the
@@ -304,6 +304,6 @@ class FileSystemSource(DataSource):
         """
         file_filters = set()
         for filter_ in query:
-            if filter_.field == "id" or filter_.field == "type":
+            if filter_.property == "id" or filter_.property == "type":
                 file_filters.add(filter_)
         return file_filters
