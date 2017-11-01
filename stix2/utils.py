@@ -250,6 +250,7 @@ def revoke(data):
 
 
 def get_class_hierarchy_names(obj):
+    """Given an object, return the names of the class hierarchy."""
     names = []
     for cls in obj.__class__.__mro__:
         names.append(cls.__name__)
