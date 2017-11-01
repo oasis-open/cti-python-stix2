@@ -7,15 +7,15 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 
-from .base import _Extension, _Observable, _STIXBase
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
-                         ParseError)
-from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                         HashesProperty, HexProperty, IntegerProperty,
-                         ListProperty, ObjectReferenceProperty, Property,
-                         StringProperty, TimestampProperty, TypeProperty)
-from .utils import get_dict
+from ..base import _Extension, _Observable, _STIXBase
+from ..exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
+                          ParseError)
+from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
+                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
+                          HashesProperty, HexProperty, IntegerProperty,
+                          ListProperty, ObjectReferenceProperty, Property,
+                          StringProperty, TimestampProperty, TypeProperty)
+from ..utils import get_dict
 
 
 class ObservableProperty(Property):

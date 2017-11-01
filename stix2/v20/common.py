@@ -2,12 +2,12 @@
 
 from collections import OrderedDict
 
-from .base import _STIXBase
-from .markings import _MarkingsMixin
-from .properties import (HashesProperty, IDProperty, ListProperty, Property,
-                         ReferenceProperty, SelectorProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
-from .utils import NOW, get_dict
+from ..base import _STIXBase
+from ..markings import _MarkingsMixin
+from ..properties import (HashesProperty, IDProperty, ListProperty, Property,
+                          ReferenceProperty, SelectorProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
+from ..utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):

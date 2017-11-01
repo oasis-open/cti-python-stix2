@@ -484,3 +484,13 @@ def test_parse_observable_with_unregistered_custom_extension():
     with pytest.raises(ValueError) as excinfo:
         stix2.parse_observable(input_str)
     assert "Can't parse Unknown extension type" in str(excinfo.value)
+
+
+def test_register_custom_object():
+    # Not the way to register custom object.
+    class CustomObject2(object):
+        _type = 'awesome-object'
+
+    stix2._register_type(CustomObject2)
+    # Note that we will always check against newest OBJ_MAP.
+    assert (CustomObject2._type, CustomObject2) in stix2.OBJ_MAP.items()

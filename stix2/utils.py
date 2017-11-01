@@ -247,3 +247,11 @@ def revoke(data):
     if data.get("revoked"):
         raise RevokeError("revoke")
     return new_version(data, revoked=True)
+
+
+def get_class_hierarchy_names(obj):
+    """Given an object, return the names of the class hierarchy."""
+    names = []
+    for cls in obj.__class__.__mro__:
+        names.append(cls.__name__)
+    return names
