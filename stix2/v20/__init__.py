@@ -4,8 +4,7 @@
 from ..core import Bundle
 from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
                      ExternalReference, GranularMarking, KillChainPhase,
-                     LanguageContent, MarkingDefinition, StatementMarking,
-                     TLPMarking)
+                     MarkingDefinition, StatementMarking, TLPMarking)
 from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           AutonomousSystem, CustomExtension, CustomObservable,
                           Directory, DomainName, EmailAddress, EmailMessage,
@@ -20,9 +19,8 @@ from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
                           X509Certificate, X509V3ExtenstionsType,
                           parse_observable)
 from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
-                  Identity, Indicator, IntrusionSet, Location, Malware, Note,
-                  ObservedData, Opinion, Report, ThreatActor, Tool,
-                  Vulnerability)
+                  Identity, Indicator, IntrusionSet, Malware, ObservedData,
+                  Report, ThreatActor, Tool, Vulnerability)
 from .sro import Relationship, Sighting
 
 OBJ_MAP = {
@@ -33,13 +31,9 @@ OBJ_MAP = {
     'identity': Identity,
     'indicator': Indicator,
     'intrusion-set': IntrusionSet,
-    'language-content': LanguageContent,
-    'location': Location,
     'malware': Malware,
-    'note': Note,
     'marking-definition': MarkingDefinition,
     'observed-data': ObservedData,
-    'opinion': Opinion,
     'report': Report,
     'relationship': Relationship,
     'threat-actor': ThreatActor,

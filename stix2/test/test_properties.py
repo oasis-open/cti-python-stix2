@@ -1,8 +1,7 @@
 import pytest
 
-from stix2 import TCPExt
+from stix2 import EmailMIMEComponent, ExtensionsProperty, TCPExt
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.observables import EmailMIMEComponent, ExtensionsProperty
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
                               EnumProperty, FloatProperty, HashesProperty,

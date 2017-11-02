@@ -132,8 +132,9 @@ def test_create_bundle_invalid(indicator, malware, relationship):
     assert excinfo.value.reason == 'This property may not contain a Bundle object'
 
 
-def test_parse_bundle():
-    bundle = stix2.parse(EXPECTED_BUNDLE)
+@pytest.mark.parametrize("version", ["2.0"])
+def test_parse_bundle(version):
+    bundle = stix2.parse(EXPECTED_BUNDLE, version=version)
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
@@ -158,3 +159,10 @@ def test_parse_unknown_type():
     with pytest.raises(stix2.exceptions.ParseError) as excinfo:
         stix2.parse(unknown)
     assert str(excinfo.value) == "Can't parse unknown object type 'other'! For custom types, use the CustomObject decorator."
+
+
+def test_stix_object_property():
+    prop = stix2.core.STIXObjectProperty()
+
+    identity = stix2.Identity(name="test", identity_class="individual")
+    assert prop.clean(identity) is identity

@@ -44,36 +44,40 @@ class DataStore(object):
         self.source = source
         self.sink = sink
 
-    def get(self, stix_id):
+    def get(self, stix_id, allow_custom=False):
         """Retrieve the most recent version of a single STIX object by ID.
 
         Translate get() call to the appropriate DataSource call.
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_obj: the single most recent version of the STIX
                 object specified by the "id".
 
         """
-        return self.source.get(stix_id)
+        return self.source.get(stix_id, allow_custom=allow_custom)
 
-    def all_versions(self, stix_id):
+    def all_versions(self, stix_id, allow_custom=False):
         """Retrieve all versions of a single STIX object by ID.
 
         Implement: Translate all_versions() call to the appropriate DataSource call
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
 
         """
-        return self.source.all_versions(stix_id)
+        return self.source.all_versions(stix_id, allow_custom=allow_custom)
 
-    def query(self, query):
+    def query(self, query=None, allow_custom=False):
         """Retrieve STIX objects matching a set of filters.
 
         Implement: Specific data source API calls, processing,
@@ -82,6 +86,8 @@ class DataStore(object):
         Args:
             query (list): a list of filters (which collectively are the query)
                 to conduct search on.
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
@@ -89,15 +95,17 @@ class DataStore(object):
         """
         return self.source.query(query=query)
 
-    def add(self, stix_objs):
+    def add(self, stix_objs, allow_custom=False):
         """Store STIX objects.
 
         Translates add() to the appropriate DataSink call.
 
         Args:
             stix_objs (list): a list of STIX objects
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
         """
-        return self.sink.add(stix_objs)
+        return self.sink.add(stix_objs, allow_custom=allow_custom)
 
 
 class DataSink(object):
@@ -111,7 +119,7 @@ class DataSink(object):
     def __init__(self):
         self.id = make_id()
 
-    def add(self, stix_objs):
+    def add(self, stix_objs, allow_custom=False):
         """Store STIX objects.
 
         Implement: Specific data sink API calls, processing,
@@ -120,6 +128,8 @@ class DataSink(object):
         Args:
             stix_objs (list): a list of STIX objects (where each object is a
                 STIX object)
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
 
         """
         raise NotImplementedError()
@@ -139,7 +149,7 @@ class DataSource(object):
         self.id = make_id()
         self.filters = set()
 
-    def get(self, stix_id, _composite_filters=None):
+    def get(self, stix_id, _composite_filters=None, allow_custom=False):
         """
         Implement: Specific data source API calls, processing,
         functionality required for retrieving data from the data source
@@ -148,9 +158,10 @@ class DataSource(object):
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
                 return a single object, the most recent version of the object
                 specified by the "id".
-
             _composite_filters (set): set of filters passed from the parent
                 the CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_obj: the STIX object
@@ -158,7 +169,7 @@ class DataSource(object):
         """
         raise NotImplementedError()
 
-    def all_versions(self, stix_id, _composite_filters=None):
+    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
         """
         Implement: Similar to get() except returns list of all object versions of
         the specified "id". In addition, implement the specific data
@@ -169,9 +180,10 @@ class DataSource(object):
             stix_id (str): The id of the STIX 2.0 object to retrieve. Should
                 return a list of objects, all the versions of the object
                 specified by the "id".
-
             _composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
@@ -179,7 +191,7 @@ class DataSource(object):
         """
         raise NotImplementedError()
 
-    def query(self, query, _composite_filters=None):
+    def query(self, query=None, _composite_filters=None, allow_custom=False):
         """
         Implement:Implement the specific data source API calls, processing,
         functionality required for retrieving query from the data source
@@ -187,9 +199,10 @@ class DataSource(object):
         Args:
             query (list): a list of filters (which collectively are the query)
                 to conduct search on
-
             _composite_filters (set): a set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
@@ -224,7 +237,7 @@ class CompositeDataSource(DataSource):
         super(CompositeDataSource, self).__init__()
         self.data_sources = []
 
-    def get(self, stix_id, _composite_filters=None):
+    def get(self, stix_id, _composite_filters=None, allow_custom=False):
         """Retrieve STIX object by STIX ID
 
         Federated retrieve method, iterates through all DataSources
@@ -238,10 +251,11 @@ class CompositeDataSource(DataSource):
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
-
             _composite_filters (list): a list of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is attached
                 to another parent CompositeDataSource), not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             stix_obj: the STIX object to be returned.
@@ -259,20 +273,22 @@ class CompositeDataSource(DataSource):
 
         # for every configured Data Source, call its retrieve handler
         for ds in self.data_sources:
-            data = ds.get(stix_id=stix_id, _composite_filters=all_filters)
+            data = ds.get(stix_id=stix_id, _composite_filters=all_filters, allow_custom=allow_custom)
             if data:
                 all_data.append(data)
 
         # remove duplicate versions
         if len(all_data) > 0:
             all_data = deduplicate(all_data)
+        else:
+            return None
 
         # reduce to most recent version
         stix_obj = sorted(all_data, key=lambda k: k['modified'], reverse=True)[0]
 
         return stix_obj
 
-    def all_versions(self, stix_id, _composite_filters=None):
+    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
         """Retrieve STIX objects by STIX ID
 
         Federated all_versions retrieve method - iterates through all DataSources
@@ -283,10 +299,11 @@ class CompositeDataSource(DataSource):
 
         Args:
             stix_id (str): id of the STIX objects to retrieve
-
             _composite_filters (list): a list of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is attached
                 to a parent CompositeDataSource), not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             all_data (list): list of STIX objects that have the specified id
@@ -305,7 +322,7 @@ class CompositeDataSource(DataSource):
 
         # retrieve STIX objects from all configured data sources
         for ds in self.data_sources:
-            data = ds.all_versions(stix_id=stix_id, _composite_filters=all_filters)
+            data = ds.all_versions(stix_id=stix_id, _composite_filters=all_filters, allow_custom=allow_custom)
             all_data.extend(data)
 
         # remove exact duplicates (where duplicates are STIX 2.0 objects
@@ -315,7 +332,7 @@ class CompositeDataSource(DataSource):
 
         return all_data
 
-    def query(self, query=None, _composite_filters=None):
+    def query(self, query=None, _composite_filters=None, allow_custom=False):
         """Retrieve STIX objects that match query
 
         Federate the query to all DataSources attached to the
@@ -323,10 +340,11 @@ class CompositeDataSource(DataSource):
 
         Args:
             query (list): list of filters to search on
-
             _composite_filters (list): a list of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is attached
                 to a parent CompositeDataSource), not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
 
         Returns:
             all_data (list): list of STIX objects to be returned
@@ -351,7 +369,7 @@ class CompositeDataSource(DataSource):
         # federate query to all attached data sources,
         # pass composite filters to id
         for ds in self.data_sources:
-            data = ds.query(query=query, _composite_filters=all_filters)
+            data = ds.query(query=query, _composite_filters=all_filters, allow_custom=allow_custom)
             all_data.extend(data)
 
         # remove exact duplicates (where duplicates are STIX 2.0
