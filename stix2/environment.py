@@ -2,6 +2,7 @@ import copy
 
 from .core import parse as _parse
 from .sources import CompositeDataSource, DataStore
+from .sources.filters import Filter
 
 
 class ObjectFactory(object):
@@ -171,3 +172,42 @@ class Environment(object):
             return self.get(creator_id)
         else:
             return None
+
+    def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """Retrieve Relationships involving the given STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            List of Relationship objects involving the given STIX object.
+
+        """
+        results = []
+        filters = [Filter('type', '=', 'relationship')]
+
+        try:
+            obj_id = obj.get('id', '')
+        except AttributeError:
+            obj_id = obj
+
+        if relationship_type:
+            filters.append(Filter('relationship_type', '=', relationship_type))
+
+        if source_only and target_only:
+            raise ValueError("Search either source only or target only, but not both")
+
+        if not target_only:
+            results.extend(self.query(filters + [Filter('source_ref', '=', obj_id)]))
+        if not source_only:
+            results.extend(self.query(filters + [Filter('target_ref', '=', obj_id)]))
+
+        return results

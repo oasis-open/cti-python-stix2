@@ -29,6 +29,13 @@ MARKING_IDS = [
     "marking-definition--2802dfb1-1019-40a8-8848-68d0ec0e417f",
 ]
 
+# All required args for a Campaign instance
+CAMPAIGN_KWARGS = dict(
+    name="Green Group Attacks Against Finance",
+    description="Campaign by Green Group against a series of targets in the financial services sector.",
+)
+
+
 # All required args for a Campaign instance, plus some optional args
 CAMPAIGN_MORE_KWARGS = dict(
     type='campaign',
