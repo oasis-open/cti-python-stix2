@@ -1,18 +1,18 @@
-"""STIX 2.0 Domain Objects"""
+"""STIX 2.1 Domain Objects"""
 
 from collections import OrderedDict
 
 import stix2
 
-from .base import _STIXBase
+from ..base import _STIXBase
+from ..markings import _MarkingsMixin
+from ..properties import (BooleanProperty, EnumProperty, FloatProperty,
+                          IDProperty, IntegerProperty, ListProperty,
+                          PatternProperty, ReferenceProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
+from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
-from .markings import _MarkingsMixin
 from .observables import ObservableProperty
-from .properties import (BooleanProperty, EnumProperty, FloatProperty,
-                         IDProperty, IntegerProperty, ListProperty,
-                         PatternProperty, ReferenceProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
-from .utils import NOW
 
 
 class STIXDomainObject(_STIXBase, _MarkingsMixin):
@@ -470,7 +470,7 @@ def CustomObject(type='x-custom-type', properties=None):
                         return
                     raise e
 
-        stix2._register_type(_Custom)
+        stix2._register_type(_Custom, version="2.1")
         return _Custom
 
     return custom_builder

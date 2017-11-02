@@ -1,14 +1,14 @@
-"""STIX 2 Common Data Types and Properties."""
+"""STIX 2.1 Common Data Types and Properties."""
 
 from collections import OrderedDict
 
-from .base import _STIXBase
-from .markings import _MarkingsMixin
-from .properties import (BooleanProperty, DictionaryProperty, HashesProperty,
-                         IDProperty, ListProperty, Property, ReferenceProperty,
-                         SelectorProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
-from .utils import NOW, get_dict
+from ..base import _STIXBase
+from ..markings import _MarkingsMixin
+from ..properties import (BooleanProperty, DictionaryProperty, HashesProperty,
+                          IDProperty, ListProperty, Property,
+                          ReferenceProperty, SelectorProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
+from ..utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):
