@@ -340,7 +340,7 @@ def test_filesystem_object_with_custom_property(fs_store):
 
     fs_store.add(camp, True)
 
-    camp_r = fs_store.get(camp.id, True)
+    camp_r = fs_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
 
@@ -354,7 +354,7 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
     bundle = Bundle(camp, allow_custom=True)
     fs_store.add(bundle, True)
 
-    camp_r = fs_store.get(camp.id, True)
+    camp_r = fs_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
 
@@ -369,7 +369,7 @@ def test_filesystem_custom_object(fs_store):
     newobj = NewObj(property1='something')
     fs_store.add(newobj, True)
 
-    newobj_r = fs_store.get(newobj.id, True)
+    newobj_r = fs_store.get(newobj.id)
     assert newobj_r.id == newobj.id
     assert newobj_r.property1 == 'something'
 

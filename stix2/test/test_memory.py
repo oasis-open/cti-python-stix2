@@ -235,7 +235,7 @@ def test_memory_store_object_with_custom_property(mem_store):
 
     mem_store.add(camp, True)
 
-    camp_r = mem_store.get(camp.id, True)
+    camp_r = mem_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
 
@@ -249,7 +249,7 @@ def test_memory_store_object_with_custom_property_in_bundle(mem_store):
     bundle = Bundle(camp, allow_custom=True)
     mem_store.add(bundle, True)
 
-    bundle_r = mem_store.get(bundle.id, True)
+    bundle_r = mem_store.get(bundle.id)
     camp_r = bundle_r['objects'][0]
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
@@ -265,6 +265,6 @@ def test_memory_store_custom_object(mem_store):
     newobj = NewObj(property1='something')
     mem_store.add(newobj, True)
 
-    newobj_r = mem_store.get(newobj.id, True)
+    newobj_r = mem_store.get(newobj.id)
     assert newobj_r.id == newobj.id
     assert newobj_r.property1 == 'something'
