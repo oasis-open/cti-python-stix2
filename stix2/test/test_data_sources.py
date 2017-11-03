@@ -498,29 +498,48 @@ def test_composite_datasource_operations():
                    objects=STIX_OBJS1,
                    spec_version="2.0",
                    type="bundle")
-    cds = CompositeDataSource()
-    ds1 = MemorySource(stix_data=BUNDLE1)
-    ds2 = MemorySource(stix_data=STIX_OBJS2)
+    cds1 = CompositeDataSource()
+    ds1_1 = MemorySource(stix_data=BUNDLE1)
+    ds1_2 = MemorySource(stix_data=STIX_OBJS2)
 
-    cds.add_data_sources([ds1, ds2])
+    cds2 = CompositeDataSource()
+    ds2_1 = MemorySource(stix_data=BUNDLE1)
+    ds2_2 = MemorySource(stix_data=STIX_OBJS2)
 
-    indicators = cds.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    cds1.add_data_sources([ds1_1, ds1_2])
+    cds2.add_data_sources([ds2_1, ds2_2])
+
+    indicators = cds1.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
     # In STIX_OBJS2 changed the 'modified' property to a later time...
     assert len(indicators) == 2
 
-    indicator = cds.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    cds1.add_data_sources([cds2])
+
+    indicator = cds1.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
     assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
     assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
     assert indicator["type"] == "indicator"
 
-    query = [
+    query1 = [
         Filter("type", "=", "indicator")
     ]
 
-    results = cds.query(query)
+    query2 = [
+        Filter("valid_from", "=", "2017-01-27T13:49:53.935382Z")
+    ]
+
+    cds1.filters.update(query2)
+
+    results = cds1.query(query1)
 
     # STIX_OBJS2 has indicator with later time, one with different id, one with
     # original time in STIX_OBJS1
     assert len(results) == 3
+
+    indicator = cds1.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+
+    assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
+    assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
+    assert indicator["type"] == "indicator"
