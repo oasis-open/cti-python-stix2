@@ -393,3 +393,15 @@ class PatternProperty(StringProperty):
             raise ValueError(str(errors[0]))
 
         return self.string_type(value)
+
+
+class CustomProperty(Property):
+    """
+    The custom property class can be used as a base to extend further
+    functionality of a custom property.
+
+    Note:
+        This class is used internally to signal the use of any custom property
+        that is parsed by any object or `parse()` method and allow_custom=True.
+    """
+    pass
