@@ -543,3 +543,13 @@ def test_composite_datasource_operations():
     assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
     assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
     assert indicator["type"] == "indicator"
+
+    # There is only one indicator with different ID. Since we use the same data
+    # when deduplicated, only two indicators (one with different modified).
+    results = cds1.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert len(results) == 2
+
+    # Since we have filters already associated with our CompositeSource providing
+    # nothing returns the same as cds1.query(query1) (the associated query is query2)
+    results = cds1.query([])
+    assert len(results) == 3
