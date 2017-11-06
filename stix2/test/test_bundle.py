@@ -131,7 +131,6 @@ def test_create_bundle1(indicator, malware, relationship):
 def test_create_bundle2(indicator, malware, relationship):
     bundle = stix2.Bundle(objects=[indicator, malware, relationship])
 
-    print(repr(bundle))
     assert json.loads(bundle.serialize()) == EXPECTED_BUNDLE_DICT
 
 
