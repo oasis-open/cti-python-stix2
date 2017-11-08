@@ -62,4 +62,15 @@ def test_parse_no_type():
             "identity_class": "individual"
         }""")
 
+
+def test_identity_with_custom():
+    identity = stix2.Identity(
+        name="John Smith",
+        identity_class="individual",
+        custom_properties={'x_foo': 'bar'}
+    )
+
+    assert identity.x_foo == "bar"
+    assert "x_foo" in identity.object_properties()
+
 # TODO: Add other examples

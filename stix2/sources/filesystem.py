@@ -26,14 +26,15 @@ class FileSystemStore(DataStore):
             Default: False.
 
     Attributes:
-        source (FileSystemSource): FuleSystemSource
+        source (FileSystemSource): FileSystemSource
         sink (FileSystemSink): FileSystemSink
 
     """
     def __init__(self, stix_dir, bundlify=False):
-        super(FileSystemStore, self).__init__()
-        self.source = FileSystemSource(stix_dir=stix_dir)
-        self.sink = FileSystemSink(stix_dir=stix_dir, bundlify=bundlify)
+        super(FileSystemStore, self).__init__(
+            source=FileSystemSource(stix_dir=stix_dir),
+            sink=FileSystemSink(stix_dir=stix_dir, bundlify=bundlify)
+        )
 
 
 class FileSystemSink(DataSink):
@@ -99,11 +100,11 @@ class FileSystemSink(DataSink):
             self._check_path_and_write(stix_data)
 
         elif isinstance(stix_data, (str, dict)):
-            stix_data = parse(stix_data, allow_custom, version)
+            stix_data = parse(stix_data, allow_custom=allow_custom, version=version)
             if stix_data["type"] == "bundle":
                 # extract STIX objects
                 for stix_obj in stix_data.get("objects", []):
-                    self.add(stix_obj)
+                    self.add(stix_obj, allow_custom=allow_custom, version=version)
             else:
                 # adding json-formatted STIX
                 self._check_path_and_write(stix_data)
@@ -111,12 +112,12 @@ class FileSystemSink(DataSink):
         elif isinstance(stix_data, Bundle):
             # recursively add individual STIX objects
             for stix_obj in stix_data.get("objects", []):
-                self.add(stix_obj)
+                self.add(stix_obj, allow_custom=allow_custom, version=version)
 
         elif isinstance(stix_data, list):
             # recursively add individual STIX objects
             for stix_obj in stix_data:
-                self.add(stix_obj)
+                self.add(stix_obj, allow_custom=allow_custom, version=version)
 
         else:
             raise TypeError("stix_data must be a STIX object (or list of), "
@@ -146,7 +147,7 @@ class FileSystemSource(DataSource):
     def stix_dir(self):
         return self._stix_dir
 
-    def get(self, stix_id, _composite_filters=None, allow_custom=False, version=None):
+    def get(self, stix_id, allow_custom=False, version=None, _composite_filters=None):
         """Retrieve STIX object from file directory via STIX ID.
 
         Args:
@@ -166,8 +167,7 @@ class FileSystemSource(DataSource):
         """
         query = [Filter("id", "=", stix_id)]
 
-        all_data = self.query(query=query, _composite_filters=_composite_filters,
-                              allow_custom=allow_custom, version=version)
+        all_data = self.query(query=query, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)
 
         if all_data:
             stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
@@ -176,7 +176,7 @@ class FileSystemSource(DataSource):
 
         return stix_obj
 
-    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False, version=None):
+    def all_versions(self, stix_id, allow_custom=False, version=None, _composite_filters=None):
         """Retrieve STIX object from file directory via STIX ID, all versions.
 
         Note: Since FileSystem sources/sinks don't handle multiple versions
@@ -197,10 +197,9 @@ class FileSystemSource(DataSource):
                 a python STIX objects and then returned
 
         """
-        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters,
-                         allow_custom=allow_custom, version=version)]
+        return [self.get(stix_id=stix_id, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)]
 
-    def query(self, query=None, _composite_filters=None, allow_custom=False, version=None):
+    def query(self, query=None, allow_custom=False, version=None, _composite_filters=None):
         """Search and retrieve STIX objects based on the complete query.
 
         A "complete query" includes the filters from the query, the filters
@@ -305,7 +304,7 @@ class FileSystemSource(DataSource):
         all_data = deduplicate(all_data)
 
         # parse python STIX objects from the STIX object dicts
-        stix_objs = [parse(stix_obj_dict, allow_custom, version) for stix_obj_dict in all_data]
+        stix_objs = [parse(stix_obj_dict, allow_custom=allow_custom, version=version) for stix_obj_dict in all_data]
 
         return stix_objs
 

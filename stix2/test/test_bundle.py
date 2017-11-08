@@ -1,7 +1,8 @@
+import json
+
 import pytest
 
 import stix2
-
 
 EXPECTED_BUNDLE = """{
     "type": "bundle",
@@ -40,6 +41,44 @@ EXPECTED_BUNDLE = """{
         }
     ]
 }"""
+
+EXPECTED_BUNDLE_DICT = {
+    "type": "bundle",
+    "id": "bundle--00000000-0000-0000-0000-000000000004",
+    "spec_version": "2.0",
+    "objects": [
+        {
+            "type": "indicator",
+            "id": "indicator--00000000-0000-0000-0000-000000000001",
+            "created": "2017-01-01T12:34:56.000Z",
+            "modified": "2017-01-01T12:34:56.000Z",
+            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "valid_from": "2017-01-01T12:34:56Z",
+            "labels": [
+                "malicious-activity"
+            ]
+        },
+        {
+            "type": "malware",
+            "id": "malware--00000000-0000-0000-0000-000000000002",
+            "created": "2017-01-01T12:34:56.000Z",
+            "modified": "2017-01-01T12:34:56.000Z",
+            "name": "Cryptolocker",
+            "labels": [
+                "ransomware"
+            ]
+        },
+        {
+            "type": "relationship",
+            "id": "relationship--00000000-0000-0000-0000-000000000003",
+            "created": "2017-01-01T12:34:56.000Z",
+            "modified": "2017-01-01T12:34:56.000Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
+            "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210"
+        }
+    ]
+}
 
 
 def test_empty_bundle():
@@ -82,10 +121,17 @@ def test_bundle_with_wrong_spec_version():
     assert str(excinfo.value) == "Invalid value for Bundle 'spec_version': must equal '2.0'."
 
 
-def test_create_bundle(indicator, malware, relationship):
+def test_create_bundle1(indicator, malware, relationship):
     bundle = stix2.Bundle(objects=[indicator, malware, relationship])
 
     assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
+
+
+def test_create_bundle2(indicator, malware, relationship):
+    bundle = stix2.Bundle(objects=[indicator, malware, relationship])
+
+    assert json.loads(bundle.serialize()) == EXPECTED_BUNDLE_DICT
 
 
 def test_create_bundle_with_positional_args(indicator, malware, relationship):
