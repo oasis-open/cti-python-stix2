@@ -23,9 +23,9 @@ def make_id():
     return str(uuid.uuid4())
 
 
-class DataStore(with_metaclass(ABCMeta)):
-    """An implementer will create a concrete subclass from
-    this class for the specific DataStore.
+class DataStore(object):
+    """An implementer can subclass to create custom behavior from
+    this class for the specific DataStores.
 
     Args:
         source (DataSource): An existing DataSource to use
@@ -45,8 +45,7 @@ class DataStore(with_metaclass(ABCMeta)):
         self.source = source
         self.sink = sink
 
-    @abstractmethod
-    def get(self, stix_id):  # pragma: no cover
+    def get(self, *args, **kwargs):
         """Retrieve the most recent version of a single STIX object by ID.
 
         Translate get() call to the appropriate DataSource call.
@@ -59,14 +58,12 @@ class DataStore(with_metaclass(ABCMeta)):
                 object specified by the "id".
 
         """
-        return NotImplementedError()
+        return self.source.get(*args, **kwargs)
 
-    @abstractmethod
-    def all_versions(self, stix_id):  # pragma: no cover
+    def all_versions(self, *args, **kwargs):
         """Retrieve all versions of a single STIX object by ID.
 
-        Implement: Define a function that performs any custom behavior before
-            calling the associated DataSource all_versions() method.
+        Translate all_versions() call to the appropriate DataSource call.
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
@@ -75,16 +72,12 @@ class DataStore(with_metaclass(ABCMeta)):
             stix_objs (list): a list of STIX objects
 
         """
-        return NotImplementedError()
+        return self.source.all_versions(*args, **kwargs)
 
-    @abstractmethod
-    def query(self, query=None):  # pragma: no cover
+    def query(self, *args, **kwargs):
         """Retrieve STIX objects matching a set of filters.
 
-        Implement: Specific data source API calls, processing,
-        functionality required for retrieving query from the data source.
-
-        Define custom behavior before calling the associated DataSource query()
+        Translate query() call to the appropriate DataSource call.
 
         Args:
             query (list): a list of filters (which collectively are the query)
@@ -94,10 +87,9 @@ class DataStore(with_metaclass(ABCMeta)):
             stix_objs (list): a list of STIX objects
 
         """
-        return NotImplementedError()
+        return self.source.query(*args, **kwargs)
 
-    @abstractmethod
-    def add(self, stix_objs):  # pragma: no cover
+    def add(self, *args, **kwargs):
         """Method for storing STIX objects.
 
         Define custom behavior before storing STIX objects using the associated
@@ -107,7 +99,7 @@ class DataStore(with_metaclass(ABCMeta)):
             stix_objs (list): a list of STIX objects
 
         """
-        return NotImplementedError()
+        return self.sink.add(*args, **kwargs)
 
 
 class DataSink(with_metaclass(ABCMeta)):
@@ -123,7 +115,7 @@ class DataSink(with_metaclass(ABCMeta)):
         self.id = make_id()
 
     @abstractmethod
-    def add(self, stix_objs):  # pragma: no cover
+    def add(self, stix_objs):
         """Method for storing STIX objects.
 
         Implement: Specific data sink API calls, processing,
@@ -134,7 +126,6 @@ class DataSink(with_metaclass(ABCMeta)):
                 STIX object)
 
         """
-        raise NotImplementedError()
 
 
 class DataSource(with_metaclass(ABCMeta)):
@@ -152,7 +143,7 @@ class DataSource(with_metaclass(ABCMeta)):
         self.filters = set()
 
     @abstractmethod
-    def get(self, stix_id):  # pragma: no cover
+    def get(self, stix_id):
         """
         Implement: Specific data source API calls, processing,
         functionality required for retrieving data from the data source
@@ -166,10 +157,9 @@ class DataSource(with_metaclass(ABCMeta)):
             stix_obj: the STIX object
 
         """
-        raise NotImplementedError()
 
     @abstractmethod
-    def all_versions(self, stix_id):  # pragma: no cover
+    def all_versions(self, stix_id):
         """
         Implement: Similar to get() except returns list of all object versions
         of the specified "id". In addition, implement the specific data
@@ -185,10 +175,9 @@ class DataSource(with_metaclass(ABCMeta)):
             stix_objs (list): a list of STIX objects
 
         """
-        raise NotImplementedError()
 
     @abstractmethod
-    def query(self, query=None):  # pragma: no cover
+    def query(self, query=None):
         """
         Implement: The specific data source API calls, processing,
         functionality required for retrieving query from the data source
@@ -201,7 +190,6 @@ class DataSource(with_metaclass(ABCMeta)):
             stix_objs (list): a list of STIX objects
 
         """
-        raise NotImplementedError()
 
 
 class CompositeDataSource(DataSource):

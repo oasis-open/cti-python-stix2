@@ -31,88 +31,10 @@ class FileSystemStore(DataStore):
 
     """
     def __init__(self, stix_dir, bundlify=False):
-        super(FileSystemStore, self).__init__()
-        self.source = FileSystemSource(stix_dir=stix_dir)
-        self.sink = FileSystemSink(stix_dir=stix_dir, bundlify=bundlify)
-
-    def get(self, stix_id, allow_custom=False, version=None, _composite_filters=None):
-        """Retrieve the most recent version of a single STIX object by ID.
-
-        Translate get() call to the appropriate DataSource call.
-
-        Args:
-            stix_id (str): the id of the STIX object to retrieve.
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
-            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-                None, use latest version.
-
-        Returns:
-            stix_obj: the single most recent version of the STIX
-                object specified by the "id".
-
-        """
-        return self.source.get(stix_id, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)
-
-    def all_versions(self, stix_id, allow_custom=False, version=None, _composite_filters=None):
-        """Retrieve all versions of a single STIX object by ID.
-
-        Implement: Translate all_versions() call to the appropriate DataSource
-            call.
-
-        Args:
-            stix_id (str): the id of the STIX object to retrieve.
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
-            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-                None, use latest version.
-
-        Returns:
-            stix_objs (list): a list of STIX objects
-
-        """
-        return self.source.all_versions(stix_id, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)
-
-    def query(self, query=None, allow_custom=False, version=None, _composite_filters=None):
-        """Retrieve STIX objects matching a set of filters.
-
-        Implement: Specific data source API calls, processing,
-        functionality required for retrieving query from the data source.
-
-        Args:
-            query (list): a list of filters (which collectively are the query)
-                to conduct search on.
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
-            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-                None, use latest version.
-
-        Returns:
-            stix_objs (list): a list of STIX objects
-
-        """
-        return self.source.query(query=query, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)
-
-    def add(self, stix_objs, allow_custom=False, version=None):
-        """Store STIX objects.
-
-        Translates add() to the appropriate DataSink call.
-
-        Args:
-            stix_objs (list): a list of STIX objects
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
-            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-                None, use latest version.
-
-        """
-        return self.sink.add(stix_objs, allow_custom=allow_custom, version=version)
+        super(FileSystemStore, self).__init__(
+            source=FileSystemSource(stix_dir=stix_dir),
+            sink=FileSystemSink(stix_dir=stix_dir, bundlify=bundlify)
+        )
 
 
 class FileSystemSink(DataSink):

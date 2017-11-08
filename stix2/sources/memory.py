@@ -93,14 +93,15 @@ class MemoryStore(DataStore):
 
     """
     def __init__(self, stix_data=None, allow_custom=False, version=None):
-        super(MemoryStore, self).__init__()
         self._data = {}
 
         if stix_data:
             _add(self, stix_data, allow_custom=allow_custom, version=version)
 
-        self.source = MemorySource(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True)
-        self.sink = MemorySink(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True)
+        super(MemoryStore, self).__init__(
+            source=MemorySource(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True),
+            sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True)
+        )
 
     def save_to_file(self, file_path, allow_custom=False):
         """Write SITX objects from in-memory dictionary to JSON file, as a STIX
@@ -129,67 +130,6 @@ class MemoryStore(DataStore):
 
         """
         return self.source.load_from_file(file_path=file_path, allow_custom=allow_custom, version=version)
-
-    def get(self, stix_id, _composite_filters=None):
-        """Retrieve the most recent version of a single STIX object by ID.
-
-        Translate get() call to the appropriate DataSource call.
-
-        Args:
-            stix_id (str): the id of the STIX object to retrieve.
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-
-        Returns:
-            stix_obj: the single most recent version of the STIX
-                object specified by the "id".
-
-        """
-        return self.source.get(stix_id, _composite_filters=_composite_filters)
-
-    def all_versions(self, stix_id, _composite_filters=None):
-        """Retrieve all versions of a single STIX object by ID.
-
-        Translate all_versions() call to the appropriate DataSource call.
-
-        Args:
-            stix_id (str): the id of the STIX object to retrieve.
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-
-        Returns:
-            stix_objs (list): a list of STIX objects
-
-        """
-        return self.source.all_versions(stix_id, _composite_filters=_composite_filters)
-
-    def query(self, query=None, _composite_filters=None):
-        """Retrieve STIX objects matching a set of filters.
-
-        Translates query() to appropriate DataStore call.
-
-        Args:
-            query (list): a list of filters (which collectively are the query)
-                to conduct search on.
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-
-        Returns:
-            stix_objs (list): a list of STIX objects
-
-        """
-        return self.source.query(query=query, _composite_filters=_composite_filters)
-
-    def add(self, stix_objs, allow_custom=False, version=None):
-        """Store STIX objects.
-
-        Translates add() to the appropriate DataSink call.
-
-        Args:
-            stix_objs (list): a list of STIX objects
-
-        """
-        return self.sink.add(stix_objs, allow_custom=allow_custom, version=version)
 
 
 class MemorySink(DataSink):

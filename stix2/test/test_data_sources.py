@@ -2,8 +2,8 @@ import pytest
 from taxii2client import Collection
 
 from stix2 import Filter, MemorySink, MemorySource
-from stix2.sources import (CompositeDataSource, DataSink, DataSource,
-                           DataStore, make_id, taxii)
+from stix2.sources import (CompositeDataSource, DataSink, DataSource, make_id,
+                           taxii)
 from stix2.sources.filters import apply_common_filters
 from stix2.utils import deduplicate
 
@@ -122,12 +122,6 @@ STIX_OBJS1 = [IND1, IND2, IND3, IND4, IND5]
 
 
 def test_ds_abstract_class_smoke():
-    with pytest.raises(TypeError):
-        DataStore()
-
-    with pytest.raises(TypeError):
-        DataStore.get()
-
     with pytest.raises(TypeError):
         DataSource()
 
