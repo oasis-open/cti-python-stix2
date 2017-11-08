@@ -103,7 +103,7 @@ class MemoryStore(DataStore):
             sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True)
         )
 
-    def save_to_file(self, file_path, allow_custom=False):
+    def save_to_file(self, *args, **kwargs):
         """Write SITX objects from in-memory dictionary to JSON file, as a STIX
         Bundle.
 
@@ -113,9 +113,9 @@ class MemoryStore(DataStore):
                 not. Default: False.
 
         """
-        return self.sink.save_to_file(file_path=file_path, allow_custom=allow_custom)
+        return self.sink.save_to_file(*args, **kwargs)
 
-    def load_from_file(self, file_path, allow_custom=False, version=None):
+    def load_from_file(self, *args, **kwargs):
         """Load STIX data from JSON file.
 
         File format is expected to be a single JSON
@@ -129,7 +129,7 @@ class MemoryStore(DataStore):
                 None, use latest version.
 
         """
-        return self.source.load_from_file(file_path=file_path, allow_custom=allow_custom, version=version)
+        return self.source.load_from_file(*args, **kwargs)
 
 
 class MemorySink(DataSink):
