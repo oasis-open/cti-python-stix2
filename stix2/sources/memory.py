@@ -164,7 +164,7 @@ class MemorySink(DataSink):
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
         with open(file_path, "w") as f:
-            f.write(str(Bundle(self._data.values(), allow_custom=allow_custom)))
+            f.write(str(Bundle(list(self._data.values()), allow_custom=allow_custom)))
     save_to_file.__doc__ = MemoryStore.save_to_file.__doc__
 
 
