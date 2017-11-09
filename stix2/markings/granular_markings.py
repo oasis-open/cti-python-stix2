@@ -8,7 +8,7 @@ from stix2.utils import new_version
 
 def get_markings(obj, selectors, inherited=False, descendants=False):
     """
-    Get all markings associated to with the properties.
+    Get all granular markings associated to with the properties.
 
     Args:
         obj: An SDO or SRO object.
@@ -50,8 +50,8 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
 
 def set_markings(obj, marking, selectors):
     """
-    Removes all markings associated with selectors and appends a new granular
-    marking. Refer to `clear_markings` and `add_markings` for details.
+    Remove all granular markings associated with selectors and append a new
+    granular marking. Refer to `clear_markings` and `add_markings` for details.
 
     Args:
         obj: An SDO or SRO object.
@@ -71,14 +71,14 @@ def set_markings(obj, marking, selectors):
 
 def remove_markings(obj, marking, selectors):
     """
-    Removes granular_marking from the granular_markings collection.
+    Remove a granular marking from the granular_markings collection.
 
     Args:
         obj: An SDO or SRO object.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -123,14 +123,14 @@ def remove_markings(obj, marking, selectors):
 
 def add_markings(obj, marking, selectors):
     """
-    Appends a granular_marking to the granular_markings collection.
+    Append a granular marking to the granular_markings collection.
 
     Args:
         obj: An SDO or SRO object.
-        selectors: list of type string, selectors must be relative to the TLO
-            in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: list of type string, selectors must be relative to the TLO
+            in which the properties appear.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -157,7 +157,7 @@ def add_markings(obj, marking, selectors):
 
 def clear_markings(obj, selectors):
     """
-    Removes all granular_markings associated with the selectors.
+    Remove all granular markings associated with the selectors.
 
     Args:
         obj: An SDO or SRO object.
@@ -214,14 +214,14 @@ def clear_markings(obj, selectors):
 
 def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=False):
     """
-    Checks if field is marked by any marking or by specific marking(s).
+    Check if field is marked by any marking or by specific marking(s).
 
     Args:
         obj: An SDO or SRO object.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
         inherited: If True, return markings inherited from the given selector.
         descendants: If True, return granular markings applied to any children
             of the given selector.
