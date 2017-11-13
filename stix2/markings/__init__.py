@@ -1,8 +1,13 @@
 """
-Functions and classes for working with STIX 2 Data Markings.
+Functions for working with STIX 2 Data Markings.
 
-These high level functions will operate on both object level markings and
+These high level functions will operate on both object-level markings and
 granular markings unless otherwise noted in each of the functions.
+
+Note:
+    These functions are also available as methods on SDOs, SROs, and Marking
+    Definitions. The corresponding methods on those classes are identical to
+    these functions except that the `obj` parameter is omitted.
 
 
 .. autosummary::
@@ -20,7 +25,7 @@ from stix2.markings import granular_markings, object_markings
 
 def get_markings(obj, selectors=None, inherited=False, descendants=False):
     """
-    Get all markings associated to the field(s).
+    Get all markings associated to the field(s) specified by selectors.
 
     Args:
         obj: An SDO or SRO object.
@@ -57,15 +62,15 @@ def get_markings(obj, selectors=None, inherited=False, descendants=False):
 
 def set_markings(obj, marking, selectors=None):
     """
-    Removes all markings associated with selectors and appends a new granular
+    Remove all markings associated with selectors and appends a new granular
     marking. Refer to `clear_markings` and `add_markings` for details.
 
     Args:
         obj: An SDO or SRO object.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
 
     Returns:
         A new version of the given SDO or SRO with specified markings removed
@@ -84,14 +89,14 @@ def set_markings(obj, marking, selectors=None):
 
 def remove_markings(obj, marking, selectors=None):
     """
-    Removes granular_marking from the granular_markings collection.
+    Remove a marking from this object.
 
     Args:
         obj: An SDO or SRO object.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -114,14 +119,14 @@ def remove_markings(obj, marking, selectors=None):
 
 def add_markings(obj, marking, selectors=None):
     """
-    Appends a granular_marking to the granular_markings collection.
+    Append a marking to this object.
 
     Args:
         obj: An SDO or SRO object.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the properties appear.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -142,7 +147,7 @@ def add_markings(obj, marking, selectors=None):
 
 def clear_markings(obj, selectors=None):
     """
-    Removes all granular_marking associated with the selectors.
+    Remove all markings associated with the selectors.
 
     Args:
         obj: An SDO or SRO object.
@@ -170,14 +175,14 @@ def clear_markings(obj, selectors=None):
 
 def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=False):
     """
-    Checks if field(s) is marked by any marking or by specific marking(s).
+    Check if field(s) is marked by any marking or by specific marking(s).
 
     Args:
         obj: An SDO or SRO object.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the field(s) appear(s).
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        selectors: string or list of selectors strings relative to the SDO or
+            SRO in which the field(s) appear(s).
         inherited: If True, include object level markings and granular markings
             inherited to determine if the properties is/are marked.
         descendants: If True, include granular markings applied to any children

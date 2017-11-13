@@ -76,7 +76,7 @@ class ObjectFactory(object):
 
 
 class Environment(object):
-    """
+    """Abstract away some of the nasty details of working with STIX content.
 
     Args:
         factory (ObjectFactory, optional): Factory for creating objects with common
@@ -161,9 +161,8 @@ class Environment(object):
                 up.
 
         Returns:
-            The STIX object's creator, or
-            None, if the object contains no `created_by_ref` property or the
-                object's creator cannot be found.
+            The STIX object's creator, or None, if the object contains no
+            `created_by_ref` property or the object's creator cannot be found.
 
         """
         creator_id = obj.get('created_by_ref', '')
