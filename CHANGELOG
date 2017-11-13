@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.4.0 - 2017-11-13
+
+* Adds `creator_of` function to easily get the Identity that created an object,
+  and a `serialize` function for fast serialization without sorting properties.
+* Fixes bugs with DataStores and with adding custom STIX content to Bundles.
+* Supports filtering on any property, not just common properties.
+* Includes internal changes to make it easier to support multiple versions of
+  the STIX specification.
+
 0.3.0 - 2017-10-06
 
 * Adds data stores, object factory, and the environment layer.
