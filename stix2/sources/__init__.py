@@ -16,6 +16,7 @@ import uuid
 
 from six import with_metaclass
 
+from stix2.sources.filters import Filter
 from stix2.utils import deduplicate
 
 
@@ -88,6 +89,28 @@ class DataStore(object):
 
         """
         return self.source.query(*args, **kwargs)
+
+    def relationships(self, *args, **kwargs):
+        """Retrieve Relationships involving the given STIX object.
+
+        Translate relationships() call to the appropriate DataSource call.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of Relationship objects involving the given STIX object.
+
+        """
+        return self.source.relationships(*args, **kwargs)
 
     def add(self, *args, **kwargs):
         """Method for storing STIX objects.
@@ -188,6 +211,28 @@ class DataSource(with_metaclass(ABCMeta)):
 
         Returns:
             stix_objs (list): a list of STIX objects
+
+        """
+
+    @abstractmethod
+    def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """
+        Implement: The specific data source API calls, processing,
+        functionality required for dereferencing relationships.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of Relationship objects involving the given STIX object.
 
         """
 
@@ -353,6 +398,49 @@ class CompositeDataSource(DataSource):
             all_data = deduplicate(all_data)
 
         return all_data
+
+    def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """Retrieve Relationships involving the given STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Federated relationships retrieve method - iterates through all
+        DataSources defined in "data_sources".
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of Relationship objects involving the given STIX object.
+
+        """
+        results = []
+        filters = [Filter('type', '=', 'relationship')]
+
+        try:
+            obj_id = obj.get('id', '')
+        except AttributeError:
+            obj_id = obj
+
+        if relationship_type:
+            filters.append(Filter('relationship_type', '=', relationship_type))
+
+        if source_only and target_only:
+            raise ValueError("Search either source only or target only, but not both")
+
+        for ds in self.data_sources:
+            if not target_only:
+                results.extend(ds.query(filters + [Filter('source_ref', '=', obj_id)]))
+            if not source_only:
+                results.extend(ds.query(filters + [Filter('target_ref', '=', obj_id)]))
+
+        return results
 
     def add_data_source(self, data_source):
         """Attach a DataSource to CompositeDataSource instance
