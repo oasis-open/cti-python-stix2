@@ -4,11 +4,7 @@ import stix2
 
 from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, FAKE_TIME, IDENTITY_ID,
                         IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-                        MALWARE_ID, MALWARE_KWARGS)
-
-RELATIONSHIP_ID1 = 'relationship--06520621-5352-4e6a-b976-e8fa3d437ffd'
-RELATIONSHIP_ID2 = 'relationship--181c9c09-43e6-45dd-9374-3bec192f05ef'
-RELATIONSHIP_ID3 = 'relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70'
+                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
 
 
 @pytest.fixture
@@ -17,9 +13,9 @@ def ds():
     idy = stix2.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     ind = stix2.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     mal = stix2.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
-    rel1 = stix2.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_ID1)
-    rel2 = stix2.Relationship(mal, 'targets', idy, id=RELATIONSHIP_ID2)
-    rel3 = stix2.Relationship(cam, 'uses', mal, id=RELATIONSHIP_ID3)
+    rel1 = stix2.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
     stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
     yield stix2.MemoryStore(stix_objs)
 
@@ -242,9 +238,9 @@ def test_relationships(ds):
     resp = env.relationships(mal)
 
     assert len(resp) == 3
-    assert any(x['id'] == RELATIONSHIP_ID1 for x in resp)
-    assert any(x['id'] == RELATIONSHIP_ID2 for x in resp)
-    assert any(x['id'] == RELATIONSHIP_ID3 for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[0] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[1] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
 
 
 def test_relationships_by_type(ds):
@@ -253,7 +249,7 @@ def test_relationships_by_type(ds):
     resp = env.relationships(mal, relationship_type='indicates')
 
     assert len(resp) == 1
-    assert resp[0]['id'] == RELATIONSHIP_ID1
+    assert resp[0]['id'] == RELATIONSHIP_IDS[0]
 
 
 def test_relationships_by_source(ds):
@@ -261,7 +257,7 @@ def test_relationships_by_source(ds):
     resp = env.relationships(MALWARE_ID, source_only=True)
 
     assert len(resp) == 1
-    assert resp[0]['id'] == RELATIONSHIP_ID2
+    assert resp[0]['id'] == RELATIONSHIP_IDS[1]
 
 
 def test_relationships_by_target(ds):
@@ -269,8 +265,8 @@ def test_relationships_by_target(ds):
     resp = env.relationships(MALWARE_ID, target_only=True)
 
     assert len(resp) == 2
-    assert any(x['id'] == RELATIONSHIP_ID1 for x in resp)
-    assert any(x['id'] == RELATIONSHIP_ID3 for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[0] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
 
 
 def test_relationships_by_target_and_type(ds):
@@ -278,7 +274,7 @@ def test_relationships_by_target_and_type(ds):
     resp = env.relationships(MALWARE_ID, relationship_type='uses', target_only=True)
 
     assert len(resp) == 1
-    assert any(x['id'] == RELATIONSHIP_ID3 for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
 
 
 def test_relationships_by_target_and_source(ds):
