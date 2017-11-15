@@ -94,6 +94,26 @@ def test_custom_property_in_bundled_object():
     assert '"x_foo": "bar"' in str(bundle)
 
 
+def test_custom_marking_no_init():
+    @stix2.CustomMarking('x-new-obj', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
+    class NewObj():
+        pass
+
+    no = NewObj(property1='something')
+    assert no.property1 == 'something'
+
+    @stix2.CustomMarking('x-new-obj2', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
+    class NewObj2(object):
+        pass
+
+    no2 = NewObj2(property1='something')
+    assert no2.property1 == 'something'
+
+
 @stix2.sdo.CustomObject('x-new-type', [
     ('property1', stix2.properties.StringProperty(required=True)),
     ('property2', stix2.properties.IntegerProperty()),
