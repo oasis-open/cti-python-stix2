@@ -547,3 +547,11 @@ def test_composite_datasource_operations():
     # nothing returns the same as cds1.query(query1) (the associated query is query2)
     results = cds1.query([])
     assert len(results) == 3
+
+
+def test_composite_datastore_no_datasource():
+    cds = CompositeDataSource()
+
+    with pytest.raises(AttributeError) as excinfo:
+        cds.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert 'CompositeDataSource has no data source' in str(excinfo.value)

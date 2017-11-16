@@ -164,6 +164,14 @@ def test_environment_no_datastore():
         env.query(INDICATOR_ID)
     assert 'Environment has no data source' in str(excinfo.value)
 
+    with pytest.raises(AttributeError) as excinfo:
+        env.relationships(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.related_to(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
 
 def test_environment_add_filters():
     env = stix2.Environment(factory=stix2.ObjectFactory())
@@ -200,7 +208,7 @@ def test_parse_malware():
     assert mal.name == "Cryptolocker"
 
 
-def test_created_by():
+def test_creator_of():
     identity = stix2.Identity(**IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=identity.id)
     env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
@@ -211,7 +219,7 @@ def test_created_by():
     assert creator is identity
 
 
-def test_created_by_no_datasource():
+def test_creator_of_no_datasource():
     identity = stix2.Identity(**IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=identity.id)
     env = stix2.Environment(factory=factory)
@@ -222,11 +230,18 @@ def test_created_by_no_datasource():
     assert 'Environment has no data source' in str(excinfo.value)
 
 
-def test_created_by_not_found():
+def test_creator_of_not_found():
     identity = stix2.Identity(**IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=identity.id)
     env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
 
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    creator = env.creator_of(ind)
+    assert creator is None
+
+
+def test_creator_of_no_created_by_ref():
+    env = stix2.Environment(store=stix2.MemoryStore())
     ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
     creator = env.creator_of(ind)
     assert creator is None
