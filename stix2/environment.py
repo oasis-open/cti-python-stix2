@@ -178,3 +178,10 @@ class Environment(object):
         except AttributeError:
             raise AttributeError('Environment has no data source')
     relationships.__doc__ = DataStore.relationships.__doc__
+
+    def related_to(self, *args, **kwargs):
+        try:
+            return self.source.related_to(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('Environment has no data source')
+    related_to.__doc__ = DataStore.related_to.__doc__

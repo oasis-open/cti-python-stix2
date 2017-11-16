@@ -112,6 +112,30 @@ class DataStore(object):
         """
         return self.source.relationships(*args, **kwargs)
 
+    def related_to(self, *args, **kwargs):
+        """Retrieve STIX Objects that have a Relationship involving the given
+        STIX object.
+
+        Translate related_to() call to the appropriate DataSource call.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                related objects will be looked up.
+            relationship_type (str): Only retrieve objects related by this
+                Relationships type.
+            source_only (bool): Only examine Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only examine Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of STIX objects related to the given STIX object.
+
+        """
+        return self.source.related_to(*args, **kwargs)
+
     def add(self, *args, **kwargs):
         """Method for storing STIX objects.
 
@@ -235,6 +259,48 @@ class DataSource(with_metaclass(ABCMeta)):
             (list): List of Relationship objects involving the given STIX object.
 
         """
+
+    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """Retrieve STIX Objects that have a Relationship involving the given
+        STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                related objects will be looked up.
+            relationship_type (str): Only retrieve objects related by this
+                Relationships type.
+            source_only (bool): Only examine Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only examine Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of STIX objects related to the given STIX object.
+
+        """
+        results = []
+        rels = self.relationships(obj, relationship_type, source_only, target_only)
+
+        try:
+            obj_id = obj.get('id', '')
+        except AttributeError:
+            obj_id = obj
+
+        for r in rels:
+            if not source_only:
+                # relationships() found relationships where target_ref is obj_id
+                source_id = r.source_ref
+                if source_id != obj_id:  # needed if target_only is also false
+                    results.append(self.get(source_id))
+            if not target_only:
+                # relationships() found relationships where source_ref is obj_id
+                target_id = r.target_ref
+                if target_id != obj_id:  # needed if source_only is also false
+                    results.append(self.get(target_id))
+
+        return results
 
 
 class CompositeDataSource(DataSource):

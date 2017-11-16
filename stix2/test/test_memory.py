@@ -352,3 +352,29 @@ def test_relationships_by_target_and_source(rel_mem_store):
         rel_mem_store.relationships(MALWARE_ID, target_only=True, source_only=True)
 
     assert 'not both' in str(excinfo.value)
+
+
+def test_related_to(rel_mem_store):
+    mal = rel_mem_store.get(MALWARE_ID)
+    resp = rel_mem_store.related_to(mal)
+
+    assert len(resp) == 3
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)
+    assert any(x['id'] == IDENTITY_ID for x in resp)
+
+
+def test_related_to_by_source(rel_mem_store):
+    resp = rel_mem_store.related_to(MALWARE_ID, source_only=True)
+
+    assert len(resp) == 1
+    assert any(x['id'] == IDENTITY_ID for x in resp)
+
+
+def test_related_to_by_target(rel_mem_store):
+    resp = rel_mem_store.related_to(MALWARE_ID, target_only=True)
+    print(resp)
+
+    assert len(resp) == 2
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)
