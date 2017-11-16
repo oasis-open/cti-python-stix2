@@ -373,7 +373,6 @@ def test_related_to_by_source(rel_mem_store):
 
 def test_related_to_by_target(rel_mem_store):
     resp = rel_mem_store.related_to(MALWARE_ID, target_only=True)
-    print(resp)
 
     assert len(resp) == 2
     assert any(x['id'] == CAMPAIGN_ID for x in resp)
