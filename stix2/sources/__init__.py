@@ -59,7 +59,10 @@ class DataStore(object):
                 object specified by the "id".
 
         """
-        return self.source.get(*args, **kwargs)
+        try:
+            return self.source.get(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
     def all_versions(self, *args, **kwargs):
         """Retrieve all versions of a single STIX object by ID.
@@ -73,7 +76,10 @@ class DataStore(object):
             stix_objs (list): a list of STIX objects
 
         """
-        return self.source.all_versions(*args, **kwargs)
+        try:
+            return self.source.all_versions(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
     def query(self, *args, **kwargs):
         """Retrieve STIX objects matching a set of filters.
@@ -88,7 +94,10 @@ class DataStore(object):
             stix_objs (list): a list of STIX objects
 
         """
-        return self.source.query(*args, **kwargs)
+        try:
+            return self.source.query(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
     def relationships(self, *args, **kwargs):
         """Retrieve Relationships involving the given STIX object.
@@ -110,7 +119,10 @@ class DataStore(object):
             (list): List of Relationship objects involving the given STIX object.
 
         """
-        return self.source.relationships(*args, **kwargs)
+        try:
+            return self.source.relationships(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
     def related_to(self, *args, **kwargs):
         """Retrieve STIX Objects that have a Relationship involving the given
@@ -134,7 +146,10 @@ class DataStore(object):
             (list): List of STIX objects related to the given STIX object.
 
         """
-        return self.source.related_to(*args, **kwargs)
+        try:
+            return self.source.related_to(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
     def add(self, *args, **kwargs):
         """Method for storing STIX objects.
@@ -146,7 +161,10 @@ class DataStore(object):
             stix_objs (list): a list of STIX objects
 
         """
-        return self.sink.add(*args, **kwargs)
+        try:
+            return self.sink.add(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data sink to put objects in' % self.__class__.__name__)
 
 
 class DataSink(with_metaclass(ABCMeta)):
@@ -238,11 +256,8 @@ class DataSource(with_metaclass(ABCMeta)):
 
         """
 
-    @abstractmethod
     def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
-        """
-        Implement: The specific data source API calls, processing,
-        functionality required for dereferencing relationships.
+        """Retrieve Relationships involving the given STIX object.
 
         Only one of `source_only` and `target_only` may be `True`.
 
@@ -259,6 +274,26 @@ class DataSource(with_metaclass(ABCMeta)):
             (list): List of Relationship objects involving the given STIX object.
 
         """
+        results = []
+        filters = [Filter('type', '=', 'relationship')]
+
+        try:
+            obj_id = obj.get('id', '')
+        except AttributeError:
+            obj_id = obj
+
+        if relationship_type:
+            filters.append(Filter('relationship_type', '=', relationship_type))
+
+        if source_only and target_only:
+            raise ValueError("Search either source only or target only, but not both")
+
+        if not target_only:
+            results.extend(self.query(filters + [Filter('source_ref', '=', obj_id)]))
+        if not source_only:
+            results.extend(self.query(filters + [Filter('target_ref', '=', obj_id)]))
+
+        return results
 
     def related_to(self, obj, relationship_type=None, source_only=False, target_only=False):
         """Retrieve STIX Objects that have a Relationship involving the given
@@ -486,6 +521,9 @@ class CompositeDataSource(DataSource):
             (list): List of Relationship objects involving the given STIX object.
 
         """
+        if not self.has_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
         results = []
         filters = [Filter('type', '=', 'relationship')]
 
@@ -505,6 +543,56 @@ class CompositeDataSource(DataSource):
                 results.extend(ds.query(filters + [Filter('source_ref', '=', obj_id)]))
             if not source_only:
                 results.extend(ds.query(filters + [Filter('target_ref', '=', obj_id)]))
+
+        return results
+
+    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """Retrieve STIX Objects that have a Relationship involving the given
+        STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Federated related objects method - iterates through all
+        DataSources defined in "data_sources".
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                related objects will be looked up.
+            relationship_type (str): Only retrieve objects related by this
+                Relationships type.
+            source_only (bool): Only examine Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only examine Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of STIX objects related to the given STIX object.
+
+        """
+        if not self.has_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
+        results = []
+        for ds in self.data_sources:
+            rels = ds.relationships(obj, relationship_type, source_only, target_only)
+
+        try:
+            obj_id = obj.get('id', '')
+        except AttributeError:
+            obj_id = obj
+
+        for ds in self.data_sources:
+            for r in rels:
+                if not source_only:
+                    # relationships() found relationships where target_ref is obj_id
+                    source_id = r.source_ref
+                    if source_id != obj_id:  # needed if target_only is also false
+                        results.append(ds.get(source_id))
+                if not target_only:
+                    # relationships() found relationships where source_ref is obj_id
+                    target_id = r.target_ref
+                    if target_id != obj_id:  # needed if source_only is also false
+                        results.append(ds.get(target_id))
 
         return results
 

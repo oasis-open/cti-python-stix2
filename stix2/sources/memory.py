@@ -301,45 +301,6 @@ class MemorySource(DataSource):
 
         return all_data
 
-    def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
-        """Retrieve Relationships involving the given STIX object.
-
-        Only one of `source_only` and `target_only` may be `True`.
-
-        Args:
-            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
-                relationships will be looked up.
-            relationship_type (str): Only retrieve Relationships of this type.
-            source_only (bool): Only retrieve Relationships for which this
-                object is the source_ref. Default: False.
-            target_only (bool): Only retrieve Relationships for which this
-                object is the target_ref. Default: False.
-
-        Returns:
-            (list): List of Relationship objects involving the given STIX object.
-
-        """
-        results = []
-        filters = [Filter('type', '=', 'relationship')]
-
-        try:
-            obj_id = obj.get('id', '')
-        except AttributeError:
-            obj_id = obj
-
-        if relationship_type:
-            filters.append(Filter('relationship_type', '=', relationship_type))
-
-        if source_only and target_only:
-            raise ValueError("Search either source only or target only, but not both")
-
-        if not target_only:
-            results.extend(self.query(filters + [Filter('source_ref', '=', obj_id)]))
-        if not source_only:
-            results.extend(self.query(filters + [Filter('target_ref', '=', obj_id)]))
-
-        return results
-
     def load_from_file(self, file_path, allow_custom=False, version=None):
         file_path = os.path.abspath(file_path)
         stix_data = json.load(open(file_path, "r"))
