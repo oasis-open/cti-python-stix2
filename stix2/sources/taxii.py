@@ -1,6 +1,7 @@
 """
 Python STIX 2.x TAXIICollectionStore
 """
+from requests.exceptions import HTTPError
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
@@ -121,9 +122,13 @@ class TAXIICollectionSource(DataSource):
 
         # dont extract TAXII filters from query (to send to TAXII endpoint)
         # as directly retrieveing a STIX object by ID
-        stix_objs = self.collection.get_object(stix_id)["objects"]
+        try:
+            stix_objs = self.collection.get_object(stix_id)["objects"]
+            stix_obj = list(apply_common_filters(stix_objs, query))
 
-        stix_obj = list(apply_common_filters(stix_objs, query))
+        except HTTPError:
+            # if resource not found or access is denied from TAXII server, return None
+            stix_obj = []
 
         if len(stix_obj):
             stix_obj = parse(stix_obj[0], allow_custom=allow_custom, version=version)
@@ -209,13 +214,18 @@ class TAXIICollectionSource(DataSource):
         taxii_filters = self._parse_taxii_filters(query)
 
         # query TAXII collection
-        all_data = self.collection.get_objects(filters=taxii_filters)["objects"]
+        try:
+            all_data = self.collection.get_objects(filters=taxii_filters)["objects"]
 
-        # deduplicate data (before filtering as reduces wasted filtering)
-        all_data = deduplicate(all_data)
+            # deduplicate data (before filtering as reduces wasted filtering)
+            all_data = deduplicate(all_data)
 
-        # apply local (CompositeDataSource, TAXIICollectionSource and query filters)
-        all_data = list(apply_common_filters(all_data, query))
+            # apply local (CompositeDataSource, TAXIICollectionSource and query filters)
+            all_data = list(apply_common_filters(all_data, query))
+
+        except HTTPError:
+            # if resources not found or access is denied from TAXII server, return empty list
+            all_data = []
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict, allow_custom=allow_custom, version=version) for stix_obj_dict in all_data]

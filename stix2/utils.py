@@ -1,5 +1,5 @@
 """Utility functions and classes for the stix2 library."""
-
+# HACK
 from collections import Mapping
 import copy
 import datetime as dt
