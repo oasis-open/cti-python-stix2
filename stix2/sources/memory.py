@@ -2,9 +2,6 @@
 Python STIX 2.0 Memory Source/Sink
 
 TODO:
-    Run through tests again, lot of changes.
-
-TODO:
     Use deduplicate() calls only when memory corpus is dirty (been added to)
     can save a lot of time for successive queries
 
@@ -302,7 +299,14 @@ class MemorySource(DataSource):
         return all_data
 
     def load_from_file(self, file_path, allow_custom=False, version=None):
+        """ Load JSON formatted STIX content from file and add to Memory."""
         file_path = os.path.abspath(file_path)
-        stix_data = json.load(open(file_path, "r"))
+
+        # converting the STIX content to JSON encoded string before calling
+        # _add() so that the STIX content is added as python-stix2 objects
+        # to the in-memory dict. Otherwise, if you pass a dict to _add(),
+        # it gets stored as a dict.
+        stix_data = json.dumps(json.load(open(file_path, "r")))
+
         _add(self, stix_data, allow_custom=allow_custom, version=version)
     load_from_file.__doc__ = MemoryStore.load_from_file.__doc__
