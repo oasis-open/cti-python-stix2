@@ -110,6 +110,7 @@ class DataStore(object):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 relationships will be looked up.
             relationship_type (str): Only retrieve Relationships of this type.
+                If None, all relationships will be returned, regardless of type.
             source_only (bool): Only retrieve Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only retrieve Relationships for which this
@@ -136,7 +137,8 @@ class DataStore(object):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 related objects will be looked up.
             relationship_type (str): Only retrieve objects related by this
-                Relationships type.
+                Relationships type. If None, all related objects will be
+                returned, regardless of type.
             source_only (bool): Only examine Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only examine Relationships for which this
@@ -265,6 +267,7 @@ class DataSource(with_metaclass(ABCMeta)):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 relationships will be looked up.
             relationship_type (str): Only retrieve Relationships of this type.
+                If None, all relationships will be returned, regardless of type.
             source_only (bool): Only retrieve Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only retrieve Relationships for which this
@@ -305,7 +308,8 @@ class DataSource(with_metaclass(ABCMeta)):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 related objects will be looked up.
             relationship_type (str): Only retrieve objects related by this
-                Relationships type.
+                Relationships type. If None, all related objects will be
+                returned, regardless of type.
             source_only (bool): Only examine Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only examine Relationships for which this
@@ -512,6 +516,7 @@ class CompositeDataSource(DataSource):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 relationships will be looked up.
             relationship_type (str): Only retrieve Relationships of this type.
+                If None, all relationships will be returned, regardless of type.
             source_only (bool): Only retrieve Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only retrieve Relationships for which this
@@ -559,7 +564,8 @@ class CompositeDataSource(DataSource):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 related objects will be looked up.
             relationship_type (str): Only retrieve objects related by this
-                Relationships type.
+                Relationships type. If None, all related objects will be
+                returned, regardless of type.
             source_only (bool): Only examine Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only examine Relationships for which this
