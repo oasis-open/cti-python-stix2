@@ -74,3 +74,11 @@ def test_get_dict(data):
 def test_get_dict_invalid(data):
     with pytest.raises(ValueError):
         stix2.utils.get_dict(data)
+
+
+@pytest.mark.parametrize('stix_id, typ', [
+    ('malware--d69c8146-ab35-4d50-8382-6fc80e641d43', 'malware'),
+    ('intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542', 'intrusion-set')
+])
+def test_get_type_from_id(stix_id, typ):
+    assert stix2.utils.get_type_from_id(stix_id) == typ
