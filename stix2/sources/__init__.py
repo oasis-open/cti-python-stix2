@@ -331,17 +331,14 @@ class DataSource(with_metaclass(ABCMeta)):
             # Assume `obj` is an ID string
             obj_id = obj
 
+        # Get all unique ids from the relationships except that of the object
+        ids = set()
         for r in rels:
-            if not source_only:
-                # relationships() found relationships where target_ref is obj_id
-                source_id = r.source_ref
-                if source_id != obj_id:  # needed if target_only is also false
-                    results.append(self.get(source_id))
-            if not target_only:
-                # relationships() found relationships where source_ref is obj_id
-                target_id = r.target_ref
-                if target_id != obj_id:  # needed if source_only is also false
-                    results.append(self.get(target_id))
+            ids.update((r.source_ref, r.target_ref))
+        ids.remove(obj_id)
+
+        for i in ids:
+            results.append(self.get(i))
 
         return results
 
