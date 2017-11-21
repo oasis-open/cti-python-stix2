@@ -45,7 +45,7 @@ def fs_sink():
     shutil.rmtree(os.path.join(FS_PATH, "campaign"), True)
 
 
-@pytest.fixture
+@pytest.fixture(scope='module')
 def rel_fs_store():
     cam = Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     idy = Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
