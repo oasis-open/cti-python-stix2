@@ -99,6 +99,26 @@ class DataStore(object):
         except AttributeError:
             raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
+    def creator_of(self, *args, **kwargs):
+        """Retrieve the Identity refered to by the object's `created_by_ref`.
+
+        Translate creator_of() call to the appropriate DataSource call.
+
+        Args:
+            obj: The STIX object whose `created_by_ref` property will be looked
+                up.
+
+        Returns:
+            The STIX object's creator, or
+            None, if the object contains no `created_by_ref` property or the
+                object's creator cannot be found.
+
+        """
+        try:
+            return self.source.creator_of(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+
     def relationships(self, *args, **kwargs):
         """Retrieve Relationships involving the given STIX object.
 
@@ -257,6 +277,25 @@ class DataSource(with_metaclass(ABCMeta)):
             stix_objs (list): a list of STIX objects
 
         """
+
+    def creator_of(self, obj):
+        """Retrieve the Identity refered to by the object's `created_by_ref`.
+
+        Args:
+            obj: The STIX object whose `created_by_ref` property will be looked
+                up.
+
+        Returns:
+            The STIX object's creator, or
+            None, if the object contains no `created_by_ref` property or the
+                object's creator cannot be found.
+
+        """
+        creator_id = obj.get('created_by_ref', '')
+        if creator_id:
+            return self.get(creator_id)
+        else:
+            return None
 
     def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
         """Retrieve Relationships involving the given STIX object.

@@ -108,6 +108,7 @@ class Environment(object):
     get = DataStore.__dict__['get']
     all_versions = DataStore.__dict__['all_versions']
     query = DataStore.__dict__['query']
+    creator_of = DataStore.__dict__['creator_of']
     relationships = DataStore.__dict__['relationships']
     related_to = DataStore.__dict__['related_to']
     add = DataStore.__dict__['add']
@@ -127,22 +128,3 @@ class Environment(object):
     def parse(self, *args, **kwargs):
         return _parse(*args, **kwargs)
     parse.__doc__ = _parse.__doc__
-
-    def creator_of(self, obj):
-        """Retrieve the Identity refered to by the object's `created_by_ref`.
-
-        Args:
-            obj: The STIX object whose `created_by_ref` property will be looked
-                up.
-
-        Returns:
-            The STIX object's creator, or
-            None, if the object contains no `created_by_ref` property or the
-                object's creator cannot be found.
-
-        """
-        creator_id = obj.get('created_by_ref', '')
-        if creator_id:
-            return self.get(creator_id)
-        else:
-            return None
