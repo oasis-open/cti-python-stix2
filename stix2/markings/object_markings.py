@@ -23,7 +23,7 @@ def get_markings(obj):
 
 def add_markings(obj, marking):
     """
-    Appends an object level marking to the object_marking_refs collection.
+    Append an object level marking to the object_marking_refs collection.
 
     Args:
         obj: A SDO or SRO object.
@@ -42,7 +42,7 @@ def add_markings(obj, marking):
 
 def remove_markings(obj, marking):
     """
-    Removes object level marking from the object_marking_refs collection.
+    Remove an object level marking from the object_marking_refs collection.
 
     Args:
         obj: A SDO or SRO object.
@@ -76,7 +76,7 @@ def remove_markings(obj, marking):
 
 def set_markings(obj, marking):
     """
-    Removes all object level markings and appends new object level markings to
+    Remove all object level markings and append new object level markings to
     the collection. Refer to `clear_markings` and `add_markings` for details.
 
     Args:
@@ -94,7 +94,7 @@ def set_markings(obj, marking):
 
 def clear_markings(obj):
     """
-    Removes all object level markings from the object_marking_refs collection.
+    Remove all object level markings from the object_marking_refs collection.
 
     Args:
         obj: A SDO or SRO object.
@@ -108,7 +108,7 @@ def clear_markings(obj):
 
 def is_marked(obj, marking=None):
     """
-    Checks if SDO or SRO is marked by any marking or by specific marking(s).
+    Check if SDO or SRO is marked by any marking or by specific marking(s).
 
     Args:
         obj: A SDO or SRO object.

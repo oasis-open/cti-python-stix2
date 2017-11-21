@@ -109,9 +109,8 @@ class DataStore(object):
                 up.
 
         Returns:
-            The STIX object's creator, or
-            None, if the object contains no `created_by_ref` property or the
-                object's creator cannot be found.
+            The STIX object's creator, or None, if the object contains no
+            `created_by_ref` property or the object's creator cannot be found.
 
         """
         try:
@@ -286,9 +285,8 @@ class DataSource(with_metaclass(ABCMeta)):
                 up.
 
         Returns:
-            The STIX object's creator, or
-            None, if the object contains no `created_by_ref` property or the
-                object's creator cannot be found.
+            The STIX object's creator, or None, if the object contains no
+            `created_by_ref` property or the object's creator cannot be found.
 
         """
         creator_id = obj.get('created_by_ref', '')

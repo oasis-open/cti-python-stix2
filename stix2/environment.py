@@ -76,7 +76,7 @@ class ObjectFactory(object):
 
 
 class Environment(object):
-    """
+    """Abstract away some of the nasty details of working with STIX content.
 
     Args:
         factory (ObjectFactory, optional): Factory for creating objects with common

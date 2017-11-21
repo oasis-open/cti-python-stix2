@@ -3,17 +3,17 @@
 .. autosummary::
    :toctree: api
 
-   common
+   v20.common
    core
    environment
    exceptions
    markings
-   observables
+   v20.observables
    patterns
    properties
-   sdo
+   v20.sdo
    sources
-   sro
+   v20.sro
    utils
 """
 
