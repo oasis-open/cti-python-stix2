@@ -281,8 +281,11 @@ class DataSource(with_metaclass(ABCMeta)):
         filters = [Filter('type', '=', 'relationship')]
 
         try:
-            obj_id = obj.get('id', '')
-        except AttributeError:
+            obj_id = obj['id']
+        except KeyError:
+            raise ValueError("STIX object has no 'id' property")
+        except TypeError:
+            # Assume `obj` is an ID string
             obj_id = obj
 
         if relationship_type:
@@ -323,8 +326,11 @@ class DataSource(with_metaclass(ABCMeta)):
         rels = self.relationships(obj, relationship_type, source_only, target_only)
 
         try:
-            obj_id = obj.get('id', '')
-        except AttributeError:
+            obj_id = obj['id']
+        except KeyError:
+            raise ValueError("STIX object has no 'id' property")
+        except TypeError:
+            # Assume `obj` is an ID string
             obj_id = obj
 
         for r in rels:
@@ -533,8 +539,11 @@ class CompositeDataSource(DataSource):
         filters = [Filter('type', '=', 'relationship')]
 
         try:
-            obj_id = obj.get('id', '')
-        except AttributeError:
+            obj_id = obj['id']
+        except KeyError:
+            raise ValueError("STIX object has no 'id' property")
+        except TypeError:
+            # Assume `obj` is an ID string
             obj_id = obj
 
         if relationship_type:
@@ -583,8 +592,11 @@ class CompositeDataSource(DataSource):
             rels = ds.relationships(obj, relationship_type, source_only, target_only)
 
         try:
-            obj_id = obj.get('id', '')
-        except AttributeError:
+            obj_id = obj['id']
+        except KeyError:
+            raise ValueError("STIX object has no 'id' property")
+        except TypeError:
+            # Assume `obj` is an ID string
             obj_id = obj
 
         for ds in self.data_sources:

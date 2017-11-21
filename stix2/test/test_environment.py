@@ -258,6 +258,17 @@ def test_relationships(ds):
     assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
 
 
+def test_relationships_no_id(ds):
+    env = stix2.Environment(store=ds)
+    mal = {
+        "type": "malware",
+        "name": "some variant"
+    }
+    with pytest.raises(ValueError) as excinfo:
+        env.relationships(mal)
+    assert "object has no 'id' property" in str(excinfo.value)
+
+
 def test_relationships_by_type(ds):
     env = stix2.Environment(store=ds)
     mal = env.get(MALWARE_ID)
@@ -309,6 +320,17 @@ def test_related_to(ds):
     assert any(x['id'] == CAMPAIGN_ID for x in resp)
     assert any(x['id'] == INDICATOR_ID for x in resp)
     assert any(x['id'] == IDENTITY_ID for x in resp)
+
+
+def test_related_to_no_id(ds):
+    env = stix2.Environment(store=ds)
+    mal = {
+        "type": "malware",
+        "name": "some variant"
+    }
+    with pytest.raises(ValueError) as excinfo:
+        env.related_to(mal)
+    assert "object has no 'id' property" in str(excinfo.value)
 
 
 def test_related_to_by_source(ds):
