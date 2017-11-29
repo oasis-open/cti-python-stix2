@@ -232,9 +232,9 @@ def new_version(data, **kwargs):
         new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
         if new_modified_property <= old_modified_property:
             raise InvalidValueError(cls, 'modified',
-                                    "The new modified datetime cannot be before the current modified datetime. The new modified time can "
-                                    "also not be equal to the current modified datetime because if a consumer receives two objects that are "
-                                    "different, but have the same id and modified timestamp, it is not defined how the consumer handles the objects.")
+                                    "The new modified datetime cannot be before than or equal to the current modified datetime."
+                                    "It cannot be equal, as according to STIX 2 specification, objects that are different "
+                                    "but have the same id and modified timestamp do not have defined consumer behavior.")
     new_obj_inner.update(kwargs)
     # Exclude properties with a value of 'None' in case data is not an instance of a _STIXBase subclass
     return cls(**{k: v for k, v in new_obj_inner.items() if v is not None})
@@ -269,9 +269,12 @@ def remove_custom_stix(stix_obj):
     Args:
         stix_obj (dict OR python-stix obj): a single python-stix object
                                              or dict of a STIX object
+
+    Returns:
+        A new version of the object with any custom content removed
     """
 
-    if stix_obj["type"].startswith("x_"):
+    if stix_obj["type"].startswith("x-"):
         # if entire object is custom, discard
         return None
 
