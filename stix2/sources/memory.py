@@ -297,7 +297,6 @@ class MemorySource(DataSource):
 
         if stix_data["type"] == "bundle":
             for stix_obj in stix_data["objects"]:
-                print(stix_obj)
                 _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom, version=stix_data["spec_version"]))
         else:
             _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom, version=version))
