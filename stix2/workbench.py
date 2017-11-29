@@ -1,6 +1,9 @@
 """Functions and class wrappers for interacting with STIX data at a high level.
 """
 
+from . import (AttackPattern, Campaign, CourseOfAction, CustomObject, Identity,
+               Indicator, IntrusionSet, Malware, ObservedData, Report,
+               ThreatActor, Tool, Vulnerability)
 from .environment import Environment
 from .sources.filters import Filter
 from .sources.memory import MemoryStore
@@ -19,6 +22,31 @@ add_filters = _environ.add_filters
 add_filter = _environ.add_filter
 parse = _environ.parse
 add_data_source = _environ.source.add_data_source
+
+
+# Wrap SDOs with helper functions
+
+
+def created_by_wrapper(self, *args, **kwargs):
+    return _environ.creator_of(self, *args, **kwargs)
+
+
+def relationships_wrapper(self, *args, **kwargs):
+    return _environ.relationships(self, *args, **kwargs)
+
+
+def related_wrapper(self, *args, **kwargs):
+    return _environ.related_to(self, *args, **kwargs)
+
+
+STIX_OBJS = [AttackPattern, Campaign, CourseOfAction, CustomObject, Identity,
+             Indicator, IntrusionSet, Malware, ObservedData, Report,
+             ThreatActor, Tool, Vulnerability]
+
+for obj_type in STIX_OBJS:
+    obj_type.created_by = created_by_wrapper
+    obj_type.relationships = relationships_wrapper
+    obj_type.related = related_wrapper
 
 
 # Functions to get all objects of a specific type

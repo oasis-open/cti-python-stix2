@@ -137,3 +137,34 @@ def test_workbench_get_all_vulnerabilities():
     resp = vulnerabilities()
     assert len(resp) == 1
     assert resp[0].id == VULNERABILITY_ID
+
+
+def test_workbench_relationships():
+    rel = stix2.Relationship(INDICATOR_ID, 'indicates', MALWARE_ID)
+    add(rel)
+
+    ind = get(INDICATOR_ID)
+    resp = ind.relationships()
+    assert len(resp) == 1
+    assert resp[0].relationship_type == 'indicates'
+    assert resp[0].source_ref == INDICATOR_ID
+    assert resp[0].target_ref == MALWARE_ID
+
+
+def test_workbench_created_by():
+    intset = stix2.IntrusionSet(name="Breach 123", created_by_ref=IDENTITY_ID)
+    add(intset)
+    creator = intset.created_by()
+    assert creator.id == IDENTITY_ID
+
+
+def test_workbench_related():
+    rel1 = stix2.Relationship(MALWARE_ID, 'targets', IDENTITY_ID)
+    rel2 = stix2.Relationship(CAMPAIGN_ID, 'uses', MALWARE_ID)
+    add([rel1, rel2])
+
+    resp = get(MALWARE_ID).related()
+    assert len(resp) == 3
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)
+    assert any(x['id'] == IDENTITY_ID for x in resp)
