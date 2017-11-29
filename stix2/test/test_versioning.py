@@ -223,8 +223,8 @@ def test_remove_custom_stix_property():
     mal_nc = stix2.utils.remove_custom_stix(mal)
 
     assert "x_custom" not in mal_nc
-    assert stix2.utils.parse_into_datetime(mal["modified"], precision="microsecond") < stix2.utils.parse_into_datetime(mal_nc["modified"],
-                                                                                                                       precision="microsecond")
+    assert stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") < stix2.utils.parse_into_datetime(mal_nc["modified"],
+                                                                                                                       precision="millisecond")
 
 
 def test_remove_custom_stix_object():

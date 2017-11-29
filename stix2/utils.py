@@ -303,7 +303,14 @@ def remove_custom_stix(stix_obj):
         # add to set the custom properties we want to get rid of (with their value=None)
         props.extend(custom_props)
 
-        return new_version(stix_obj, **(dict(props)))
+        new_obj = new_version(stix_obj, **(dict(props)))
+
+        while parse_into_datetime(new_obj["modified"]) == parse_into_datetime(stix_obj["modified"]):
+            # Prevents bug when fast computation allows multiple STIX object
+            # versions to be created in single unit of time
+            new_obj = new_version(stix_obj, **(dict(props)))
+
+        return new_obj
 
     else:
         return stix_obj
