@@ -10,6 +10,11 @@ FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
 
 """Supported filter value types"""
 FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
+try:
+    FILTER_VALUE_TYPES.append(unicode)
+except NameError:
+    # Python 3 doesn't need to worry about unicode
+    pass
 
 
 def _check_filter_components(prop, op, value):

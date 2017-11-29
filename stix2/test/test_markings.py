@@ -187,7 +187,8 @@ def test_parse_marking_definition(data):
 ])
 class NewMarking(object):
     def __init__(self, property2=None, **kwargs):
-        return
+        if "property3" in kwargs and not isinstance(kwargs.get("property3"), int):
+            raise TypeError("Must be integer!")
 
 
 def test_registered_custom_marking():
@@ -206,6 +207,13 @@ def test_registered_custom_marking():
     assert marking_def.definition.property1 == "something"
     assert marking_def.definition.property2 == 55
     assert marking_def.definition_type == "x-new-marking-type"
+
+
+def test_registered_custom_marking_raises_exception():
+    with pytest.raises(TypeError) as excinfo:
+        NewMarking(property1='something', property3='something', allow_custom=True)
+
+    assert str(excinfo.value) == "Must be integer!"
 
 
 def test_not_registered_marking_raises_exception():
