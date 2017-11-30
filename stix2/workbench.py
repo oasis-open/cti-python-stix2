@@ -1,9 +1,18 @@
 """Functions and class wrappers for interacting with STIX data at a high level.
 """
 
-from . import (AttackPattern, Campaign, CourseOfAction, CustomObject, Identity,
-               Indicator, IntrusionSet, Malware, ObservedData, Report,
-               ThreatActor, Tool, Vulnerability)
+from . import AttackPattern as _AttackPattern
+from . import Campaign as _Campaign
+from . import CourseOfAction as _CourseOfAction
+from . import Identity as _Identity
+from . import Indicator as _Indicator
+from . import IntrusionSet as _IntrusionSet
+from . import Malware as _Malware
+from . import ObservedData as _ObservedData
+from . import Report as _Report
+from . import ThreatActor as _ThreatActor
+from . import Tool as _Tool
+from . import Vulnerability as _Vulnerability
 from .environment import Environment
 from .sources.filters import Filter
 from .sources.memory import MemoryStore
@@ -27,6 +36,11 @@ add_data_source = _environ.source.add_data_source
 # Wrap SDOs with helper functions
 
 
+STIX_OBJS = [_AttackPattern, _Campaign, _CourseOfAction, _Identity,
+             _Indicator, _IntrusionSet, _Malware, _ObservedData, _Report,
+             _ThreatActor, _Tool, _Vulnerability]
+
+
 def created_by_wrapper(self, *args, **kwargs):
     return _environ.creator_of(self, *args, **kwargs)
 
@@ -39,14 +53,26 @@ def related_wrapper(self, *args, **kwargs):
     return _environ.related_to(self, *args, **kwargs)
 
 
-STIX_OBJS = [AttackPattern, Campaign, CourseOfAction, CustomObject, Identity,
-             Indicator, IntrusionSet, Malware, ObservedData, Report,
-             ThreatActor, Tool, Vulnerability]
+def constructor_wrapper(obj_type):
+    # Use an intermediate wrapper class so the implicit environment will create objects that have our wrapper functions
+    wrapped_type = type(obj_type.__name__, obj_type.__bases__, dict(
+        created_by=created_by_wrapper,
+        relationships=relationships_wrapper,
+        related=related_wrapper,
+        **obj_type.__dict__
+    ))
 
+    @staticmethod
+    def new_constructor(cls, *args, **kwargs):
+        return _environ.create(wrapped_type, *args, **kwargs)
+    return new_constructor
+
+
+# Create wrapper classes whose constructors call the implicit environment's create()
 for obj_type in STIX_OBJS:
-    obj_type.created_by = created_by_wrapper
-    obj_type.relationships = relationships_wrapper
-    obj_type.related = related_wrapper
+    new_class = type(obj_type.__name__, (), {})
+    new_class.__new__ = constructor_wrapper(obj_type)
+    globals()[obj_type.__name__] = new_class
 
 
 # Functions to get all objects of a specific type

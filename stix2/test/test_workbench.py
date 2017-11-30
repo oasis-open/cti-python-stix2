@@ -1,5 +1,8 @@
 import stix2
-from stix2.workbench import (add, all_versions, attack_patterns, campaigns,
+from stix2.workbench import (AttackPattern, Campaign, CourseOfAction, Identity,
+                             Indicator, IntrusionSet, Malware, ObservedData,
+                             Report, ThreatActor, Tool, Vulnerability, add,
+                             all_versions, attack_patterns, campaigns,
                              courses_of_action, create, get, identities,
                              indicators, intrusion_sets, malware,
                              observed_data, query, reports, threat_actors,
@@ -19,7 +22,7 @@ from .constants import (ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID,
 def test_workbench_environment():
 
     # Create a STIX object
-    ind = create(stix2.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
+    ind = create(Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
     add(ind)
 
     resp = get(INDICATOR_ID)
@@ -35,7 +38,7 @@ def test_workbench_environment():
 
 
 def test_workbench_get_all_attack_patterns():
-    mal = stix2.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
+    mal = AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
     add(mal)
 
     resp = attack_patterns()
@@ -44,7 +47,7 @@ def test_workbench_get_all_attack_patterns():
 
 
 def test_workbench_get_all_campaigns():
-    cam = stix2.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    cam = Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     add(cam)
 
     resp = campaigns()
@@ -53,7 +56,7 @@ def test_workbench_get_all_campaigns():
 
 
 def test_workbench_get_all_courses_of_action():
-    coa = stix2.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS)
+    coa = CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS)
     add(coa)
 
     resp = courses_of_action()
@@ -62,7 +65,7 @@ def test_workbench_get_all_courses_of_action():
 
 
 def test_workbench_get_all_identities():
-    idty = stix2.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    idty = Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     add(idty)
 
     resp = identities()
@@ -77,7 +80,7 @@ def test_workbench_get_all_indicators():
 
 
 def test_workbench_get_all_intrusion_sets():
-    ins = stix2.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS)
+    ins = IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS)
     add(ins)
 
     resp = intrusion_sets()
@@ -86,7 +89,7 @@ def test_workbench_get_all_intrusion_sets():
 
 
 def test_workbench_get_all_malware():
-    mal = stix2.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
+    mal = Malware(id=MALWARE_ID, **MALWARE_KWARGS)
     add(mal)
 
     resp = malware()
@@ -95,7 +98,7 @@ def test_workbench_get_all_malware():
 
 
 def test_workbench_get_all_observed_data():
-    od = stix2.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS)
+    od = ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS)
     add(od)
 
     resp = observed_data()
@@ -104,7 +107,7 @@ def test_workbench_get_all_observed_data():
 
 
 def test_workbench_get_all_reports():
-    rep = stix2.Report(id=REPORT_ID, **REPORT_KWARGS)
+    rep = Report(id=REPORT_ID, **REPORT_KWARGS)
     add(rep)
 
     resp = reports()
@@ -113,7 +116,7 @@ def test_workbench_get_all_reports():
 
 
 def test_workbench_get_all_threat_actors():
-    thr = stix2.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
+    thr = ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
     add(thr)
 
     resp = threat_actors()
@@ -122,7 +125,7 @@ def test_workbench_get_all_threat_actors():
 
 
 def test_workbench_get_all_tools():
-    tool = stix2.Tool(id=TOOL_ID, **TOOL_KWARGS)
+    tool = Tool(id=TOOL_ID, **TOOL_KWARGS)
     add(tool)
 
     resp = tools()
@@ -131,7 +134,7 @@ def test_workbench_get_all_tools():
 
 
 def test_workbench_get_all_vulnerabilities():
-    vuln = stix2.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
+    vuln = Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
     add(vuln)
 
     resp = vulnerabilities()
@@ -152,7 +155,7 @@ def test_workbench_relationships():
 
 
 def test_workbench_created_by():
-    intset = stix2.IntrusionSet(name="Breach 123", created_by_ref=IDENTITY_ID)
+    intset = IntrusionSet(name="Breach 123", created_by_ref=IDENTITY_ID)
     add(intset)
     creator = intset.created_by()
     assert creator.id == IDENTITY_ID
