@@ -94,6 +94,28 @@ def test_custom_property_in_bundled_object():
     assert '"x_foo": "bar"' in str(bundle)
 
 
+def test_custom_marking_no_init_1():
+    @stix2.CustomMarking('x-new-obj', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
+    class NewObj():
+        pass
+
+    no = NewObj(property1='something')
+    assert no.property1 == 'something'
+
+
+def test_custom_marking_no_init_2():
+    @stix2.CustomMarking('x-new-obj2', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
+    class NewObj2(object):
+        pass
+
+    no2 = NewObj2(property1='something')
+    assert no2.property1 == 'something'
+
+
 @stix2.sdo.CustomObject('x-new-type', [
     ('property1', stix2.properties.StringProperty(required=True)),
     ('property2', stix2.properties.IntegerProperty()),
@@ -102,6 +124,15 @@ class NewType(object):
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
+        if "property3" in kwargs and not isinstance(kwargs.get("property3"), int):
+            raise TypeError("Must be integer!")
+
+
+def test_custom_object_raises_exception():
+    with pytest.raises(TypeError) as excinfo:
+        NewType(property1='something', property3='something', allow_custom=True)
+
+    assert str(excinfo.value) == "Must be integer!"
 
 
 def test_custom_object_type():
@@ -117,7 +148,7 @@ def test_custom_object_type():
     assert "'property2' is too small." in str(excinfo.value)
 
 
-def test_custom_object_no_init():
+def test_custom_object_no_init_1():
     @stix2.sdo.CustomObject('x-new-obj', [
         ('property1', stix2.properties.StringProperty(required=True)),
     ])
@@ -127,6 +158,8 @@ def test_custom_object_no_init():
     no = NewObj(property1='something')
     assert no.property1 == 'something'
 
+
+def test_custom_object_no_init_2():
     @stix2.sdo.CustomObject('x-new-obj2', [
         ('property1', stix2.properties.StringProperty(required=True)),
     ])
@@ -170,23 +203,36 @@ class NewObservable():
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
+        if "property3" in kwargs and not isinstance(kwargs.get("property3"), int):
+            raise TypeError("Must be integer!")
 
 
-def test_custom_observable_object():
+def test_custom_observable_object_1():
     no = NewObservable(property1='something')
     assert no.property1 == 'something'
 
+
+def test_custom_observable_object_2():
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         NewObservable(property2=42)
     assert excinfo.value.properties == ['property1']
     assert "No values for required properties" in str(excinfo.value)
 
+
+def test_custom_observable_object_3():
     with pytest.raises(ValueError) as excinfo:
         NewObservable(property1='something', property2=4)
     assert "'property2' is too small." in str(excinfo.value)
 
 
-def test_custom_observable_object_no_init():
+def test_custom_observable_raises_exception():
+    with pytest.raises(TypeError) as excinfo:
+        NewObservable(property1='something', property3='something', allow_custom=True)
+
+    assert str(excinfo.value) == "Must be integer!"
+
+
+def test_custom_observable_object_no_init_1():
     @stix2.observables.CustomObservable('x-new-observable', [
         ('property1', stix2.properties.StringProperty()),
     ])
@@ -196,6 +242,8 @@ def test_custom_observable_object_no_init():
     no = NewObs(property1='something')
     assert no.property1 == 'something'
 
+
+def test_custom_observable_object_no_init_2():
     @stix2.observables.CustomObservable('x-new-obs2', [
         ('property1', stix2.properties.StringProperty()),
     ])
@@ -354,6 +402,15 @@ class NewExtension():
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
             raise ValueError("'property2' is too small.")
+        if "property3" in kwargs and not isinstance(kwargs.get("property3"), int):
+            raise TypeError("Must be integer!")
+
+
+def test_custom_extension_raises_exception():
+    with pytest.raises(TypeError) as excinfo:
+        NewExtension(property1='something', property3='something', allow_custom=True)
+
+    assert str(excinfo.value) == "Must be integer!"
 
 
 def test_custom_extension():
@@ -433,7 +490,7 @@ def test_custom_extension_empty_properties():
     assert "'properties' must be a dict!" in str(excinfo.value)
 
 
-def test_custom_extension_no_init():
+def test_custom_extension_no_init_1():
     @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-extension', {
         'property1': stix2.properties.StringProperty(required=True),
     })
@@ -443,6 +500,8 @@ def test_custom_extension_no_init():
     ne = NewExt(property1="foobar")
     assert ne.property1 == "foobar"
 
+
+def test_custom_extension_no_init_2():
     @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', {
         'property1': stix2.properties.StringProperty(required=True),
     })

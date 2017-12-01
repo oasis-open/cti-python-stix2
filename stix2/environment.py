@@ -105,30 +105,13 @@ class Environment(object):
         return self.factory.create(*args, **kwargs)
     create.__doc__ = ObjectFactory.create.__doc__
 
-    def get(self, *args, **kwargs):
-        try:
-            return self.source.get(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data source to query')
-    get.__doc__ = DataStore.get.__doc__
-
-    def all_versions(self, *args, **kwargs):
-        """Retrieve all versions of a single STIX object by ID.
-        """
-        try:
-            return self.source.all_versions(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data source to query')
-    all_versions.__doc__ = DataStore.all_versions.__doc__
-
-    def query(self, *args, **kwargs):
-        """Retrieve STIX objects matching a set of filters.
-        """
-        try:
-            return self.source.query(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data source to query')
-    query.__doc__ = DataStore.query.__doc__
+    get = DataStore.__dict__['get']
+    all_versions = DataStore.__dict__['all_versions']
+    query = DataStore.__dict__['query']
+    creator_of = DataStore.__dict__['creator_of']
+    relationships = DataStore.__dict__['relationships']
+    related_to = DataStore.__dict__['related_to']
+    add = DataStore.__dict__['add']
 
     def add_filters(self, *args, **kwargs):
         try:
@@ -142,31 +125,6 @@ class Environment(object):
         except AttributeError:
             raise AttributeError('Environment has no data source')
 
-    def add(self, *args, **kwargs):
-        try:
-            return self.sink.add(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data sink to put objects in')
-    add.__doc__ = DataStore.add.__doc__
-
     def parse(self, *args, **kwargs):
         return _parse(*args, **kwargs)
     parse.__doc__ = _parse.__doc__
-
-    def creator_of(self, obj):
-        """Retrieve the Identity refered to by the object's `created_by_ref`.
-
-        Args:
-            obj: The STIX object whose `created_by_ref` property will be looked
-                up.
-
-        Returns:
-            The STIX object's creator, or None, if the object contains no
-            `created_by_ref` property or the object's creator cannot be found.
-
-        """
-        creator_id = obj.get('created_by_ref', '')
-        if creator_id:
-            return self.get(creator_id)
-        else:
-            return None

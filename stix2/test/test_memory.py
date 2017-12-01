@@ -3,9 +3,14 @@ import shutil
 
 import pytest
 
-from stix2 import (Bundle, Campaign, CustomObject, Filter, MemorySource,
-                   MemoryStore, properties)
+from stix2 import (Bundle, Campaign, CustomObject, Filter, Identity, Indicator,
+                   Malware, MemorySource, MemoryStore, Relationship,
+                   properties)
 from stix2.sources import make_id
+
+from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
+                        IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
+                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
 
 IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
@@ -116,6 +121,19 @@ def mem_store():
 @pytest.fixture
 def mem_source():
     yield MemorySource(STIX_OBJS1)
+
+
+@pytest.fixture
+def rel_mem_store():
+    cam = Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    mal = Malware(id=MALWARE_ID, **MALWARE_KWARGS)
+    rel1 = Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
+    yield MemoryStore(stix_objs)
 
 
 def test_memory_source_get(mem_source):
@@ -287,3 +305,75 @@ def test_memory_store_custom_object(mem_store):
     newobj_r = mem_store.get(newobj.id)
     assert newobj_r.id == newobj.id
     assert newobj_r.property1 == 'something'
+
+
+def test_relationships(rel_mem_store):
+    mal = rel_mem_store.get(MALWARE_ID)
+    resp = rel_mem_store.relationships(mal)
+
+    assert len(resp) == 3
+    assert any(x['id'] == RELATIONSHIP_IDS[0] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[1] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
+
+
+def test_relationships_by_type(rel_mem_store):
+    mal = rel_mem_store.get(MALWARE_ID)
+    resp = rel_mem_store.relationships(mal, relationship_type='indicates')
+
+    assert len(resp) == 1
+    assert resp[0]['id'] == RELATIONSHIP_IDS[0]
+
+
+def test_relationships_by_source(rel_mem_store):
+    resp = rel_mem_store.relationships(MALWARE_ID, source_only=True)
+
+    assert len(resp) == 1
+    assert resp[0]['id'] == RELATIONSHIP_IDS[1]
+
+
+def test_relationships_by_target(rel_mem_store):
+    resp = rel_mem_store.relationships(MALWARE_ID, target_only=True)
+
+    assert len(resp) == 2
+    assert any(x['id'] == RELATIONSHIP_IDS[0] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
+
+
+def test_relationships_by_target_and_type(rel_mem_store):
+    resp = rel_mem_store.relationships(MALWARE_ID, relationship_type='uses', target_only=True)
+
+    assert len(resp) == 1
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
+
+
+def test_relationships_by_target_and_source(rel_mem_store):
+    with pytest.raises(ValueError) as excinfo:
+        rel_mem_store.relationships(MALWARE_ID, target_only=True, source_only=True)
+
+    assert 'not both' in str(excinfo.value)
+
+
+def test_related_to(rel_mem_store):
+    mal = rel_mem_store.get(MALWARE_ID)
+    resp = rel_mem_store.related_to(mal)
+
+    assert len(resp) == 3
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)
+    assert any(x['id'] == IDENTITY_ID for x in resp)
+
+
+def test_related_to_by_source(rel_mem_store):
+    resp = rel_mem_store.related_to(MALWARE_ID, source_only=True)
+
+    assert len(resp) == 1
+    assert any(x['id'] == IDENTITY_ID for x in resp)
+
+
+def test_related_to_by_target(rel_mem_store):
+    resp = rel_mem_store.related_to(MALWARE_ID, target_only=True)
+
+    assert len(resp) == 2
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)

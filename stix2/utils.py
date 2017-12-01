@@ -323,3 +323,7 @@ def remove_custom_stix(stix_obj):
 
     else:
         return stix_obj
+
+
+def get_type_from_id(stix_id):
+    return stix_id.split('--', 1)[0]
