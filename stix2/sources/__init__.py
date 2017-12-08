@@ -11,8 +11,12 @@
 |
 """
 
+from abc import ABCMeta, abstractmethod
 import uuid
 
+from six import with_metaclass
+
+from stix2.sources.filters import Filter
 from stix2.utils import deduplicate
 
 
@@ -21,94 +25,170 @@ def make_id():
 
 
 class DataStore(object):
-    """An implementer will create a concrete subclass from
-    this class for the specific DataStore.
+    """An implementer can subclass to create custom behavior from
+    this class for the specific DataStores.
 
     Args:
         source (DataSource): An existing DataSource to use
              as this DataStore's DataSource component
-
         sink (DataSink): An existing DataSink to use
              as this DataStore's DataSink component
 
     Attributes:
         id (str): A unique UUIDv4 to identify this DataStore.
-
         source (DataSource): An object that implements DataSource class.
-
         sink (DataSink): An object that implements DataSink class.
 
     """
     def __init__(self, source=None, sink=None):
+        super(DataStore, self).__init__()
         self.id = make_id()
         self.source = source
         self.sink = sink
 
-    def get(self, stix_id, allow_custom=False):
+    def get(self, *args, **kwargs):
         """Retrieve the most recent version of a single STIX object by ID.
 
         Translate get() call to the appropriate DataSource call.
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             stix_obj: the single most recent version of the STIX
                 object specified by the "id".
 
         """
-        return self.source.get(stix_id, allow_custom=allow_custom)
+        try:
+            return self.source.get(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
-    def all_versions(self, stix_id, allow_custom=False):
+    def all_versions(self, *args, **kwargs):
         """Retrieve all versions of a single STIX object by ID.
 
-        Implement: Translate all_versions() call to the appropriate DataSource call
+        Translate all_versions() call to the appropriate DataSource call.
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
 
         """
-        return self.source.all_versions(stix_id, allow_custom=allow_custom)
+        try:
+            return self.source.all_versions(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
-    def query(self, query=None, allow_custom=False):
+    def query(self, *args, **kwargs):
         """Retrieve STIX objects matching a set of filters.
 
-        Implement: Specific data source API calls, processing,
-        functionality required for retrieving query from the data source.
+        Translate query() call to the appropriate DataSource call.
 
         Args:
             query (list): a list of filters (which collectively are the query)
                 to conduct search on.
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
 
         """
-        return self.source.query(query=query)
+        try:
+            return self.source.query(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
-    def add(self, stix_objs, allow_custom=False):
-        """Store STIX objects.
+    def creator_of(self, *args, **kwargs):
+        """Retrieve the Identity refered to by the object's `created_by_ref`.
 
-        Translates add() to the appropriate DataSink call.
+        Translate creator_of() call to the appropriate DataSource call.
+
+        Args:
+            obj: The STIX object whose `created_by_ref` property will be looked
+                up.
+
+        Returns:
+            The STIX object's creator, or None, if the object contains no
+            `created_by_ref` property or the object's creator cannot be found.
+
+        """
+        try:
+            return self.source.creator_of(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+
+    def relationships(self, *args, **kwargs):
+        """Retrieve Relationships involving the given STIX object.
+
+        Translate relationships() call to the appropriate DataSource call.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+                If None, all relationships will be returned, regardless of type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of Relationship objects involving the given STIX object.
+
+        """
+        try:
+            return self.source.relationships(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+
+    def related_to(self, *args, **kwargs):
+        """Retrieve STIX Objects that have a Relationship involving the given
+        STIX object.
+
+        Translate related_to() call to the appropriate DataSource call.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                related objects will be looked up.
+            relationship_type (str): Only retrieve objects related by this
+                Relationships type. If None, all related objects will be
+                returned, regardless of type.
+            source_only (bool): Only examine Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only examine Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of STIX objects related to the given STIX object.
+
+        """
+        try:
+            return self.source.related_to(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+
+    def add(self, *args, **kwargs):
+        """Method for storing STIX objects.
+
+        Define custom behavior before storing STIX objects using the associated
+        DataSink. Translates add() to the appropriate DataSink call.
 
         Args:
             stix_objs (list): a list of STIX objects
-            allow_custom (bool): whether to allow custom objects/properties or
-                not. Default: False.
+
         """
-        return self.sink.add(stix_objs, allow_custom=allow_custom)
+        try:
+            return self.sink.add(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data sink to put objects in' % self.__class__.__name__)
 
 
-class DataSink(object):
+class DataSink(with_metaclass(ABCMeta)):
     """An implementer will create a concrete subclass from
     this class for the specific DataSink.
 
@@ -117,10 +197,12 @@ class DataSink(object):
 
     """
     def __init__(self):
+        super(DataSink, self).__init__()
         self.id = make_id()
 
-    def add(self, stix_objs, allow_custom=False):
-        """Store STIX objects.
+    @abstractmethod
+    def add(self, stix_objs):
+        """Method for storing STIX objects.
 
         Implement: Specific data sink API calls, processing,
         functionality required for adding data to the sink
@@ -128,28 +210,26 @@ class DataSink(object):
         Args:
             stix_objs (list): a list of STIX objects (where each object is a
                 STIX object)
-            allow_custom (bool): whether to allow custom objects/properties or
-                not. Default: False.
 
         """
-        raise NotImplementedError()
 
 
-class DataSource(object):
+class DataSource(with_metaclass(ABCMeta)):
     """An implementer will create a concrete subclass from
     this class for the specific DataSource.
 
     Attributes:
         id (str): A unique UUIDv4 to identify this DataSource.
-
-        _filters (set): A collection of filters attached to this DataSource.
+        filters (set): A collection of filters attached to this DataSource.
 
     """
     def __init__(self):
+        super(DataSource, self).__init__()
         self.id = make_id()
         self.filters = set()
 
-    def get(self, stix_id, _composite_filters=None, allow_custom=False):
+    @abstractmethod
+    def get(self, stix_id):
         """
         Implement: Specific data source API calls, processing,
         functionality required for retrieving data from the data source
@@ -158,21 +238,17 @@ class DataSource(object):
             stix_id (str): the id of the STIX 2.0 object to retrieve. Should
                 return a single object, the most recent version of the object
                 specified by the "id".
-            _composite_filters (set): set of filters passed from the parent
-                the CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             stix_obj: the STIX object
 
         """
-        raise NotImplementedError()
 
-    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
+    @abstractmethod
+    def all_versions(self, stix_id):
         """
-        Implement: Similar to get() except returns list of all object versions of
-        the specified "id". In addition, implement the specific data
+        Implement: Similar to get() except returns list of all object versions
+        of the specified "id". In addition, implement the specific data
         source API calls, processing, functionality required for retrieving
         data from the data source.
 
@@ -180,35 +256,128 @@ class DataSource(object):
             stix_id (str): The id of the STIX 2.0 object to retrieve. Should
                 return a list of objects, all the versions of the object
                 specified by the "id".
-            _composite_filters (set): set of filters passed from the parent
-                CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             stix_objs (list): a list of STIX objects
 
         """
-        raise NotImplementedError()
 
-    def query(self, query=None, _composite_filters=None, allow_custom=False):
+    @abstractmethod
+    def query(self, query=None):
         """
-        Implement:Implement the specific data source API calls, processing,
+        Implement: The specific data source API calls, processing,
         functionality required for retrieving query from the data source
 
         Args:
             query (list): a list of filters (which collectively are the query)
-                to conduct search on
-            _composite_filters (set): a set of filters passed from the parent
-                CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
+                to conduct search on.
 
         Returns:
             stix_objs (list): a list of STIX objects
 
         """
-        raise NotImplementedError()
+
+    def creator_of(self, obj):
+        """Retrieve the Identity refered to by the object's `created_by_ref`.
+
+        Args:
+            obj: The STIX object whose `created_by_ref` property will be looked
+                up.
+
+        Returns:
+            The STIX object's creator, or None, if the object contains no
+            `created_by_ref` property or the object's creator cannot be found.
+
+        """
+        creator_id = obj.get('created_by_ref', '')
+        if creator_id:
+            return self.get(creator_id)
+        else:
+            return None
+
+    def relationships(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """Retrieve Relationships involving the given STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+                If None, all relationships will be returned, regardless of type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of Relationship objects involving the given STIX object.
+
+        """
+        results = []
+        filters = [Filter('type', '=', 'relationship')]
+
+        try:
+            obj_id = obj['id']
+        except KeyError:
+            raise ValueError("STIX object has no 'id' property")
+        except TypeError:
+            # Assume `obj` is an ID string
+            obj_id = obj
+
+        if relationship_type:
+            filters.append(Filter('relationship_type', '=', relationship_type))
+
+        if source_only and target_only:
+            raise ValueError("Search either source only or target only, but not both")
+
+        if not target_only:
+            results.extend(self.query(filters + [Filter('source_ref', '=', obj_id)]))
+        if not source_only:
+            results.extend(self.query(filters + [Filter('target_ref', '=', obj_id)]))
+
+        return results
+
+    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False):
+        """Retrieve STIX Objects that have a Relationship involving the given
+        STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                related objects will be looked up.
+            relationship_type (str): Only retrieve objects related by this
+                Relationships type. If None, all related objects will be
+                returned, regardless of type.
+            source_only (bool): Only examine Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only examine Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of STIX objects related to the given STIX object.
+
+        """
+        results = []
+        rels = self.relationships(obj, relationship_type, source_only, target_only)
+
+        try:
+            obj_id = obj['id']
+        except TypeError:
+            # Assume `obj` is an ID string
+            obj_id = obj
+
+        # Get all unique ids from the relationships except that of the object
+        ids = set()
+        for r in rels:
+            ids.update((r.source_ref, r.target_ref))
+        ids.remove(obj_id)
+
+        for i in ids:
+            results.append(self.get(i))
+
+        return results
 
 
 class CompositeDataSource(DataSource):
@@ -224,7 +393,7 @@ class CompositeDataSource(DataSource):
 
     Attributes:
 
-        data_sources (dict): A dictionary of DataSource objects; to be
+        data_sources (list): A dictionary of DataSource objects; to be
             controlled and used by the Data Source Controller object.
 
     """
@@ -237,7 +406,7 @@ class CompositeDataSource(DataSource):
         super(CompositeDataSource, self).__init__()
         self.data_sources = []
 
-    def get(self, stix_id, _composite_filters=None, allow_custom=False):
+    def get(self, stix_id, _composite_filters=None):
         """Retrieve STIX object by STIX ID
 
         Federated retrieve method, iterates through all DataSources
@@ -253,9 +422,7 @@ class CompositeDataSource(DataSource):
             stix_id (str): the id of the STIX object to retrieve.
             _composite_filters (list): a list of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is attached
-                to another parent CompositeDataSource), not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
+                to another parent CompositeDataSource), not user supplied.
 
         Returns:
             stix_obj: the STIX object to be returned.
@@ -273,7 +440,7 @@ class CompositeDataSource(DataSource):
 
         # for every configured Data Source, call its retrieve handler
         for ds in self.data_sources:
-            data = ds.get(stix_id=stix_id, _composite_filters=all_filters, allow_custom=allow_custom)
+            data = ds.get(stix_id=stix_id, _composite_filters=all_filters)
             if data:
                 all_data.append(data)
 
@@ -288,22 +455,20 @@ class CompositeDataSource(DataSource):
 
         return stix_obj
 
-    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
-        """Retrieve STIX objects by STIX ID
+    def all_versions(self, stix_id, _composite_filters=None):
+        """Retrieve all versions of a STIX object by STIX ID.
 
-        Federated all_versions retrieve method - iterates through all DataSources
-        defined in "data_sources"
+        Federated all_versions retrieve method - iterates through all
+        DataSources defined in "data_sources".
 
         A composite data source will pass its attached filters to
-        each configured data source, pushing filtering to them to handle
+        each configured data source, pushing filtering to them to handle.
 
         Args:
-            stix_id (str): id of the STIX objects to retrieve
+            stix_id (str): id of the STIX objects to retrieve.
             _composite_filters (list): a list of filters passed from a
-                CompositeDataSource (i.e. if this CompositeDataSource is attached
-                to a parent CompositeDataSource), not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
+                CompositeDataSource (i.e. if this CompositeDataSource is
+                attached to a parent CompositeDataSource), not user supplied.
 
         Returns:
             all_data (list): list of STIX objects that have the specified id
@@ -322,7 +487,7 @@ class CompositeDataSource(DataSource):
 
         # retrieve STIX objects from all configured data sources
         for ds in self.data_sources:
-            data = ds.all_versions(stix_id=stix_id, _composite_filters=all_filters, allow_custom=allow_custom)
+            data = ds.all_versions(stix_id=stix_id, _composite_filters=all_filters)
             all_data.extend(data)
 
         # remove exact duplicates (where duplicates are STIX 2.0 objects
@@ -332,19 +497,17 @@ class CompositeDataSource(DataSource):
 
         return all_data
 
-    def query(self, query=None, _composite_filters=None, allow_custom=False):
-        """Retrieve STIX objects that match query
+    def query(self, query=None, _composite_filters=None):
+        """Retrieve STIX objects that match a query.
 
         Federate the query to all DataSources attached to the
         Composite Data Source.
 
         Args:
-            query (list): list of filters to search on
+            query (list): list of filters to search on.
             _composite_filters (list): a list of filters passed from a
-                CompositeDataSource (i.e. if this CompositeDataSource is attached
-                to a parent CompositeDataSource), not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
+                CompositeDataSource (i.e. if this CompositeDataSource is
+                attached to a parent CompositeDataSource), not user supplied.
 
         Returns:
             all_data (list): list of STIX objects to be returned
@@ -354,7 +517,7 @@ class CompositeDataSource(DataSource):
             raise AttributeError('CompositeDataSource has no data sources')
 
         if not query:
-            # dont mess with the query (i.e. convert to a set, as thats done
+            # don't mess with the query (i.e. convert to a set, as that's done
             # within the specific DataSources that are called)
             query = []
 
@@ -369,7 +532,7 @@ class CompositeDataSource(DataSource):
         # federate query to all attached data sources,
         # pass composite filters to id
         for ds in self.data_sources:
-            data = ds.query(query=query, _composite_filters=all_filters, allow_custom=allow_custom)
+            data = ds.query(query=query, _composite_filters=all_filters)
             all_data.extend(data)
 
         # remove exact duplicates (where duplicates are STIX 2.0
@@ -378,6 +541,80 @@ class CompositeDataSource(DataSource):
             all_data = deduplicate(all_data)
 
         return all_data
+
+    def relationships(self, *args, **kwargs):
+        """Retrieve Relationships involving the given STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Federated relationships retrieve method - iterates through all
+        DataSources defined in "data_sources".
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                relationships will be looked up.
+            relationship_type (str): Only retrieve Relationships of this type.
+                If None, all relationships will be returned, regardless of type.
+            source_only (bool): Only retrieve Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only retrieve Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of Relationship objects involving the given STIX object.
+
+        """
+        if not self.has_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
+        results = []
+        for ds in self.data_sources:
+            results.extend(ds.relationships(*args, **kwargs))
+
+        # remove exact duplicates (where duplicates are STIX 2.0
+        # objects with the same 'id' and 'modified' values)
+        if len(results) > 0:
+            results = deduplicate(results)
+
+        return results
+
+    def related_to(self, *args, **kwargs):
+        """Retrieve STIX Objects that have a Relationship involving the given
+        STIX object.
+
+        Only one of `source_only` and `target_only` may be `True`.
+
+        Federated related objects method - iterates through all
+        DataSources defined in "data_sources".
+
+        Args:
+            obj (STIX object OR dict OR str): The STIX object (or its ID) whose
+                related objects will be looked up.
+            relationship_type (str): Only retrieve objects related by this
+                Relationships type. If None, all related objects will be
+                returned, regardless of type.
+            source_only (bool): Only examine Relationships for which this
+                object is the source_ref. Default: False.
+            target_only (bool): Only examine Relationships for which this
+                object is the target_ref. Default: False.
+
+        Returns:
+            (list): List of STIX objects related to the given STIX object.
+
+        """
+        if not self.has_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
+        results = []
+        for ds in self.data_sources:
+            results.extend(ds.related_to(*args, **kwargs))
+
+        # remove exact duplicates (where duplicates are STIX 2.0
+        # objects with the same 'id' and 'modified' values)
+        if len(results) > 0:
+            results = deduplicate(results)
+
+        return results
 
     def add_data_source(self, data_source):
         """Attach a DataSource to CompositeDataSource instance

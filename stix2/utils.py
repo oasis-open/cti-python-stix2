@@ -259,3 +259,7 @@ def get_class_hierarchy_names(obj):
     for cls in obj.__class__.__mro__:
         names.append(cls.__name__)
     return names
+
+
+def get_type_from_id(stix_id):
+    return stix_id.split('--', 1)[0]

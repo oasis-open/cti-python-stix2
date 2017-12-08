@@ -24,7 +24,7 @@ from stix2.sources import DataSink, DataSource, DataStore
 from stix2.sources.filters import Filter, apply_common_filters
 
 
-def _add(store, stix_data=None, allow_custom=False):
+def _add(store, stix_data=None, allow_custom=False, version=None):
     """Add STIX objects to MemoryStore/Sink.
 
     Adds STIX objects to an in-memory dictionary for fast lookup.
@@ -34,6 +34,8 @@ def _add(store, stix_data=None, allow_custom=False):
         stix_data (list OR dict OR STIX object): STIX objects to be added
         allow_custom (bool): whether to allow custom objects/properties or
             not. Default: False.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+            None, use latest version.
 
     """
     if isinstance(stix_data, _STIXBase):
@@ -44,25 +46,25 @@ def _add(store, stix_data=None, allow_custom=False):
         if stix_data["type"] == "bundle":
             # adding a json bundle - so just grab STIX objects
             for stix_obj in stix_data.get("objects", []):
-                _add(store, stix_obj, allow_custom=allow_custom)
+                _add(store, stix_obj, allow_custom=allow_custom, version=version)
         else:
             # adding a json STIX object
             store._data[stix_data["id"]] = stix_data
 
     elif isinstance(stix_data, str):
         # adding json encoded string of STIX content
-        stix_data = parse(stix_data, allow_custom=allow_custom)
+        stix_data = parse(stix_data, allow_custom=allow_custom, version=version)
         if stix_data["type"] == "bundle":
             # recurse on each STIX object in bundle
             for stix_obj in stix_data.get("objects", []):
-                _add(store, stix_obj, allow_custom=allow_custom)
+                _add(store, stix_obj, allow_custom=allow_custom, version=version)
         else:
-            _add(store, stix_data)
+            _add(store, stix_data, allow_custom=allow_custom, version=version)
 
     elif isinstance(stix_data, list):
         # STIX objects are in a list- recurse on each object
         for stix_obj in stix_data:
-            _add(store, stix_obj, allow_custom=allow_custom)
+            _add(store, stix_obj, allow_custom=allow_custom, version=version)
 
     else:
         raise TypeError("stix_data must be a STIX object (or list of), JSON formatted STIX (or list of), or a JSON formatted STIX bundle")
@@ -81,6 +83,8 @@ class MemoryStore(DataStore):
         stix_data (list OR dict OR STIX object): STIX content to be added
         allow_custom (bool): whether to allow custom objects/properties or
             not. Default: False.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+            None, use latest version.
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects
@@ -88,17 +92,18 @@ class MemoryStore(DataStore):
         sink (MemorySink): MemorySink
 
     """
-    def __init__(self, stix_data=None, allow_custom=False):
-        super(MemoryStore, self).__init__()
+    def __init__(self, stix_data=None, allow_custom=False, version=None):
         self._data = {}
 
         if stix_data:
-            _add(self, stix_data, allow_custom=allow_custom)
+            _add(self, stix_data, allow_custom=allow_custom, version=version)
 
-        self.source = MemorySource(stix_data=self._data, _store=True, allow_custom=allow_custom)
-        self.sink = MemorySink(stix_data=self._data, _store=True, allow_custom=allow_custom)
+        super(MemoryStore, self).__init__(
+            source=MemorySource(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True),
+            sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True)
+        )
 
-    def save_to_file(self, file_path, allow_custom=False):
+    def save_to_file(self, *args, **kwargs):
         """Write SITX objects from in-memory dictionary to JSON file, as a STIX
         Bundle.
 
@@ -108,9 +113,9 @@ class MemoryStore(DataStore):
                 not. Default: False.
 
         """
-        return self.sink.save_to_file(file_path=file_path, allow_custom=allow_custom)
+        return self.sink.save_to_file(*args, **kwargs)
 
-    def load_from_file(self, file_path, allow_custom=False):
+    def load_from_file(self, *args, **kwargs):
         """Load STIX data from JSON file.
 
         File format is expected to be a single JSON
@@ -120,9 +125,11 @@ class MemoryStore(DataStore):
             file_path (str): file path to load STIX data from
             allow_custom (bool): whether to allow custom objects/properties or
                 not. Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         """
-        return self.source.load_from_file(file_path=file_path, allow_custom=allow_custom)
+        return self.source.load_from_file(*args, **kwargs)
 
 
 class MemorySink(DataSink):
@@ -146,17 +153,17 @@ class MemorySink(DataSink):
             a MemorySource
 
     """
-    def __init__(self, stix_data=None, _store=False, allow_custom=False):
+    def __init__(self, stix_data=None, allow_custom=False, version=None, _store=False):
         super(MemorySink, self).__init__()
         self._data = {}
 
         if _store:
             self._data = stix_data
         elif stix_data:
-            _add(self, stix_data, allow_custom=allow_custom)
+            _add(self, stix_data, allow_custom=allow_custom, version=version)
 
-    def add(self, stix_data, allow_custom=False):
-        _add(self, stix_data, allow_custom=allow_custom)
+    def add(self, stix_data, allow_custom=False, version=None):
+        _add(self, stix_data, allow_custom=allow_custom, version=version)
     add.__doc__ = _add.__doc__
 
     def save_to_file(self, file_path, allow_custom=False):
@@ -164,7 +171,7 @@ class MemorySink(DataSink):
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
         with open(file_path, "w") as f:
-            f.write(str(Bundle(self._data.values(), allow_custom=allow_custom)))
+            f.write(str(Bundle(list(self._data.values()), allow_custom=allow_custom)))
     save_to_file.__doc__ = MemoryStore.save_to_file.__doc__
 
 
@@ -190,24 +197,22 @@ class MemorySource(DataSource):
             a MemorySink
 
     """
-    def __init__(self, stix_data=None, _store=False, allow_custom=False):
+    def __init__(self, stix_data=None, allow_custom=False, version=None, _store=False):
         super(MemorySource, self).__init__()
         self._data = {}
 
         if _store:
             self._data = stix_data
         elif stix_data:
-            _add(self, stix_data, allow_custom=allow_custom)
+            _add(self, stix_data, allow_custom=allow_custom, version=version)
 
-    def get(self, stix_id, _composite_filters=None, allow_custom=False):
+    def get(self, stix_id, _composite_filters=None):
         """Retrieve STIX object from in-memory dict via STIX ID.
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-            composite_filters (set): set of filters passed from the parent
+            _composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             (dict OR STIX object): STIX object that has the supplied
@@ -227,7 +232,7 @@ class MemorySource(DataSource):
         # if there are filters from the composite level, process full query
         query = [Filter("id", "=", stix_id)]
 
-        all_data = self.query(query=query, _composite_filters=_composite_filters, allow_custom=allow_custom)
+        all_data = self.query(query=query, _composite_filters=_composite_filters)
 
         if all_data:
             # reduce to most recent version
@@ -237,7 +242,7 @@ class MemorySource(DataSource):
         else:
             return None
 
-    def all_versions(self, stix_id, _composite_filters=None, allow_custom=False):
+    def all_versions(self, stix_id, _composite_filters=None):
         """Retrieve STIX objects from in-memory dict via STIX ID, all versions of it
 
         Note: Since Memory sources/sinks don't handle multiple versions of a
@@ -245,10 +250,8 @@ class MemorySource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX 2 object to retrieve.
-            composite_filters (set): set of filters passed from the parent
+            _composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that has the supplied ID. As the
@@ -257,9 +260,9 @@ class MemorySource(DataSource):
                 is returned in the same form as it as added
 
         """
-        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters, allow_custom=allow_custom)]
+        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
-    def query(self, query=None, _composite_filters=None, allow_custom=False):
+    def query(self, query=None, _composite_filters=None):
         """Search and retrieve STIX objects based on the complete query.
 
         A "complete query" includes the filters from the query, the filters
@@ -268,10 +271,8 @@ class MemorySource(DataSource):
 
         Args:
             query (list): list of filters to search on
-            composite_filters (set): set of filters passed from the
+            _composite_filters (set): set of filters passed from the
                 CompositeDataSource, not user supplied
-            allow_custom (bool): whether to retrieve custom objects/properties
-                or not. Default: False.
 
         Returns:
             (list): list of STIX objects that matches the supplied
@@ -284,7 +285,7 @@ class MemorySource(DataSource):
             query = set()
         else:
             if not isinstance(query, list):
-                # make sure dont make set from a Filter object,
+                # make sure don't make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
                 query = [query]
             query = set(query)
@@ -300,8 +301,8 @@ class MemorySource(DataSource):
 
         return all_data
 
-    def load_from_file(self, file_path, allow_custom=False):
+    def load_from_file(self, file_path, allow_custom=False, version=None):
         file_path = os.path.abspath(file_path)
         stix_data = json.load(open(file_path, "r"))
-        _add(self, stix_data, allow_custom=allow_custom)
+        _add(self, stix_data, allow_custom=allow_custom, version=version)
     load_from_file.__doc__ = MemoryStore.load_from_file.__doc__

@@ -9,7 +9,7 @@ from stix2 import exceptions
 
 
 def _evaluate_expression(obj, selector):
-    """Walks an SDO or SRO generating selectors to match against ``selector``.
+    """Walk an SDO or SRO generating selectors to match against ``selector``.
 
     If a match is found and the the value of this property is present in the
     objects. Matching value of the property will be returned.
@@ -32,7 +32,7 @@ def _evaluate_expression(obj, selector):
 
 
 def _validate_selector(obj, selector):
-    """Internal method to evaluate each selector."""
+    """Evaluate each selector against an object."""
     results = list(_evaluate_expression(obj, selector))
 
     if len(results) >= 1:
@@ -132,7 +132,7 @@ def compress_markings(granular_markings):
 
 
 def expand_markings(granular_markings):
-    """Expands granular markings list.
+    """Expand granular markings list.
 
     If there is more than one selector per granular marking. It will be
     expanded using the same marking_ref.
@@ -187,7 +187,7 @@ def expand_markings(granular_markings):
 
 
 def build_granular_marking(granular_marking):
-    """Returns a dictionary with the required structure for a granular marking.
+    """Return a dictionary with the required structure for a granular marking.
     """
     return {"granular_markings": expand_markings(granular_marking)}
 
