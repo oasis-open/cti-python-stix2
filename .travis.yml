@@ -9,6 +9,9 @@ python:
   - "3.6"
   - "3.6-dev"
   - "nightly"
+matrix:
+  allow_failures:
+    - python: "nightly"
 install:
   - pip install -U pip setuptools
   - pip install tox-travis pre-commit
