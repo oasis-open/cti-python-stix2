@@ -1162,3 +1162,25 @@ def test_x509_certificate_example():
     assert x509.type == "x509-certificate"
     assert x509.issuer == "C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com"  # noqa
     assert x509.subject == "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org"  # noqa
+
+
+def test_new_version_with_related_objects():
+    data = stix2.ObservedData(
+        first_observed="2016-03-12T12:00:00Z",
+        last_observed="2016-03-12T12:00:00Z",
+        number_observed=1,
+        objects={
+            'src_ip': {
+                'type': 'ipv4-addr',
+                'value': '127.0.0.1/32'
+            },
+            'domain':{
+                'type': 'domain-name',
+                'value': 'example.com',
+                'resolves_to_refs': ['src_ip']
+            }
+        }
+    )
+    new_version = data.new_version(last_observed="2017-12-12T12:00:00Z")
+    assert new_version.last_observed.year == 2017
+    assert new_version.objects['domain'].resolves_to_refs[0] == 'src_ip'
