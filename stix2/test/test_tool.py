@@ -7,7 +7,6 @@ import stix2
 
 from .constants import TOOL_ID
 
-
 EXPECTED = """{
     "type": "tool",
     "id": "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",

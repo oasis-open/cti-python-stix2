@@ -8,7 +8,6 @@ import stix2
 from .constants import (FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID,
                         RELATIONSHIP_KWARGS)
 
-
 EXPECTED_RELATIONSHIP = """{
     "type": "relationship",
     "id": "relationship--00000000-1111-2222-3333-444444444444",

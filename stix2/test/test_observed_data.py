@@ -1174,7 +1174,7 @@ def test_new_version_with_related_objects():
                 'type': 'ipv4-addr',
                 'value': '127.0.0.1/32'
             },
-            'domain':{
+            'domain': {
                 'type': 'domain-name',
                 'value': 'example.com',
                 'resolves_to_refs': ['src_ip']
