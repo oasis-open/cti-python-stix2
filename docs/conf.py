@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 
 from six import class_types
@@ -56,15 +57,25 @@ latex_documents = [
     (master_doc, 'stix2.tex', 'stix2 Documentation', 'OASIS', 'manual'),
 ]
 
+def get_property_type(prop):
+    try:
+        prop_class = prop.__name__
+    except AttributeError:
+        prop_class = prop.__class__.__name__
+    prop_class = prop_class.split('Property')[0]
+    split_camelcase = re.sub('(?!^)([A-Z][a-z]+)', r' \1', prop_class).split()
+    prop_class = ' '.join(split_camelcase)
+    return prop_class
+
 class STIXAttributeDocumenter(ClassDocumenter):
-    """Custom Sphinx extension to auto-document STIX properties.
+    '''Custom Sphinx extension to auto-document STIX properties.
 
     Needed because descendants of _STIXBase use `_properties` dictionaries
     instead of instance variables for STIX 2 objects' properties.
 
-    """
-    objtype = "stixattr"
-    directivetype = "class"
+    '''
+    objtype = 'stixattr'
+    directivetype = 'class'
     priority = 999
 
     @classmethod
@@ -77,10 +88,17 @@ class STIXAttributeDocumenter(ClassDocumenter):
         ClassDocumenter.add_content(self, more_content, no_docstring)
 
         obj = self.object
-        self.add_line(":Properties:", "<stixattr>")
-        for prop in obj._properties:
-            self.add_line("    - %s" % prop, "<stixattr>")
-        self.add_line("", "<stixattr>")
+        self.add_line(':Properties:', '<stixattr>')
+        for prop_name, prop in obj._properties.items():
+            # Add metadata about the property
+            prop_type = get_property_type(prop)
+            if prop_type == 'List':
+                prop_type = 'List of %ss' % get_property_type(prop.contained)
+            if prop.required:
+                prop_type += ', required'
+            prop_str = '**%s** (*%s*)' % (prop_name, prop_type)
+            self.add_line('    - %s' % prop_str, '<stixattr>')
+        self.add_line('', '<stixattr>')
 
 def setup(app):
     app.add_autodocumenter(STIXAttributeDocumenter)
