@@ -1,6 +1,11 @@
 import os
 import sys
 
+from six import class_types
+from sphinx.ext.autodoc import ClassDocumenter
+
+from stix2.base import _STIXBase
+
 sys.path.insert(0, os.path.abspath('..'))
 
 extensions = [
@@ -50,3 +55,32 @@ latex_elements = {}
 latex_documents = [
     (master_doc, 'stix2.tex', 'stix2 Documentation', 'OASIS', 'manual'),
 ]
+
+class STIXAttributeDocumenter(ClassDocumenter):
+    """Custom Sphinx extension to auto-document STIX properties.
+
+    Needed because descendants of _STIXBase use `_properties` dictionaries
+    instead of instance variables for STIX 2 objects' properties.
+
+    """
+    objtype = "stixattr"
+    directivetype = "class"
+    priority = 999
+
+    @classmethod
+    def can_document_member(cls, member, membername, isattr, parent):
+        return isinstance(member, class_types) and \
+               issubclass(member, _STIXBase) and \
+               hasattr(member, '_properties')
+
+    def add_content(self, more_content, no_docstring=False):
+        ClassDocumenter.add_content(self, more_content, no_docstring)
+
+        obj = self.object
+        self.add_line(":Properties:", "<stixattr>")
+        for prop in obj._properties:
+            self.add_line("    - %s" % prop, "<stixattr>")
+        self.add_line("", "<stixattr>")
+
+def setup(app):
+    app.add_autodocumenter(STIXAttributeDocumenter)
