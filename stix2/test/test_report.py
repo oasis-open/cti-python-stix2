@@ -7,7 +7,6 @@ import stix2
 
 from .constants import INDICATOR_KWARGS, REPORT_ID
 
-
 EXPECTED = """{
     "type": "report",
     "id": "report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
