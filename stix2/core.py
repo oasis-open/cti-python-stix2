@@ -41,6 +41,9 @@ class STIXObjectProperty(Property):
 
 
 class Bundle(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709293>`__.
+    """
 
     _type = 'bundle'
     _properties = OrderedDict()

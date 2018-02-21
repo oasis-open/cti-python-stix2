@@ -19,6 +19,9 @@ class STIXDomainObject(_STIXBase, _MarkingsMixin):
 
 
 class AttackPattern(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714302>`__.
+    """
 
     _type = 'attack-pattern'
     _properties = OrderedDict()
@@ -40,6 +43,9 @@ class AttackPattern(STIXDomainObject):
 
 
 class Campaign(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714305>`__.
+    """
 
     _type = 'campaign'
     _properties = OrderedDict()
@@ -64,6 +70,9 @@ class Campaign(STIXDomainObject):
 
 
 class CourseOfAction(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714308>`__.
+    """
 
     _type = 'course-of-action'
     _properties = OrderedDict()
@@ -84,6 +93,9 @@ class CourseOfAction(STIXDomainObject):
 
 
 class Identity(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714311>`__.
+    """
 
     _type = 'identity'
     _properties = OrderedDict()
@@ -107,6 +119,9 @@ class Identity(STIXDomainObject):
 
 
 class Indicator(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714314>`__.
+    """
 
     _type = 'indicator'
     _properties = OrderedDict()
@@ -131,6 +146,9 @@ class Indicator(STIXDomainObject):
 
 
 class IntrusionSet(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714317>`__.
+    """
 
     _type = 'intrusion-set'
     _properties = OrderedDict()
@@ -158,6 +176,9 @@ class IntrusionSet(STIXDomainObject):
 
 
 class Malware(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714320>`__.
+    """
 
     _type = 'malware'
     _properties = OrderedDict()
@@ -179,6 +200,9 @@ class Malware(STIXDomainObject):
 
 
 class ObservedData(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714323>`__.
+    """
 
     _type = 'observed-data'
     _properties = OrderedDict()
@@ -201,6 +225,9 @@ class ObservedData(STIXDomainObject):
 
 
 class Report(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714326>`__.
+    """
 
     _type = 'report'
     _properties = OrderedDict()
@@ -223,6 +250,9 @@ class Report(STIXDomainObject):
 
 
 class ThreatActor(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714329>`__.
+    """
 
     _type = 'threat-actor'
     _properties = OrderedDict()
@@ -251,6 +281,9 @@ class ThreatActor(STIXDomainObject):
 
 
 class Tool(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714332>`__.
+    """
 
     _type = 'tool'
     _properties = OrderedDict()
@@ -273,6 +306,9 @@ class Tool(STIXDomainObject):
 
 
 class Vulnerability(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714335>`__.
+    """
 
     _type = 'vulnerability'
     _properties = OrderedDict()

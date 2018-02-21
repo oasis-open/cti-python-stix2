@@ -74,6 +74,9 @@ class ExtensionsProperty(DictionaryProperty):
 
 
 class Artifact(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716219>`__.
+    """
 
     _type = 'artifact'
     _properties = OrderedDict()
@@ -93,6 +96,9 @@ class Artifact(_Observable):
 
 
 class AutonomousSystem(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716221>`__.
+    """
 
     _type = 'autonomous-system'
     _properties = OrderedDict()
@@ -106,6 +112,9 @@ class AutonomousSystem(_Observable):
 
 
 class Directory(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716223>`__.
+    """
 
     _type = 'directory'
     _properties = OrderedDict()
@@ -123,6 +132,9 @@ class Directory(_Observable):
 
 
 class DomainName(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716225>`__.
+    """
 
     _type = 'domain-name'
     _properties = OrderedDict()
@@ -135,6 +147,9 @@ class DomainName(_Observable):
 
 
 class EmailAddress(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716227>`__.
+    """
 
     _type = 'email-addr'
     _properties = OrderedDict()
@@ -148,6 +163,9 @@ class EmailAddress(_Observable):
 
 
 class EmailMIMEComponent(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716231>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -163,6 +181,9 @@ class EmailMIMEComponent(_STIXBase):
 
 
 class EmailMessage(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716229>`__.
+    """
 
     _type = 'email-message'
     _properties = OrderedDict()
@@ -194,6 +215,9 @@ class EmailMessage(_Observable):
 
 
 class ArchiveExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716235>`__.
+    """
 
     _type = 'archive-ext'
     _properties = OrderedDict()
@@ -205,6 +229,9 @@ class ArchiveExt(_Extension):
 
 
 class AlternateDataStream(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716239>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -215,6 +242,9 @@ class AlternateDataStream(_STIXBase):
 
 
 class NTFSExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716237>`__.
+    """
 
     _type = 'ntfs-ext'
     _properties = OrderedDict()
@@ -225,6 +255,9 @@ class NTFSExt(_Extension):
 
 
 class PDFExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716241>`__.
+    """
 
     _type = 'pdf-ext'
     _properties = OrderedDict()
@@ -238,6 +271,9 @@ class PDFExt(_Extension):
 
 
 class RasterImageExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716243>`__.
+    """
 
     _type = 'raster-image-ext'
     _properties = OrderedDict()
@@ -251,6 +287,9 @@ class RasterImageExt(_Extension):
 
 
 class WindowsPEOptionalHeaderType(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716248>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -293,6 +332,9 @@ class WindowsPEOptionalHeaderType(_STIXBase):
 
 
 class WindowsPESection(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716250>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -304,6 +346,9 @@ class WindowsPESection(_STIXBase):
 
 
 class WindowsPEBinaryExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716245>`__.
+    """
 
     _type = 'windows-pebinary-ext'
     _properties = OrderedDict()
@@ -324,6 +369,9 @@ class WindowsPEBinaryExt(_Extension):
 
 
 class File(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716233>`__.
+    """
 
     _type = 'file'
     _properties = OrderedDict()
@@ -355,6 +403,9 @@ class File(_Observable):
 
 
 class IPv4Address(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716252>`__.
+    """
 
     _type = 'ipv4-addr'
     _properties = OrderedDict()
@@ -368,6 +419,9 @@ class IPv4Address(_Observable):
 
 
 class IPv6Address(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716254>`__.
+    """
 
     _type = 'ipv6-addr'
     _properties = OrderedDict()
@@ -381,6 +435,9 @@ class IPv6Address(_Observable):
 
 
 class MACAddress(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716256>`__.
+    """
 
     _type = 'mac-addr'
     _properties = OrderedDict()
@@ -392,6 +449,9 @@ class MACAddress(_Observable):
 
 
 class Mutex(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716258>`__.
+    """
 
     _type = 'mutex'
     _properties = OrderedDict()
@@ -403,6 +463,9 @@ class Mutex(_Observable):
 
 
 class HTTPRequestExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716262>`__.
+    """
 
     _type = 'http-request-ext'
     _properties = OrderedDict()
@@ -417,6 +480,9 @@ class HTTPRequestExt(_Extension):
 
 
 class ICMPExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716264>`__.
+    """
 
     _type = 'icmp-ext'
     _properties = OrderedDict()
@@ -427,6 +493,9 @@ class ICMPExt(_Extension):
 
 
 class SocketExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716266>`__.
+    """
 
     _type = 'socket-ext'
     _properties = OrderedDict()
@@ -465,6 +534,9 @@ class SocketExt(_Extension):
 
 
 class TCPExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716271>`__.
+    """
 
     _type = 'tcp-ext'
     _properties = OrderedDict()
@@ -475,6 +547,9 @@ class TCPExt(_Extension):
 
 
 class NetworkTraffic(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716260>`__.
+    """
 
     _type = 'network-traffic'
     _properties = OrderedDict()
@@ -506,6 +581,9 @@ class NetworkTraffic(_Observable):
 
 
 class WindowsProcessExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716275>`__.
+    """
 
     _type = 'windows-process-ext'
     _properties = OrderedDict()
@@ -520,6 +598,9 @@ class WindowsProcessExt(_Extension):
 
 
 class WindowsServiceExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716277>`__.
+    """
 
     _type = 'windows-service-ext'
     _properties = OrderedDict()
@@ -555,6 +636,9 @@ class WindowsServiceExt(_Extension):
 
 
 class Process(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716273>`__.
+    """
 
     _type = 'process'
     _properties = OrderedDict()
@@ -593,6 +677,9 @@ class Process(_Observable):
 
 
 class Software(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716282>`__.
+    """
 
     _type = 'software'
     _properties = OrderedDict()
@@ -608,6 +695,9 @@ class Software(_Observable):
 
 
 class URL(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716284>`__.
+    """
 
     _type = 'url'
     _properties = OrderedDict()
@@ -619,6 +709,9 @@ class URL(_Observable):
 
 
 class UNIXAccountExt(_Extension):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716289>`__.
+    """
 
     _type = 'unix-account-ext'
     _properties = OrderedDict()
@@ -631,6 +724,9 @@ class UNIXAccountExt(_Extension):
 
 
 class UserAccount(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716286>`__.
+    """
 
     _type = 'user-account'
     _properties = OrderedDict()
@@ -654,6 +750,9 @@ class UserAccount(_Observable):
 
 
 class WindowsRegistryValueType(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716293>`__.
+    """
 
     _type = 'windows-registry-value-type'
     _properties = OrderedDict()
@@ -679,6 +778,9 @@ class WindowsRegistryValueType(_STIXBase):
 
 
 class WindowsRegistryKey(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716291>`__.
+    """
 
     _type = 'windows-registry-key'
     _properties = OrderedDict()
@@ -700,6 +802,9 @@ class WindowsRegistryKey(_Observable):
 
 
 class X509V3ExtenstionsType(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716298>`__.
+    """
 
     _type = 'x509-v3-extensions-type'
     _properties = OrderedDict()
@@ -724,6 +829,9 @@ class X509V3ExtenstionsType(_STIXBase):
 
 
 class X509Certificate(_Observable):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716296>`__.
+    """
 
     _type = 'x509-certificate'
     _properties = OrderedDict()
