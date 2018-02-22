@@ -57,23 +57,30 @@ latex_documents = [
     (master_doc, 'stix2.tex', 'stix2 Documentation', 'OASIS', 'manual'),
 ]
 
+
 def get_property_type(prop):
+    """Convert property classname into pretty string name of property.
+
+    """
     try:
         prop_class = prop.__name__
     except AttributeError:
         prop_class = prop.__class__.__name__
+    # Remove 'Property' from the string
     prop_class = prop_class.split('Property')[0]
+    # Split camelcase with spaces
     split_camelcase = re.sub('(?!^)([A-Z][a-z]+)', r' \1', prop_class).split()
     prop_class = ' '.join(split_camelcase)
     return prop_class
 
+
 class STIXAttributeDocumenter(ClassDocumenter):
-    '''Custom Sphinx extension to auto-document STIX properties.
+    """Custom Sphinx extension to auto-document STIX properties.
 
     Needed because descendants of _STIXBase use `_properties` dictionaries
     instead of instance variables for STIX 2 objects' properties.
 
-    '''
+    """
     objtype = 'stixattr'
     directivetype = 'class'
     priority = 999
@@ -99,6 +106,7 @@ class STIXAttributeDocumenter(ClassDocumenter):
             prop_str = '**%s** (*%s*)' % (prop_name, prop_type)
             self.add_line('    - %s' % prop_str, '<stixattr>')
         self.add_line('', '<stixattr>')
+
 
 def setup(app):
     app.add_autodocumenter(STIXAttributeDocumenter)
