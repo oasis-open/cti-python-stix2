@@ -144,7 +144,7 @@ class IntrusionSet(STIXDomainObject):
         ('description', StringProperty()),
         ('aliases', ListProperty(StringProperty)),
         ('first_seen', TimestampProperty()),
-        ('last_seen ', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
         ('goals', ListProperty(StringProperty)),
         ('resource_level', StringProperty()),
         ('primary_motivation', StringProperty()),
