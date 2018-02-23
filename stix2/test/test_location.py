@@ -8,7 +8,6 @@ import stix2
 
 from .constants import LOCATION_ID
 
-
 EXPECTED_LOCATION_1 = """{
     "type": "location",
     "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
