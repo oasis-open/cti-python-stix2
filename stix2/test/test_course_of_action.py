@@ -7,7 +7,6 @@ import stix2
 
 from .constants import COURSE_OF_ACTION_ID
 
-
 EXPECTED = """{
     "type": "course-of-action",
     "id": "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",

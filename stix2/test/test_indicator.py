@@ -8,7 +8,6 @@ import stix2
 
 from .constants import FAKE_TIME, INDICATOR_ID, INDICATOR_KWARGS
 
-
 EXPECTED_INDICATOR = """{
     "type": "indicator",
     "id": "indicator--01234567-89ab-cdef-0123-456789abcdef",

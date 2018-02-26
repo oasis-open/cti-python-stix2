@@ -6,7 +6,6 @@ import pytest
 
 import stix2
 
-
 VERIS = """{
     "source_name": "veris",
     "url": "https://github.com/vz-risk/VCDB/blob/master/data/json/0001AA7F-C601-424A-B2B8-BE6C9F5164E7.json",

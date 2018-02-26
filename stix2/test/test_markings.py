@@ -8,7 +8,6 @@ from stix2 import TLP_WHITE
 
 from .constants import MARKING_DEFINITION_ID
 
-
 EXPECTED_TLP_MARKING_DEFINITION = """{
     "type": "marking-definition",
     "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",

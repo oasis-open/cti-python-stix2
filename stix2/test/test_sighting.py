@@ -7,7 +7,6 @@ import stix2
 
 from .constants import INDICATOR_ID, SIGHTING_ID, SIGHTING_KWARGS
 
-
 EXPECTED_SIGHTING = """{
     "type": "sighting",
     "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",

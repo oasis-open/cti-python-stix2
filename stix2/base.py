@@ -161,9 +161,12 @@ class _STIXBase(collections.Mapping):
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 
     def __deepcopy__(self, memo):
-        # Assumption: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
+        # Assume: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
         new_inner = copy.deepcopy(self._inner, memo)
         cls = type(self)
+        if isinstance(self, _Observable):
+            # Assume: valid references in the original object are still valid in the new version
+            new_inner['_valid_refs'] = {'*': '*'}
         return cls(**new_inner)
 
     def properties_populated(self):
@@ -221,6 +224,9 @@ class _Observable(_STIXBase):
         super(_Observable, self).__init__(**kwargs)
 
     def _check_ref(self, ref, prop, prop_name):
+        if '*' in self._STIXBase__valid_refs:
+            return  # don't check if refs are valid
+
         if ref not in self._STIXBase__valid_refs:
             raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
 

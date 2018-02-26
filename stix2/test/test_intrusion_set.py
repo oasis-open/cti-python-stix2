@@ -7,7 +7,6 @@ import stix2
 
 from .constants import INTRUSION_SET_ID
 
-
 EXPECTED = """{
     "type": "intrusion-set",
     "id": "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",

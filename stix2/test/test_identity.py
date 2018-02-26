@@ -7,7 +7,6 @@ import stix2
 
 from .constants import IDENTITY_ID
 
-
 EXPECTED = """{
     "type": "identity",
     "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
