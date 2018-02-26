@@ -7,7 +7,6 @@ import stix2
 
 from .constants import ATTACK_PATTERN_ID
 
-
 EXPECTED = """{
     "type": "attack-pattern",
     "id": "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",

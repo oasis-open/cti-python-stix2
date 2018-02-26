@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Functions to perform conversions between the different Confidence scales.
 As specified in STIX™ Version 2.1. Part 1: STIX Core Concepts - Appendix B"""
 
@@ -228,7 +230,7 @@ def admiralty_credibility_to_value(scale_value):
 
     """
     if scale_value == "6 - Truth cannot be judged":
-        pass  # TODO: Ask what happens here!
+        raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)  # TODO: What happens here?
     elif scale_value == "5 - Improbable":
         return 10
     elif scale_value == "4 - Doubtful":
@@ -270,7 +272,7 @@ def value_to_admiralty_credibility(confidence_value):
         ValueError: If `confidence_value` is out of bounds.
 
     """
-    # TODO: Ask what happens with "6 - Truth cannot be judged" !
+    # TODO: Case "6 - Truth cannot be judged"
     if 19 >= confidence_value >= 0:
         return "5 - Improbable"
     elif 39 >= confidence_value >= 20:

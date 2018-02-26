@@ -34,7 +34,7 @@ class STIXdatetime(dt.datetime):
 
 
 def deduplicate(stix_obj_list):
-    """Deduplicate a list of STIX objects to a unique set
+    """Deduplicate a list of STIX objects to a unique set.
 
     Reduces a set of STIX objects to unique set by looking
     at 'id' and 'modified' fields - as a unique object version
@@ -44,7 +44,6 @@ def deduplicate(stix_obj_list):
     of deduplicate(),that if the "stix_obj_list" argument has
     multiple STIX objects of the same version, the last object
     version found in the list will be the one that is returned.
-    ()
 
     Args:
         stix_obj_list (list): list of STIX objects (dicts)
@@ -56,7 +55,11 @@ def deduplicate(stix_obj_list):
     unique_objs = {}
 
     for obj in stix_obj_list:
-        unique_objs[(obj['id'], obj['modified'])] = obj
+        try:
+            unique_objs[(obj['id'], obj['modified'])] = obj
+        except KeyError:
+            # Handle objects with no `modified` property, e.g. marking-definition
+            unique_objs[(obj['id'], obj['created'])] = obj
 
     return list(unique_objs.values())
 
@@ -87,7 +90,7 @@ def format_datetime(dttm):
     ms = zoned.strftime("%f")
     precision = getattr(dttm, "precision", None)
     if precision == 'second':
-        pass  # Alredy precise to the second
+        pass  # Already precise to the second
     elif precision == "millisecond":
         ts = ts + '.' + ms[:3]
     elif zoned.microsecond > 0:
@@ -191,6 +194,10 @@ def find_property_index(obj, properties, tuple_to_find):
                                                   tuple_to_find)
                         if val is not None:
                             return val
+                    elif isinstance(item, dict) and tuple_to_find[0] in item:
+                        for num, t in enumerate(item.keys(), start=1):
+                            if t == tuple_to_find[0]:
+                                return num
 
 
 def new_version(data, **kwargs):
@@ -244,3 +251,15 @@ def revoke(data):
     if data.get("revoked"):
         raise RevokeError("revoke")
     return new_version(data, revoked=True)
+
+
+def get_class_hierarchy_names(obj):
+    """Given an object, return the names of the class hierarchy."""
+    names = []
+    for cls in obj.__class__.__mro__:
+        names.append(cls.__name__)
+    return names
+
+
+def get_type_from_id(stix_id):
+    return stix_id.split('--', 1)[0]

@@ -40,7 +40,14 @@ class _STIXBase(collections.Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):
-        return list(self._properties.keys())
+        props = set(self._properties.keys())
+        custom_props = list(set(self._inner.keys()) - props)
+        custom_props.sort()
+
+        all_properties = list(self._properties.keys())
+        all_properties.extend(custom_props)  # Any custom properties to the bottom
+
+        return all_properties
 
     def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
@@ -146,15 +153,7 @@ class _STIXBase(collections.Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        properties = self.object_properties()
-
-        def sort_by(element):
-            return find_property_index(self, properties, element)
-
-        # separators kwarg -> don't include spaces after commas.
-        return json.dumps(self, indent=4, cls=STIXJSONEncoder,
-                          item_sort_key=sort_by,
-                          separators=(",", ": "))
+        return self.serialize(pretty=True)
 
     def __repr__(self):
         props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
@@ -162,9 +161,12 @@ class _STIXBase(collections.Mapping):
                                  ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
 
     def __deepcopy__(self, memo):
-        # Assumption: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
+        # Assume: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
         new_inner = copy.deepcopy(self._inner, memo)
         cls = type(self)
+        if isinstance(self, _Observable):
+            # Assume: valid references in the original object are still valid in the new version
+            new_inner['_valid_refs'] = {'*': '*'}
         return cls(**new_inner)
 
     def properties_populated(self):
@@ -178,6 +180,38 @@ class _STIXBase(collections.Mapping):
     def revoke(self):
         return _revoke(self)
 
+    def serialize(self, pretty=False, **kwargs):
+        """
+        Serialize a STIX object.
+
+        Args:
+            pretty (bool): If True, output properties following the STIX specs
+                formatting. This includes indentation. Refer to notes for more
+                details.
+            **kwargs: The arguments for a json.dumps() call.
+
+        Returns:
+            dict: The serialized JSON object.
+
+        Note:
+            The argument ``pretty=True`` will output the STIX object following
+            spec order. Using this argument greatly impacts object serialization
+            performance. If your use case is centered across machine-to-machine
+            operation it is recommended to set ``pretty=False``.
+
+            When ``pretty=True`` the following key-value pairs will be added or
+            overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
+        """
+        if pretty:
+            properties = self.object_properties()
+
+            def sort_by(element):
+                return find_property_index(self, properties, element)
+
+            kwargs.update({'indent': 4, 'separators': (",", ": "), 'item_sort_key': sort_by})
+
+        return json.dumps(self, cls=STIXJSONEncoder, **kwargs)
+
 
 class _Observable(_STIXBase):
 
@@ -190,6 +224,9 @@ class _Observable(_STIXBase):
         super(_Observable, self).__init__(**kwargs)
 
     def _check_ref(self, ref, prop, prop_name):
+        if '*' in self._STIXBase__valid_refs:
+            return  # don't check if refs are valid
+
         if ref not in self._STIXBase__valid_refs:
             raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
 

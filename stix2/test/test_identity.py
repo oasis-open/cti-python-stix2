@@ -7,7 +7,6 @@ import stix2
 
 from .constants import IDENTITY_ID
 
-
 EXPECTED = """{
     "type": "identity",
     "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
@@ -61,5 +60,16 @@ def test_parse_no_type():
             "name": "John Smith",
             "identity_class": "individual"
         }""")
+
+
+def test_identity_with_custom():
+    identity = stix2.Identity(
+        name="John Smith",
+        identity_class="individual",
+        custom_properties={'x_foo': 'bar'}
+    )
+
+    assert identity.x_foo == "bar"
+    assert "x_foo" in identity.object_properties()
 
 # TODO: Add other examples

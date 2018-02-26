@@ -2,8 +2,22 @@ import pytest
 
 import stix2
 
-from .constants import (FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
-                        INDICATOR_KWARGS, MALWARE_ID)
+from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, FAKE_TIME, IDENTITY_ID,
+                        IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
+                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
+
+
+@pytest.fixture
+def ds():
+    cam = stix2.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = stix2.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = stix2.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    mal = stix2.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
+    rel1 = stix2.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
+    yield stix2.MemoryStore(stix_objs)
 
 
 def test_object_factory_created_by_ref_str():
@@ -150,6 +164,14 @@ def test_environment_no_datastore():
         env.query(INDICATOR_ID)
     assert 'Environment has no data source' in str(excinfo.value)
 
+    with pytest.raises(AttributeError) as excinfo:
+        env.relationships(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+    with pytest.raises(AttributeError) as excinfo:
+        env.related_to(INDICATOR_ID)
+    assert 'Environment has no data source' in str(excinfo.value)
+
 
 def test_environment_add_filters():
     env = stix2.Environment(factory=stix2.ObjectFactory())
@@ -184,3 +206,145 @@ def test_parse_malware():
     assert mal.modified == FAKE_TIME
     assert mal.labels == ['ransomware']
     assert mal.name == "Cryptolocker"
+
+
+def test_creator_of():
+    identity = stix2.Identity(**IDENTITY_KWARGS)
+    factory = stix2.ObjectFactory(created_by_ref=identity.id)
+    env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
+    env.add(identity)
+
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    creator = env.creator_of(ind)
+    assert creator is identity
+
+
+def test_creator_of_no_datasource():
+    identity = stix2.Identity(**IDENTITY_KWARGS)
+    factory = stix2.ObjectFactory(created_by_ref=identity.id)
+    env = stix2.Environment(factory=factory)
+
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    with pytest.raises(AttributeError) as excinfo:
+        env.creator_of(ind)
+    assert 'Environment has no data source' in str(excinfo.value)
+
+
+def test_creator_of_not_found():
+    identity = stix2.Identity(**IDENTITY_KWARGS)
+    factory = stix2.ObjectFactory(created_by_ref=identity.id)
+    env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
+
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    creator = env.creator_of(ind)
+    assert creator is None
+
+
+def test_creator_of_no_created_by_ref():
+    env = stix2.Environment(store=stix2.MemoryStore())
+    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    creator = env.creator_of(ind)
+    assert creator is None
+
+
+def test_relationships(ds):
+    env = stix2.Environment(store=ds)
+    mal = env.get(MALWARE_ID)
+    resp = env.relationships(mal)
+
+    assert len(resp) == 3
+    assert any(x['id'] == RELATIONSHIP_IDS[0] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[1] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
+
+
+def test_relationships_no_id(ds):
+    env = stix2.Environment(store=ds)
+    mal = {
+        "type": "malware",
+        "name": "some variant"
+    }
+    with pytest.raises(ValueError) as excinfo:
+        env.relationships(mal)
+    assert "object has no 'id' property" in str(excinfo.value)
+
+
+def test_relationships_by_type(ds):
+    env = stix2.Environment(store=ds)
+    mal = env.get(MALWARE_ID)
+    resp = env.relationships(mal, relationship_type='indicates')
+
+    assert len(resp) == 1
+    assert resp[0]['id'] == RELATIONSHIP_IDS[0]
+
+
+def test_relationships_by_source(ds):
+    env = stix2.Environment(store=ds)
+    resp = env.relationships(MALWARE_ID, source_only=True)
+
+    assert len(resp) == 1
+    assert resp[0]['id'] == RELATIONSHIP_IDS[1]
+
+
+def test_relationships_by_target(ds):
+    env = stix2.Environment(store=ds)
+    resp = env.relationships(MALWARE_ID, target_only=True)
+
+    assert len(resp) == 2
+    assert any(x['id'] == RELATIONSHIP_IDS[0] for x in resp)
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
+
+
+def test_relationships_by_target_and_type(ds):
+    env = stix2.Environment(store=ds)
+    resp = env.relationships(MALWARE_ID, relationship_type='uses', target_only=True)
+
+    assert len(resp) == 1
+    assert any(x['id'] == RELATIONSHIP_IDS[2] for x in resp)
+
+
+def test_relationships_by_target_and_source(ds):
+    env = stix2.Environment(store=ds)
+    with pytest.raises(ValueError) as excinfo:
+        env.relationships(MALWARE_ID, target_only=True, source_only=True)
+
+    assert 'not both' in str(excinfo.value)
+
+
+def test_related_to(ds):
+    env = stix2.Environment(store=ds)
+    mal = env.get(MALWARE_ID)
+    resp = env.related_to(mal)
+
+    assert len(resp) == 3
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)
+    assert any(x['id'] == IDENTITY_ID for x in resp)
+
+
+def test_related_to_no_id(ds):
+    env = stix2.Environment(store=ds)
+    mal = {
+        "type": "malware",
+        "name": "some variant"
+    }
+    with pytest.raises(ValueError) as excinfo:
+        env.related_to(mal)
+    assert "object has no 'id' property" in str(excinfo.value)
+
+
+def test_related_to_by_source(ds):
+    env = stix2.Environment(store=ds)
+    resp = env.related_to(MALWARE_ID, source_only=True)
+
+    assert len(resp) == 1
+    assert resp[0]['id'] == IDENTITY_ID
+
+
+def test_related_to_by_target(ds):
+    env = stix2.Environment(store=ds)
+    resp = env.related_to(MALWARE_ID, target_only=True)
+
+    assert len(resp) == 2
+    assert any(x['id'] == CAMPAIGN_ID for x in resp)
+    assert any(x['id'] == INDICATOR_ID for x in resp)

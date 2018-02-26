@@ -7,7 +7,6 @@ import stix2
 
 from .constants import THREAT_ACTOR_ID
 
-
 EXPECTED = """{
     "type": "threat-actor",
     "id": "threat-actor--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",

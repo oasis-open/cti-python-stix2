@@ -1,16 +1,15 @@
-"""STIX 2.0 Objects that are neither SDOs nor SROs."""
+"""STIX 2.X Objects that are neither SDOs nor SROs."""
 
 from collections import OrderedDict
+import importlib
+import pkgutil
+
+import stix2
 
 from . import exceptions
 from .base import _STIXBase
-from .common import MarkingDefinition
 from .properties import IDProperty, ListProperty, Property, TypeProperty
-from .sdo import (AttackPattern, Campaign, CourseOfAction, Identity, Indicator,
-                  IntrusionSet, Location, Malware, Note, ObservedData, Opinion,
-                  Report, ThreatActor, Tool, Vulnerability)
-from .sro import Relationship, Sighting
-from .utils import get_dict
+from .utils import get_class_hierarchy_names, get_dict
 
 
 class STIXObjectProperty(Property):
@@ -20,6 +19,11 @@ class STIXObjectProperty(Property):
         super(STIXObjectProperty, self).__init__()
 
     def clean(self, value):
+        # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
+        # a bundle with no further checks.
+        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
+               for x in get_class_hierarchy_names(value)):
+            return value
         try:
             dictified = get_dict(value)
         except ValueError:
@@ -62,40 +66,30 @@ class Bundle(_STIXBase):
         super(Bundle, self).__init__(**kwargs)
 
 
-OBJ_MAP = {
-    'attack-pattern': AttackPattern,
-    'bundle': Bundle,
-    'campaign': Campaign,
-    'course-of-action': CourseOfAction,
-    'identity': Identity,
-    'indicator': Indicator,
-    'intrusion-set': IntrusionSet,
-    'location': Location,
-    'malware': Malware,
-    'note': Note,
-    'marking-definition': MarkingDefinition,
-    'observed-data': ObservedData,
-    'opinion': Opinion,
-    'report': Report,
-    'relationship': Relationship,
-    'threat-actor': ThreatActor,
-    'tool': Tool,
-    'sighting': Sighting,
-    'vulnerability': Vulnerability,
-}
+STIX2_OBJ_MAPS = {}
 
 
-def parse(data, allow_custom=False):
+def parse(data, allow_custom=False, version=None):
     """Deserialize a string or file-like object into a STIX object.
 
     Args:
         data (str, dict, file-like object): The STIX 2 content to be parsed.
-        allow_custom (bool): Whether to allow custom properties or not. Default: False.
+        allow_custom (bool): Whether to allow custom properties or not.
+            Default: False.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+            None, use latest version.
 
     Returns:
         An instantiated Python STIX object.
 
     """
+    if not version:
+        # Use latest version
+        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+    else:
+        v = 'v' + version.replace('.', '')
+
+    OBJ_MAP = STIX2_OBJ_MAPS[v]
     obj = get_dict(data)
 
     if 'type' not in obj:
@@ -108,8 +102,34 @@ def parse(data, allow_custom=False):
     return obj_class(allow_custom=allow_custom, **obj)
 
 
-def _register_type(new_type):
+def _register_type(new_type, version=None):
     """Register a custom STIX Object type.
 
+    Args:
+        new_type (class): A class to register in the Object map.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+            None, use latest version.
     """
+    if not version:
+        # Use latest version
+        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+    else:
+        v = 'v' + version.replace('.', '')
+
+    OBJ_MAP = STIX2_OBJ_MAPS[v]
     OBJ_MAP[new_type._type] = new_type
+
+
+def _collect_stix2_obj_maps():
+    """Navigate the package once and retrieve all OBJ_MAP dicts for each v2X
+    package."""
+    if not STIX2_OBJ_MAPS:
+        top_level_module = importlib.import_module('stix2')
+        path = top_level_module.__path__
+        prefix = str(top_level_module.__name__) + '.'
+
+        for module_loader, name, is_pkg in pkgutil.walk_packages(path=path,
+                                                                 prefix=prefix):
+            if name.startswith('stix2.v2') and is_pkg:
+                mod = importlib.import_module(name, str(top_level_module.__name__))
+                STIX2_OBJ_MAPS[name.split('.')[-1]] = mod.OBJ_MAP

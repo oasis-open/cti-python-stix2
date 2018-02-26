@@ -3,19 +3,21 @@ language: python
 cache: pip
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
   - "3.5"
   - "3.5-dev"
   - "3.6"
   - "3.6-dev"
   - "nightly"
+matrix:
+  allow_failures:
+    - python: "nightly"
 install:
   - pip install -U pip setuptools
   - pip install tox-travis pre-commit
   - pip install codecov
 script:
   - tox
-  - if [[ $TRAVIS_PYTHON_VERSION != 2.6 ]]; then pre-commit run --all-files; fi
+  - pre-commit run --all-files
 after_success:
   - codecov

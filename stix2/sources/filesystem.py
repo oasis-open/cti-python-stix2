@@ -8,51 +8,52 @@ TODO:
 import json
 import os
 
-from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
 from stix2.sources import DataSink, DataSource, DataStore
 from stix2.sources.filters import Filter, apply_common_filters
-from stix2.utils import deduplicate
+from stix2.utils import deduplicate, get_class_hierarchy_names
 
 
 class FileSystemStore(DataStore):
-    """FileSystemStore
+    """Interface to a file directory of STIX objects.
 
-    Provides an interface to an file directory of STIX objects.
     FileSystemStore is a wrapper around a paired FileSystemSink
     and FileSystemSource.
 
     Args:
         stix_dir (str): path to directory of STIX objects
+        bundlify (bool): Whether to wrap objects in bundles when saving them.
+            Default: False.
 
     Attributes:
-        source (FileSystemSource): FuleSystemSource
-
+        source (FileSystemSource): FileSystemSource
         sink (FileSystemSink): FileSystemSink
 
     """
-    def __init__(self, stix_dir):
-        super(FileSystemStore, self).__init__()
-        self.source = FileSystemSource(stix_dir=stix_dir)
-        self.sink = FileSystemSink(stix_dir=stix_dir)
+    def __init__(self, stix_dir, bundlify=False):
+        super(FileSystemStore, self).__init__(
+            source=FileSystemSource(stix_dir=stix_dir),
+            sink=FileSystemSink(stix_dir=stix_dir, bundlify=bundlify)
+        )
 
 
 class FileSystemSink(DataSink):
-    """FileSystemSink
-
-    Provides an interface for adding/pushing STIX objects
-    to file directory of STIX objects.
+    """Interface for adding/pushing STIX objects to file directory of STIX
+    objects.
 
     Can be paired with a FileSystemSource, together as the two
     components of a FileSystemStore.
 
     Args:
-        stix_dir (str): path to directory of STIX objects
+        stix_dir (str): path to directory of STIX objects.
+        bundlify (bool): Whether to wrap objects in bundles when saving them.
+            Default: False.
 
     """
-    def __init__(self, stix_dir):
+    def __init__(self, stix_dir, bundlify=False):
         super(FileSystemSink, self).__init__()
         self._stix_dir = os.path.abspath(stix_dir)
+        self.bundlify = bundlify
 
         if not os.path.exists(self._stix_dir):
             raise ValueError("directory path for STIX data does not exist")
@@ -61,62 +62,72 @@ class FileSystemSink(DataSink):
     def stix_dir(self):
         return self._stix_dir
 
-    def add(self, stix_data=None):
-        """add STIX objects to file directory
+    def _check_path_and_write(self, stix_obj):
+        """Write the given STIX object to a file in the STIX file directory.
+        """
+        path = os.path.join(self._stix_dir, stix_obj["type"], stix_obj["id"] + ".json")
+
+        if not os.path.exists(os.path.dirname(path)):
+            os.makedirs(os.path.dirname(path))
+
+        if self.bundlify:
+            stix_obj = Bundle(stix_obj)
+
+        with open(path, "w") as f:
+            f.write(str(stix_obj))
+
+    def add(self, stix_data=None, allow_custom=False, version=None):
+        """Add STIX objects to file directory.
 
         Args:
             stix_data (STIX object OR dict OR str OR list): valid STIX 2.0 content
-                in a STIX object(or list of), dict (or list of), or a STIX 2.0
-                json encoded string
+                in a STIX object (or list of), dict (or list of), or a STIX 2.0
+                json encoded string.
+            allow_custom (bool): whether to allow custom objects/properties or
+                not. Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
-        TODO: Bundlify STIX content or no? When dumping to disk.
+        Note:
+            ``stix_data`` can be a Bundle object, but each object in it will be
+            saved separately; you will be able to retrieve any of the objects
+            the Bundle contained, but not the Bundle itself.
+
         """
-        def _check_path_and_write(stix_dir, stix_obj):
-            path = os.path.join(stix_dir, stix_obj["type"], stix_obj["id"] + ".json")
-
-            if not os.path.exists(os.path.dirname(path)):
-                os.makedirs(os.path.dirname(path))
-
-            with open(path, "w") as f:
-                # Bundle() can take dict or STIX obj as argument
-                f.write(str(Bundle(stix_obj)))
-
-        if isinstance(stix_data, _STIXBase):
+        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
+               for x in get_class_hierarchy_names(stix_data)):
             # adding python STIX object
-            _check_path_and_write(self._stix_dir, stix_data)
+            self._check_path_and_write(stix_data)
 
-        elif isinstance(stix_data, dict):
+        elif isinstance(stix_data, (str, dict)):
+            stix_data = parse(stix_data, allow_custom=allow_custom, version=version)
             if stix_data["type"] == "bundle":
-                # adding json-formatted Bundle - extracting STIX objects
-                for stix_obj in stix_data["objects"]:
-                    self.add(stix_obj)
+                # extract STIX objects
+                for stix_obj in stix_data.get("objects", []):
+                    self.add(stix_obj, allow_custom=allow_custom, version=version)
             else:
                 # adding json-formatted STIX
-                _check_path_and_write(self._stix_dir, stix_data)
+                self._check_path_and_write(stix_data)
 
-        elif isinstance(stix_data, str):
-            # adding json encoded string of STIX content
-            stix_data = parse(stix_data)
-            if stix_data["type"] == "bundle":
-                for stix_obj in stix_data["objects"]:
-                    self.add(stix_obj)
-            else:
-                self.add(stix_data)
+        elif isinstance(stix_data, Bundle):
+            # recursively add individual STIX objects
+            for stix_obj in stix_data.get("objects", []):
+                self.add(stix_obj, allow_custom=allow_custom, version=version)
 
         elif isinstance(stix_data, list):
-            # if list, recurse call on individual STIX objects
+            # recursively add individual STIX objects
             for stix_obj in stix_data:
-                self.add(stix_obj)
+                self.add(stix_obj, allow_custom=allow_custom, version=version)
 
         else:
-            raise ValueError("stix_data must be a STIX object(or list of), json formatted STIX(or list of) or a json formatted STIX bundle")
+            raise TypeError("stix_data must be a STIX object (or list of), "
+                            "JSON formatted STIX (or list of), "
+                            "or a JSON formatted STIX bundle")
 
 
 class FileSystemSource(DataSource):
-    """FileSystemSource
-
-    Provides an interface for searching/retrieving
-    STIX objects from a STIX object file directory.
+    """Interface for searching/retrieving STIX objects from a STIX object file
+    directory.
 
     Can be paired with a FileSystemSink, together as the two
     components of a FileSystemStore.
@@ -136,14 +147,17 @@ class FileSystemSource(DataSource):
     def stix_dir(self):
         return self._stix_dir
 
-    def get(self, stix_id, _composite_filters=None):
-        """retrieve STIX object from file directory via STIX ID
+    def get(self, stix_id, allow_custom=False, version=None, _composite_filters=None):
+        """Retrieve STIX object from file directory via STIX ID.
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-
-            composite_filters (set): set of filters passed from the parent
+            _composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         Returns:
             (STIX object): STIX object that has the supplied STIX ID.
@@ -153,47 +167,53 @@ class FileSystemSource(DataSource):
         """
         query = [Filter("id", "=", stix_id)]
 
-        all_data = self.query(query=query, _composite_filters=_composite_filters)
+        all_data = self.query(query=query, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)
 
         if all_data:
             stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
-            stix_obj = parse(stix_obj)
         else:
             stix_obj = None
 
         return stix_obj
 
-    def all_versions(self, stix_id, _composite_filters=None):
-        """retrieve STIX object from file directory via STIX ID, all versions
+    def all_versions(self, stix_id, allow_custom=False, version=None, _composite_filters=None):
+        """Retrieve STIX object from file directory via STIX ID, all versions.
 
         Note: Since FileSystem sources/sinks don't handle multiple versions
         of a STIX object, this operation is unnecessary. Pass call to get().
 
         Args:
             stix_id (str): The STIX ID of the STIX objects to be retrieved.
-
-            composite_filters (set): set of filters passed from the parent
+            _composite_filters (set): set of filters passed from the parent
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         Returns:
             (list): of STIX objects that has the supplied STIX ID.
                 The STIX objects are loaded from their json files, parsed into
                 a python STIX objects and then returned
-        """
-        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
 
-    def query(self, query=None, _composite_filters=None):
-        """search and retrieve STIX objects based on the complete query
+        """
+        return [self.get(stix_id=stix_id, allow_custom=allow_custom, version=version, _composite_filters=_composite_filters)]
+
+    def query(self, query=None, allow_custom=False, version=None, _composite_filters=None):
+        """Search and retrieve STIX objects based on the complete query.
 
         A "complete query" includes the filters from the query, the filters
-        attached to MemorySource, and any filters passed from a
-        CompositeDataSource (i.e. _composite_filters)
+        attached to this FileSystemSource, and any filters passed from a
+        CompositeDataSource (i.e. _composite_filters).
 
         Args:
             query (list): list of filters to search on
-
-            composite_filters (set): set of filters passed from the
+            _composite_filters (set): set of filters passed from the
                 CompositeDataSource, not user supplied
+            allow_custom (bool): whether to retrieve custom objects/properties
+                or not. Default: False.
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
 
         Returns:
             (list): list of STIX objects that matches the supplied
@@ -209,7 +229,7 @@ class FileSystemSource(DataSource):
             if not isinstance(query, list):
                 # make sure dont make set from a Filter object,
                 # need to make a set from a list of Filter objects (even if just one Filter)
-                query = list(query)
+                query = [query]
             query = set(query)
 
         # combine all query filters
@@ -225,14 +245,14 @@ class FileSystemSource(DataSource):
         file_filters = self._parse_file_filters(query)
 
         # establish which subdirectories can be avoided in query
-        # by decluding as many as possible. A filter with "type" as the field
+        # by decluding as many as possible. A filter with "type" as the property
         # means that certain STIX object types can be ruled out, and thus
         # the corresponding subdirectories as well
         include_paths = []
         declude_paths = []
-        if "type" in [filter.field for filter in file_filters]:
+        if "type" in [filter.property for filter in file_filters]:
             for filter in file_filters:
-                if filter.field == "type":
+                if filter.property == "type":
                     if filter.op == "=":
                         include_paths.append(os.path.join(self._stix_dir, filter.value))
                     elif filter.op == "!=":
@@ -254,14 +274,14 @@ class FileSystemSource(DataSource):
             # so query will look in all STIX directories that are not
             # the specified type. Compile correct dir paths
             for dir in os.listdir(self._stix_dir):
-                if os.path.abspath(dir) not in declude_paths:
-                    include_paths.append(os.path.abspath(dir))
+                if os.path.abspath(os.path.join(self._stix_dir, dir)) not in declude_paths:
+                    include_paths.append(os.path.abspath(os.path.join(self._stix_dir, dir)))
 
         # grab stix object ID as well - if present in filters, as
         # may forgo the loading of STIX content into memory
-        if "id" in [filter.field for filter in file_filters]:
+        if "id" in [filter.property for filter in file_filters]:
             for filter in file_filters:
-                if filter.field == "id" and filter.op == "=":
+                if filter.property == "id" and filter.op == "=":
                     id_ = filter.value
                     break
             else:
@@ -273,37 +293,35 @@ class FileSystemSource(DataSource):
         for path in include_paths:
             for root, dirs, files in os.walk(path):
                 for file_ in files:
-                    if id_:
-                        if id_ == file_.split(".")[0]:
-                            # since ID is specified in one of filters, can evaluate against filename first without loading
-                            stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
-                            # check against other filters, add if match
-                            all_data.extend(apply_common_filters([stix_obj], query))
-                    else:
+                    if not id_ or id_ == file_.split(".")[0]:
                         # have to load into memory regardless to evaluate other filters
-                        stix_obj = json.load(open(os.path.join(root, file_)))["objects"][0]
+                        stix_obj = json.load(open(os.path.join(root, file_)))
+                        if stix_obj.get('type', '') == 'bundle':
+                            stix_obj = stix_obj['objects'][0]
+                        # check against other filters, add if match
                         all_data.extend(apply_common_filters([stix_obj], query))
 
         all_data = deduplicate(all_data)
 
         # parse python STIX objects from the STIX object dicts
-        stix_objs = [parse(stix_obj_dict) for stix_obj_dict in all_data]
+        stix_objs = [parse(stix_obj_dict, allow_custom=allow_custom, version=version) for stix_obj_dict in all_data]
 
         return stix_objs
 
     def _parse_file_filters(self, query):
-        """utility method to extract STIX common filters
-        that can used to possibly speed up querying STIX objects
-        from the file system
+        """Extract STIX common filters.
 
-        Extracts filters that are for the "id" and "type" field of
+        Possibly speeds up querying STIX objects from the file system.
+
+        Extracts filters that are for the "id" and "type" property of
         a STIX object. As the file directory is organized by STIX
         object type with filenames that are equivalent to the STIX
         object ID, these filters can be used first to reduce the
-        search space of a FileSystemStore(or FileSystemSink)
+        search space of a FileSystemStore (or FileSystemSink).
+
         """
         file_filters = set()
         for filter_ in query:
-            if filter_.field == "id" or filter_.field == "type":
+            if filter_.property == "id" or filter_.property == "type":
                 file_filters.add(filter_)
         return file_filters

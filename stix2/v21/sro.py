@@ -1,14 +1,14 @@
-"""STIX 2.0 Relationship Objects."""
+"""STIX 2.1 Relationship Objects."""
 
 from collections import OrderedDict
 
-from .base import _STIXBase
+from ..base import _STIXBase
+from ..markings import _MarkingsMixin
+from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
+                          ListProperty, ReferenceProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
+from ..utils import NOW
 from .common import ExternalReference, GranularMarking
-from .markings import _MarkingsMixin
-from .properties import (BooleanProperty, IDProperty, IntegerProperty,
-                         ListProperty, ReferenceProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
-from .utils import NOW
 
 
 class STIXRelationshipObject(_STIXBase, _MarkingsMixin):

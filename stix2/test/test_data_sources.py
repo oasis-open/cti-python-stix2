@@ -1,17 +1,13 @@
-import os
-
 import pytest
 from taxii2client import Collection
 
-from stix2 import (Campaign, FileSystemSink, FileSystemSource, FileSystemStore,
-                   Filter, MemorySource, MemoryStore)
-from stix2.sources import (CompositeDataSource, DataSink, DataSource,
-                           DataStore, make_id, taxii)
+from stix2 import Filter, MemorySink, MemorySource
+from stix2.sources import (CompositeDataSource, DataSink, DataSource, make_id,
+                           taxii)
 from stix2.sources.filters import apply_common_filters
 from stix2.utils import deduplicate
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
-FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
 
 class MockTAXIIClient(object):
@@ -22,11 +18,6 @@ class MockTAXIIClient(object):
 @pytest.fixture
 def collection():
     return Collection(COLLECTION_URL, MockTAXIIClient())
-
-
-@pytest.fixture
-def ds():
-    return DataSource()
 
 
 IND1 = {
@@ -131,43 +122,11 @@ STIX_OBJS1 = [IND1, IND2, IND3, IND4, IND5]
 
 
 def test_ds_abstract_class_smoke():
-    ds1 = DataSource()
-    ds2 = DataSink()
-    ds3 = DataStore(source=ds1, sink=ds2)
+    with pytest.raises(TypeError):
+        DataSource()
 
-    with pytest.raises(NotImplementedError):
-        ds3.add(None)
-
-    with pytest.raises(NotImplementedError):
-        ds3.all_versions("malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")
-
-    with pytest.raises(NotImplementedError):
-        ds3.get("malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")
-
-    with pytest.raises(NotImplementedError):
-        ds3.query([Filter("id", "=", "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111")])
-
-
-def test_memory_store_smoke():
-    # Initialize MemoryStore with dict
-    ms = MemoryStore(STIX_OBJS1)
-
-    # Add item to sink
-    ms.add(dict(id="bundle--%s" % make_id(),
-                objects=STIX_OBJS2,
-                spec_version="2.0",
-                type="bundle"))
-
-    resp = ms.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
-    assert len(resp) == 1
-
-    resp = ms.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
-    assert resp["id"] == "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
-
-    query = [Filter('type', '=', 'malware')]
-
-    resp = ms.query(query)
-    assert len(resp) == 0
+    with pytest.raises(TypeError):
+        DataSink()
 
 
 def test_ds_taxii(collection):
@@ -203,9 +162,10 @@ def test_parse_taxii_filters():
     assert taxii_filters == expected_params
 
 
-def test_add_get_remove_filter(ds):
+def test_add_get_remove_filter():
+    ds = taxii.TAXIICollectionSource(collection)
 
-    # First 3 filters are valid, remaining fields are erroneous in some way
+    # First 3 filters are valid, remaining properties are erroneous in some way
     valid_filters = [
         Filter('type', '=', 'malware'),
         Filter('id', '!=', 'stix object id'),
@@ -219,14 +179,14 @@ def test_add_get_remove_filter(ds):
     with pytest.raises(ValueError) as excinfo:
         # create Filter that has an operator that is not allowed
         Filter('modified', '*', 'not supported operator - just place holder')
-    assert str(excinfo.value) == "Filter operator '*' not supported for specified field: 'modified'"
+    assert str(excinfo.value) == "Filter operator '*' not supported for specified property: 'modified'"
 
     with pytest.raises(TypeError) as excinfo:
         # create Filter that has a value type that is not allowed
         Filter('created', '=', object())
     # On Python 2, the type of object() is `<type 'object'>` On Python 3, it's `<class 'object'>`.
     assert str(excinfo.value).startswith("Filter value type")
-    assert str(excinfo.value).endswith("is not supported. The type must be a python immutable type or dictionary")
+    assert str(excinfo.value).endswith("is not supported. The type must be a Python immutable type or dictionary")
 
     assert len(ds.filters) == 0
 
@@ -252,7 +212,7 @@ def test_add_get_remove_filter(ds):
     ds.filters.update(valid_filters)
 
 
-def test_apply_common_filters(ds):
+def test_apply_common_filters():
     stix_objs = [
         {
             "created": "2017-01-27T13:49:53.997Z",
@@ -400,50 +360,96 @@ def test_apply_common_filters(ds):
     assert len(resp) == 0
 
 
-def test_filters0(ds):
+def test_filters0():
     # "Return any object modified before 2017-01-28T13:49:53.935Z"
     resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", "<", "2017-01-28T13:49:53.935Z")]))
     assert resp[0]['id'] == STIX_OBJS2[1]['id']
     assert len(resp) == 2
 
 
-def test_filters1(ds):
+def test_filters1():
     # "Return any object modified after 2017-01-28T13:49:53.935Z"
     resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", ">", "2017-01-28T13:49:53.935Z")]))
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 1
 
 
-def test_filters2(ds):
+def test_filters2():
     # "Return any object modified after or on 2017-01-28T13:49:53.935Z"
     resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", ">=", "2017-01-27T13:49:53.935Z")]))
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 3
 
 
-def test_filters3(ds):
+def test_filters3():
     # "Return any object modified before or on 2017-01-28T13:49:53.935Z"
     resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", "<=", "2017-01-27T13:49:53.935Z")]))
     assert resp[0]['id'] == STIX_OBJS2[1]['id']
     assert len(resp) == 2
 
 
-def test_filters4(ds):
+def test_filters4():
     # Assert invalid Filter cannot be created
     with pytest.raises(ValueError) as excinfo:
         Filter("modified", "?", "2017-01-27T13:49:53.935Z")
     assert str(excinfo.value) == ("Filter operator '?' not supported "
-                                  "for specified field: 'modified'")
+                                  "for specified property: 'modified'")
 
 
-def test_filters5(ds):
+def test_filters5():
     # "Return any object whose id is not indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
     resp = list(apply_common_filters(STIX_OBJS2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")]))
     assert resp[0]['id'] == STIX_OBJS2[0]['id']
     assert len(resp) == 1
 
 
-def test_deduplicate(ds):
+def test_filters6():
+    # Test filtering on non-common property
+    resp = list(apply_common_filters(STIX_OBJS2, [Filter("name", "=", "Malicious site hosting downloader")]))
+    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    assert len(resp) == 3
+
+
+def test_filters7():
+    # Test filtering on embedded property
+    stix_objects = list(STIX_OBJS2) + [{
+        "type": "observed-data",
+        "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        "created": "2016-04-06T19:58:16.000Z",
+        "modified": "2016-04-06T19:58:16.000Z",
+        "first_observed": "2015-12-21T19:00:00Z",
+        "last_observed": "2015-12-21T19:00:00Z",
+        "number_observed": 50,
+        "objects": {
+            "0": {
+                "type": "file",
+                "hashes": {
+                    "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+                },
+                "extensions": {
+                    "pdf-ext": {
+                        "version": "1.7",
+                        "document_info_dict": {
+                            "Title": "Sample document",
+                            "Author": "Adobe Systems Incorporated",
+                            "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+                            "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+                            "CreationDate": "20070412090123-02"
+                        },
+                        "pdfid0": "DFCE52BD827ECF765649852119D",
+                        "pdfid1": "57A1E0F9ED2AE523E313C"
+                    }
+                }
+            }
+        }
+    }]
+    resp = list(apply_common_filters(stix_objects, [Filter("objects.0.extensions.pdf-ext.version", ">", "1.2")]))
+    assert resp[0]['id'] == stix_objects[3]['id']
+    assert len(resp) == 1
+
+
+def test_deduplicate():
     unique = deduplicate(STIX_OBJS1)
 
     # Only 3 objects are unique
@@ -463,14 +469,14 @@ def test_deduplicate(ds):
 
 def test_add_remove_composite_datasource():
     cds = CompositeDataSource()
-    ds1 = DataSource()
-    ds2 = DataSource()
-    ds3 = DataSink()
+    ds1 = MemorySource()
+    ds2 = MemorySource()
+    ds3 = MemorySink()
 
     with pytest.raises(TypeError) as excinfo:
         cds.add_data_sources([ds1, ds2, ds1, ds3])
     assert str(excinfo.value) == ("DataSource (to be added) is not of type "
-                                  "stix2.DataSource. DataSource type is '<class 'stix2.sources.DataSink'>'")
+                                  "stix2.DataSource. DataSource type is '<class 'stix2.sources.memory.MemorySink'>'")
 
     cds.add_data_sources([ds1, ds2, ds1])
 
@@ -486,233 +492,66 @@ def test_composite_datasource_operations():
                    objects=STIX_OBJS1,
                    spec_version="2.0",
                    type="bundle")
-    cds = CompositeDataSource()
-    ds1 = MemorySource(stix_data=BUNDLE1)
-    ds2 = MemorySource(stix_data=STIX_OBJS2)
+    cds1 = CompositeDataSource()
+    ds1_1 = MemorySource(stix_data=BUNDLE1)
+    ds1_2 = MemorySource(stix_data=STIX_OBJS2)
 
-    cds.add_data_sources([ds1, ds2])
+    cds2 = CompositeDataSource()
+    ds2_1 = MemorySource(stix_data=BUNDLE1)
+    ds2_2 = MemorySource(stix_data=STIX_OBJS2)
 
-    indicators = cds.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    cds1.add_data_sources([ds1_1, ds1_2])
+    cds2.add_data_sources([ds2_1, ds2_2])
+
+    indicators = cds1.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
     # In STIX_OBJS2 changed the 'modified' property to a later time...
     assert len(indicators) == 2
 
-    indicator = cds.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    cds1.add_data_sources([cds2])
+
+    indicator = cds1.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
     assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
     assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
     assert indicator["type"] == "indicator"
 
-    query = [
+    query1 = [
         Filter("type", "=", "indicator")
     ]
 
-    results = cds.query(query)
+    query2 = [
+        Filter("valid_from", "=", "2017-01-27T13:49:53.935382Z")
+    ]
+
+    cds1.filters.update(query2)
+
+    results = cds1.query(query1)
 
     # STIX_OBJS2 has indicator with later time, one with different id, one with
     # original time in STIX_OBJS1
     assert len(results) == 3
 
+    indicator = cds1.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
-def test_filesytem_source():
-    # creation
-    fs_source = FileSystemSource(FS_PATH)
-    assert fs_source.stix_dir == FS_PATH
+    assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
+    assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
+    assert indicator["type"] == "indicator"
 
-    # get object
-    mal = fs_source.get("malware--6b616fc1-1505-48e3-8b2c-0d19337bff38")
-    assert mal.id == "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"
-    assert mal.name == "Rover"
+    # There is only one indicator with different ID. Since we use the same data
+    # when deduplicated, only two indicators (one with different modified).
+    results = cds1.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert len(results) == 2
 
-    # all versions - (currently not a true all versions call as FileSystem cant have multiple versions)
-    id_ = fs_source.get("identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5")
-    assert id_.id == "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5"
-    assert id_.name == "The MITRE Corporation"
-    assert id_.type == "identity"
-
-    # query
-    intrusion_sets = fs_source.query([Filter("type", '=', "intrusion-set")])
-    assert len(intrusion_sets) == 2
-    assert "intrusion-set--a653431d-6a5e-4600-8ad3-609b5af57064" in [is_.id for is_ in intrusion_sets]
-    assert "intrusion-set--f3bdec95-3d62-42d9-a840-29630f6cdc1a" in [is_.id for is_ in intrusion_sets]
-
-    is_1 = [is_ for is_ in intrusion_sets if is_.id == "intrusion-set--f3bdec95-3d62-42d9-a840-29630f6cdc1a"][0]
-    assert "DragonOK" in is_1.aliases
-    assert len(is_1.external_references) == 4
-
-    # query2
-    is_2 = fs_source.query([Filter("external_references.external_id", '=', "T1027")])
-    assert len(is_2) == 1
-
-    is_2 = is_2[0]
-    assert is_2.id == "attack-pattern--b3d682b6-98f2-4fb0-aa3b-b4df007ca70a"
-    assert is_2.type == "attack-pattern"
+    # Since we have filters already associated with our CompositeSource providing
+    # nothing returns the same as cds1.query(query1) (the associated query is query2)
+    results = cds1.query([])
+    assert len(results) == 3
 
 
-def test_filesystem_sink():
-    # creation
-    fs_sink = FileSystemSink(FS_PATH)
-    assert fs_sink.stix_dir == FS_PATH
+def test_composite_datastore_no_datasource():
+    cds = CompositeDataSource()
 
-    fs_source = FileSystemSource(FS_PATH)
-
-    # Test all the ways stix objects can be added (via different supplied forms)
-
-    # add python stix object
-    camp1 = Campaign(name="Hannibal",
-                     objective="Targeting Italian and Spanish Diplomat internet accounts",
-                     aliases=["War Elephant"])
-
-    fs_sink.add(camp1)
-
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", camp1.id + ".json"))
-
-    camp1_r = fs_source.get(camp1.id)
-    assert camp1_r.id == camp1.id
-    assert camp1_r.name == "Hannibal"
-    assert "War Elephant" in camp1_r.aliases
-
-    # add stix object dict
-    camp2 = {
-        "name": "Aurelius",
-        "type": "campaign",
-        "objective": "German and French Intelligence Services",
-        "aliases": ["Purple Robes"],
-        "id": "campaign--111111b6-1112-4fb0-111b-b111107ca70a",
-        "created": "2017-05-31T21:31:53.197755Z"
-    }
-
-    fs_sink.add(camp2)
-
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", camp2["id"] + ".json"))
-
-    camp2_r = fs_source.get(camp2["id"])
-    assert camp2_r.id == camp2["id"]
-    assert camp2_r.name == camp2["name"]
-    assert "Purple Robes" in camp2_r.aliases
-
-    # add stix bundle dict
-    bund = {
-        "type": "bundle",
-        "id": "bundle--112211b6-1112-4fb0-111b-b111107ca70a",
-        "spec_version": "2.0",
-        "objects": [
-            {
-                "name": "Atilla",
-                "type": "campaign",
-                "objective": "Bulgarian, Albanian and Romanian Intelligence Services",
-                "aliases": ["Huns"],
-                "id": "campaign--133111b6-1112-4fb0-111b-b111107ca70a",
-                "created": "2017-05-31T21:31:53.197755Z"
-            }
-        ]
-    }
-
-    fs_sink.add(bund)
-
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", bund["objects"][0]["id"] + ".json"))
-
-    camp3_r = fs_source.get(bund["objects"][0]["id"])
-    assert camp3_r.id == bund["objects"][0]["id"]
-    assert camp3_r.name == bund["objects"][0]["name"]
-    assert "Huns" in camp3_r.aliases
-
-    # add json-encoded stix obj
-    camp4 = '{"type": "campaign", "id":"campaign--144111b6-1112-4fb0-111b-b111107ca70a",'\
-            ' "created":"2017-05-31T21:31:53.197755Z", "name": "Ghengis Khan", "objective": "China and Russian infrastructure"}'
-
-    fs_sink.add(camp4)
-
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--144111b6-1112-4fb0-111b-b111107ca70a" + ".json"))
-
-    camp4_r = fs_source.get("campaign--144111b6-1112-4fb0-111b-b111107ca70a")
-    assert camp4_r.id == "campaign--144111b6-1112-4fb0-111b-b111107ca70a"
-    assert camp4_r.name == "Ghengis Khan"
-
-    # add json-encoded stix bundle
-    bund2 = '{"type": "bundle", "id": "bundle--332211b6-1132-4fb0-111b-b111107ca70a",' \
-            ' "spec_version": "2.0", "objects": [{"type": "campaign", "id": "campaign--155155b6-1112-4fb0-111b-b111107ca70a",' \
-            ' "created":"2017-05-31T21:31:53.197755Z", "name": "Spartacus", "objective": "Oppressive regimes of Africa and Middle East"}]}'
-    fs_sink.add(bund2)
-
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--155155b6-1112-4fb0-111b-b111107ca70a" + ".json"))
-
-    camp5_r = fs_source.get("campaign--155155b6-1112-4fb0-111b-b111107ca70a")
-    assert camp5_r.id == "campaign--155155b6-1112-4fb0-111b-b111107ca70a"
-    assert camp5_r.name == "Spartacus"
-
-    # add list of objects
-    camp6 = Campaign(name="Comanche",
-                     objective="US Midwest manufacturing firms, oil refineries, and businesses",
-                     aliases=["Horse Warrior"])
-
-    camp7 = {
-        "name": "Napolean",
-        "type": "campaign",
-        "objective": "Central and Eastern Europe military commands and departments",
-        "aliases": ["The Frenchmen"],
-        "id": "campaign--122818b6-1112-4fb0-111b-b111107ca70a",
-        "created": "2017-05-31T21:31:53.197755Z"
-    }
-
-    fs_sink.add([camp6, camp7])
-
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", camp6.id + ".json"))
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--122818b6-1112-4fb0-111b-b111107ca70a" + ".json"))
-
-    camp6_r = fs_source.get(camp6.id)
-    assert camp6_r.id == camp6.id
-    assert "Horse Warrior" in camp6_r.aliases
-
-    camp7_r = fs_source.get(camp7["id"])
-    assert camp7_r.id == camp7["id"]
-    assert "The Frenchmen" in camp7_r.aliases
-
-    # remove all added objects
-    os.remove(os.path.join(FS_PATH, "campaign", camp1_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp2_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp3_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp4_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp5_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp6_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp7_r.id + ".json"))
-
-    # remove campaign dir (that was added in course of testing)
-    os.rmdir(os.path.join(FS_PATH, "campaign"))
-
-
-def test_filesystem_store():
-    # creation
-    fs_store = FileSystemStore(FS_PATH)
-
-    # get()
-    coa = fs_store.get("course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd")
-    assert coa.id == "course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd"
-    assert coa.type == "course-of-action"
-
-    # all versions() - (note at this time, all_versions() is still not applicable to FileSystem, as only one version is ever stored)
-    rel = fs_store.all_versions("relationship--70dc6b5c-c524-429e-a6ab-0dd40f0482c1")[0]
-    assert rel.id == "relationship--70dc6b5c-c524-429e-a6ab-0dd40f0482c1"
-    assert rel.type == "relationship"
-
-    # query()
-    tools = fs_store.query([Filter("labels", "in", "tool")])
-    assert len(tools) == 2
-    assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [tool.id for tool in tools]
-    assert "tool--03342581-f790-4f03-ba41-e82e67392e23" in [tool.id for tool in tools]
-
-    # add()
-    camp1 = Campaign(name="Great Heathen Army",
-                     objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
-                     aliases=["Ragnar"])
-    fs_store.add(camp1)
-
-    camp1_r = fs_store.get(camp1.id)
-    assert camp1_r.id == camp1.id
-    assert camp1_r.name == camp1.name
-
-    # remove
-    os.remove(os.path.join(FS_PATH, "campaign", camp1_r.id + ".json"))
-
-    # remove campaign dir
-    os.rmdir(os.path.join(FS_PATH, "campaign"))
+    with pytest.raises(AttributeError) as excinfo:
+        cds.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert 'CompositeDataSource has no data source' in str(excinfo.value)

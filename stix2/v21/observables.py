@@ -1,4 +1,4 @@
-"""STIX 2.0 Cyber Observable Objects.
+"""STIX 2.1 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
 embedded in Email Message objects, inherit from ``_STIXBase`` instead of
@@ -7,15 +7,15 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 
-from .base import _Extension, _Observable, _STIXBase
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
-                         ParseError)
-from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                         EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                         HashesProperty, HexProperty, IntegerProperty,
-                         ListProperty, ObjectReferenceProperty, Property,
-                         StringProperty, TimestampProperty, TypeProperty)
-from .utils import get_dict
+from ..base import _Extension, _Observable, _STIXBase
+from ..exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
+                          ParseError)
+from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
+                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
+                          HashesProperty, HexProperty, IntegerProperty,
+                          ListProperty, ObjectReferenceProperty, Property,
+                          StringProperty, TimestampProperty, TypeProperty)
+from ..utils import get_dict
 
 
 class ObservableProperty(Property):
@@ -460,7 +460,7 @@ class SocketExt(_Extension):
             "SOCK_SEQPACKET",
         ])),
         ('socket_descriptor', IntegerProperty()),
-        ('socket_handle', IntegerProperty())
+        ('socket_handle', IntegerProperty()),
     ])
 
 

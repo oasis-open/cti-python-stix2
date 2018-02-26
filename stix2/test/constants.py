@@ -10,9 +10,12 @@ COURSE_OF_ACTION_ID = "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 IDENTITY_ID = "identity--311b2d2d-f010-5473-83ec-1edf84858f4c"
 INDICATOR_ID = "indicator--01234567-89ab-cdef-0123-456789abcdef"
 INTRUSION_SET_ID = "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29"
+LOCATION_ID = "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64"
 MALWARE_ID = "malware--fedcba98-7654-3210-fedc-ba9876543210"
 MARKING_DEFINITION_ID = "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+NOTE_ID = "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 OBSERVED_DATA_ID = "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
+OPINION_ID = "opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7"
 REPORT_ID = "report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3"
 RELATIONSHIP_ID = "relationship--00000000-1111-2222-3333-444444444444"
 THREAT_ACTOR_ID = "threat-actor--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
@@ -28,6 +31,18 @@ MARKING_IDS = [
     "marking-definition--68520ae2-fefe-43a9-84ee-2c2a934d2c7d",
     "marking-definition--2802dfb1-1019-40a8-8848-68d0ec0e417f",
 ]
+RELATIONSHIP_IDS = [
+    'relationship--06520621-5352-4e6a-b976-e8fa3d437ffd',
+    'relationship--181c9c09-43e6-45dd-9374-3bec192f05ef',
+    'relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70'
+]
+
+# All required args for a Campaign instance
+CAMPAIGN_KWARGS = dict(
+    name="Green Group Attacks Against Finance",
+    description="Campaign by Green Group against a series of targets in the financial services sector.",
+)
+
 
 # All required args for a Campaign instance, plus some optional args
 CAMPAIGN_MORE_KWARGS = dict(

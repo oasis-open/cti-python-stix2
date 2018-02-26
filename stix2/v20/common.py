@@ -2,13 +2,12 @@
 
 from collections import OrderedDict
 
-from .base import _STIXBase
-from .markings import _MarkingsMixin
-from .properties import (BooleanProperty, DictionaryProperty, HashesProperty,
-                         IDProperty, ListProperty, Property, ReferenceProperty,
-                         SelectorProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
-from .utils import NOW, get_dict
+from ..base import _STIXBase
+from ..markings import _MarkingsMixin
+from ..properties import (HashesProperty, IDProperty, ListProperty, Property,
+                          ReferenceProperty, SelectorProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
+from ..utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):
@@ -40,35 +39,8 @@ class GranularMarking(_STIXBase):
 
     _properties = OrderedDict()
     _properties.update([
-        ('lang', StringProperty()),
-        ('marking_ref', ReferenceProperty(type="marking-definition")),  # TODO: In 2.0 is required, not in 2.1
+        ('marking_ref', ReferenceProperty(required=True, type="marking-definition")),
         ('selectors', ListProperty(SelectorProperty, required=True)),
-    ])
-
-    def _check_object_constraints(self):
-        super(GranularMarking, self)._check_object_constraints()
-        self._check_at_least_one_property(["lang", "marking_ref"])
-
-
-class LanguageContent(_STIXBase):
-    _type = 'language-content'
-    _properties = OrderedDict()
-    _properties.update([
-        ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('object_ref', ReferenceProperty(required=True)),
-        # TODO: 'object_modified' it MUST be an exact match for the modified time of the STIX Object (SRO or SDO) being referenced.
-        ('object_modified', TimestampProperty(required=True)),
-        # TODO: 'contents' https://docs.google.com/document/d/1ShNq4c3e1CkfANmD9O--mdZ5H0O_GLnjN28a_yrEaco/edit#heading=h.cfz5hcantmvx
-        ('contents', DictionaryProperty(required=True)),
-        ('revoked', BooleanProperty()),
-        ('labels', ListProperty(StringProperty)),
-        ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
-        ('granular_markings', ListProperty(GranularMarking)),
     ])
 
 
@@ -168,7 +140,6 @@ def CustomMarking(type='x-custom-marking', properties=None):
     def custom_builder(cls):
 
         class _Custom(cls, _STIXBase):
-
             _type = type
             _properties = OrderedDict()
 
@@ -179,7 +150,14 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
-                cls.__init__(self, **kwargs)
+                try:
+                    cls.__init__(self, **kwargs)
+                except (AttributeError, TypeError) as e:
+                    # Don't accidentally catch errors raised in a custom __init__()
+                    if ("has no attribute '__init__'" in str(e) or
+                            str(e) == "object.__init__() takes no parameters"):
+                        return
+                    raise e
 
         _register_marking(_Custom)
         return _Custom

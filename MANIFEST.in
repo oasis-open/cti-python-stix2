@@ -1,0 +1,3 @@
+include LICENSE
+include CHANGELOG
+recursive-exclude stix2\test *
