@@ -117,8 +117,7 @@ class MemorySink(DataSink):
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects.
-            If apart of a MemoryStore, dict is shared between with
-            a MemorySource
+            If part of a MemoryStore, the dict is shared with a MemorySource
 
     """
     def __init__(self, stix_data=None, allow_custom=True, version=None, _store=False):
@@ -171,8 +170,7 @@ class MemorySource(DataSource):
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects.
-            If apart of a MemoryStore, dict is shared between with
-            a MemorySink
+            If part of a MemoryStore, the dict is shared with a MemorySink
 
     """
     def __init__(self, stix_data=None, allow_custom=True, version=None, _store=False):

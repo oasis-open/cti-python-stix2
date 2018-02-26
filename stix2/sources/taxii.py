@@ -27,7 +27,7 @@ class TAXIICollectionStore(DataStore):
 
     """
     def __init__(self, collection, allow_custom=None):
-        if not allow_custom:
+        if allow_custom is None:
             allow_custom_source = True
             allow_custom_sink = False
         else:

@@ -34,7 +34,7 @@ class FileSystemStore(DataStore):
 
     """
     def __init__(self, stix_dir, allow_custom=None, bundlify=False):
-        if not allow_custom:
+        if allow_custom is None:
             allow_custom_source = True
             allow_custom_sink = False
         else:
