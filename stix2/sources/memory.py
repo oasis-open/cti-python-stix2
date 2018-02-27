@@ -91,11 +91,27 @@ class MemoryStore(DataStore):
         )
 
     def save_to_file(self, *args, **kwargs):
-        """See MemorySink.save_to_file() for documentation"""
+        """Write SITX objects from in-memory dictionary to JSON file, as a STIX
+        Bundle.
+
+        Args:
+            file_path (str): file path to write STIX data to
+
+        """
         return self.sink.save_to_file(*args, **kwargs)
 
     def load_from_file(self, *args, **kwargs):
-        """See MemorySource.load_from_file() for documentation"""
+        """Load STIX data from JSON file.
+
+        File format is expected to be a single JSON
+        STIX object or JSON STIX bundle.
+
+        Args:
+            file_path (str): file path to load STIX data from
+            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
+                None, use latest version.
+
+        """
         return self.source.load_from_file(*args, **kwargs)
 
 
@@ -135,13 +151,6 @@ class MemorySink(DataSink):
     add.__doc__ = _add.__doc__
 
     def save_to_file(self, file_path):
-        """Write SITX objects from in-memory dictionary to JSON file, as a STIX
-        Bundle.
-
-        Args:
-            file_path (str): file path to write STIX data to
-
-        """
         file_path = os.path.abspath(file_path)
 
         if not os.path.exists(os.path.dirname(file_path)):
@@ -280,17 +289,6 @@ class MemorySource(DataSource):
         return all_data
 
     def load_from_file(self, file_path, version=None):
-        """Load STIX data from JSON file.
-
-        File format is expected to be a single JSON
-        STIX object or JSON STIX bundle.
-
-        Args:
-            file_path (str): file path to load STIX data from
-            version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-                None, use latest version.
-
-        """
         stix_data = json.load(open(os.path.abspath(file_path), "r"))
 
         if stix_data["type"] == "bundle":
