@@ -11,6 +11,10 @@ from ..utils import NOW, get_dict
 
 
 class ExternalReference(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709261>`__.
+    """
+
     _properties = OrderedDict()
     _properties.update([
         ('source_name', StringProperty(required=True)),
@@ -26,6 +30,10 @@ class ExternalReference(_STIXBase):
 
 
 class KillChainPhase(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709267>`__.
+    """
+
     _properties = OrderedDict()
     _properties.update([
         ('kill_chain_name', StringProperty(required=True)),
@@ -34,6 +42,10 @@ class KillChainPhase(_STIXBase):
 
 
 class GranularMarking(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709290>`__.
+    """
+
     _properties = OrderedDict()
     _properties.update([
         ('marking_ref', ReferenceProperty(required=True, type="marking-definition")),
@@ -42,15 +54,23 @@ class GranularMarking(_STIXBase):
 
 
 class TLPMarking(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709287>`__.
+    """
+
     # TODO: don't allow the creation of any other TLPMarkings than the ones below
     _type = 'tlp'
     _properties = OrderedDict()
     _properties.update([
-        ('tlp', Property(required=True))
+        ('tlp', StringProperty(required=True))
     ])
 
 
 class StatementMarking(_STIXBase):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709286>`__.
+    """
+
     _type = 'statement'
     _properties = OrderedDict()
     _properties.update([
@@ -78,6 +98,10 @@ class MarkingProperty(Property):
 
 
 class MarkingDefinition(_STIXBase, _MarkingsMixin):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709284>`__.
+    """
+
     _type = 'marking-definition'
     _properties = OrderedDict()
     _properties.update([

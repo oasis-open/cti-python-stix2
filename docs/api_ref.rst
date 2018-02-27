@@ -7,6 +7,6 @@ functions in the ``stix2`` API, as given by the package's docstrings.
 .. note::
     All the classes and functions detailed in the pages below are importable
     directly from `stix2`. See also:
-    :ref:`How imports will work <guide/ts_support.ipynb#How-imports-will-work>`.
+    :ref:`How imports will work </guide/ts_support.ipynb#How-imports-will-work>`.
 
 .. automodule:: stix2
