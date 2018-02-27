@@ -203,63 +203,12 @@ def test_memory_store_save_load_file(mem_store):
     shutil.rmtree(os.path.dirname(filename))
 
 
-def test_memory_store_add_stix_object_str(mem_store):
-    # add stix object string
-    camp_id = "campaign--111111b6-1112-4fb0-111b-b111107ca70a"
-    camp_name = "Aurelius"
-    camp_alias = "Purple Robes"
-    camp = """{
-        "name": "%s",
-        "type": "campaign",
-        "objective": "German and French Intelligence Services",
-        "aliases": ["%s"],
-        "id": "%s",
-        "created": "2017-05-31T21:31:53.197755Z"
-    }""" % (camp_name, camp_alias, camp_id)
-
-    mem_store.add(camp)
-
-    camp_r = mem_store.get(camp_id)
-    assert camp_r["id"] == camp_id
-    assert camp_r["name"] == camp_name
-    assert camp_alias in camp_r["aliases"]
-
-
-def test_memory_store_add_stix_bundle_str(mem_store):
-    # add stix bundle string
-    camp_id = "campaign--133111b6-1112-4fb0-111b-b111107ca70a"
-    camp_name = "Atilla"
-    camp_alias = "Huns"
-    bund = """{
-        "type": "bundle",
-        "id": "bundle--112211b6-1112-4fb0-111b-b111107ca70a",
-        "spec_version": "2.0",
-        "objects": [
-            {
-                "name": "%s",
-                "type": "campaign",
-                "objective": "Bulgarian, Albanian and Romanian Intelligence Services",
-                "aliases": ["%s"],
-                "id": "%s",
-                "created": "2017-05-31T21:31:53.197755Z"
-            }
-        ]
-    }""" % (camp_name, camp_alias, camp_id)
-
-    mem_store.add(bund)
-
-    camp_r = mem_store.get(camp_id)
-    assert camp_r["id"] == camp_id
-    assert camp_r["name"] == camp_name
-    assert camp_alias in camp_r["aliases"]
-
-
 def test_memory_store_add_invalid_object(mem_store):
     ind = ('indicator', IND1)  # tuple isn't valid
     with pytest.raises(TypeError) as excinfo:
         mem_store.add(ind)
-    assert 'stix_data must be' in str(excinfo.value)
-    assert 'a STIX object' in str(excinfo.value)
+    assert 'stix_data expected to be' in str(excinfo.value)
+    assert 'a python-stix2 object' in str(excinfo.value)
     assert 'JSON formatted STIX' in str(excinfo.value)
     assert 'JSON formatted STIX bundle' in str(excinfo.value)
 

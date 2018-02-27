@@ -1,5 +1,4 @@
 """Utility functions and classes for the stix2 library."""
-
 from collections import Mapping
 import copy
 import datetime as dt
@@ -15,6 +14,9 @@ from .exceptions import (InvalidValueError, RevokeError,
 # We can't use the standard 'default' approach, since if there are multiple
 # timestamps in a single object, the timestamps will vary by a few microseconds.
 NOW = object()
+
+# STIX object properties that cannot be modified
+STIX_UNMOD_PROPERTIES = ["created", "created_by_ref", "id", "type"]
 
 
 class STIXdatetime(dt.datetime):
@@ -215,7 +217,7 @@ def new_version(data, **kwargs):
     properties_to_change = kwargs.keys()
 
     # Make sure certain properties aren't trying to change
-    for prop in ["created", "created_by_ref", "id", "type"]:
+    for prop in STIX_UNMOD_PROPERTIES:
         if prop in properties_to_change:
             unchangable_properties.append(prop)
     if unchangable_properties:
@@ -227,8 +229,11 @@ def new_version(data, **kwargs):
     elif 'modified' in data:
         old_modified_property = parse_into_datetime(data.get('modified'), precision='millisecond')
         new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
-        if new_modified_property < old_modified_property:
-            raise InvalidValueError(cls, 'modified', "The new modified datetime cannot be before the current modified datatime.")
+        if new_modified_property <= old_modified_property:
+            raise InvalidValueError(cls, 'modified',
+                                    "The new modified datetime cannot be before than or equal to the current modified datetime."
+                                    "It cannot be equal, as according to STIX 2 specification, objects that are different "
+                                    "but have the same id and modified timestamp do not have defined consumer behavior.")
     new_obj_inner.update(kwargs)
     # Exclude properties with a value of 'None' in case data is not an instance of a _STIXBase subclass
     return cls(**{k: v for k, v in new_obj_inner.items() if v is not None})
@@ -255,6 +260,69 @@ def get_class_hierarchy_names(obj):
     for cls in obj.__class__.__mro__:
         names.append(cls.__name__)
     return names
+
+
+def remove_custom_stix(stix_obj):
+    """remove any custom STIX objects or properties
+
+    Warning: This function is a best effort utility, in that
+    it will remove custom objects and properties based on the
+    type names; i.e. if "x-" prefixes object types, and "x_"
+    prefixes property types. According to the STIX2 spec,
+    those naming conventions are a SHOULDs not MUSTs, meaning
+    that valid custom STIX content may ignore those conventions
+    and in effect render this utility function invalid when used
+    on that STIX content.
+
+    Args:
+        stix_obj (dict OR python-stix obj): a single python-stix object
+                                             or dict of a STIX object
+
+    Returns:
+        A new version of the object with any custom content removed
+    """
+
+    if stix_obj["type"].startswith("x-"):
+        # if entire object is custom, discard
+        return None
+
+    custom_props = []
+    for prop in stix_obj.items():
+        if prop[0].startswith("x_"):
+            # for every custom property, record it and set value to None
+            # (so we can pass it to new_version() and it will be dropped)
+            custom_props.append((prop[0], None))
+
+    if custom_props:
+        # obtain set of object properties that can be transferred
+        # to a new object version. This is 1)custom props with their
+        # values set to None, and 2)any properties left that are not
+        # unmodifiable STIX properties or the "modified" property
+
+        # set of properties that are not supplied to new_version()
+        # to be used for updating properties. This includes unmodifiable
+        # properties (properties that new_version() just re-uses from the
+        # existing STIX object) and the "modified" property. We dont supply the
+        # "modified" property so that new_version() creates a new datetime
+        # value for this property
+        non_supplied_props = STIX_UNMOD_PROPERTIES + ["modified"]
+
+        props = [(prop, stix_obj[prop]) for prop in stix_obj if prop not in non_supplied_props]
+
+        # add to set the custom properties we want to get rid of (with their value=None)
+        props.extend(custom_props)
+
+        new_obj = new_version(stix_obj, **(dict(props)))
+
+        while parse_into_datetime(new_obj["modified"]) == parse_into_datetime(stix_obj["modified"]):
+            # Prevents bug when fast computation allows multiple STIX object
+            # versions to be created in single unit of time
+            new_obj = new_version(stix_obj, **(dict(props)))
+
+        return new_obj
+
+    else:
+        return stix_obj
 
 
 def get_type_from_id(stix_id):
