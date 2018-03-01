@@ -1,7 +1,7 @@
 import copy
 
 from .core import parse as _parse
-from .sources import CompositeDataSource, DataStore
+from .datastore import CompositeDataSource, DataStore
 
 
 class ObjectFactory(object):

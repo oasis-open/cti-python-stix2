@@ -17,8 +17,8 @@ import os
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.sources import DataSink, DataSource, DataStore
-from stix2.sources.filters import Filter, apply_common_filters
+from stix2.datastore import DataSink, DataSource, DataStore
+from stix2.datastore.filters import Filter, apply_common_filters
 
 
 def _add(store, stix_data=None, version=None):

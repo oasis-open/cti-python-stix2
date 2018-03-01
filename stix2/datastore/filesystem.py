@@ -7,8 +7,8 @@ import json
 import os
 
 from stix2.core import Bundle, parse
-from stix2.sources import DataSink, DataSource, DataStore
-from stix2.sources.filters import Filter, apply_common_filters
+from stix2.datastore import DataSink, DataSource, DataStore
+from stix2.datastore.filters import Filter, apply_common_filters
 from stix2.utils import deduplicate, get_class_hierarchy_names
 
 

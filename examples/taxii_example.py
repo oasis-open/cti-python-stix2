@@ -1,6 +1,6 @@
 import json
 
-from stix2.sources.taxii import TAXIIDataSource
+from stix2.datastore.taxii import TAXIIDataSource
 
 # Flask TAXII server - developmental
 ROOT = 'http://localhost:5000'

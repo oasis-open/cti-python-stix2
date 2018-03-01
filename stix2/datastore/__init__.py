@@ -1,7 +1,7 @@
-"""Python STIX 2.0 Sources
+"""Python STIX 2.0 DataStore API
 
 .. autosummary::
-   :toctree: sources
+   :toctree: datastore
 
    filesystem
    filters
@@ -16,7 +16,7 @@ import uuid
 
 from six import with_metaclass
 
-from stix2.sources.filters import Filter
+from stix2.datastore.filters import Filter
 from stix2.utils import deduplicate
 
 

@@ -2,9 +2,9 @@ import pytest
 from taxii2client import Collection
 
 from stix2 import Filter, MemorySink, MemorySource
-from stix2.sources import (CompositeDataSource, DataSink, DataSource, make_id,
-                           taxii)
-from stix2.sources.filters import apply_common_filters
+from stix2.datastore import (CompositeDataSource, DataSink, DataSource,
+                             make_id, taxii)
+from stix2.datastore.filters import apply_common_filters
 from stix2.utils import deduplicate
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
@@ -476,7 +476,7 @@ def test_add_remove_composite_datasource():
     with pytest.raises(TypeError) as excinfo:
         cds.add_data_sources([ds1, ds2, ds1, ds3])
     assert str(excinfo.value) == ("DataSource (to be added) is not of type "
-                                  "stix2.DataSource. DataSource type is '<class 'stix2.sources.memory.MemorySink'>'")
+                                  "stix2.DataSource. DataSource type is '<class 'stix2.datastore.memory.MemorySink'>'")
 
     cds.add_data_sources([ds1, ds2, ds1])
 
