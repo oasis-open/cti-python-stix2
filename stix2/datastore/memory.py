@@ -17,7 +17,7 @@ import os
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.datastore import DataSink, DataSource, DataStore
+from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, apply_common_filters
 
 
@@ -56,7 +56,7 @@ def _add(store, stix_data=None, version=None):
                         " or a JSON formatted STIX bundle. stix_data was of type: " + str(type(stix_data)))
 
 
-class MemoryStore(DataStore):
+class MemoryStore(DataStoreMixin):
     """Interface to an in-memory dictionary of STIX objects.
 
     MemoryStore is a wrapper around a paired MemorySink and MemorySource.
@@ -124,7 +124,7 @@ class MemorySink(DataSink):
     Args:
         stix_data (dict OR list): valid STIX 2.0 content in
             bundle or a list.
-        _store (bool): whether the MemorySink is a part of a DataStore,
+        _store (bool): whether the MemorySink is a part of a MemoryStore,
             in which case "stix_data" is a direct reference to
             shared memory with DataSource. Not user supplied
         allow_custom (bool): whether to allow custom objects/properties
@@ -170,7 +170,7 @@ class MemorySource(DataSource):
     Args:
         stix_data (dict OR list OR STIX object): valid STIX 2.0 content in
             bundle or list.
-        _store (bool): if the MemorySource is a part of a DataStore,
+        _store (bool): if the MemorySource is a part of a MemoryStore,
             in which case "stix_data" is a direct reference to shared
             memory with DataSink. Not user supplied
         allow_custom (bool): whether to allow custom objects/properties

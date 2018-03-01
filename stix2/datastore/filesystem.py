@@ -7,12 +7,12 @@ import json
 import os
 
 from stix2.core import Bundle, parse
-from stix2.datastore import DataSink, DataSource, DataStore
+from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, apply_common_filters
 from stix2.utils import deduplicate, get_class_hierarchy_names
 
 
-class FileSystemStore(DataStore):
+class FileSystemStore(DataStoreMixin):
     """Interface to a file directory of STIX objects.
 
     FileSystemStore is a wrapper around a paired FileSystemSink

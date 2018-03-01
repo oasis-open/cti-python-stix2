@@ -1,7 +1,7 @@
 import copy
 
 from .core import parse as _parse
-from .datastore import CompositeDataSource, DataStore
+from .datastore import CompositeDataSource, DataStoreMixin
 
 
 class ObjectFactory(object):
@@ -75,7 +75,7 @@ class ObjectFactory(object):
         return cls(**properties)
 
 
-class Environment(object):
+class Environment(DataStoreMixin):
     """Abstract away some of the nasty details of working with STIX content.
 
     Args:
@@ -86,6 +86,14 @@ class Environment(object):
         source (DataSource, optional): Source for retrieving STIX objects.
         sink (DataSink, optional): Destination for saving STIX objects.
             Invalid if `store` is also provided.
+
+    .. automethod:: get
+    .. automethod:: all_versions
+    .. automethod:: query
+    .. automethod:: creator_of
+    .. automethod:: relationships
+    .. automethod:: related_to
+    .. automethod:: add
     """
 
     def __init__(self, factory=ObjectFactory(), store=None, source=None, sink=None):
@@ -104,14 +112,6 @@ class Environment(object):
     def create(self, *args, **kwargs):
         return self.factory.create(*args, **kwargs)
     create.__doc__ = ObjectFactory.create.__doc__
-
-    get = DataStore.__dict__['get']
-    all_versions = DataStore.__dict__['all_versions']
-    query = DataStore.__dict__['query']
-    creator_of = DataStore.__dict__['creator_of']
-    relationships = DataStore.__dict__['relationships']
-    related_to = DataStore.__dict__['related_to']
-    add = DataStore.__dict__['add']
 
     def add_filters(self, *args, **kwargs):
         try:

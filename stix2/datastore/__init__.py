@@ -24,9 +24,9 @@ def make_id():
     return str(uuid.uuid4())
 
 
-class DataStore(object):
-    """An implementer can subclass to create custom behavior from
-    this class for the specific DataStores.
+class DataStoreMixin(object):
+    """Provides mechanisms for storing and retrieving STIX data. The specific
+    behavior can be customized by subclasses.
 
     Args:
         source (DataSource): An existing DataSource to use
@@ -41,7 +41,7 @@ class DataStore(object):
 
     """
     def __init__(self, source=None, sink=None):
-        super(DataStore, self).__init__()
+        super(DataStoreMixin, self).__init__()
         self.id = make_id()
         self.source = source
         self.sink = sink
