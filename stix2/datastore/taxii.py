@@ -5,14 +5,14 @@ from requests.exceptions import HTTPError
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.sources import DataSink, DataSource, DataStore
-from stix2.sources.filters import Filter, apply_common_filters
+from stix2.datastore import DataSink, DataSource, DataStoreMixin
+from stix2.datastore.filters import Filter, apply_common_filters
 from stix2.utils import deduplicate
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
 
-class TAXIICollectionStore(DataStore):
+class TAXIICollectionStore(DataStoreMixin):
     """Provides an interface to a local/remote TAXII Collection
     of STIX data. TAXIICollectionStore is a wrapper
     around a paired TAXIICollectionSink and TAXIICollectionSource.

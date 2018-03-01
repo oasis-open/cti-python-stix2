@@ -6,7 +6,7 @@ import pytest
 from stix2 import (Bundle, Campaign, CustomObject, Filter, Identity, Indicator,
                    Malware, MemorySource, MemoryStore, Relationship,
                    properties)
-from stix2.sources import make_id
+from stix2.datastore import make_id
 
 from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
                         IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
