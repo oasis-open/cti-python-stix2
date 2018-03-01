@@ -3,18 +3,18 @@
 .. autosummary::
    :toctree: api
 
-   v20.common
    core
-   environment
    datastore
+   environment
    exceptions
    markings
-   v20.observables
    patterns
    properties
+   utils
+   v20.common
+   v20.observables
    v20.sdo
    v20.sro
-   utils
 """
 
 # flake8: noqa
