@@ -251,7 +251,7 @@ def revoke(data):
 
     if data.get("revoked"):
         raise RevokeError("revoke")
-    return new_version(data, revoked=True)
+    return new_version(data, revoked=True, allow_custom=True)
 
 
 def get_class_hierarchy_names(obj):
