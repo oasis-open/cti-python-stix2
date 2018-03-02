@@ -37,7 +37,7 @@ def add_markings(obj, marking):
 
     object_markings = set(obj.get("object_marking_refs", []) + marking)
 
-    return new_version(obj, object_marking_refs=list(object_markings))
+    return new_version(obj, object_marking_refs=list(object_markings), allow_custom=True)
 
 
 def remove_markings(obj, marking):

@@ -2,7 +2,7 @@ import pytest
 
 import stix2
 
-from .constants import FAKE_TIME
+from .constants import FAKE_TIME, MARKING_DEFINITION_ID
 
 
 def test_identity_custom_property():
@@ -92,6 +92,25 @@ def test_custom_property_in_bundled_object():
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
+
+
+def test_identity_custom_property_add_marking():
+    identity = stix2.Identity(
+        id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+        created="2015-12-21T19:59:11Z",
+        modified="2015-12-21T19:59:11Z",
+        name="John Smith",
+        identity_class="individual",
+        x_foo="bar",
+        allow_custom=True,
+    )
+    marking_definition = stix2.MarkingDefinition(
+        id=MARKING_DEFINITION_ID,
+        definition_type="statement",
+        definition=stix2.StatementMarking(statement="Copyright 2016, Example Corp")
+    )
+    identity2 = identity.add_markings(marking_definition)
+    assert identity2.x_foo == "bar"
 
 
 def test_custom_marking_no_init_1():
