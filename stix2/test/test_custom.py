@@ -2,7 +2,14 @@ import pytest
 
 import stix2
 
-from .constants import FAKE_TIME
+from .constants import FAKE_TIME, MARKING_DEFINITION_ID
+
+IDENTITY_CUSTOM_PROP = stix2.Identity(
+    name="John Smith",
+    identity_class="individual",
+    x_foo="bar",
+    allow_custom=True,
+)
 
 
 def test_identity_custom_property():
@@ -82,16 +89,36 @@ def test_parse_identity_custom_property(data):
 
 
 def test_custom_property_in_bundled_object():
-    identity = stix2.Identity(
-        name="John Smith",
-        identity_class="individual",
-        x_foo="bar",
-        allow_custom=True,
-    )
-    bundle = stix2.Bundle(identity, allow_custom=True)
+    bundle = stix2.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
+
+
+def test_identity_custom_property_revoke():
+    identity = IDENTITY_CUSTOM_PROP.revoke()
+    assert identity.x_foo == "bar"
+
+
+def test_identity_custom_property_edit_markings():
+    marking_obj = stix2.MarkingDefinition(
+        id=MARKING_DEFINITION_ID,
+        definition_type="statement",
+        definition=stix2.StatementMarking(statement="Copyright 2016, Example Corp")
+    )
+    marking_obj2 = stix2.MarkingDefinition(
+        id=MARKING_DEFINITION_ID,
+        definition_type="statement",
+        definition=stix2.StatementMarking(statement="Another one")
+    )
+
+    # None of the following should throw exceptions
+    identity = IDENTITY_CUSTOM_PROP.add_markings(marking_obj)
+    identity2 = identity.add_markings(marking_obj2, ['x_foo'])
+    identity2.remove_markings(marking_obj.id)
+    identity2.remove_markings(marking_obj2.id, ['x_foo'])
+    identity2.clear_markings()
+    identity2.clear_markings('x_foo')
 
 
 def test_custom_marking_no_init_1():
