@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+0.5.1 - 2018-03-06
+
+* Fixes issue with PyPI.
+
 0.5.0 - 2018-03-06
 
 * Adds functions to dereference relationships.
