@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+0.5.0 - 2018-03-06
+
+* Adds functions to dereference relationships.
+* Adds a function to get an object's type from its ID.
+* Reorganizes DataStore api, renaming: stix2.sources to stix2.datastore.
+* Fixes various bugs involving CustomMarking, creating new versions of objects
+  with custom properties, and a missing IntrusionSet property.
+* Drops Python 3.3 support.
+
 0.4.0 - 2017-11-13
 
 * Adds `creator_of` function to easily get the Identity that created an object,
