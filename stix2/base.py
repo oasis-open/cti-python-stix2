@@ -187,7 +187,7 @@ class _STIXBase(collections.Mapping):
         Args:
             pretty (bool): If True, output properties following the STIX specs
                 formatting. This includes indentation. Refer to notes for more
-                details.
+                details. (Default: ``False``)
             **kwargs: The arguments for a json.dumps() call.
 
         Returns:
