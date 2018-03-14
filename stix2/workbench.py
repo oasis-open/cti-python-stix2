@@ -13,10 +13,11 @@ from . import Report as _Report
 from . import ThreatActor as _ThreatActor
 from . import Tool as _Tool
 from . import Vulnerability as _Vulnerability
+from .datastore.filters import Filter
+from .datastore.memory import MemoryStore
 from .environment import Environment
-from .sources.filters import Filter
-from .sources.memory import MemoryStore
 
+# Use an implicit MemoryStore
 _environ = Environment(store=MemoryStore())
 
 create = _environ.create
@@ -31,6 +32,7 @@ add_filters = _environ.add_filters
 add_filter = _environ.add_filter
 parse = _environ.parse
 add_data_source = _environ.source.add_data_source
+add_data_sources = _environ.source.add_data_sources
 
 
 # Wrap SDOs with helper functions

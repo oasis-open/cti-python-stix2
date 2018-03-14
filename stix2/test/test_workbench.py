@@ -1,10 +1,12 @@
+import os
+
 import stix2
 from stix2.workbench import (AttackPattern, Campaign, CourseOfAction, Identity,
                              Indicator, IntrusionSet, Malware, ObservedData,
                              Report, ThreatActor, Tool, Vulnerability, add,
-                             all_versions, attack_patterns, campaigns,
-                             courses_of_action, create, get, identities,
-                             indicators, intrusion_sets, malware,
+                             add_data_source, all_versions, attack_patterns,
+                             campaigns, courses_of_action, create, get,
+                             identities, indicators, intrusion_sets, malware,
                              observed_data, query, reports, threat_actors,
                              tools, vulnerabilities)
 
@@ -171,3 +173,19 @@ def test_workbench_related():
     assert any(x['id'] == CAMPAIGN_ID for x in resp)
     assert any(x['id'] == INDICATOR_ID for x in resp)
     assert any(x['id'] == IDENTITY_ID for x in resp)
+
+    resp = get(MALWARE_ID).related(relationship_type='indicates')
+    assert len(resp) == 1
+
+
+def test_add_data_source():
+    fs_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
+    fs = stix2.FileSystemSource(fs_path)
+    add_data_source(fs)
+
+    resp = tools()
+    assert len(resp) == 3
+    resp_ids = [tool.id for tool in resp]
+    assert TOOL_ID in resp_ids
+    assert 'tool--03342581-f790-4f03-ba41-e82e67392e23' in resp_ids
+    assert 'tool--242f3da3-4425-4d11-8f5c-b842886da966' in resp_ids
