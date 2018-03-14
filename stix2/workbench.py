@@ -80,49 +80,60 @@ for obj_type in STIX_OBJS:
 # Functions to get all objects of a specific type
 
 
-def attack_patterns():
-    return query(Filter('type', '=', 'attack-pattern'))
+def query_by_type(obj_type='indicator', filters=None):
+    filter_list = [Filter('type', '=', obj_type)]
+    if filters:
+        if isinstance(filters, list):
+            filter_list += filters
+        else:
+            filter_list.append(filters)
+
+    return query(filter_list)
 
 
-def campaigns():
-    return query(Filter('type', '=', 'campaign'))
+def attack_patterns(filters=None):
+    return query_by_type('attack-pattern', filters)
 
 
-def courses_of_action():
-    return query(Filter('type', '=', 'course-of-action'))
+def campaigns(filters=None):
+    return query_by_type('campaign', filters)
 
 
-def identities():
-    return query(Filter('type', '=', 'identity'))
+def courses_of_action(filters=None):
+    return query_by_type('course-of-action', filters)
 
 
-def indicators():
-    return query(Filter('type', '=', 'indicator'))
+def identities(filters=None):
+    return query_by_type('identity', filters)
 
 
-def intrusion_sets():
-    return query(Filter('type', '=', 'intrusion-set'))
+def indicators(filters=None):
+    return query_by_type('indicator', filters)
 
 
-def malware():
-    return query(Filter('type', '=', 'malware'))
+def intrusion_sets(filters=None):
+    return query_by_type('intrusion-set', filters)
 
 
-def observed_data():
-    return query(Filter('type', '=', 'observed-data'))
+def malware(filters=None):
+    return query_by_type('malware', filters)
 
 
-def reports():
-    return query(Filter('type', '=', 'report'))
+def observed_data(filters=None):
+    return query_by_type('observed-data', filters)
 
 
-def threat_actors():
-    return query(Filter('type', '=', 'threat-actor'))
+def reports(filters=None):
+    return query_by_type('report', filters)
 
 
-def tools():
-    return query(Filter('type', '=', 'tool'))
+def threat_actors(filters=None):
+    return query_by_type('threat-actor', filters)
 
 
-def vulnerabilities():
-    return query(Filter('type', '=', 'vulnerability'))
+def tools(filters=None):
+    return query_by_type('tool', filters)
+
+
+def vulnerabilities(filters=None):
+    return query_by_type('vulnerability', filters)

@@ -189,3 +189,14 @@ def test_add_data_source():
     assert TOOL_ID in resp_ids
     assert 'tool--03342581-f790-4f03-ba41-e82e67392e23' in resp_ids
     assert 'tool--242f3da3-4425-4d11-8f5c-b842886da966' in resp_ids
+
+
+def test_additional_filter():
+    resp = tools(stix2.Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'))
+    assert len(resp) == 2
+
+
+def test_additional_filters_list():
+    resp = tools([stix2.Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),
+                  stix2.Filter('name', '=', 'Windows Credential Editor')])
+    assert len(resp) == 1
