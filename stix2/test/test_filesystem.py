@@ -1,4 +1,5 @@
 import os
+import json
 import shutil
 
 import pytest
@@ -44,6 +45,39 @@ def fs_sink():
     # remove campaign dir
     shutil.rmtree(os.path.join(FS_PATH, "campaign"), True)
 
+@pytest.fixture
+def bad_json_files():
+    # create erroneous JSON files for tests to make sure handled gracefully
+
+    with open(os.path.join(FS_PATH, "indicator", "indicator--test-non-json.txt"), "w") as f:
+        f.write("Im not a JSON file")
+
+    with open(os.path.join(FS_PATH, "indicator", "indicator--test-bad-json.json"), "w") as f:
+        f.write("Im not a JSON formatted file")
+
+    yield True # dummy yield so can have teardown
+
+    os.remove(os.path.join(FS_PATH, "indicator", "indicator--test-non-json.txt"))
+    os.remove(os.path.join(FS_PATH, "indicator", "indicator--test-bad-json.json"))
+
+@pytest.fixture
+def bad_stix_files():
+    # create erroneous STIX JSON files for tests to make sure handled correctly
+
+    # bad STIX object
+    stix_obj = {
+        "id": "indicator--test-bad-stix",
+        "spec_version": "2.0"
+        # no "type" field
+    }
+
+    with open(os.path.join(FS_PATH, "indicator", "indicator--test-non-stix.json"), "w") as f:
+        f.write(json.dumps(stix_obj))
+
+    yield True # dummy yield so can have teardown
+
+    os.remove(os.path.join(FS_PATH, "indicator", "indicator--test-non-stix.json"))
+
 
 @pytest.fixture(scope='module')
 def rel_fs_store():
@@ -74,6 +108,26 @@ def test_filesystem_sink_nonexistent_folder():
     with pytest.raises(ValueError) as excinfo:
         FileSystemSink('nonexistent-folder')
     assert "for STIX data does not exist" in str(excinfo)
+
+
+def test_filesystem_source_bad_json_file(fs_source, bad_json_files):
+    # this tests the handling of two bad json files
+    #  - one file should just be skipped (silently) as its a ".txt" extension
+    #  - one file should be parsed and raise Exception bc its not JSON
+    try:
+        bad_json_indicator = fs_source.get("indicator--test-bad-json")
+    except TypeError as e:
+        assert "indicator--test-bad-json" in str(e)
+        assert "could either not be parsed to JSON or was not valid STIX JSON" in str(e)
+
+
+def test_filesystem_source_bad_stix_file(fs_source, bad_stix_files):
+    # this tests handling of bad STIX json object
+    try:
+        bad_stix_indicator = fs_source.get("indicator--test-non-stix")
+    except TypeError as e:
+        assert "indicator--test-non-stix" in str(e)
+        assert "could either not be parsed to JSON or was not valid STIX JSON" in str(e)
 
 
 def test_filesytem_source_get_object(fs_source):
