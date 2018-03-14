@@ -313,13 +313,14 @@ class FileSystemSource(DataSource):
                             if stix_obj["type"] == "bundle":
                                 stix_obj = stix_obj["objects"][0]
 
-                            # naive STIX check
+                            # naive STIX type checking
                             stix_obj["type"]
                             stix_obj["id"]
 
-                        except (ValueError, KeyError) as e:  # likely not a JSON file
+                        except (ValueError, KeyError):  # likely not a JSON file
                             print("filesytem TypeError raised")
-                            raise TypeError("STIX JSON object at '{0}' could either not be parsed to JSON or was not valid STIX JSON".format(os.path.join(root, file_)))
+                            raise TypeError("STIX JSON object at '{0}' could either not be parsed to "
+                                            "JSON or was not valid STIX JSON".format(os.path.join(root, file_)))
 
                         # check against other filters, add if match
                         all_data.extend(apply_common_filters([stix_obj], query))
