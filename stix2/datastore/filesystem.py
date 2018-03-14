@@ -303,7 +303,11 @@ class FileSystemSource(DataSource):
                 for file_ in files:
                     if not id_ or id_ == file_.split(".")[0]:
                         # have to load into memory regardless to evaluate other filters
-                        stix_obj = json.load(open(os.path.join(root, file_)))
+                        try:
+                            stix_obj = json.load(open(os.path.join(root, file_)))
+                        except UnicodeDecodeError:  # likely not a JSON file
+                            # TODO: log a warning somehow? (os.path.abspath(file_)))
+                            continue
                         if stix_obj.get('type', '') == 'bundle':
                             stix_obj = stix_obj['objects'][0]
                         # check against other filters, add if match
