@@ -54,4 +54,7 @@ setup(
         'stix2-patterns',
         'taxii2-client',
     ],
+    exclude_package_data={
+        'test': ['stix2_data']
+    },
 )
