@@ -67,14 +67,17 @@ class TAXIICollectionSink(DataSink):
         """
         if isinstance(stix_data, _STIXBase):
             # adding python STIX object
-            bundle = dict(Bundle(stix_data, allow_custom=self.allow_custom))
+            if stix_data["type"] == "bundle":
+                bundle = stix_data.serialize(encoding="utf-8")
+            else:
+                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding="utf-8")
 
         elif isinstance(stix_data, dict):
             # adding python dict (of either Bundle or STIX obj)
             if stix_data["type"] == "bundle":
-                bundle = stix_data
+                bundle = parse(stix_data, allow_custom=self.allow_custom, version=version).serialize(encoding="utf-8")
             else:
-                bundle = dict(Bundle(stix_data, allow_custom=self.allow_custom))
+                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding="utf-8")
 
         elif isinstance(stix_data, list):
             # adding list of something - recurse on each
@@ -85,9 +88,9 @@ class TAXIICollectionSink(DataSink):
             # adding json encoded string of STIX content
             stix_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
             if stix_data["type"] == "bundle":
-                bundle = dict(stix_data)
+                bundle = stix_data.serialize(encoding="utf-8")
             else:
-                bundle = dict(Bundle(stix_data, allow_custom=self.allow_custom))
+                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding="utf-8")
 
         else:
             raise TypeError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
