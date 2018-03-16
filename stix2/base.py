@@ -191,7 +191,7 @@ class _STIXBase(collections.Mapping):
             **kwargs: The arguments for a json.dumps() call.
 
         Returns:
-            dict: The serialized JSON object.
+            str: The serialized JSON object.
 
         Note:
             The argument ``pretty=True`` will output the STIX object following
