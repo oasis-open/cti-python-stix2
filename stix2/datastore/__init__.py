@@ -73,7 +73,7 @@ class DataStoreMixin(object):
             stix_id (str): the id of the STIX object to retrieve.
 
         Returns:
-            stix_objs (list): a list of STIX objects
+            list: All versions of the specified STIX object.
 
         """
         try:
@@ -91,7 +91,7 @@ class DataStoreMixin(object):
                 to conduct search on.
 
         Returns:
-            stix_objs (list): a list of STIX objects
+            list: The STIX objects matching the query.
 
         """
         try:
@@ -136,7 +136,7 @@ class DataStoreMixin(object):
                 object is the target_ref. Default: False.
 
         Returns:
-            (list): List of Relationship objects involving the given STIX object.
+            list: The Relationship objects involving the given STIX object.
 
         """
         try:
@@ -164,7 +164,7 @@ class DataStoreMixin(object):
                 object is the target_ref. Default: False.
 
         Returns:
-            (list): List of STIX objects related to the given STIX object.
+            list: The STIX objects related to the given STIX object.
 
         """
         try:
@@ -240,7 +240,7 @@ class DataSource(with_metaclass(ABCMeta)):
                 specified by the "id".
 
         Returns:
-            stix_obj: the STIX object
+            stix_obj: The STIX object.
 
         """
 
@@ -258,7 +258,7 @@ class DataSource(with_metaclass(ABCMeta)):
                 specified by the "id".
 
         Returns:
-            stix_objs (list): a list of STIX objects
+            list: All versions of the specified STIX object.
 
         """
 
@@ -273,7 +273,7 @@ class DataSource(with_metaclass(ABCMeta)):
                 to conduct search on.
 
         Returns:
-            stix_objs (list): a list of STIX objects
+            list: The STIX objects that matched the query.
 
         """
 
@@ -311,7 +311,7 @@ class DataSource(with_metaclass(ABCMeta)):
                 object is the target_ref. Default: False.
 
         Returns:
-            (list): List of Relationship objects involving the given STIX object.
+            list: The Relationship objects involving the given STIX object.
 
         """
         results = []
@@ -356,7 +356,7 @@ class DataSource(with_metaclass(ABCMeta)):
                 object is the target_ref. Default: False.
 
         Returns:
-            (list): List of STIX objects related to the given STIX object.
+            list: The STIX objects related to the given STIX object.
 
         """
         results = []
@@ -425,7 +425,7 @@ class CompositeDataSource(DataSource):
                 to another parent CompositeDataSource), not user supplied.
 
         Returns:
-            stix_obj: the STIX object to be returned.
+            stix_obj: The STIX object to be returned.
 
         """
         if not self.has_data_sources():
@@ -471,7 +471,7 @@ class CompositeDataSource(DataSource):
                 attached to a parent CompositeDataSource), not user supplied.
 
         Returns:
-            all_data (list): list of STIX objects that have the specified id
+            list: The STIX objects that have the specified id.
 
         """
         if not self.has_data_sources():
@@ -510,7 +510,7 @@ class CompositeDataSource(DataSource):
                 attached to a parent CompositeDataSource), not user supplied.
 
         Returns:
-            all_data (list): list of STIX objects to be returned
+            list: The STIX objects to be returned.
 
         """
         if not self.has_data_sources():
@@ -561,7 +561,7 @@ class CompositeDataSource(DataSource):
                 object is the target_ref. Default: False.
 
         Returns:
-            (list): List of Relationship objects involving the given STIX object.
+            list: The Relationship objects involving the given STIX object.
 
         """
         if not self.has_data_sources():
@@ -599,7 +599,7 @@ class CompositeDataSource(DataSource):
                 object is the target_ref. Default: False.
 
         Returns:
-            (list): List of STIX objects related to the given STIX object.
+            list: The STIX objects related to the given STIX object.
 
         """
         if not self.has_data_sources():
