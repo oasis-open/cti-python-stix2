@@ -74,7 +74,7 @@ def get_property_type(prop):
     return prop_class
 
 
-class STIXAttributeDocumenter(ClassDocumenter):
+class STIXPropertyDocumenter(ClassDocumenter):
     """Custom Sphinx extension to auto-document STIX properties.
 
     Needed because descendants of _STIXBase use `_properties` dictionaries
@@ -97,16 +97,23 @@ class STIXAttributeDocumenter(ClassDocumenter):
         obj = self.object
         self.add_line(':Properties:', '<stixattr>')
         for prop_name, prop in obj._properties.items():
+            # Skip 'type'
+            if prop_name == 'type':
+                continue
+
             # Add metadata about the property
             prop_type = get_property_type(prop)
             if prop_type == 'List':
                 prop_type = 'List of %ss' % get_property_type(prop.contained)
             if prop.required:
                 prop_type += ', required'
+            if 'Timestamp' in prop_type and hasattr(prop, 'default'):
+                prop_type += ', default: current date/time'
             prop_str = '**%s** (*%s*)' % (prop_name, prop_type)
             self.add_line('    - %s' % prop_str, '<stixattr>')
+
         self.add_line('', '<stixattr>')
 
 
 def setup(app):
-    app.add_autodocumenter(STIXAttributeDocumenter)
+    app.add_autodocumenter(STIXPropertyDocumenter)
