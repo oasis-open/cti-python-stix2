@@ -99,6 +99,25 @@ class DataStoreMixin(object):
         except AttributeError:
             raise AttributeError('%s has no data source to query' % self.__class__.__name__)
 
+    def query_by_type(self, *args, **kwargs):
+        """Retrieve all objects of the given STIX object type.
+
+        Translate query_by_type() call to the appropriate DataSource call.
+
+        Args:
+            obj_type (str): The STIX object type to retrieve.
+            filters (list, optional): A list of additional filters to apply to
+                the query.
+
+        Returns:
+            list: The STIX objects that matched the query.
+
+        """
+        try:
+            return self.source.query_by_type(*args, **kwargs)
+        except AttributeError:
+            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+
     def creator_of(self, *args, **kwargs):
         """Retrieve the Identity refered to by the object's `created_by_ref`.
 
@@ -276,6 +295,29 @@ class DataSource(with_metaclass(ABCMeta)):
             list: The STIX objects that matched the query.
 
         """
+
+    def query_by_type(self, obj_type='indicator', filters=None):
+        """Retrieve all objects of the given STIX object type.
+
+        This helper function is a shortcut that calls query() under the hood.
+
+        Args:
+            obj_type (str): The STIX object type to retrieve.
+            filters (list, optional): A list of additional filters to apply to
+                the query.
+
+        Returns:
+            list: The STIX objects that matched the query.
+
+        """
+        filter_list = [Filter('type', '=', obj_type)]
+        if filters:
+            if isinstance(filters, list):
+                filter_list += filters
+            else:
+                filter_list.append(filters)
+
+        return self.query(filter_list)
 
     def creator_of(self, obj):
         """Retrieve the Identity refered to by the object's `created_by_ref`.
@@ -541,6 +583,35 @@ class CompositeDataSource(DataSource):
             all_data = deduplicate(all_data)
 
         return all_data
+
+    def query_by_type(self, *args, **kwargs):
+        """Retrieve all objects of the given STIX object type.
+
+        Federate the query to all DataSources attached to the
+        Composite Data Source.
+
+        Args:
+            obj_type (str): The STIX object type to retrieve.
+            filters (list, optional): A list of additional filters to apply to
+                the query.
+
+        Returns:
+            list: The STIX objects that matched the query.
+
+        """
+        if not self.has_data_sources():
+            raise AttributeError('CompositeDataSource has no data sources')
+
+        results = []
+        for ds in self.data_sources:
+            results.extend(ds.query_by_type(*args, **kwargs))
+
+        # remove exact duplicates (where duplicates are STIX 2.0
+        # objects with the same 'id' and 'modified' values)
+        if len(results) > 0:
+            results = deduplicate(results)
+
+        return results
 
     def relationships(self, *args, **kwargs):
         """Retrieve Relationships involving the given STIX object.

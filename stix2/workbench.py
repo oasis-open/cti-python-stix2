@@ -13,7 +13,6 @@ from . import Report as _Report
 from . import ThreatActor as _ThreatActor
 from . import Tool as _Tool
 from . import Vulnerability as _Vulnerability
-from .datastore.filters import Filter
 from .datastore.memory import MemoryStore
 from .environment import Environment
 
@@ -24,6 +23,7 @@ create = _environ.create
 get = _environ.get
 all_versions = _environ.all_versions
 query = _environ.query
+query_by_type = _environ.query_by_type
 creator_of = _environ.creator_of
 relationships = _environ.relationships
 related_to = _environ.related_to
@@ -78,17 +78,6 @@ for obj_type in STIX_OBJS:
 
 
 # Functions to get all objects of a specific type
-
-
-def query_by_type(obj_type='indicator', filters=None):
-    filter_list = [Filter('type', '=', obj_type)]
-    if filters:
-        if isinstance(filters, list):
-            filter_list += filters
-        else:
-            filter_list.append(filters)
-
-    return query(filter_list)
 
 
 def attack_patterns(filters=None):
