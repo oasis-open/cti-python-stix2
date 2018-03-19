@@ -7,7 +7,10 @@ from stix2.workbench import (AttackPattern, Campaign, CourseOfAction, Identity,
                              add_data_source, all_versions, attack_patterns,
                              campaigns, courses_of_action, create, get,
                              identities, indicators, intrusion_sets, malware,
-                             observed_data, query, reports, threat_actors,
+                             observed_data, query, reports,
+                             set_default_created, set_default_creator,
+                             set_default_external_refs,
+                             set_default_object_marking_refs, threat_actors,
                              tools, vulnerabilities)
 
 from .constants import (ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID,
@@ -200,3 +203,41 @@ def test_additional_filters_list():
     resp = tools([stix2.Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),
                   stix2.Filter('name', '=', 'Windows Credential Editor')])
     assert len(resp) == 1
+
+
+def test_default_creator():
+    set_default_creator(IDENTITY_ID)
+    campaign = Campaign(**CAMPAIGN_KWARGS)
+
+    assert 'created_by_ref' not in CAMPAIGN_KWARGS
+    assert campaign.created_by_ref == IDENTITY_ID
+
+
+def test_default_created_timestamp():
+    timestamp = "2018-03-19T01:02:03.000Z"
+    set_default_created(timestamp)
+    campaign = Campaign(**CAMPAIGN_KWARGS)
+
+    assert 'created' not in CAMPAIGN_KWARGS
+    assert stix2.utils.format_datetime(campaign.created) == timestamp
+    assert stix2.utils.format_datetime(campaign.modified) == timestamp
+
+
+def test_default_external_refs():
+    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
+                                      description="Threat report")
+    set_default_external_refs(ext_ref)
+    campaign = Campaign(**CAMPAIGN_KWARGS)
+
+    assert campaign.external_references[0].source_name == "ACME Threat Intel"
+    assert campaign.external_references[0].description == "Threat report"
+
+
+def test_default_object_marking_refs():
+    stmt_marking = stix2.StatementMarking("Copyright 2016, Example Corp")
+    mark_def = stix2.MarkingDefinition(definition_type="statement",
+                                       definition=stmt_marking)
+    set_default_object_marking_refs(mark_def)
+    campaign = Campaign(**CAMPAIGN_KWARGS)
+
+    assert campaign.object_marking_refs[0] == mark_def.id

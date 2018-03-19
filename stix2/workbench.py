@@ -20,6 +20,10 @@ from .environment import Environment
 _environ = Environment(store=MemoryStore())
 
 create = _environ.create
+set_default_creator = _environ.set_default_creator
+set_default_created = _environ.set_default_created
+set_default_external_refs = _environ.set_default_external_refs
+set_default_object_marking_refs = _environ.set_default_object_marking_refs
 get = _environ.get
 all_versions = _environ.all_versions
 query = _environ.query

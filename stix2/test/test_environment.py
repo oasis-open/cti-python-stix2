@@ -47,7 +47,7 @@ def test_object_factory_created():
     assert ind.modified == FAKE_TIME
 
 
-def test_object_factory_external_resource():
+def test_object_factory_external_reference():
     ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
                                       description="Threat report")
     factory = stix2.ObjectFactory(external_references=ext_ref)
