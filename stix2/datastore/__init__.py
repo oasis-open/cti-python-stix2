@@ -313,7 +313,7 @@ class DataSource(with_metaclass(ABCMeta)):
         filter_list = [Filter('type', '=', obj_type)]
         if filters:
             if isinstance(filters, list):
-                filter_list += filters
+                filter_list.extend(filters)
             else:
                 filter_list.append(filters)
 
@@ -380,7 +380,7 @@ class DataSource(with_metaclass(ABCMeta)):
 
         return results
 
-    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False):
+    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False, filters=None):
         """Retrieve STIX Objects that have a Relationship involving the given
         STIX object.
 
@@ -396,6 +396,8 @@ class DataSource(with_metaclass(ABCMeta)):
                 object is the source_ref. Default: False.
             target_only (bool): Only examine Relationships for which this
                 object is the target_ref. Default: False.
+            filters (list): list of additional filters the related objects must
+                match.
 
         Returns:
             list: The STIX objects related to the given STIX object.
@@ -416,8 +418,16 @@ class DataSource(with_metaclass(ABCMeta)):
             ids.update((r.source_ref, r.target_ref))
         ids.remove(obj_id)
 
+        # Assemble filters
+        filter_list = []
+        if filters:
+            if isinstance(filters, list):
+                filter_list.extend(filters)
+            else:
+                filter_list.append(filters)
+
         for i in ids:
-            results.append(self.get(i))
+            results.extend(self.query(filter_list + [Filter('id', '=', i)]))
 
         return results
 

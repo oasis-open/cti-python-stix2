@@ -181,6 +181,19 @@ def test_workbench_related():
     assert len(resp) == 1
 
 
+def test_workbench_related_with_filters():
+    malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID)
+    rel = stix2.Relationship(malware.id, 'variant-of', MALWARE_ID)
+    add([malware, rel])
+
+    filters = [stix2.Filter('created_by_ref', '=', IDENTITY_ID)]
+    resp = get(MALWARE_ID).related(filters=filters)
+
+    assert len(resp) == 1
+    assert resp[0].name == malware.name
+    assert resp[0].created_by_ref == IDENTITY_ID
+
+
 def test_add_data_source():
     fs_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
     fs = stix2.FileSystemSource(fs_path)
