@@ -193,6 +193,10 @@ def test_workbench_related_with_filters():
     assert resp[0].name == malware.name
     assert resp[0].created_by_ref == IDENTITY_ID
 
+    # filters arg can also be single filter
+    resp = get(MALWARE_ID).related(filters=filters[0])
+    assert len(resp) == 1
+
 
 def test_add_data_source():
     fs_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")

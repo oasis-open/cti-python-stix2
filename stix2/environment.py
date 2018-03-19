@@ -156,16 +156,10 @@ class Environment(DataStoreMixin):
     set_default_object_marking_refs.__doc__ = ObjectFactory.set_default_object_marking_refs.__doc__
 
     def add_filters(self, *args, **kwargs):
-        try:
-            return self.source.filters.update(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data source')
+        return self.source.filters.update(*args, **kwargs)
 
     def add_filter(self, *args, **kwargs):
-        try:
-            return self.source.filters.add(*args, **kwargs)
-        except AttributeError:
-            raise AttributeError('Environment has no data source')
+        return self.source.filters.add(*args, **kwargs)
 
     def parse(self, *args, **kwargs):
         return _parse(*args, **kwargs)
