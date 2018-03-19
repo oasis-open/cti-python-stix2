@@ -83,6 +83,8 @@ class TAXIICollectionSink(DataSink):
             # adding list of something - recurse on each
             for obj in stix_data:
                 self.add(obj, version=version)
+            else:
+                return  # If the list is empty just return.
 
         elif isinstance(stix_data, str):
             # adding json encoded string of STIX content
