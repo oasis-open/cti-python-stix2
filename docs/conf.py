@@ -115,5 +115,16 @@ class STIXPropertyDocumenter(ClassDocumenter):
         self.add_line('', '<stixattr>')
 
 
+def autodoc_skipper(app, what, name, obj, skip, options):
+    """Customize Sphinx to skip some member we don't want documented.
+
+    Skips anything containing ':autodoc-skip:' in its docstring.
+    """
+    if obj.__doc__ and ':autodoc-skip:' in obj.__doc__:
+        return skip or True
+    return skip
+
+
 def setup(app):
     app.add_autodocumenter(STIXPropertyDocumenter)
+    app.connect('autodoc-skip-member', autodoc_skipper)

@@ -47,24 +47,24 @@ STIX_OBJS = [_AttackPattern, _Campaign, _CourseOfAction, _Identity,
              _ThreatActor, _Tool, _Vulnerability]
 
 
-def created_by_wrapper(self, *args, **kwargs):
+def _created_by_wrapper(self, *args, **kwargs):
     return _environ.creator_of(self, *args, **kwargs)
 
 
-def relationships_wrapper(self, *args, **kwargs):
+def _relationships_wrapper(self, *args, **kwargs):
     return _environ.relationships(self, *args, **kwargs)
 
 
-def related_wrapper(self, *args, **kwargs):
+def _related_wrapper(self, *args, **kwargs):
     return _environ.related_to(self, *args, **kwargs)
 
 
-def constructor_wrapper(obj_type):
+def _constructor_wrapper(obj_type):
     # Use an intermediate wrapper class so the implicit environment will create objects that have our wrapper functions
     wrapped_type = type(obj_type.__name__, obj_type.__bases__, dict(
-        created_by=created_by_wrapper,
-        relationships=relationships_wrapper,
-        related=related_wrapper,
+        created_by=_created_by_wrapper,
+        relationships=_relationships_wrapper,
+        related=_related_wrapper,
         **obj_type.__dict__
     ))
 
@@ -77,7 +77,8 @@ def constructor_wrapper(obj_type):
 # Create wrapper classes whose constructors call the implicit environment's create()
 for obj_type in STIX_OBJS:
     new_class = type(obj_type.__name__, (), {})
-    new_class.__new__ = constructor_wrapper(obj_type)
+    new_class.__new__ = _constructor_wrapper(obj_type)
+    new_class.__doc__ = ':autodoc-skip:'
     globals()[obj_type.__name__] = new_class
 
 
