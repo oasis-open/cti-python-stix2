@@ -301,11 +301,27 @@ class FileSystemSource(DataSource):
         for path in include_paths:
             for root, dirs, files in os.walk(path):
                 for file_ in files:
+                    if not file_.endswith(".json"):
+                        # skip non '.json' files as more likely to be random non-STIX files
+                        continue
+
                     if not id_ or id_ == file_.split(".")[0]:
                         # have to load into memory regardless to evaluate other filters
-                        stix_obj = json.load(open(os.path.join(root, file_)))
-                        if stix_obj.get('type', '') == 'bundle':
-                            stix_obj = stix_obj['objects'][0]
+                        try:
+                            stix_obj = json.load(open(os.path.join(root, file_)))
+
+                            if stix_obj["type"] == "bundle":
+                                stix_obj = stix_obj["objects"][0]
+
+                            # naive STIX type checking
+                            stix_obj["type"]
+                            stix_obj["id"]
+
+                        except (ValueError, KeyError):  # likely not a JSON file
+                            print("filesytem TypeError raised")
+                            raise TypeError("STIX JSON object at '{0}' could either not be parsed to "
+                                            "JSON or was not valid STIX JSON".format(os.path.join(root, file_)))
+
                         # check against other filters, add if match
                         all_data.extend(apply_common_filters([stix_obj], query))
 
