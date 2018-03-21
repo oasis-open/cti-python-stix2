@@ -148,18 +148,18 @@ def test_parse_taxii_filters():
         Filter("created_by_ref", "=", "Bane"),
     ]
 
-    expected_params = {
-        "added_after": "2016-02-01T00:00:01.000Z",
-        "match[id]": "taxii stix object ID",
-        "match[type]": "taxii stix object ID",
-        "match[version]": "first"
-    }
+    taxii_filters_expected = set([
+        Filter("added_after", "=", "2016-02-01T00:00:01.000Z"),
+        Filter("id", "=", "taxii stix object ID"),
+        Filter("type", "=", "taxii stix object ID"),
+        Filter("version", "=", "first")
+    ])
 
     ds = taxii.TAXIICollectionSource(collection)
 
     taxii_filters = ds._parse_taxii_filters(query)
 
-    assert taxii_filters == expected_params
+    assert taxii_filters == taxii_filters_expected
 
 
 def test_add_get_remove_filter():
