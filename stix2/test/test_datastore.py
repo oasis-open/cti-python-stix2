@@ -220,7 +220,8 @@ def test_filter_value_type_check():
 
     with pytest.raises(TypeError) as excinfo:
         Filter("type", "=", complex(2, -1))
-    assert "Filter value of '<type 'complex'>' is not supported" in str(excinfo.value)
+    assert any([s in str(excinfo.value) for s in ["<type 'complex'>", "'<class 'complex'>'"]])
+    assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
 
     with pytest.raises(TypeError) as excinfo:
         Filter("type", "=", set([16, 23]))
