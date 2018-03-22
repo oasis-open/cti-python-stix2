@@ -225,7 +225,8 @@ def test_filter_value_type_check():
 
     with pytest.raises(TypeError) as excinfo:
         Filter("type", "=", set([16, 23]))
-    assert "Filter value of '<type 'set'>' is not supported" in str(excinfo.value)
+    assert any([s in str(excinfo.value) for s in ["<type 'set'>", "'<class 'set'>'"]])
+    assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
 
 
 def test_filter_type_underscore_check():
