@@ -35,7 +35,11 @@ def _check_filter_components(prop, op, value):
 
     if type(value) not in FILTER_VALUE_TYPES:
         # check filter value type is supported
-        raise TypeError("Filter value type '%s' is not supported. The type must be a Python immutable type or dictionary" % type(value))
+        raise TypeError("Filter value of '%s' is not supported. The type must be a Python immutable type or dictionary" % type(value))
+
+    if prop == "type" and "_" in value:
+        # check filter where the property is type, value (type name) cannot have underscores
+        raise ValueError("Filter for property 'type' cannot have its value '%s' include underscores" % value)
 
     return True
 
