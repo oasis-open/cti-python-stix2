@@ -1,14 +1,16 @@
 import os
 
 import stix2
-from stix2.workbench import (AttackPattern, Campaign, CourseOfAction, Identity,
-                             Indicator, IntrusionSet, Malware, ObservedData,
-                             Report, ThreatActor, Tool, Vulnerability, add,
-                             add_data_source, all_versions, attack_patterns,
-                             campaigns, courses_of_action, create, get,
-                             identities, indicators, intrusion_sets, malware,
-                             observed_data, query, reports,
-                             set_default_created, set_default_creator,
+from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
+                             ExternalReference, FileSystemSource, Filter,
+                             Identity, Indicator, IntrusionSet, Malware,
+                             MarkingDefinition, ObservedData, Relationship,
+                             Report, StatementMarking, ThreatActor, Tool,
+                             Vulnerability, add, add_data_source, all_versions,
+                             attack_patterns, campaigns, courses_of_action,
+                             create, get, identities, indicators,
+                             intrusion_sets, malware, observed_data, query,
+                             reports, set_default_created, set_default_creator,
                              set_default_external_refs,
                              set_default_object_marking_refs, threat_actors,
                              tools, vulnerabilities)
@@ -37,7 +39,7 @@ def test_workbench_environment():
     assert len(resp) == 1
 
     # Search on something other than id
-    q = [stix2.Filter('type', '=', 'vulnerability')]
+    q = [Filter('type', '=', 'vulnerability')]
     resp = query(q)
     assert len(resp) == 0
 
@@ -148,7 +150,7 @@ def test_workbench_get_all_vulnerabilities():
 
 
 def test_workbench_relationships():
-    rel = stix2.Relationship(INDICATOR_ID, 'indicates', MALWARE_ID)
+    rel = Relationship(INDICATOR_ID, 'indicates', MALWARE_ID)
     add(rel)
 
     ind = get(INDICATOR_ID)
@@ -167,8 +169,8 @@ def test_workbench_created_by():
 
 
 def test_workbench_related():
-    rel1 = stix2.Relationship(MALWARE_ID, 'targets', IDENTITY_ID)
-    rel2 = stix2.Relationship(CAMPAIGN_ID, 'uses', MALWARE_ID)
+    rel1 = Relationship(MALWARE_ID, 'targets', IDENTITY_ID)
+    rel2 = Relationship(CAMPAIGN_ID, 'uses', MALWARE_ID)
     add([rel1, rel2])
 
     resp = get(MALWARE_ID).related()
@@ -183,10 +185,10 @@ def test_workbench_related():
 
 def test_workbench_related_with_filters():
     malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID)
-    rel = stix2.Relationship(malware.id, 'variant-of', MALWARE_ID)
+    rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
     add([malware, rel])
 
-    filters = [stix2.Filter('created_by_ref', '=', IDENTITY_ID)]
+    filters = [Filter('created_by_ref', '=', IDENTITY_ID)]
     resp = get(MALWARE_ID).related(filters=filters)
 
     assert len(resp) == 1
@@ -200,7 +202,7 @@ def test_workbench_related_with_filters():
 
 def test_add_data_source():
     fs_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
-    fs = stix2.FileSystemSource(fs_path)
+    fs = FileSystemSource(fs_path)
     add_data_source(fs)
 
     resp = tools()
@@ -212,13 +214,13 @@ def test_add_data_source():
 
 
 def test_additional_filter():
-    resp = tools(stix2.Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'))
+    resp = tools(Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'))
     assert len(resp) == 2
 
 
 def test_additional_filters_list():
-    resp = tools([stix2.Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),
-                  stix2.Filter('name', '=', 'Windows Credential Editor')])
+    resp = tools([Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),
+                  Filter('name', '=', 'Windows Credential Editor')])
     assert len(resp) == 1
 
 
@@ -241,8 +243,8 @@ def test_default_created_timestamp():
 
 
 def test_default_external_refs():
-    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
-                                      description="Threat report")
+    ext_ref = ExternalReference(source_name="ACME Threat Intel",
+                                description="Threat report")
     set_default_external_refs(ext_ref)
     campaign = Campaign(**CAMPAIGN_KWARGS)
 
@@ -251,9 +253,9 @@ def test_default_external_refs():
 
 
 def test_default_object_marking_refs():
-    stmt_marking = stix2.StatementMarking("Copyright 2016, Example Corp")
-    mark_def = stix2.MarkingDefinition(definition_type="statement",
-                                       definition=stmt_marking)
+    stmt_marking = StatementMarking("Copyright 2016, Example Corp")
+    mark_def = MarkingDefinition(definition_type="statement",
+                                 definition=stmt_marking)
     set_default_object_marking_refs(mark_def)
     campaign = Campaign(**CAMPAIGN_KWARGS)
 

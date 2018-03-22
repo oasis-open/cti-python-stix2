@@ -11,6 +11,7 @@
    patterns
    properties
    utils
+   workbench
    v20.common
    v20.observables
    v20.sdo
