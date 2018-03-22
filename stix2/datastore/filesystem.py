@@ -318,7 +318,6 @@ class FileSystemSource(DataSource):
                             stix_obj["id"]
 
                         except (ValueError, KeyError):  # likely not a JSON file
-                            print("filesytem TypeError raised")
                             raise TypeError("STIX JSON object at '{0}' could either not be parsed to "
                                             "JSON or was not valid STIX JSON".format(os.path.join(root, file_)))
 
