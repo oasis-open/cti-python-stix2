@@ -21,6 +21,7 @@
 
 """
 
+import stix2
 from . import AttackPattern as _AttackPattern
 from . import Campaign as _Campaign
 from . import CourseOfAction as _CourseOfAction
@@ -121,20 +122,28 @@ def _constructor_wrapper(obj_type):
 
     @staticmethod
     def new_constructor(cls, *args, **kwargs):
-        return _environ.create(wrapped_type, *args, **kwargs)
+        x = _environ.create(wrapped_type, *args, **kwargs)
+        return x
     return new_constructor
 
 
-# Create wrapper classes whose constructors call the implicit environment's create()
-for obj_type in STIX_OBJS:
-    new_class_dict = {
-        '__new__': _constructor_wrapper(obj_type),
-        '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.html#stix2.v20.sdo.{0}>`__. object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
-    }
-    new_class = type(obj_type.__name__, (), new_class_dict)
+def _setup_workbench():
+    # Create wrapper classes whose constructors call the implicit environment's create()
+    for obj_type in STIX_OBJS:
+        new_class_dict = {
+            '__new__': _constructor_wrapper(obj_type),
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.html#stix2.v20.sdo.{0}>`__. object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
+        }
+        new_class = type(obj_type.__name__, (), new_class_dict)
 
-    globals()[obj_type.__name__] = new_class
-    new_class = None
+        # Add our new class to this module's globals and to the library-wide mapping.
+        # This allows parse() to use the wrapped classes.
+        globals()[obj_type.__name__] = new_class
+        stix2.OBJ_MAP[obj_type._type] = new_class
+        new_class = None
+
+
+_setup_workbench()
 
 
 # Functions to get all objects of a specific type
