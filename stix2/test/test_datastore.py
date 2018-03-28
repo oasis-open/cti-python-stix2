@@ -148,18 +148,18 @@ def test_parse_taxii_filters():
         Filter("created_by_ref", "=", "Bane"),
     ]
 
-    expected_params = {
-        "added_after": "2016-02-01T00:00:01.000Z",
-        "match[id]": "taxii stix object ID",
-        "match[type]": "taxii stix object ID",
-        "match[version]": "first"
-    }
+    taxii_filters_expected = set([
+        Filter("added_after", "=", "2016-02-01T00:00:01.000Z"),
+        Filter("id", "=", "taxii stix object ID"),
+        Filter("type", "=", "taxii stix object ID"),
+        Filter("version", "=", "first")
+    ])
 
     ds = taxii.TAXIICollectionSource(collection)
 
     taxii_filters = ds._parse_taxii_filters(query)
 
-    assert taxii_filters == expected_params
+    assert taxii_filters == taxii_filters_expected
 
 
 def test_add_get_remove_filter():
@@ -171,22 +171,6 @@ def test_add_get_remove_filter():
         Filter('id', '!=', 'stix object id'),
         Filter('labels', 'in', ["heartbleed", "malicious-activity"]),
     ]
-
-    # Invalid filters - wont pass creation
-    # these filters will not be allowed to be created
-    # check proper errors are raised when trying to create them
-
-    with pytest.raises(ValueError) as excinfo:
-        # create Filter that has an operator that is not allowed
-        Filter('modified', '*', 'not supported operator - just place holder')
-    assert str(excinfo.value) == "Filter operator '*' not supported for specified property: 'modified'"
-
-    with pytest.raises(TypeError) as excinfo:
-        # create Filter that has a value type that is not allowed
-        Filter('created', '=', object())
-    # On Python 2, the type of object() is `<type 'object'>` On Python 3, it's `<class 'object'>`.
-    assert str(excinfo.value).startswith("Filter value type")
-    assert str(excinfo.value).endswith("is not supported. The type must be a Python immutable type or dictionary")
 
     assert len(ds.filters) == 0
 
@@ -210,6 +194,46 @@ def test_add_get_remove_filter():
     assert len(ds.filters) == 2
 
     ds.filters.update(valid_filters)
+
+
+def test_filter_ops_check():
+    # invalid filters - non supported operators
+
+    with pytest.raises(ValueError) as excinfo:
+        # create Filter that has an operator that is not allowed
+        Filter('modified', '*', 'not supported operator')
+    assert str(excinfo.value) == "Filter operator '*' not supported for specified property: 'modified'"
+
+    with pytest.raises(ValueError) as excinfo:
+        Filter("type", "%", "4")
+    assert "Filter operator '%' not supported for specified property" in str(excinfo.value)
+
+
+def test_filter_value_type_check():
+    # invalid filters - non supported value types
+
+    with pytest.raises(TypeError) as excinfo:
+        Filter('created', '=', object())
+    # On Python 2, the type of object() is `<type 'object'>` On Python 3, it's `<class 'object'>`.
+    assert any([s in str(excinfo.value) for s in ["<type 'object'>", "'<class 'object'>'"]])
+    assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
+
+    with pytest.raises(TypeError) as excinfo:
+        Filter("type", "=", complex(2, -1))
+    assert any([s in str(excinfo.value) for s in ["<type 'complex'>", "'<class 'complex'>'"]])
+    assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
+
+    with pytest.raises(TypeError) as excinfo:
+        Filter("type", "=", set([16, 23]))
+    assert any([s in str(excinfo.value) for s in ["<type 'set'>", "'<class 'set'>'"]])
+    assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
+
+
+def test_filter_type_underscore_check():
+    # check that Filters where property="type", value (name) doesnt have underscores
+    with pytest.raises(ValueError) as excinfo:
+        Filter("type", "=", "oh_underscore")
+    assert "Filter for property 'type' cannot have its value 'oh_underscore'" in str(excinfo.value)
 
 
 def test_apply_common_filters():

@@ -224,18 +224,21 @@ class TAXIICollectionSource(DataSource):
         if _composite_filters:
             query.update(_composite_filters)
 
-        # separate taxii query terms (can be done remotely)
+        # parse taxii query params (that can be applied remotely)
         taxii_filters = self._parse_taxii_filters(query)
+
+        # taxii2client requires query params as keywords
+        taxii_filters_dict = dict((f.property, f.value) for f in taxii_filters)
 
         # query TAXII collection
         try:
-            all_data = self.collection.get_objects(filters=taxii_filters)["objects"]
+            all_data = self.collection.get_objects(**taxii_filters_dict)["objects"]
 
             # deduplicate data (before filtering as reduces wasted filtering)
             all_data = deduplicate(all_data)
 
-            # apply local (CompositeDataSource, TAXIICollectionSource and query filters)
-            all_data = list(apply_common_filters(all_data, query))
+            # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
+            all_data = list(apply_common_filters(all_data, (query - taxii_filters)))
 
         except HTTPError:
             # if resources not found or access is denied from TAXII server, return empty list
@@ -247,30 +250,35 @@ class TAXIICollectionSource(DataSource):
         return stix_objs
 
     def _parse_taxii_filters(self, query):
-        """Parse out TAXII filters that the TAXII server can filter on.
+        """Parse out TAXII filters that the TAXII server can filter on
 
-        Note:
-            For instance - "?match[type]=indicator,sighting" should be in a
-            query dict as follows:
+        Does not put in TAXII spec format as the TAXII2Client (that we use)
+        does this for us.
 
-            Filter("type", "=", "indicator,sighting")
+        NOTE:
+            Currently, the TAXII2Client can handle TAXII filters where the
+            filter value is list, as both a comma-seperated string or python list
+
+            For instance - "?match[type]=indicator,sighting" can be in a
+            filter in any of these formats:
+
+            Filter("type", "<any op>", "indicator,sighting")
+
+            Filter("type", "<any op>", ["indicator", "sighting"])
+
 
         Args:
-            query (list): list of filters to extract which ones are TAXII
+            query (set): set of filters to extract which ones are TAXII
                 specific.
 
         Returns:
-            params (dict): dict of the TAXII filters but in format required
-                for 'requests.get()'.
+            taxii_filters (set): set of the TAXII filters
 
         """
-        params = {}
+        taxii_filters = set()
 
         for filter_ in query:
             if filter_.property in TAXII_FILTERS:
-                if filter_.property == "added_after":
-                    params[filter_.property] = filter_.value
-                else:
-                    taxii_field = "match[%s]" % filter_.property
-                    params[taxii_field] = filter_.value
-        return params
+                taxii_filters.add(filter_)
+
+        return taxii_filters
