@@ -77,13 +77,35 @@ def parse(data, allow_custom=False, version=None):
 
     Args:
         data (str, dict, file-like object): The STIX 2 content to be parsed.
-        allow_custom (bool): Whether to allow custom properties or not.
-            Default: False.
+        allow_custom (bool): Whether to allow custom properties as well unknown
+            custom objects. Note that unknown custom objects cannot be parsed
+            into STIX objects, and will be returned as is. Default: False.
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
 
     Returns:
         An instantiated Python STIX object.
+
+    """
+    # convert STIX object to dict, if not already
+    obj = get_dict(data)
+
+    # convert dict to full python-stix2 obj
+    obj = dict_to_stix2(obj, allow_custom, version)
+
+    return obj
+
+
+def dict_to_stix2(stix_dict, allow_custom=False, version=None):
+    """convert dictionary to full python-stix2 object
+
+        Args:
+            stix_dict (dict): a python dictionary of a STIX object
+                that (presumably) is semantically correct to be parsed
+                into a full python-stix2 obj
+            allow_custom (bool): Whether to allow custom properties as well unknown
+                custom objects. Note that unknown custom objects cannot be parsed
+                into STIX objects, and will be returned as is. Default: False.
 
     """
     if not version:
@@ -93,16 +115,20 @@ def parse(data, allow_custom=False, version=None):
         v = 'v' + version.replace('.', '')
 
     OBJ_MAP = STIX2_OBJ_MAPS[v]
-    obj = get_dict(data)
 
-    if 'type' not in obj:
-        raise exceptions.ParseError("Can't parse object with no 'type' property: %s" % str(obj))
+    if 'type' not in stix_dict:
+        raise exceptions.ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
 
     try:
-        obj_class = OBJ_MAP[obj['type']]
+        obj_class = OBJ_MAP[stix_dict['type']]
     except KeyError:
-        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % obj['type'])
-    return obj_class(allow_custom=allow_custom, **obj)
+        if allow_custom:
+            # flag allows for unknown custom objects too, but will not
+            # be parsed into STIX object, returned as is
+            return stix_dict
+        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
+
+    return obj_class(allow_custom=allow_custom, **stix_dict)
 
 
 def _register_type(new_type, version=None):
