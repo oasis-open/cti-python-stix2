@@ -73,7 +73,7 @@ STIX2_OBJ_MAPS = {}
 
 
 def parse(data, allow_custom=False, version=None):
-    """Deserialize a string or file-like object into a STIX object.
+    """Convert a string, dict or file-like object into a STIX object.
 
     Args:
         data (str, dict, file-like object): The STIX 2 content to be parsed.
@@ -85,6 +85,13 @@ def parse(data, allow_custom=False, version=None):
 
     Returns:
         An instantiated Python STIX object.
+
+    WARNING: 'allow_custom=True' will allow for the return of any supplied STIX
+        dict(s) that cannot be found to map to any known STIX object types (both STIX2
+        domain objects or defined custom STIX2 objects); NO validation is done. This is
+        done to allow the processing of possibly unknown custom STIX objects (example
+        scenario: I need to query a third-party TAXII endpoint that could provide custom
+        STIX objects that I dont know about ahead of time)
 
     """
     # convert STIX object to dict, if not already
@@ -106,6 +113,16 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             allow_custom (bool): Whether to allow custom properties as well unknown
                 custom objects. Note that unknown custom objects cannot be parsed
                 into STIX objects, and will be returned as is. Default: False.
+
+        Returns:
+            An instantiated Python STIX object
+
+        WARNING: 'allow_custom=True' will allow for the return of any supplied STIX
+        dict(s) that cannot be found to map to any known STIX object types (both STIX2
+        domain objects or defined custom STIX2 objects); NO validation is done. This is
+        done to allow the processing of possibly unknown custom STIX objects (example
+        scenario: I need to query a third-party TAXII endpoint that could provide custom
+        STIX objects that I dont know about ahead of time)
 
     """
     if not version:
