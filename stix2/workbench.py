@@ -12,7 +12,7 @@
 .. autofunction:: creator_of
 .. autofunction:: relationships
 .. autofunction:: related_to
-.. autofunction:: add
+.. autofunction:: save
 .. autofunction:: add_filters
 .. autofunction:: add_filter
 .. autofunction:: parse
@@ -65,7 +65,7 @@ query_by_type = _environ.query_by_type
 creator_of = _environ.creator_of
 relationships = _environ.relationships
 related_to = _environ.related_to
-add = _environ.add
+save = _environ.add
 add_filters = _environ.add_filters
 add_filter = _environ.add_filter
 parse = _environ.parse
@@ -132,7 +132,7 @@ def _setup_workbench():
     for obj_type in STIX_OBJS:
         new_class_dict = {
             '__new__': _constructor_wrapper(obj_type),
-            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.html#stix2.v20.sdo.{0}>`__. object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.html#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
         }
         new_class = type(obj_type.__name__, (), new_class_dict)
 

@@ -181,6 +181,8 @@ class DataStoreMixin(object):
                 object is the source_ref. Default: False.
             target_only (bool): Only examine Relationships for which this
                 object is the target_ref. Default: False.
+            filters (list): list of additional filters the related objects must
+                match.
 
         Returns:
             list: The STIX objects related to the given STIX object.
@@ -194,8 +196,8 @@ class DataStoreMixin(object):
     def add(self, *args, **kwargs):
         """Method for storing STIX objects.
 
-        Define custom behavior before storing STIX objects using the associated
-        DataSink. Translates add() to the appropriate DataSink call.
+        Defines custom behavior before storing STIX objects using the
+        appropriate method call on the associated DataSink.
 
         Args:
             stix_objs (list): a list of STIX objects
@@ -416,7 +418,7 @@ class DataSource(with_metaclass(ABCMeta)):
         ids = set()
         for r in rels:
             ids.update((r.source_ref, r.target_ref))
-        ids.remove(obj_id)
+        ids.discard(obj_id)
 
         # Assemble filters
         filter_list = []
@@ -678,6 +680,8 @@ class CompositeDataSource(DataSource):
                 object is the source_ref. Default: False.
             target_only (bool): Only examine Relationships for which this
                 object is the target_ref. Default: False.
+            filters (list): list of additional filters the related objects must
+                match.
 
         Returns:
             list: The STIX objects related to the given STIX object.

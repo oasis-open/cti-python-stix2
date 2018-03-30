@@ -6,12 +6,12 @@ from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
                              Identity, Indicator, IntrusionSet, Malware,
                              MarkingDefinition, ObservedData, Relationship,
                              Report, StatementMarking, ThreatActor, Tool,
-                             Vulnerability, add, add_data_source, all_versions,
+                             Vulnerability, add_data_source, all_versions,
                              attack_patterns, campaigns, courses_of_action,
                              create, get, identities, indicators,
                              intrusion_sets, malware, observed_data, query,
-                             reports, set_default_created, set_default_creator,
-                             set_default_external_refs,
+                             reports, save, set_default_created,
+                             set_default_creator, set_default_external_refs,
                              set_default_object_marking_refs, threat_actors,
                              tools, vulnerabilities)
 
@@ -30,7 +30,7 @@ def test_workbench_environment():
 
     # Create a STIX object
     ind = create(Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
-    add(ind)
+    save(ind)
 
     resp = get(INDICATOR_ID)
     assert resp['labels'][0] == 'malicious-activity'
@@ -46,7 +46,7 @@ def test_workbench_environment():
 
 def test_workbench_get_all_attack_patterns():
     mal = AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
-    add(mal)
+    save(mal)
 
     resp = attack_patterns()
     assert len(resp) == 1
@@ -55,7 +55,7 @@ def test_workbench_get_all_attack_patterns():
 
 def test_workbench_get_all_campaigns():
     cam = Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
-    add(cam)
+    save(cam)
 
     resp = campaigns()
     assert len(resp) == 1
@@ -64,7 +64,7 @@ def test_workbench_get_all_campaigns():
 
 def test_workbench_get_all_courses_of_action():
     coa = CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS)
-    add(coa)
+    save(coa)
 
     resp = courses_of_action()
     assert len(resp) == 1
@@ -73,7 +73,7 @@ def test_workbench_get_all_courses_of_action():
 
 def test_workbench_get_all_identities():
     idty = Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
-    add(idty)
+    save(idty)
 
     resp = identities()
     assert len(resp) == 1
@@ -88,7 +88,7 @@ def test_workbench_get_all_indicators():
 
 def test_workbench_get_all_intrusion_sets():
     ins = IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS)
-    add(ins)
+    save(ins)
 
     resp = intrusion_sets()
     assert len(resp) == 1
@@ -97,7 +97,7 @@ def test_workbench_get_all_intrusion_sets():
 
 def test_workbench_get_all_malware():
     mal = Malware(id=MALWARE_ID, **MALWARE_KWARGS)
-    add(mal)
+    save(mal)
 
     resp = malware()
     assert len(resp) == 1
@@ -106,7 +106,7 @@ def test_workbench_get_all_malware():
 
 def test_workbench_get_all_observed_data():
     od = ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS)
-    add(od)
+    save(od)
 
     resp = observed_data()
     assert len(resp) == 1
@@ -115,7 +115,7 @@ def test_workbench_get_all_observed_data():
 
 def test_workbench_get_all_reports():
     rep = Report(id=REPORT_ID, **REPORT_KWARGS)
-    add(rep)
+    save(rep)
 
     resp = reports()
     assert len(resp) == 1
@@ -124,7 +124,7 @@ def test_workbench_get_all_reports():
 
 def test_workbench_get_all_threat_actors():
     thr = ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
-    add(thr)
+    save(thr)
 
     resp = threat_actors()
     assert len(resp) == 1
@@ -133,7 +133,7 @@ def test_workbench_get_all_threat_actors():
 
 def test_workbench_get_all_tools():
     tool = Tool(id=TOOL_ID, **TOOL_KWARGS)
-    add(tool)
+    save(tool)
 
     resp = tools()
     assert len(resp) == 1
@@ -142,7 +142,7 @@ def test_workbench_get_all_tools():
 
 def test_workbench_get_all_vulnerabilities():
     vuln = Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
-    add(vuln)
+    save(vuln)
 
     resp = vulnerabilities()
     assert len(resp) == 1
@@ -151,7 +151,7 @@ def test_workbench_get_all_vulnerabilities():
 
 def test_workbench_relationships():
     rel = Relationship(INDICATOR_ID, 'indicates', MALWARE_ID)
-    add(rel)
+    save(rel)
 
     ind = get(INDICATOR_ID)
     resp = ind.relationships()
@@ -163,7 +163,7 @@ def test_workbench_relationships():
 
 def test_workbench_created_by():
     intset = IntrusionSet(name="Breach 123", created_by_ref=IDENTITY_ID)
-    add(intset)
+    save(intset)
     creator = intset.created_by()
     assert creator.id == IDENTITY_ID
 
@@ -171,7 +171,7 @@ def test_workbench_created_by():
 def test_workbench_related():
     rel1 = Relationship(MALWARE_ID, 'targets', IDENTITY_ID)
     rel2 = Relationship(CAMPAIGN_ID, 'uses', MALWARE_ID)
-    add([rel1, rel2])
+    save([rel1, rel2])
 
     resp = get(MALWARE_ID).related()
     assert len(resp) == 3
@@ -186,7 +186,7 @@ def test_workbench_related():
 def test_workbench_related_with_filters():
     malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID)
     rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
-    add([malware, rel])
+    save([malware, rel])
 
     filters = [Filter('created_by_ref', '=', IDENTITY_ID)]
     resp = get(MALWARE_ID).related(filters=filters)
