@@ -54,4 +54,7 @@ setup(
         'six',
         'stix2-patterns',
     ],
+    extras_require={
+        'taxii': ['taxii2-client']
+    }
 )
