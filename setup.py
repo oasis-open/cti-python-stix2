@@ -4,11 +4,12 @@ import os.path
 
 from setuptools import find_packages, setup
 
-here = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+VERSION_FILE = os.path.join(BASE_DIR, 'stix2', 'version.py')
 
 
 def get_version():
-    with open('stix2/version.py', encoding="utf-8") as f:
+    with open(VERSION_FILE) as f:
         for line in f.readlines():
             if line.startswith("__version__"):
                 version = line.split()[-1].strip('"')
@@ -16,7 +17,7 @@ def get_version():
         raise AttributeError("Package does not have a __version__")
 
 
-with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+with open('README.rst') as f:
     long_description = f.read()
 
 
@@ -52,6 +53,5 @@ setup(
         'simplejson',
         'six',
         'stix2-patterns',
-        'taxii2-client',
     ],
 )
