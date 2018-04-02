@@ -298,7 +298,7 @@ class DataSource(with_metaclass(ABCMeta)):
 
         """
 
-    def query_by_type(self, obj_type='indicator', filters=None):
+    def query_by_type(self, obj_type, filters=None):
         """Retrieve all objects of the given STIX object type.
 
         This helper function is a shortcut that calls query() under the hood.
