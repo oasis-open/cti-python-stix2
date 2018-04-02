@@ -295,5 +295,5 @@ class MemorySource(DataSource):
             for stix_obj in stix_data["objects"]:
                 _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom, version=stix_data["spec_version"]))
         else:
-            _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom, version=version))
+            _add(self, stix_data=parse(stix_data, allow_custom=self.allow_custom, version=version))
     load_from_file.__doc__ = MemoryStore.load_from_file.__doc__
