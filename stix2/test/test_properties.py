@@ -16,6 +16,8 @@ def test_property():
     p = Property()
 
     assert p.required is False
+    assert p.clean('foo') == 'foo'
+    assert p.clean(3) == 3
 
 
 def test_basic_clean():
