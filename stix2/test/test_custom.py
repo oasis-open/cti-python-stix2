@@ -221,6 +221,20 @@ def test_parse_unregistered_custom_object_type():
     assert "use the CustomObject decorator." in str(excinfo.value)
 
 
+def test_parse_unregistered_custom_object_type_w_allow_custom():
+    """parse an unknown custom object, allowed by passing
+    'allow_custom' flag
+    """
+    nt_string = """{
+        "type": "x-foobar-observable",
+        "created": "2015-12-21T19:59:11Z",
+        "property1": "something"
+    }"""
+
+    custom_obj = stix2.parse(nt_string, allow_custom=True)
+    assert custom_obj["type"] == "x-foobar-observable"
+
+
 @stix2.observables.CustomObservable('x-new-observable', [
     ('property1', stix2.properties.StringProperty(required=True)),
     ('property2', stix2.properties.IntegerProperty()),
