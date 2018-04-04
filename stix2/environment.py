@@ -114,7 +114,6 @@ class Environment(DataStoreMixin):
     .. automethod:: get
     .. automethod:: all_versions
     .. automethod:: query
-    .. automethod:: query_by_type
     .. automethod:: creator_of
     .. automethod:: relationships
     .. automethod:: related_to

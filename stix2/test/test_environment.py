@@ -165,10 +165,6 @@ def test_environment_no_datastore():
     assert 'Environment has no data source' in str(excinfo.value)
 
     with pytest.raises(AttributeError) as excinfo:
-        env.query_by_type('indicator')
-    assert 'Environment has no data source' in str(excinfo.value)
-
-    with pytest.raises(AttributeError) as excinfo:
         env.relationships(INDICATOR_ID)
     assert 'Environment has no data source' in str(excinfo.value)
 

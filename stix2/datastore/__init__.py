@@ -298,23 +298,6 @@ class DataSource(with_metaclass(ABCMeta)):
 
         """
 
-    def query_by_type(self, obj_type, filters=None):
-        """Retrieve all objects of the given STIX object type.
-
-        This helper function is a shortcut that calls query() under the hood.
-
-        Args:
-            obj_type (str): The STIX object type to retrieve.
-            filters (list, optional): A list of additional filters to apply to
-                the query.
-
-        Returns:
-            list: The STIX objects that matched the query.
-
-        """
-        filter_list = _assemble_filters(filters, [Filter('type', '=', obj_type)])
-        return self.query(filter_list)
-
     def creator_of(self, obj):
         """Retrieve the Identity refered to by the object's `created_by_ref`.
 
@@ -376,7 +359,7 @@ class DataSource(with_metaclass(ABCMeta)):
 
         return results
 
-    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False, filters=None):
+    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False, filters=[]):
         """Retrieve STIX Objects that have a Relationship involving the given
         STIX object.
 

@@ -8,7 +8,6 @@
 .. autofunction:: get
 .. autofunction:: all_versions
 .. autofunction:: query
-.. autofunction:: query_by_type
 .. autofunction:: creator_of
 .. autofunction:: relationships
 .. autofunction:: related_to
@@ -49,6 +48,7 @@ from . import (AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,  # n
                WindowsPEOptionalHeaderType, WindowsPESection,
                WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
                WindowsServiceExt, X509Certificate, X509V3ExtenstionsType)
+from .datastore.filters import _assemble_filters
 
 # Use an implicit MemoryStore
 _environ = Environment(store=MemoryStore())
@@ -61,7 +61,6 @@ set_default_object_marking_refs = _environ.set_default_object_marking_refs
 get = _environ.get
 all_versions = _environ.all_versions
 query = _environ.query
-query_by_type = _environ.query_by_type
 creator_of = _environ.creator_of
 relationships = _environ.relationships
 related_to = _environ.related_to
@@ -149,7 +148,7 @@ _setup_workbench()
 # Functions to get all objects of a specific type
 
 
-def attack_patterns(filters=None):
+def attack_patterns(filters=[]):
     """Retrieve all Attack Pattern objects.
 
     Args:
@@ -157,10 +156,11 @@ def attack_patterns(filters=None):
             the query.
 
     """
-    return query_by_type('attack-pattern', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'attack-pattern')])
+    return query(filter_list)
 
 
-def campaigns(filters=None):
+def campaigns(filters=[]):
     """Retrieve all Campaign objects.
 
     Args:
@@ -168,10 +168,11 @@ def campaigns(filters=None):
             the query.
 
     """
-    return query_by_type('campaign', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'campaign')])
+    return query(filter_list)
 
 
-def courses_of_action(filters=None):
+def courses_of_action(filters=[]):
     """Retrieve all Course of Action objects.
 
     Args:
@@ -179,10 +180,11 @@ def courses_of_action(filters=None):
             the query.
 
     """
-    return query_by_type('course-of-action', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'course-of-action')])
+    return query(filter_list)
 
 
-def identities(filters=None):
+def identities(filters=[]):
     """Retrieve all Identity objects.
 
     Args:
@@ -190,10 +192,11 @@ def identities(filters=None):
             the query.
 
     """
-    return query_by_type('identity', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'identity')])
+    return query(filter_list)
 
 
-def indicators(filters=None):
+def indicators(filters=[]):
     """Retrieve all Indicator objects.
 
     Args:
@@ -201,10 +204,11 @@ def indicators(filters=None):
             the query.
 
     """
-    return query_by_type('indicator', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'indicator')])
+    return query(filter_list)
 
 
-def intrusion_sets(filters=None):
+def intrusion_sets(filters=[]):
     """Retrieve all Intrusion Set objects.
 
     Args:
@@ -212,10 +216,11 @@ def intrusion_sets(filters=None):
             the query.
 
     """
-    return query_by_type('intrusion-set', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'intrusion-set')])
+    return query(filter_list)
 
 
-def malware(filters=None):
+def malware(filters=[]):
     """Retrieve all Malware objects.
 
     Args:
@@ -223,10 +228,11 @@ def malware(filters=None):
             the query.
 
     """
-    return query_by_type('malware', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'malware')])
+    return query(filter_list)
 
 
-def observed_data(filters=None):
+def observed_data(filters=[]):
     """Retrieve all Observed Data objects.
 
     Args:
@@ -234,10 +240,11 @@ def observed_data(filters=None):
             the query.
 
     """
-    return query_by_type('observed-data', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'observed-data')])
+    return query(filter_list)
 
 
-def reports(filters=None):
+def reports(filters=[]):
     """Retrieve all Report objects.
 
     Args:
@@ -245,10 +252,11 @@ def reports(filters=None):
             the query.
 
     """
-    return query_by_type('report', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'report')])
+    return query(filter_list)
 
 
-def threat_actors(filters=None):
+def threat_actors(filters=[]):
     """Retrieve all Threat Actor objects.
 
     Args:
@@ -256,10 +264,11 @@ def threat_actors(filters=None):
             the query.
 
     """
-    return query_by_type('threat-actor', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'threat-actor')])
+    return query(filter_list)
 
 
-def tools(filters=None):
+def tools(filters=[]):
     """Retrieve all Tool objects.
 
     Args:
@@ -267,10 +276,11 @@ def tools(filters=None):
             the query.
 
     """
-    return query_by_type('tool', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'tool')])
+    return query(filter_list)
 
 
-def vulnerabilities(filters=None):
+def vulnerabilities(filters=[]):
     """Retrieve all Vulnerability objects.
 
     Args:
@@ -278,4 +288,5 @@ def vulnerabilities(filters=None):
             the query.
 
     """
-    return query_by_type('vulnerability', filters)
+    filter_list = _assemble_filters(filters, [Filter('type', '=', 'vulnerability')])
+    return query(filter_list)
