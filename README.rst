@@ -42,8 +42,7 @@ arguments.
 
     indicator = Indicator(name="File hash for malware variant",
                           labels=["malicious-activity"],
-                          pattern="[file:hashes.md5 =
-                          'd41d8cd98f00b204e9800998ecf8427e']")
+                          pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']")
 
 To parse a STIX JSON string into a Python STIX object, use
 ``parse()``:
