@@ -212,13 +212,9 @@ Staff at
 repository-admin@oasis-open.org and any specific CLA-related questions
 to repository-cla@oasis-open.org.
 
-.. |Build_Status| image:: https://travis-ci.org/oasis-open/cti-python-
-stix2.svg?branch=master
+.. |Build_Status| image:: https://travis-ci.org/oasis-open/cti-python-stix2.svg?branch=master
    :target: https://travis-ci.org/oasis-open/cti-python-stix2
-.. |Coverage| image:: https://codecov.io/gh/oasis-open/cti-python-
-stix2/branch/master/graph/badge.svg
+.. |Coverage| image:: https://codecov.io/gh/oasis-open/cti-python-stix2/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/oasis-open/cti-python-stix2
-.. |Version| image:: https://img.shields.io/pypi/v/stix2.svg?maxAge=
-3600
+.. |Version| image:: https://img.shields.io/pypi/v/stix2.svg?maxAge=3600
    :target: https://pypi.python.org/pypi/stix2/
-
