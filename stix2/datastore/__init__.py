@@ -16,7 +16,7 @@ import uuid
 
 from six import with_metaclass
 
-from stix2.datastore.filters import Filter
+from stix2.datastore.filters import Filter, _assemble_filters
 from stix2.utils import deduplicate
 
 
@@ -312,13 +312,7 @@ class DataSource(with_metaclass(ABCMeta)):
             list: The STIX objects that matched the query.
 
         """
-        filter_list = [Filter('type', '=', obj_type)]
-        if filters:
-            if isinstance(filters, list):
-                filter_list.extend(filters)
-            else:
-                filter_list.append(filters)
-
+        filter_list = _assemble_filters(filters, [Filter('type', '=', obj_type)])
         return self.query(filter_list)
 
     def creator_of(self, obj):
@@ -421,12 +415,7 @@ class DataSource(with_metaclass(ABCMeta)):
         ids.discard(obj_id)
 
         # Assemble filters
-        filter_list = []
-        if filters:
-            if isinstance(filters, list):
-                filter_list.extend(filters)
-            else:
-                filter_list.append(filters)
+        filter_list = _assemble_filters(filters)
 
         for i in ids:
             results.extend(self.query(filter_list + [Filter('id', '=', i)]))

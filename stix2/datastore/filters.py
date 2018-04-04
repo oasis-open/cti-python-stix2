@@ -44,6 +44,29 @@ def _check_filter_components(prop, op, value):
     return True
 
 
+def _assemble_filters(filter_arg, filters=[]):
+    """Assemble a list of filters.
+
+    This can be used to allow certain functions to work correctly no matter if
+    the user provides a single filter or a list of them.
+
+    Args:
+        filter_arg (Filter or list): The single Filter or list of Filters to be
+            coerced into a list of Filters.
+        filters (list, optional): A list of Filters to be automatically appended.
+
+    Returns:
+        List of Filters.
+
+    """
+    if isinstance(filter_arg, list):
+        filters.extend(filter_arg)
+    else:
+        filters.append(filter_arg)
+
+    return filters
+
+
 class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
     """STIX 2 filters that support the querying functionality of STIX 2
     DataStores and DataSources.
