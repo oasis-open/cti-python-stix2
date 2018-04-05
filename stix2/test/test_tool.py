@@ -58,4 +58,10 @@ def test_parse_tool(data):
     assert tool.labels == ["remote-access"]
     assert tool.name == "VNC"
 
+
+def test_tool_no_workbench_wrappers():
+    tool = stix2.Tool(name='VNC', labels=['remote-access'])
+    with pytest.raises(AttributeError):
+        tool.created_by()
+
 # TODO: Add other examples

@@ -4,7 +4,7 @@ from taxii2client import Collection
 from stix2 import Filter, MemorySink, MemorySource
 from stix2.datastore import (CompositeDataSource, DataSink, DataSource,
                              make_id, taxii)
-from stix2.datastore.filters import apply_common_filters
+from stix2.datastore.filters import _assemble_filters, apply_common_filters
 from stix2.utils import deduplicate
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
@@ -471,6 +471,15 @@ def test_filters7():
     resp = list(apply_common_filters(stix_objects, [Filter("objects.0.extensions.pdf-ext.version", ">", "1.2")]))
     assert resp[0]['id'] == stix_objects[3]['id']
     assert len(resp) == 1
+
+
+def test_assemble_filters():
+    filter1 = Filter("name", "=", "Malicious site hosting downloader")
+    filter2 = Filter("modified", ">", "2017-01-28T13:49:53.935Z")
+    result = _assemble_filters(filter1, filter2)
+    assert len(result) == 2
+    assert result[0].property == 'name'
+    assert result[1].property == 'modified'
 
 
 def test_deduplicate():
