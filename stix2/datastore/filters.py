@@ -44,27 +44,35 @@ def _check_filter_components(prop, op, value):
     return True
 
 
-def _assemble_filters(filter_arg, filters=[]):
+def _assemble_filters(filters1=None, filters2=None):
     """Assemble a list of filters.
 
     This can be used to allow certain functions to work correctly no matter if
     the user provides a single filter or a list of them.
 
     Args:
-        filter_arg (Filter or list): The single Filter or list of Filters to be
-            coerced into a list of Filters.
-        filters (list, optional): A list of Filters to be automatically appended.
+        filters1 (Filter or list, optional): The single Filter or list of Filters to
+            coerce into a list of Filters.
+        filters2 (Filter or list, optional): The single Filter or list of Filters to
+            append to the list of Filters.
 
     Returns:
         List of Filters.
 
     """
-    if isinstance(filter_arg, list):
-        filters.extend(filter_arg)
+    if filters1 is None:
+        filter_list = []
+    elif not isinstance(filters1, list):
+        filter_list = [filters1]
     else:
-        filters.append(filter_arg)
+        filter_list = filters1
 
-    return filters
+    if isinstance(filters2, list):
+        filter_list.extend(filters2)
+    elif filters2 is not None:
+        filter_list.append(filters2)
+
+    return filter_list
 
 
 class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):

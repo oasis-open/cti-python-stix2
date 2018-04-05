@@ -359,7 +359,7 @@ class DataSource(with_metaclass(ABCMeta)):
 
         return results
 
-    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False, filters=[]):
+    def related_to(self, obj, relationship_type=None, source_only=False, target_only=False, filters=None):
         """Retrieve STIX Objects that have a Relationship involving the given
         STIX object.
 

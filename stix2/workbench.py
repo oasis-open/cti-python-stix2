@@ -148,7 +148,7 @@ _setup_workbench()
 # Functions to get all objects of a specific type
 
 
-def attack_patterns(filters=[]):
+def attack_patterns(filters=None):
     """Retrieve all Attack Pattern objects.
 
     Args:
@@ -160,7 +160,7 @@ def attack_patterns(filters=[]):
     return query(filter_list)
 
 
-def campaigns(filters=[]):
+def campaigns(filters=None):
     """Retrieve all Campaign objects.
 
     Args:
@@ -172,7 +172,7 @@ def campaigns(filters=[]):
     return query(filter_list)
 
 
-def courses_of_action(filters=[]):
+def courses_of_action(filters=None):
     """Retrieve all Course of Action objects.
 
     Args:
@@ -184,7 +184,7 @@ def courses_of_action(filters=[]):
     return query(filter_list)
 
 
-def identities(filters=[]):
+def identities(filters=None):
     """Retrieve all Identity objects.
 
     Args:
@@ -196,7 +196,7 @@ def identities(filters=[]):
     return query(filter_list)
 
 
-def indicators(filters=[]):
+def indicators(filters=None):
     """Retrieve all Indicator objects.
 
     Args:
@@ -208,7 +208,7 @@ def indicators(filters=[]):
     return query(filter_list)
 
 
-def intrusion_sets(filters=[]):
+def intrusion_sets(filters=None):
     """Retrieve all Intrusion Set objects.
 
     Args:
@@ -220,7 +220,7 @@ def intrusion_sets(filters=[]):
     return query(filter_list)
 
 
-def malware(filters=[]):
+def malware(filters=None):
     """Retrieve all Malware objects.
 
     Args:
@@ -232,7 +232,7 @@ def malware(filters=[]):
     return query(filter_list)
 
 
-def observed_data(filters=[]):
+def observed_data(filters=None):
     """Retrieve all Observed Data objects.
 
     Args:
@@ -244,7 +244,7 @@ def observed_data(filters=[]):
     return query(filter_list)
 
 
-def reports(filters=[]):
+def reports(filters=None):
     """Retrieve all Report objects.
 
     Args:
@@ -256,7 +256,7 @@ def reports(filters=[]):
     return query(filter_list)
 
 
-def threat_actors(filters=[]):
+def threat_actors(filters=None):
     """Retrieve all Threat Actor objects.
 
     Args:
@@ -268,7 +268,7 @@ def threat_actors(filters=[]):
     return query(filter_list)
 
 
-def tools(filters=[]):
+def tools(filters=None):
     """Retrieve all Tool objects.
 
     Args:
@@ -280,7 +280,7 @@ def tools(filters=[]):
     return query(filter_list)
 
 
-def vulnerabilities(filters=[]):
+def vulnerabilities(filters=None):
     """Retrieve all Vulnerability objects.
 
     Args:
