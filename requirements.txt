@@ -1,6 +1,6 @@
 bumpversion
 ipython
-nbsphinx>=0.3.0
+nbsphinx==0.3.2
 pre-commit
 pytest
 pytest-cov
