@@ -979,6 +979,9 @@ def CustomObservable(type='x-custom-observable', properties=None):
                                      "is not a ListProperty containing ObjectReferenceProperty." % prop_name)
 
             _properties.update(properties)
+            _properties.update([
+                ('extensions', ExtensionsProperty(enclosing_type=_type)),
+            ])
 
             def __init__(self, **kwargs):
                 _Observable.__init__(self, **kwargs)
@@ -1030,9 +1033,7 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
         class _Custom(cls, _Extension):
 
             _type = type
-            _properties = {
-                'extensions': ExtensionsProperty(enclosing_type=_type),
-            }
+            _properties = OrderedDict()
 
             if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")

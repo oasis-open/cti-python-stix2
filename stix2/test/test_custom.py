@@ -602,3 +602,8 @@ def test_register_custom_object():
     stix2._register_type(CustomObject2)
     # Note that we will always check against newest OBJ_MAP.
     assert (CustomObject2._type, CustomObject2) in stix2.OBJ_MAP.items()
+
+
+def test_extension_property_location():
+    assert 'extensions' in stix2.v20.observables.OBJ_MAP_OBSERVABLE['x-new-observable']._properties
+    assert 'extensions' not in stix2.v20.observables.EXT_MAP['domain-name']['x-new-ext']._properties
