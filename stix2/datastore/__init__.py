@@ -1,4 +1,4 @@
-"""Python STIX 2.0 DataStore API
+"""Python STIX 2.0 DataStore API.
 
 .. autosummary::
    :toctree: datastore
