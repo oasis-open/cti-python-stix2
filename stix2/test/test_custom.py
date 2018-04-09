@@ -435,10 +435,10 @@ def test_observed_data_with_custom_observable_object():
     assert ob_data.objects['0'].property1 == 'something'
 
 
-@stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext', {
-    'property1': stix2.properties.StringProperty(required=True),
-    'property2': stix2.properties.IntegerProperty(),
-})
+@stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext', [
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
+])
 class NewExtension():
     def __init__(self, property2=None, **kwargs):
         if property2 and property2 < 10:
@@ -485,9 +485,9 @@ def test_custom_extension_invalid_observable():
     class Foo(object):
         pass
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomExtension(Foo, 'x-new-ext', {
-            'property1': stix2.properties.StringProperty(required=True),
-        })
+        @stix2.observables.CustomExtension(Foo, 'x-new-ext', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ])
         class FooExtension():
             pass  # pragma: no cover
     assert str(excinfo.value) == "'observable' must be a valid Observable class!"
@@ -495,9 +495,9 @@ def test_custom_extension_invalid_observable():
     class Bar(stix2.observables._Observable):
         pass
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomExtension(Bar, 'x-new-ext', {
-            'property1': stix2.properties.StringProperty(required=True),
-        })
+        @stix2.observables.CustomExtension(Bar, 'x-new-ext', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ])
         class BarExtension():
             pass
     assert "Unknown observable type" in str(excinfo.value)
@@ -506,9 +506,9 @@ def test_custom_extension_invalid_observable():
     class Baz(stix2.observables._Observable):
         _type = 'Baz'
     with pytest.raises(ValueError) as excinfo:
-        @stix2.observables.CustomExtension(Baz, 'x-new-ext', {
-            'property1': stix2.properties.StringProperty(required=True),
-        })
+        @stix2.observables.CustomExtension(Baz, 'x-new-ext', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ])
         class BazExtension():
             pass
     assert "Unknown observable type" in str(excinfo.value)
@@ -520,21 +520,29 @@ def test_custom_extension_no_properties():
         @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', None)
         class BarExtension():
             pass
-    assert "'properties' must be a dict!" in str(excinfo.value)
+    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_empty_properties():
     with pytest.raises(ValueError) as excinfo:
+        @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', [])
+        class BarExtension():
+            pass
+    assert "Must supply a list, containing tuples." in str(excinfo.value)
+
+
+def test_custom_extension_dict_properties():
+    with pytest.raises(ValueError) as excinfo:
         @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', {})
         class BarExtension():
             pass
-    assert "'properties' must be a dict!" in str(excinfo.value)
+    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_no_init_1():
-    @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-extension', {
-        'property1': stix2.properties.StringProperty(required=True),
-    })
+    @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-extension', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
     class NewExt():
         pass
 
@@ -543,9 +551,9 @@ def test_custom_extension_no_init_1():
 
 
 def test_custom_extension_no_init_2():
-    @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', {
-        'property1': stix2.properties.StringProperty(required=True),
-    })
+    @stix2.observables.CustomExtension(stix2.DomainName, 'x-new-ext2', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+    ])
     class NewExt2(object):
         pass
 

@@ -1034,8 +1034,8 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
                 'extensions': ExtensionsProperty(enclosing_type=_type),
             }
 
-            if not isinstance(properties, dict) or not properties:
-                raise ValueError("'properties' must be a dict!")
+            if not properties or not isinstance(properties, list):
+                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
             _properties.update(properties)
 
