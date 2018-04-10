@@ -923,15 +923,22 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
+        if allow_custom:
+            # flag allows for unknown custom objects too, but will not
+            # be parsed into STIX observable object, just returned as is
+            return obj
         raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
                          "use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
-            if name not in EXT_MAP[obj['type']]:
-                raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
-            ext_class = EXT_MAP[obj['type']][name]
-            obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
+            try:
+                ext_class = EXT_MAP[obj['type']][name]
+            except KeyError:
+                if not allow_custom:
+                    raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
+            else:  # extension was found
+                obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
 
     return obj_class(allow_custom=allow_custom, **obj)
 
