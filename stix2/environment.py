@@ -1,3 +1,6 @@
+"""Python STIX 2.0 Environment API.
+"""
+
 import copy
 
 from .core import parse as _parse

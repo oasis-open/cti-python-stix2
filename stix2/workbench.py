@@ -131,7 +131,7 @@ def _setup_workbench():
     for obj_type in STIX_OBJS:
         new_class_dict = {
             '__new__': _constructor_wrapper(obj_type),
-            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.html#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.rst#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
         }
         new_class = type(obj_type.__name__, (), new_class_dict)
 
