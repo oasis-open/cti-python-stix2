@@ -17,6 +17,23 @@ except NameError:
     pass
 
 
+def deduplicate_filters(filters):
+    """utility for deduplicating list of filters, this
+    is used when 'set()' cannot be used as one of the
+    filter values is a dict (or non-hashable type)
+
+    Args:
+        filters (list): a list of filters
+
+    Returns: list of unique filters
+    """
+    unique_filters = []
+    for filter_ in filters:
+        if filter_ not in unique_filters:
+            unique_filters.append(filter_)
+    return unique_filters
+
+
 def _check_filter_components(prop, op, value):
     """Check that filter meets minimum validity.
 
@@ -168,3 +185,39 @@ def _check_filter(filter_, stix_obj):
     else:
         # Check if property matches
         return filter_._check_property(stix_obj[prop])
+
+
+class FilterSet(object):
+    """ """
+
+    def __init__(self, filters=None):
+        """ """
+        self._filters = []
+        if filters:
+            self.add(filters)
+
+    def __iter__(self):
+        """ """
+        for f in self._filters:
+            yield f
+
+    def add(self, filters):
+        """ """
+        if not isinstance(filters, FilterSet) and not isinstance(filters, list):
+            filters = [filters]
+
+        for f in filters:
+            if f not in self._filters:
+                self._filters.append(f)
+
+        return
+
+    def remove(self, filters):
+        """ """
+        if not isinstance(filters, FilterSet) and not isinstance(filters, list):
+            filters = [filters]
+
+        for f in filters:
+            self._filters.remove(f)
+
+        return

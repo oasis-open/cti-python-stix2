@@ -18,7 +18,7 @@ import os
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
-from stix2.datastore.filters import Filter, apply_common_filters
+from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 
 
 def _add(store, stix_data=None, version=None):
@@ -197,7 +197,7 @@ class MemorySource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-            _composite_filters (set): set of filters passed from the parent
+            _composite_filters (FilterSet): collection of filters passed from the parent
                 CompositeDataSource, not user supplied
 
         Returns:
@@ -236,7 +236,7 @@ class MemorySource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX 2 object to retrieve.
-            _composite_filters (set): set of filters passed from the parent
+            _composite_filters (FilterSet): collection of filters passed from the parent
                 CompositeDataSource, not user supplied
 
         Returns:
@@ -258,7 +258,7 @@ class MemorySource(DataSource):
 
         Args:
             query (list): list of filters to search on
-            _composite_filters (set): set of filters passed from the
+            _composite_filters (FilterSet): collection of filters passed from the
                 CompositeDataSource, not user supplied
 
         Returns:
@@ -269,19 +269,15 @@ class MemorySource(DataSource):
 
         """
         if query is None:
-            query = set()
+            query = FilterSet()
         else:
-            if not isinstance(query, list):
-                # make sure don't make set from a Filter object,
-                # need to make a set from a list of Filter objects (even if just one Filter)
-                query = [query]
-            query = set(query)
+            query = FilterSet(query)
 
         # combine all query filters
         if self.filters:
-            query.update(self.filters)
+            query.add(self.filters)
         if _composite_filters:
-            query.update(_composite_filters)
+            query.add(_composite_filters)
 
         # Apply STIX common property filters.
         all_data = list(apply_common_filters(self._data.values(), query))
