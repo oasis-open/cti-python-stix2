@@ -245,8 +245,13 @@ class FilterSet(object):
         """ """
         return len(self._filters)
 
-    def add(self, filters):
+    def add(self, filters=None):
         """ """
+        if not filters:
+            # so add() can be called blindly, useful for
+            # DataStore/Environment usage of filter operations
+            return
+
         if not isinstance(filters, FilterSet) and not isinstance(filters, list):
             filters = [filters]
 
@@ -256,8 +261,13 @@ class FilterSet(object):
 
         return
 
-    def remove(self, filters):
+    def remove(self, filters=None):
         """ """
+        if not filters:
+            # so remove() can be called blindly, useful for
+            # DataStore/Environemnt usage of filter ops
+            return
+
         if not isinstance(filters, FilterSet) and not isinstance(filters, list):
             filters = [filters]
 

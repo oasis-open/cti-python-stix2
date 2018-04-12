@@ -461,7 +461,6 @@ def test_apply_common_filters():
     # BUG: This test is brokem , weird behavior, the file obj
     # in stix_objs is being parsed into real python-stix2 obj even though
     # it never goes through parse() --> BAD <_<
-    print(stix_objs)
     resp = list(apply_common_filters(stix_objs, [filters[14]]))
     assert resp[0]["id"] == stix_objs[14]["id"]
     assert len(resp) == 1
