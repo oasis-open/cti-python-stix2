@@ -610,28 +610,11 @@ def test_parse_observable_with_unregistered_custom_extension():
 
     with pytest.raises(ValueError) as excinfo:
         stix2.parse_observable(input_str)
-    assert "Can't parse Unknown extension type" in str(excinfo.value)
+    assert "Can't parse unknown extension type" in str(excinfo.value)
 
     parsed_ob = stix2.parse_observable(input_str, allow_custom=True)
     assert parsed_ob['extensions']['x-foobar-ext']['property1'] == 'foo'
     assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.core._STIXBase)
-
-
-def test_parse_observable_with_unregistered_custom_extension_dict():
-    input_dict = {
-        "type": "domain-name",
-        "value": "example.com",
-        "extensions": {
-            "x-foobar-ext": {
-                "property1": "foo",
-                "property2": 12
-            }
-        }
-    }
-
-    with pytest.raises(ValueError) as excinfo:
-        stix2.v20.observables.DomainName(**input_dict)
-    assert "Can't parse unknown extension type" in str(excinfo.value)
 
 
 def test_register_custom_object():

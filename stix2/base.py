@@ -49,7 +49,7 @@ class _STIXBase(collections.Mapping):
 
         return all_properties
 
-    def _check_property(self, prop_name, prop, kwargs, allow_custom=False):
+    def _check_property(self, prop_name, prop, kwargs):
         if prop_name not in kwargs:
             if hasattr(prop, 'default'):
                 value = prop.default()
@@ -61,7 +61,7 @@ class _STIXBase(collections.Mapping):
             try:
                 kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
-                if allow_custom and isinstance(exc, ParseError):
+                if self.__allow_custom and isinstance(exc, ParseError):
                     return
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
@@ -99,6 +99,7 @@ class _STIXBase(collections.Mapping):
 
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
+        self.__allow_custom = allow_custom
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
@@ -127,11 +128,7 @@ class _STIXBase(collections.Mapping):
             raise MissingPropertiesError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
-            try:
-                self._check_property(prop_name, prop_metadata, setting_kwargs, allow_custom)
-            except ParseError as err:
-                if not allow_custom:
-                    raise err
+            self._check_property(prop_name, prop_metadata, setting_kwargs)
 
         self._inner = setting_kwargs
 
@@ -250,8 +247,8 @@ class _Observable(_STIXBase):
             if ref_type not in allowed_types:
                 raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 
-    def _check_property(self, prop_name, prop, kwargs, allow_custom=False):
-        super(_Observable, self)._check_property(prop_name, prop, kwargs, allow_custom)
+    def _check_property(self, prop_name, prop, kwargs):
+        super(_Observable, self)._check_property(prop_name, prop, kwargs)
         if prop_name not in kwargs:
             return
 
