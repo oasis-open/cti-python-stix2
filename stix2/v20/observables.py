@@ -67,7 +67,7 @@ class ExtensionsProperty(DictionaryProperty):
                     else:
                         raise ValueError("Cannot determine extension type.")
                 else:
-                    raise ValueError("The key used in the extensions dictionary is not an extension type name")
+                    raise ParseError("Can't parse unknown extension type: {}".format(key))
         else:
             raise ValueError("The enclosing type '%s' has no extensions defined" % self.enclosing_type)
         return dictified
@@ -936,7 +936,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
                 ext_class = EXT_MAP[obj['type']][name]
             except KeyError:
                 if not allow_custom:
-                    raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
+                    raise ParseError("Can't parse unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
             else:  # extension was found
                 obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
 
