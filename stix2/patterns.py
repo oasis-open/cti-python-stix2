@@ -3,7 +3,10 @@
 
 import base64
 import binascii
+import datetime
 import re
+
+from .utils import parse_into_datetime
 
 
 def escape_quotes_and_backslashes(s):
@@ -24,10 +27,13 @@ class StringConstant(_Constant):
 
 class TimestampConstant(_Constant):
     def __init__(self, value):
-        self.value = value
+        try:
+            self.value = parse_into_datetime(value)
+        except Exception:
+            raise ValueError("must be a datetime object or timestamp string.")
 
     def __str__(self):
-        return "t'%s'" % escape_quotes_and_backslashes(self.value)
+        return "t%s" % repr(self.value)
 
 
 class IntegerConstant(_Constant):
@@ -46,7 +52,7 @@ class FloatConstant(_Constant):
         try:
             self.value = float(value)
         except Exception:
-            raise ValueError("must be an float.")
+            raise ValueError("must be a float.")
 
     def __str__(self):
         return "%s" % self.value
@@ -56,24 +62,29 @@ class BooleanConstant(_Constant):
     def __init__(self, value):
         if isinstance(value, bool):
             self.value = value
+            return
 
         trues = ['true', 't']
         falses = ['false', 'f']
         try:
             if value.lower() in trues:
                 self.value = True
-            if value.lower() in falses:
+                return
+            elif value.lower() in falses:
                 self.value = False
+                return
         except AttributeError:
             if value == 1:
                 self.value = True
-            if value == 0:
+                return
+            elif value == 0:
                 self.value = False
+                return
 
         raise ValueError("must be a boolean value.")
 
     def __str__(self):
-        return "%s" % self.value
+        return str(self.value).lower()
 
 
 _HASH_REGEX = {
@@ -132,20 +143,25 @@ class ListConstant(_Constant):
         self.value = values
 
     def __str__(self):
-        return "(" + ", ".join([("%s" % x) for x in self.value]) + ")"
+        return "(" + ", ".join([("%s" % make_constant(x)) for x in self.value]) + ")"
 
 
 def make_constant(value):
+    try:
+        return parse_into_datetime(value)
+    except ValueError:
+        pass
+
     if isinstance(value, str):
         return StringConstant(value)
+    elif isinstance(value, bool):
+        return BooleanConstant(value)
     elif isinstance(value, int):
         return IntegerConstant(value)
     elif isinstance(value, float):
         return FloatConstant(value)
     elif isinstance(value, list):
         return ListConstant(value)
-    elif isinstance(value, bool):
-        return BooleanConstant(value)
     else:
         raise ValueError("Unable to create a constant from %s" % value)
 
@@ -210,15 +226,12 @@ class ObjectPath(object):
 
 
 class _PatternExpression(object):
-
-    @staticmethod
-    def escape_quotes_and_backslashes(s):
-        return s.replace(u'\\', u'\\\\').replace(u"'", u"\\'")
+    pass
 
 
 class _ComparisonExpression(_PatternExpression):
     def __init__(self, operator, lhs, rhs, negated=False):
-        if operator == "=" and isinstance(rhs, ListConstant):
+        if operator == "=" and isinstance(rhs, (ListConstant, list)):
             self.operator = "IN"
         else:
             self.operator = operator
@@ -234,13 +247,6 @@ class _ComparisonExpression(_PatternExpression):
         self.root_type = self.lhs.object_type_name
 
     def __str__(self):
-        # if isinstance(self.rhs, list):
-        #     final_rhs = []
-        #     for r in self.rhs:
-        #         final_rhs.append("'" + self.escape_quotes_and_backslashes("%s" % r) + "'")
-        #     rhs_string = "(" + ", ".join(final_rhs) + ")"
-        # else:
-        #     rhs_string = self.rhs
         if self.negated:
             return "%s NOT %s %s" % (self.lhs, self.operator, self.rhs)
         else:
@@ -383,7 +389,7 @@ class RepeatQualifier(_ExpressionQualifier):
         elif isinstance(times_to_repeat, int):
             self.times_to_repeat = IntegerConstant(times_to_repeat)
         else:
-            raise ValueError("%s is not a valid argument for a Within Qualifier" % times_to_repeat)
+            raise ValueError("%s is not a valid argument for a Repeat Qualifier" % times_to_repeat)
 
     def __str__(self):
         return "REPEATS %s TIMES" % self.times_to_repeat
@@ -404,18 +410,18 @@ class WithinQualifier(_ExpressionQualifier):
 
 class StartStopQualifier(_ExpressionQualifier):
     def __init__(self, start_time, stop_time):
-        if isinstance(start_time, IntegerConstant):
+        if isinstance(start_time, TimestampConstant):
             self.start_time = start_time
-        elif isinstance(start_time, int):
-            self.start_time = IntegerConstant(start_time)
+        elif isinstance(start_time, datetime.date):
+            self.start_time = TimestampConstant(start_time)
         else:
-            raise ValueError("%s is not a valid argument for a Within Qualifier" % start_time)
-        if isinstance(stop_time, IntegerConstant):
+            raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % start_time)
+        if isinstance(stop_time, TimestampConstant):
             self.stop_time = stop_time
-        elif isinstance(stop_time, int):
-            self.stop_time = IntegerConstant(stop_time)
+        elif isinstance(stop_time, datetime.date):
+            self.stop_time = TimestampConstant(stop_time)
         else:
-            raise ValueError("%s is not a valid argument for a Within Qualifier" % stop_time)
+            raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % stop_time)
 
     def __str__(self):
         return "START %s STOP %s" % (self.start_time, self.stop_time)

@@ -136,6 +136,19 @@ def rel_mem_store():
     yield MemoryStore(stix_objs)
 
 
+@pytest.fixture
+def fs_mem_store(request, mem_store):
+    filename = 'memory_test/mem_store.json'
+    mem_store.save_to_file(filename)
+
+    def fin():
+        # teardown, excecuted regardless of exception
+        shutil.rmtree(os.path.dirname(filename))
+    request.addfinalizer(fin)
+
+    return filename
+
+
 def test_memory_source_get(mem_source):
     resp = mem_source.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
     assert resp["id"] == "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
@@ -187,9 +200,11 @@ def test_memory_store_query_multiple_filters(mem_store):
     assert len(resp) == 1
 
 
-def test_memory_store_save_load_file(mem_store):
-    filename = 'memory_test/mem_store.json'
-    mem_store.save_to_file(filename)
+def test_memory_store_save_load_file(mem_store, fs_mem_store):
+    filename = fs_mem_store  # the fixture fs_mem_store yields filename where the memory store was written to
+
+    # STIX2 contents of mem_store have already been written to file
+    # (this is done in fixture 'fs_mem_store'), so can already read-in here
     contents = open(os.path.abspath(filename)).read()
 
     assert '"id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",' in contents
@@ -199,8 +214,6 @@ def test_memory_store_save_load_file(mem_store):
     mem_store2.load_from_file(filename)
     assert mem_store2.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
     assert mem_store2.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
-
-    shutil.rmtree(os.path.dirname(filename))
 
 
 def test_memory_store_add_invalid_object(mem_store):

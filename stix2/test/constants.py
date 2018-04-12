@@ -34,14 +34,18 @@ RELATIONSHIP_IDS = [
     'relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70'
 ]
 
-# All required args for a Campaign instance
+# *_KWARGS contains all required arguments to create an instance of that STIX object
+# *_MORE_KWARGS contains all the required arguments, plus some optional ones
+
+ATTACK_PATTERN_KWARGS = dict(
+    name="Phishing",
+)
+
 CAMPAIGN_KWARGS = dict(
     name="Green Group Attacks Against Finance",
     description="Campaign by Green Group against a series of targets in the financial services sector.",
 )
 
-
-# All required args for a Campaign instance, plus some optional args
 CAMPAIGN_MORE_KWARGS = dict(
     type='campaign',
     id=CAMPAIGN_ID,
@@ -52,25 +56,29 @@ CAMPAIGN_MORE_KWARGS = dict(
     description="Campaign by Green Group against a series of targets in the financial services sector.",
 )
 
-# Minimum required args for an Identity instance
+COURSE_OF_ACTION_KWARGS = dict(
+    name="Block",
+)
+
 IDENTITY_KWARGS = dict(
     name="John Smith",
     identity_class="individual",
 )
 
-# Minimum required args for an Indicator instance
 INDICATOR_KWARGS = dict(
     labels=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
 )
 
-# Minimum required args for a Malware instance
+INTRUSION_SET_KWARGS = dict(
+    name="Bobcat Breakin",
+)
+
 MALWARE_KWARGS = dict(
     labels=['ransomware'],
     name="Cryptolocker",
 )
 
-# All required args for a Malware instance, plus some optional args
 MALWARE_MORE_KWARGS = dict(
     type='malware',
     id=MALWARE_ID,
@@ -81,14 +89,45 @@ MALWARE_MORE_KWARGS = dict(
     description="A ransomware related to ..."
 )
 
-# Minimum required args for a Relationship instance
+OBSERVED_DATA_KWARGS = dict(
+    first_observed=FAKE_TIME,
+    last_observed=FAKE_TIME,
+    number_observed=1,
+    objects={
+        "0": {
+            "type": "windows-registry-key",
+            "key": "HKEY_LOCAL_MACHINE\\System\\Foo\\Bar",
+        }
+    }
+)
+
+REPORT_KWARGS = dict(
+    labels=["campaign"],
+    name="Bad Cybercrime",
+    published=FAKE_TIME,
+    object_refs=[INDICATOR_ID],
+)
+
 RELATIONSHIP_KWARGS = dict(
     relationship_type="indicates",
     source_ref=INDICATOR_ID,
     target_ref=MALWARE_ID,
 )
 
-# Minimum required args for a Sighting instance
 SIGHTING_KWARGS = dict(
     sighting_of_ref=INDICATOR_ID,
+)
+
+THREAT_ACTOR_KWARGS = dict(
+    labels=["crime-syndicate"],
+    name="Evil Org",
+)
+
+TOOL_KWARGS = dict(
+    labels=["remote-access"],
+    name="VNC",
+)
+
+VULNERABILITY_KWARGS = dict(
+    name="Heartbleed",
 )

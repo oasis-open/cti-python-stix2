@@ -263,11 +263,11 @@ def get_class_hierarchy_names(obj):
 
 
 def remove_custom_stix(stix_obj):
-    """remove any custom STIX objects or properties
+    """Remove any custom STIX objects or properties.
 
     Warning: This function is a best effort utility, in that
     it will remove custom objects and properties based on the
-    type names; i.e. if "x-" prefixes object types, and "x_"
+    type names; i.e. if "x-" prefixes object types, and "x\\_"
     prefixes property types. According to the STIX2 spec,
     those naming conventions are a SHOULDs not MUSTs, meaning
     that valid custom STIX content may ignore those conventions

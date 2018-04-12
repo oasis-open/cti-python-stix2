@@ -1,3 +1,7 @@
+import datetime
+
+import pytest
+
 import stix2
 
 
@@ -67,7 +71,11 @@ def test_file_observable_expression():
     assert str(exp) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f' AND file:mime_type = 'application/x-pdf']"  # noqa
 
 
-def test_multiple_file_observable_expression():
+@pytest.mark.parametrize("observation_class, op", [
+    (stix2.AndObservationExpression, 'AND'),
+    (stix2.OrObservationExpression, 'OR'),
+])
+def test_multiple_file_observable_expression(observation_class, op):
     exp1 = stix2.EqualityComparisonExpression("file:hashes.'SHA-256'",
                                               stix2.HashConstant(
                                                   "bf07a7fbb825fc0aae7bf4a1177b2b31fcf8a3feeaf7092761e18c859ee52a9c",
@@ -81,8 +89,8 @@ def test_multiple_file_observable_expression():
                                                   'SHA-256'))
     op1_exp = stix2.ObservationExpression(bool1_exp)
     op2_exp = stix2.ObservationExpression(exp3)
-    exp = stix2.AndObservationExpression([op1_exp, op2_exp])
-    assert str(exp) == "[file:hashes.'SHA-256' = 'bf07a7fbb825fc0aae7bf4a1177b2b31fcf8a3feeaf7092761e18c859ee52a9c' OR file:hashes.MD5 = 'cead3f77f6cda6ec00f57d76c9a6879f'] AND [file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']"  # noqa
+    exp = observation_class([op1_exp, op2_exp])
+    assert str(exp) == "[file:hashes.'SHA-256' = 'bf07a7fbb825fc0aae7bf4a1177b2b31fcf8a3feeaf7092761e18c859ee52a9c' OR file:hashes.MD5 = 'cead3f77f6cda6ec00f57d76c9a6879f'] {} [file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']".format(op)  # noqa
 
 
 def test_root_types():
@@ -120,6 +128,31 @@ def test_greater_than():
     assert str(exp) == "[file:extensions.windows-pebinary-ext.sections[*].entropy > 7.0]"
 
 
+def test_less_than():
+    exp = stix2.LessThanComparisonExpression("file:size",
+                                             1024)
+    assert str(exp) == "file:size < 1024"
+
+
+def test_greater_than_or_equal():
+    exp = stix2.GreaterThanEqualComparisonExpression("file:size",
+                                                     1024)
+    assert str(exp) == "file:size >= 1024"
+
+
+def test_less_than_or_equal():
+    exp = stix2.LessThanEqualComparisonExpression("file:size",
+                                                  1024)
+    assert str(exp) == "file:size <= 1024"
+
+
+def test_not():
+    exp = stix2.LessThanComparisonExpression("file:size",
+                                             1024,
+                                             negated=True)
+    assert str(exp) == "file:size NOT < 1024"
+
+
 def test_and_observable_expression():
     exp1 = stix2.AndBooleanExpression([stix2.EqualityComparisonExpression("user-account:account_type",
                                                                           "unix"),
@@ -143,6 +176,15 @@ def test_and_observable_expression():
                                          stix2.ObservationExpression(exp2),
                                          stix2.ObservationExpression(exp3)])
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1009' AND user-account:account_login = 'Mary']"  # noqa
+
+
+def test_invalid_and_observable_expression():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.AndBooleanExpression([stix2.EqualityComparisonExpression("user-account:display_name",
+                                                                       "admin"),
+                                    stix2.EqualityComparisonExpression("email-addr:display_name",
+                                                                       stix2.StringConstant("admin"))])
+    assert "All operands to an 'AND' expression must have the same object type" in str(excinfo)
 
 
 def test_hex():
@@ -175,3 +217,158 @@ def test_set_op():
 def test_timestamp():
     ts = stix2.TimestampConstant('2014-01-13T07:03:17Z')
     assert str(ts) == "t'2014-01-13T07:03:17Z'"
+
+
+def test_boolean():
+    exp = stix2.EqualityComparisonExpression("email-message:is_multipart",
+                                             True)
+    assert str(exp) == "email-message:is_multipart = true"
+
+
+def test_binary():
+    const = stix2.BinaryConstant("dGhpcyBpcyBhIHRlc3Q=")
+    exp = stix2.EqualityComparisonExpression("artifact:payload_bin",
+                                             const)
+    assert str(exp) == "artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q='"
+
+
+def test_list():
+    exp = stix2.InComparisonExpression("process:name",
+                                       ['proccy', 'proximus', 'badproc'])
+    assert str(exp) == "process:name IN ('proccy', 'proximus', 'badproc')"
+
+
+def test_list2():
+    # alternate way to construct an "IN" Comparison Expression
+    exp = stix2.EqualityComparisonExpression("process:name",
+                                             ['proccy', 'proximus', 'badproc'])
+    assert str(exp) == "process:name IN ('proccy', 'proximus', 'badproc')"
+
+
+def test_invalid_constant_type():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.EqualityComparisonExpression("artifact:payload_bin",
+                                           {'foo': 'bar'})
+    assert 'Unable to create a constant' in str(excinfo)
+
+
+def test_invalid_integer_constant():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.IntegerConstant('foo')
+    assert 'must be an integer' in str(excinfo)
+
+
+def test_invalid_timestamp_constant():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.TimestampConstant('foo')
+    assert 'must be a datetime object or timestamp string' in str(excinfo)
+
+
+def test_invalid_float_constant():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.FloatConstant('foo')
+    assert 'must be a float' in str(excinfo)
+
+
+@pytest.mark.parametrize("data, result", [
+    (True, True),
+    (False, False),
+    ('True', True),
+    ('False', False),
+    ('true', True),
+    ('false', False),
+    ('t', True),
+    ('f', False),
+    ('T', True),
+    ('F', False),
+    (1, True),
+    (0, False),
+])
+def test_boolean_constant(data, result):
+    boolean = stix2.BooleanConstant(data)
+    assert boolean.value == result
+
+
+def test_invalid_boolean_constant():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.BooleanConstant('foo')
+    assert 'must be a boolean' in str(excinfo)
+
+
+@pytest.mark.parametrize("hashtype, data", [
+    ('MD5', 'zzz'),
+    ('ssdeep', 'zzz=='),
+])
+def test_invalid_hash_constant(hashtype, data):
+    with pytest.raises(ValueError) as excinfo:
+        stix2.HashConstant(data, hashtype)
+    assert 'is not a valid {} hash'.format(hashtype) in str(excinfo)
+
+
+def test_invalid_hex_constant():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.HexConstant('mm')
+    assert "must contain an even number of hexadecimal characters" in str(excinfo)
+
+
+def test_invalid_binary_constant():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.BinaryConstant('foo')
+    assert 'must contain a base64' in str(excinfo)
+
+
+def test_escape_quotes_and_backslashes():
+    exp = stix2.MatchesComparisonExpression("file:name",
+                                            "^Final Report.+\.exe$")
+    assert str(exp) == "file:name MATCHES '^Final Report.+\\\\.exe$'"
+
+
+def test_like():
+    exp = stix2.LikeComparisonExpression("directory:path",
+                                         "C:\Windows\%\\foo")
+    assert str(exp) == "directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo'"
+
+
+def test_issuperset():
+    exp = stix2.IsSupersetComparisonExpression("ipv4-addr:value",
+                                               "198.51.100.0/24")
+    assert str(exp) == "ipv4-addr:value ISSUPERSET '198.51.100.0/24'"
+
+
+def test_repeat_qualifier():
+    qual = stix2.RepeatQualifier(stix2.IntegerConstant(5))
+    assert str(qual) == 'REPEATS 5 TIMES'
+
+
+def test_invalid_repeat_qualifier():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.RepeatQualifier('foo')
+    assert 'is not a valid argument for a Repeat Qualifier' in str(excinfo)
+
+
+def test_invalid_within_qualifier():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.WithinQualifier('foo')
+    assert 'is not a valid argument for a Within Qualifier' in str(excinfo)
+
+
+def test_startstop_qualifier():
+    qual = stix2.StartStopQualifier(stix2.TimestampConstant('2016-06-01T00:00:00Z'),
+                                    datetime.datetime(2017, 3, 12, 8, 30, 0))
+    assert str(qual) == "START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"
+
+    qual2 = stix2.StartStopQualifier(datetime.date(2016, 6, 1),
+                                     stix2.TimestampConstant('2016-07-01T00:00:00Z'))
+    assert str(qual2) == "START t'2016-06-01T00:00:00Z' STOP t'2016-07-01T00:00:00Z'"
+
+
+def test_invalid_startstop_qualifier():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.StartStopQualifier('foo',
+                                 stix2.TimestampConstant('2016-06-01T00:00:00Z'))
+    assert 'is not a valid argument for a Start/Stop Qualifier' in str(excinfo)
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.StartStopQualifier(datetime.date(2016, 6, 1),
+                                 'foo')
+    assert 'is not a valid argument for a Start/Stop Qualifier' in str(excinfo)
