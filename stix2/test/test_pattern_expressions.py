@@ -319,13 +319,13 @@ def test_invalid_binary_constant():
 
 def test_escape_quotes_and_backslashes():
     exp = stix2.MatchesComparisonExpression("file:name",
-                                            "^Final Report.+\.exe$")
+                                            "^Final Report.+\\.exe$")
     assert str(exp) == "file:name MATCHES '^Final Report.+\\\\.exe$'"
 
 
 def test_like():
     exp = stix2.LikeComparisonExpression("directory:path",
-                                         "C:\Windows\%\\foo")
+                                         "C:\\Windows\\%\\foo")
     assert str(exp) == "directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo'"
 
 
