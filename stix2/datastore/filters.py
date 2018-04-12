@@ -5,11 +5,13 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 
 import collections
 
+from stix2.utils import STIXdatetime
+
 """Supported filter operations"""
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
+FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple, STIXdatetime]
 try:
     FILTER_VALUE_TYPES.append(unicode)
 except NameError:
@@ -169,19 +171,26 @@ def _check_filter(filter_, stix_obj):
         # Check embedded properties, from e.g. granular_markings or external_references
         sub_property = filter_.property.split(".", 1)[1]
         sub_filter = filter_._replace(property=sub_property)
+
         if isinstance(stix_obj[prop], list):
             for elem in stix_obj[prop]:
                 if _check_filter(sub_filter, elem) is True:
                     return True
             return False
+
+        elif isinstance(stix_obj[prop], dict):
+            return _check_filter(sub_filter, stix_obj[prop])
+
         else:
             return _check_filter(sub_filter, stix_obj[prop])
+
     elif isinstance(stix_obj[prop], list):
         # Check each item in list property to see if it matches
         for elem in stix_obj[prop]:
             if filter_._check_property(elem) is True:
                 return True
         return False
+
     else:
         # Check if property matches
         return filter_._check_property(stix_obj[prop])
@@ -200,6 +209,10 @@ class FilterSet(object):
         """ """
         for f in self._filters:
             yield f
+
+    def __len__(self):
+        """ """
+        return len(self._filters)
 
     def add(self, filters):
         """ """

@@ -115,7 +115,7 @@ class Environment(DataStoreMixin):
 
     def add_filters(self, *args, **kwargs):
         try:
-            return self.source.filters.update(*args, **kwargs)
+            return self.source.filters.add(*args, **kwargs)
         except AttributeError:
             raise AttributeError('Environment has no data source')
 
