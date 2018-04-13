@@ -510,7 +510,7 @@ def test_datetime_filter_behavior():
     filter_with_dt_obj = Filter("created", "=", parse_into_datetime("2016-02-14T00:00:00.000Z", "millisecond"))
     filter_with_str = Filter("created", "=", "2016-02-14T00:00:00.000Z")
 
-    # check taht filter value is converted from datetime to str
+    # check that filter value is converted from datetime to str
     assert isinstance(filter_with_dt_obj.value, str)
 
     # compare datetime string to filter w/ datetime obj

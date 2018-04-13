@@ -71,8 +71,7 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
 
         if isinstance(value, datetime):
             # if value is a datetime obj, convert to str
-            dt_str = format_datetime(value)
-            value = dt_str  # use temp variable to avoid deepcopy operation
+            value = format_datetime(value)
 
         _check_filter_components(prop, op, value)
 
@@ -90,11 +89,10 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             False otherwise.
         """
         if isinstance(stix_obj_property, datetime):
-            # if a datetime obj, use str format before comparison
+            # if a datetime obj, convert to str format before comparison
             # NOTE: this check seems like it should be done upstream
             # but will put here for now
-            tmp = format_datetime(stix_obj_property)
-            stix_obj_property = tmp  # use tmp variable to avoid deepcopy op
+            stix_obj_property = format_datetime(stix_obj_property)
 
         if self.op == "=":
             return stix_obj_property == self.value
@@ -174,9 +172,6 @@ def _check_filter(filter_, stix_obj):
                     return True
             return False
 
-        elif isinstance(stix_obj[prop], dict):
-            return _check_filter(sub_filter, stix_obj[prop])
-
         else:
             return _check_filter(sub_filter, stix_obj[prop])
 
@@ -242,8 +237,6 @@ class FilterSet(object):
             if f not in self._filters:
                 self._filters.append(f)
 
-        return
-
     def remove(self, filters=None):
         """remove a Filter, list of Filters, or FilterSet from the FilterSet
 
@@ -263,5 +256,3 @@ class FilterSet(object):
 
         for f in filters:
             self._filters.remove(f)
-
-        return
