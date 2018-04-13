@@ -2,6 +2,7 @@
 """
 
 from collections import OrderedDict
+import re
 
 import stix2
 
@@ -10,7 +11,7 @@ from ..markings import _MarkingsMixin
 from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
                           ListProperty, PatternProperty, ReferenceProperty,
                           StringProperty, TimestampProperty, TypeProperty)
-from ..utils import NOW
+from ..utils import NOW, TYPE_REGEX
 from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty
 
@@ -357,6 +358,13 @@ def CustomObject(type='x-custom-type', properties=None):
     def custom_builder(cls):
 
         class _Custom(cls, STIXDomainObject):
+
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid type name '%s': must be between 3 and 250 characters." % type)
+
             _type = type
             _properties = OrderedDict()
             _properties.update([

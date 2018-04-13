@@ -18,6 +18,8 @@ NOW = object()
 # STIX object properties that cannot be modified
 STIX_UNMOD_PROPERTIES = ["created", "created_by_ref", "id", "type"]
 
+TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
+
 
 class STIXdatetime(dt.datetime):
     def __new__(cls, *args, **kwargs):

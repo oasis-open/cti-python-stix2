@@ -7,6 +7,7 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 import copy
+import re
 
 from ..base import _Extension, _Observable, _STIXBase
 from ..exceptions import (AtLeastOnePropertyError, CustomContentError,
@@ -16,7 +17,7 @@ from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                           HashesProperty, HexProperty, IntegerProperty,
                           ListProperty, ObjectReferenceProperty, Property,
                           StringProperty, TimestampProperty, TypeProperty)
-from ..utils import _get_dict
+from ..utils import TYPE_REGEX, _get_dict
 
 
 class ObservableProperty(Property):
@@ -981,6 +982,12 @@ def CustomObservable(type='x-custom-observable', properties=None):
 
         class _Custom(cls, _Observable):
 
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid observable type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid observable type name '%s': must be between 3 and 250 characters." % type)
+
             _type = type
             _properties = OrderedDict()
             _properties.update([
@@ -1053,6 +1060,12 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
     def custom_builder(cls):
 
         class _Custom(cls, _Extension):
+
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid extension type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid extension type name '%s': must be between 3 and 250 characters." % type)
 
             _type = type
             _properties = OrderedDict()
