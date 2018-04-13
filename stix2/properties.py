@@ -129,6 +129,8 @@ class ListProperty(Property):
                 # constructor again
                 result.append(valid)
                 continue
+            elif type(self.contained) is DictionaryProperty:
+                obj_type = dict
             else:
                 obj_type = self.contained
 
