@@ -4,6 +4,9 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 """
 
 import collections
+from datetime import datetime
+
+from stix2.utils import format_datetime
 
 """Supported filter operations"""
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
@@ -44,37 +47,6 @@ def _check_filter_components(prop, op, value):
     return True
 
 
-def _assemble_filters(filters1=None, filters2=None):
-    """Assemble a list of filters.
-
-    This can be used to allow certain functions to work correctly no matter if
-    the user provides a single filter or a list of them.
-
-    Args:
-        filters1 (Filter or list, optional): The single Filter or list of Filters to
-            coerce into a list of Filters.
-        filters2 (Filter or list, optional): The single Filter or list of Filters to
-            append to the list of Filters.
-
-    Returns:
-        List of Filters.
-
-    """
-    if filters1 is None:
-        filter_list = []
-    elif not isinstance(filters1, list):
-        filter_list = [filters1]
-    else:
-        filter_list = filters1
-
-    if isinstance(filters2, list):
-        filter_list.extend(filters2)
-    elif filters2 is not None:
-        filter_list.append(filters2)
-
-    return filter_list
-
-
 class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
     """STIX 2 filters that support the querying functionality of STIX 2
     DataStores and DataSources.
@@ -97,6 +69,10 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
         if isinstance(value, list):
             value = tuple(value)
 
+        if isinstance(value, datetime):
+            # if value is a datetime obj, convert to str
+            value = format_datetime(value)
+
         _check_filter_components(prop, op, value)
 
         self = super(Filter, cls).__new__(cls, prop, op, value)
@@ -112,6 +88,12 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             True if property matches the filter,
             False otherwise.
         """
+        if isinstance(stix_obj_property, datetime):
+            # if a datetime obj, convert to str format before comparison
+            # NOTE: this check seems like it should be done upstream
+            # but will put here for now
+            stix_obj_property = format_datetime(stix_obj_property)
+
         if self.op == "=":
             return stix_obj_property == self.value
         elif self.op == "!=":
@@ -183,19 +165,94 @@ def _check_filter(filter_, stix_obj):
         # Check embedded properties, from e.g. granular_markings or external_references
         sub_property = filter_.property.split(".", 1)[1]
         sub_filter = filter_._replace(property=sub_property)
+
         if isinstance(stix_obj[prop], list):
             for elem in stix_obj[prop]:
                 if _check_filter(sub_filter, elem) is True:
                     return True
             return False
+
         else:
             return _check_filter(sub_filter, stix_obj[prop])
+
     elif isinstance(stix_obj[prop], list):
         # Check each item in list property to see if it matches
         for elem in stix_obj[prop]:
             if filter_._check_property(elem) is True:
                 return True
         return False
+
     else:
         # Check if property matches
         return filter_._check_property(stix_obj[prop])
+
+
+class FilterSet(object):
+    """Internal STIX2 class to facilitate the grouping of Filters
+    into sets. The primary motivation for this class came from the problem
+    that Filters that had a dict as a value could not be added to a Python
+    set as dicts are not hashable. Thus this class provides set functionality
+    but internally stores filters in a list.
+     """
+
+    def __init__(self, filters=None):
+        """
+        Args:
+            filters: see FilterSet.add()
+        """
+        self._filters = []
+        if filters:
+            self.add(filters)
+
+    def __iter__(self):
+        """provide iteration functionality of FilterSet"""
+        for f in self._filters:
+            yield f
+
+    def __len__(self):
+        """provide built-in len() utility of FilterSet"""
+        return len(self._filters)
+
+    def add(self, filters=None):
+        """add a Filter, FilterSet, or list of Filters to the FilterSet
+
+        Operates like set, only adding unique stix2.Filters to the FilterSet
+
+        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
+        as it allows for blind calls (very useful in DataStore)
+
+        Args:
+            filters: stix2.Filter OR list of stix2.Filter OR stix2.FilterSet
+
+        """
+        if not filters:
+            # so add() can be called blindly, useful for
+            # DataStore/Environment usage of filter operations
+            return
+
+        if not isinstance(filters, (FilterSet, list)):
+            filters = [filters]
+
+        for f in filters:
+            if f not in self._filters:
+                self._filters.append(f)
+
+    def remove(self, filters=None):
+        """remove a Filter, list of Filters, or FilterSet from the FilterSet
+
+        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
+        as it allows for blind calls (very useful in DataStore)
+
+        Args:
+            filters: stix2.Filter OR list of stix2.Filter or stix2.FilterSet
+        """
+        if not filters:
+            # so remove() can be called blindly, useful for
+            # DataStore/Environemnt usage of filter ops
+            return
+
+        if not isinstance(filters, (FilterSet, list)):
+            filters = [filters]
+
+        for f in filters:
+            self._filters.remove(f)

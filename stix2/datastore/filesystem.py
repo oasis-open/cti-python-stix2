@@ -8,7 +8,7 @@ import os
 
 from stix2.core import Bundle, parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
-from stix2.datastore.filters import Filter, apply_common_filters
+from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.utils import deduplicate, get_class_hierarchy_names
 
 
@@ -165,7 +165,7 @@ class FileSystemSource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-            _composite_filters (set): set of filters passed from the parent
+            _composite_filters (FilterSet): collection of filters passed from the parent
                 CompositeDataSource, not user supplied
             version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
                 None, use latest version.
@@ -195,7 +195,7 @@ class FileSystemSource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX objects to be retrieved.
-            _composite_filters (set): set of filters passed from the parent
+            _composite_filters (FilterSet): collection of filters passed from the parent
                 CompositeDataSource, not user supplied
             version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
                 None, use latest version.
@@ -217,7 +217,7 @@ class FileSystemSource(DataSource):
 
         Args:
             query (list): list of filters to search on
-            _composite_filters (set): set of filters passed from the
+            _composite_filters (FilterSet): collection of filters passed from the
                 CompositeDataSource, not user supplied
             version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
                 None, use latest version.
@@ -231,20 +231,13 @@ class FileSystemSource(DataSource):
 
         all_data = []
 
-        if query is None:
-            query = set()
-        else:
-            if not isinstance(query, list):
-                # make sure dont make set from a Filter object,
-                # need to make a set from a list of Filter objects (even if just one Filter)
-                query = [query]
-            query = set(query)
+        query = FilterSet(query)
 
         # combine all query filters
         if self.filters:
-            query.update(self.filters)
+            query.add(self.filters)
         if _composite_filters:
-            query.update(_composite_filters)
+            query.add(_composite_filters)
 
         # extract any filters that are for "type" or "id" , as we can then do
         # filtering before reading in the STIX objects. A STIX 'type' filter
@@ -343,8 +336,8 @@ class FileSystemSource(DataSource):
         search space of a FileSystemStore (or FileSystemSink).
 
         """
-        file_filters = set()
+        file_filters = []
         for filter_ in query:
             if filter_.property == "id" or filter_.property == "type":
-                file_filters.add(filter_)
+                file_filters.append(filter_)
         return file_filters

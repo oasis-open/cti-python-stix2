@@ -158,7 +158,7 @@ class Environment(DataStoreMixin):
     set_default_object_marking_refs.__doc__ = ObjectFactory.set_default_object_marking_refs.__doc__
 
     def add_filters(self, *args, **kwargs):
-        return self.source.filters.update(*args, **kwargs)
+        return self.source.filters.add(*args, **kwargs)
 
     def add_filter(self, *args, **kwargs):
         return self.source.filters.add(*args, **kwargs)
