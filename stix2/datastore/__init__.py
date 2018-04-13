@@ -16,7 +16,7 @@ import uuid
 
 from six import with_metaclass
 
-from stix2.datastore.filters import Filter, _assemble_filters
+from stix2.datastore.filters import Filter, FilterSet
 from stix2.utils import deduplicate
 
 
@@ -222,13 +222,13 @@ class DataSource(with_metaclass(ABCMeta)):
 
     Attributes:
         id (str): A unique UUIDv4 to identify this DataSource.
-        filters (set): A collection of filters attached to this DataSource.
+        filters (FilterSet): A collection of filters attached to this DataSource.
 
     """
     def __init__(self):
         super(DataSource, self).__init__()
         self.id = make_id()
-        self.filters = set()
+        self.filters = FilterSet()
 
     @abstractmethod
     def get(self, stix_id):
@@ -379,10 +379,10 @@ class DataSource(with_metaclass(ABCMeta)):
         ids.discard(obj_id)
 
         # Assemble filters
-        filter_list = _assemble_filters(filters)
+        filter_list = FilterSet(filters)
 
         for i in ids:
-            results.extend(self.query(filter_list + [Filter('id', '=', i)]))
+            results.extend(self.query([f for f in filter_list] + [Filter('id', '=', i)]))
 
         return results
 
@@ -427,7 +427,7 @@ class CompositeDataSource(DataSource):
 
         Args:
             stix_id (str): the id of the STIX object to retrieve.
-            _composite_filters (list): a list of filters passed from a
+            _composite_filters (FilterSet): a collection of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is attached
                 to another parent CompositeDataSource), not user supplied.
 
@@ -439,11 +439,12 @@ class CompositeDataSource(DataSource):
             raise AttributeError('CompositeDataSource has no data sources')
 
         all_data = []
-        all_filters = set()
-        all_filters.update(self.filters)
+        all_filters = FilterSet()
+
+        all_filters.add(self.filters)
 
         if _composite_filters:
-            all_filters.update(_composite_filters)
+            all_filters.add(_composite_filters)
 
         # for every configured Data Source, call its retrieve handler
         for ds in self.data_sources:
@@ -473,7 +474,7 @@ class CompositeDataSource(DataSource):
 
         Args:
             stix_id (str): id of the STIX objects to retrieve.
-            _composite_filters (list): a list of filters passed from a
+            _composite_filters (FilterSet): a collection of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is
                 attached to a parent CompositeDataSource), not user supplied.
 
@@ -485,12 +486,12 @@ class CompositeDataSource(DataSource):
             raise AttributeError('CompositeDataSource has no data sources')
 
         all_data = []
-        all_filters = set()
+        all_filters = FilterSet()
 
-        all_filters.update(self.filters)
+        all_filters.add(self.filters)
 
         if _composite_filters:
-            all_filters.update(_composite_filters)
+            all_filters.add(_composite_filters)
 
         # retrieve STIX objects from all configured data sources
         for ds in self.data_sources:
@@ -512,7 +513,7 @@ class CompositeDataSource(DataSource):
 
         Args:
             query (list): list of filters to search on.
-            _composite_filters (list): a list of filters passed from a
+            _composite_filters (FilterSet): a collection of filters passed from a
                 CompositeDataSource (i.e. if this CompositeDataSource is
                 attached to a parent CompositeDataSource), not user supplied.
 
@@ -524,17 +525,17 @@ class CompositeDataSource(DataSource):
             raise AttributeError('CompositeDataSource has no data sources')
 
         if not query:
-            # don't mess with the query (i.e. convert to a set, as that's done
+            # don't mess with the query (i.e. deduplicate, as that's done
             # within the specific DataSources that are called)
             query = []
 
         all_data = []
+        all_filters = FilterSet()
 
-        all_filters = set()
-        all_filters.update(self.filters)
+        all_filters.add(self.filters)
 
         if _composite_filters:
-            all_filters.update(_composite_filters)
+            all_filters.add(_composite_filters)
 
         # federate query to all attached data sources,
         # pass composite filters to id

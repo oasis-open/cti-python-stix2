@@ -7,7 +7,7 @@ from ..markings import _MarkingsMixin
 from ..properties import (HashesProperty, IDProperty, ListProperty, Property,
                           ReferenceProperty, SelectorProperty, StringProperty,
                           TimestampProperty, TypeProperty)
-from ..utils import NOW, get_dict
+from ..utils import NOW, _get_dict
 
 
 class ExternalReference(_STIXBase):
@@ -125,7 +125,7 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
                 raise ValueError("definition_type must be a valid marking type")
 
             if not isinstance(kwargs['definition'], marking_type):
-                defn = get_dict(kwargs['definition'])
+                defn = _get_dict(kwargs['definition'])
                 kwargs['definition'] = marking_type(**defn)
 
         super(MarkingDefinition, self).__init__(**kwargs)

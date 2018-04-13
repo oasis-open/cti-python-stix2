@@ -6,6 +6,7 @@ Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
+import copy
 import re
 
 from ..base import _Extension, _Observable, _STIXBase
@@ -16,7 +17,7 @@ from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                           HashesProperty, HexProperty, IntegerProperty,
                           ListProperty, ObjectReferenceProperty, Property,
                           StringProperty, TimestampProperty, TypeProperty)
-from ..utils import TYPE_REGEX, get_dict
+from ..utils import TYPE_REGEX, _get_dict
 
 
 class ObservableProperty(Property):
@@ -25,7 +26,11 @@ class ObservableProperty(Property):
 
     def clean(self, value):
         try:
-            dictified = get_dict(value)
+            dictified = _get_dict(value)
+            # get deep copy since we are going modify the dict and might
+            # modify the original dict as _get_dict() does not return new
+            # dict when passed a dict
+            dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The observable property must contain a dictionary")
         if dictified == {}:
@@ -50,7 +55,11 @@ class ExtensionsProperty(DictionaryProperty):
 
     def clean(self, value):
         try:
-            dictified = get_dict(value)
+            dictified = _get_dict(value)
+            # get deep copy since we are going modify the dict and might
+            # modify the original dict as _get_dict() does not return new
+            # dict when passed a dict
+            dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
         if dictified == {}:
@@ -916,7 +925,12 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
         An instantiated Python STIX Cyber Observable object.
     """
 
-    obj = get_dict(data)
+    obj = _get_dict(data)
+    # get deep copy since we are going modify the dict and might
+    # modify the original dict as _get_dict() does not return new
+    # dict when passed a dict
+    obj = copy.deepcopy(obj)
+
     obj['_valid_refs'] = _valid_refs or []
 
     if 'type' not in obj:
