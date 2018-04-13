@@ -193,7 +193,7 @@ class FilterSet(object):
     that Filters that had a dict as a value could not be added to a Python
     set as dicts are not hashable. Thus this class provides set functionality
     but internally stores filters in a list.
-     """
+    """
 
     def __init__(self, filters=None):
         """
@@ -205,16 +205,16 @@ class FilterSet(object):
             self.add(filters)
 
     def __iter__(self):
-        """provide iteration functionality of FilterSet"""
+        """Provide iteration functionality of FilterSet."""
         for f in self._filters:
             yield f
 
     def __len__(self):
-        """provide built-in len() utility of FilterSet"""
+        """Provide built-in len() utility of FilterSet."""
         return len(self._filters)
 
     def add(self, filters=None):
-        """add a Filter, FilterSet, or list of Filters to the FilterSet
+        """Add a Filter, FilterSet, or list of Filters to the FilterSet.
 
         Operates like set, only adding unique stix2.Filters to the FilterSet
 
@@ -238,7 +238,7 @@ class FilterSet(object):
                 self._filters.append(f)
 
     def remove(self, filters=None):
-        """remove a Filter, list of Filters, or FilterSet from the FilterSet
+        """Remove a Filter, list of Filters, or FilterSet from the FilterSet.
 
         NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
         as it allows for blind calls (very useful in DataStore)
