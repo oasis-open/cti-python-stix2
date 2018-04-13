@@ -6,7 +6,7 @@ from stix2.core import parse
 from stix2.datastore import (CompositeDataSource, DataSink, DataSource,
                              make_id, taxii)
 from stix2.datastore.filters import apply_common_filters
-from stix2.utils import deduplicate, parse_into_datetime
+from stix2.utils import STIXdatetime, deduplicate, parse_into_datetime
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 
@@ -489,6 +489,9 @@ def test_apply_common_filters13():
     resp = list(apply_common_filters(stix_objs, [filters[14]]))
     assert resp[0]["id"] == stix_objs[4]["id"]
     assert len(resp) == 1
+    # important additional check to make sure original File dict was
+    # not converted to File object. (this was a deep bug found)
+    assert isinstance(resp[0]["objects"]["0"], dict)
 
     resp = list(apply_common_filters(real_stix_objs, [filters[14]]))
     assert resp[0].id == real_stix_objs[4].id
@@ -507,6 +510,9 @@ def test_datetime_filter_behavior():
     filter_with_dt_obj = Filter("created", "=", parse_into_datetime("2016-02-14T00:00:00.000Z", "millisecond"))
     filter_with_str = Filter("created", "=", "2016-02-14T00:00:00.000Z")
 
+    # check taht filter value is converted from datetime to str
+    assert isinstance(filter_with_dt_obj.value, str)
+
     # compare datetime string to filter w/ datetime obj
     resp = list(apply_common_filters(stix_objs, [filter_with_dt_obj]))
     assert len(resp) == 1
@@ -516,6 +522,7 @@ def test_datetime_filter_behavior():
     resp = list(apply_common_filters(real_stix_objs, [filter_with_dt_obj]))
     assert len(resp) == 1
     assert resp[0]["id"] == "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef"
+    assert isinstance(resp[0].created, STIXdatetime)  # make sure original object not altered
 
     # compare datetime string to filter w/ str
     resp = list(apply_common_filters(stix_objs, [filter_with_str]))
@@ -526,6 +533,7 @@ def test_datetime_filter_behavior():
     resp = list(apply_common_filters(real_stix_objs, [filter_with_str]))
     assert len(resp) == 1
     assert resp[0]["id"] == "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef"
+    assert isinstance(resp[0].created, STIXdatetime)  # make sure original object not altered
 
 
 def test_filters0():

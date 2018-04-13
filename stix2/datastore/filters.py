@@ -90,10 +90,11 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             False otherwise.
         """
         if isinstance(stix_obj_property, datetime):
-            # if a datetime obj, convert to str before comparison
+            # if a datetime obj, use str format before comparison
             # NOTE: this check seems like it should be done upstream
             # but will put here for now
-            stix_obj_property = format_datetime(stix_obj_property)
+            tmp = format_datetime(stix_obj_property)
+            stix_obj_property = tmp  # use tmp variable to avoid deepcopy op
 
         if self.op == "=":
             return stix_obj_property == self.value
