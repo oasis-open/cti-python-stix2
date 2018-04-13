@@ -261,7 +261,7 @@ def reports(filters=None):
 
     """
     filter_list = FilterSet(filters)
-    filter_list.add([Filter('type', '=', 'report')])
+    filter_list.add(Filter('type', '=', 'report'))
     return query(filter_list)
 
 
