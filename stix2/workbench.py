@@ -48,7 +48,7 @@ from . import (AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,  # n
                WindowsPEOptionalHeaderType, WindowsPESection,
                WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
                WindowsServiceExt, X509Certificate, X509V3ExtenstionsType)
-from .datastore.filters import _assemble_filters
+from .datastore.filters import FilterSet
 
 # Use an implicit MemoryStore
 _environ = Environment(store=MemoryStore())
@@ -156,7 +156,8 @@ def attack_patterns(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'attack-pattern')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'attack-pattern'))
     return query(filter_list)
 
 
@@ -168,7 +169,8 @@ def campaigns(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'campaign')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'campaign'))
     return query(filter_list)
 
 
@@ -180,7 +182,8 @@ def courses_of_action(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'course-of-action')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'course-of-action'))
     return query(filter_list)
 
 
@@ -192,7 +195,8 @@ def identities(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'identity')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'identity'))
     return query(filter_list)
 
 
@@ -204,7 +208,8 @@ def indicators(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'indicator')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'indicator'))
     return query(filter_list)
 
 
@@ -216,7 +221,8 @@ def intrusion_sets(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'intrusion-set')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'intrusion-set'))
     return query(filter_list)
 
 
@@ -228,7 +234,8 @@ def malware(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'malware')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'malware'))
     return query(filter_list)
 
 
@@ -240,7 +247,8 @@ def observed_data(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'observed-data')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'observed-data'))
     return query(filter_list)
 
 
@@ -252,7 +260,8 @@ def reports(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'report')])
+    filter_list = FilterSet(filters)
+    filter_list.add([Filter('type', '=', 'report')])
     return query(filter_list)
 
 
@@ -264,7 +273,8 @@ def threat_actors(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'threat-actor')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'threat-actor'))
     return query(filter_list)
 
 
@@ -276,7 +286,8 @@ def tools(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'tool')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'tool'))
     return query(filter_list)
 
 
@@ -288,5 +299,6 @@ def vulnerabilities(filters=None):
             the query.
 
     """
-    filter_list = _assemble_filters(filters, [Filter('type', '=', 'vulnerability')])
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'vulnerability'))
     return query(filter_list)

@@ -9,7 +9,7 @@ import stix2
 from . import exceptions
 from .base import _STIXBase
 from .properties import IDProperty, ListProperty, Property, TypeProperty
-from .utils import get_class_hierarchy_names, get_dict
+from .utils import _get_dict, get_class_hierarchy_names
 
 
 class STIXObjectProperty(Property):
@@ -25,7 +25,7 @@ class STIXObjectProperty(Property):
                for x in get_class_hierarchy_names(value)):
             return value
         try:
-            dictified = get_dict(value)
+            dictified = _get_dict(value)
         except ValueError:
             raise ValueError("This property may only contain a dictionary or object")
         if dictified == {}:
@@ -95,7 +95,7 @@ def parse(data, allow_custom=False, version=None):
 
     """
     # convert STIX object to dict, if not already
-    obj = get_dict(data)
+    obj = _get_dict(data)
 
     # convert dict to full python-stix2 obj
     obj = dict_to_stix2(obj, allow_custom, version)

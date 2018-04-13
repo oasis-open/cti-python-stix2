@@ -50,7 +50,7 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
                        ReferenceObjectPathComponent, RepeatQualifier,
                        StartStopQualifier, StringConstant, TimestampConstant,
                        WithinQualifier)
-from .utils import get_dict, new_version, revoke
+from .utils import new_version, revoke
 from .v20 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 

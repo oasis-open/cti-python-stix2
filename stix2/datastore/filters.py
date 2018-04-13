@@ -4,36 +4,20 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 """
 
 import collections
+from datetime import datetime
 
-from stix2.utils import STIXdatetime
+from stix2.utils import format_datetime
 
 """Supported filter operations"""
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple, STIXdatetime]
+FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
 try:
     FILTER_VALUE_TYPES.append(unicode)
 except NameError:
     # Python 3 doesn't need to worry about unicode
     pass
-
-
-def deduplicate_filters(filters):
-    """utility for deduplicating list of filters, this
-    is used when 'set()' cannot be used as one of the
-    filter values is a dict (or non-hashable type)
-
-    Args:
-        filters (list): a list of filters
-
-    Returns: list of unique filters
-    """
-    unique_filters = []
-    for filter_ in filters:
-        if filter_ not in unique_filters:
-            unique_filters.append(filter_)
-    return unique_filters
 
 
 def _check_filter_components(prop, op, value):
@@ -63,37 +47,6 @@ def _check_filter_components(prop, op, value):
     return True
 
 
-def _assemble_filters(filters1=None, filters2=None):
-    """Assemble a list of filters.
-
-    This can be used to allow certain functions to work correctly no matter if
-    the user provides a single filter or a list of them.
-
-    Args:
-        filters1 (Filter or list, optional): The single Filter or list of Filters to
-            coerce into a list of Filters.
-        filters2 (Filter or list, optional): The single Filter or list of Filters to
-            append to the list of Filters.
-
-    Returns:
-        List of Filters.
-
-    """
-    if filters1 is None:
-        filter_list = []
-    elif not isinstance(filters1, list):
-        filter_list = [filters1]
-    else:
-        filter_list = filters1
-
-    if isinstance(filters2, list):
-        filter_list.extend(filters2)
-    elif filters2 is not None:
-        filter_list.append(filters2)
-
-    return filter_list
-
-
 class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
     """STIX 2 filters that support the querying functionality of STIX 2
     DataStores and DataSources.
@@ -116,6 +69,11 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
         if isinstance(value, list):
             value = tuple(value)
 
+        if isinstance(value, datetime):
+            # if value is a datetime obj, convert to str
+            dt_str = format_datetime(value)
+            value = dt_str  # use temp variable to avoid deepcopy operation
+
         _check_filter_components(prop, op, value)
 
         self = super(Filter, cls).__new__(cls, prop, op, value)
@@ -131,6 +89,12 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             True if property matches the filter,
             False otherwise.
         """
+        if isinstance(stix_obj_property, datetime):
+            # if a datetime obj, convert to str before comparison
+            # NOTE: this check seems like it should be done upstream
+            # but will put here for now
+            stix_obj_property = format_datetime(stix_obj_property)
+
         if self.op == "=":
             return stix_obj_property == self.value
         elif self.op == "!=":
@@ -252,7 +216,7 @@ class FilterSet(object):
             # DataStore/Environment usage of filter operations
             return
 
-        if not isinstance(filters, FilterSet) and not isinstance(filters, list):
+        if not isinstance(filters, (FilterSet, list)):
             filters = [filters]
 
         for f in filters:
@@ -268,7 +232,7 @@ class FilterSet(object):
             # DataStore/Environemnt usage of filter ops
             return
 
-        if not isinstance(filters, FilterSet) and not isinstance(filters, list):
+        if not isinstance(filters, (FilterSet, list)):
             filters = [filters]
 
         for f in filters:

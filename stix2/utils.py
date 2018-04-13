@@ -140,7 +140,7 @@ def parse_into_datetime(value, precision=None):
     return STIXdatetime(ts, precision=precision)
 
 
-def get_dict(data):
+def _get_dict(data):
     """Return data as a dictionary.
 
     Input can be a dictionary, string, or file-like object.

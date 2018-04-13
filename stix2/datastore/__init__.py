@@ -16,7 +16,7 @@ import uuid
 
 from six import with_metaclass
 
-from stix2.datastore.filters import Filter, FilterSet, _assemble_filters
+from stix2.datastore.filters import Filter, FilterSet
 from stix2.utils import deduplicate
 
 
@@ -379,10 +379,10 @@ class DataSource(with_metaclass(ABCMeta)):
         ids.discard(obj_id)
 
         # Assemble filters
-        filter_list = _assemble_filters(filters)
+        filter_list = FilterSet(filters)
 
         for i in ids:
-            results.extend(self.query(filter_list + [Filter('id', '=', i)]))
+            results.extend(self.query([f for f in filter_list] + [Filter('id', '=', i)]))
 
         return results
 
