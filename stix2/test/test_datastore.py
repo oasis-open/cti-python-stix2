@@ -569,7 +569,6 @@ def test_filters3():
 
     # "Return any object modified before or on 2017-01-28T13:49:53.935Z"
     fv = Filter("modified", "<=", parse_into_datetime("2017-01-27T13:49:53.935Z"))
-    print(fv)
     resp = list(apply_common_filters(REAL_STIX_OBJS2, [fv]))
     assert resp[0].id == REAL_STIX_OBJS2[1].id
     assert len(resp) == 2

@@ -192,25 +192,43 @@ def _check_filter(filter_, stix_obj):
 
 
 class FilterSet(object):
-    """ """
+    """Internal STIX2 class to facilitate the grouping of Filters
+    into sets. The primary motivation for this class came from the problem
+    that Filters that had a dict as a value could not be added to a Python
+    set as dicts are not hashable. Thus this class provides set functionality
+    but internally stores filters in a list.
+     """
 
     def __init__(self, filters=None):
-        """ """
+        """
+        Args:
+            filters: see FilterSet.add()
+        """
         self._filters = []
         if filters:
             self.add(filters)
 
     def __iter__(self):
-        """ """
+        """provide iteration functionality of FilterSet"""
         for f in self._filters:
             yield f
 
     def __len__(self):
-        """ """
+        """provide built-in len() utility of FilterSet"""
         return len(self._filters)
 
     def add(self, filters=None):
-        """ """
+        """add a Filter, FilterSet, or list of Filters to the FilterSet
+
+        Operates like set, only adding unique stix2.Filters to the FilterSet
+
+        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
+        as it allows for blind calls (very useful in DataStore)
+
+        Args:
+            filters: stix2.Filter OR list of stix2.Filter OR stix2.FilterSet
+
+        """
         if not filters:
             # so add() can be called blindly, useful for
             # DataStore/Environment usage of filter operations
@@ -226,7 +244,14 @@ class FilterSet(object):
         return
 
     def remove(self, filters=None):
-        """ """
+        """remove a Filter, list of Filters, or FilterSet from the FilterSet
+
+        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
+        as it allows for blind calls (very useful in DataStore)
+
+        Args:
+            filters: stix2.Filter OR list of stix2.Filter or stix2.FilterSet
+        """
         if not filters:
             # so remove() can be called blindly, useful for
             # DataStore/Environemnt usage of filter ops
