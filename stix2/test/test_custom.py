@@ -373,7 +373,7 @@ def test_parse_unregistered_custom_observable_object():
         "property1": "something"
     }"""
 
-    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+    with pytest.raises(stix2.exceptions.CustomContentError) as excinfo:
         stix2.parse_observable(nt_string)
     assert "Can't parse unknown observable type" in str(excinfo.value)
 
@@ -382,6 +382,16 @@ def test_parse_unregistered_custom_observable_object():
     with pytest.raises(AttributeError) as excinfo:
         assert parsed_custom.property1 == 'something'
     assert not isinstance(parsed_custom, stix2.core._STIXBase)
+
+
+def test_parse_unregistered_custom_observable_object_with_no_type():
+    nt_string = """{
+        "property1": "something"
+    }"""
+
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+        stix2.parse_observable(nt_string, allow_custom=True)
+    assert "Can't parse observable with no 'type' property" in str(excinfo.value)
 
 
 def test_parse_observed_data_with_custom_observable():

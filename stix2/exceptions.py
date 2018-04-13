@@ -163,6 +163,13 @@ class ParseError(STIXError, ValueError):
         super(ParseError, self).__init__(msg)
 
 
+class CustomContentError(STIXError, ValueError):
+    """Custom STIX Content (SDO, Observable, Extension, etc.) detected."""
+
+    def __init__(self, msg):
+        super(CustomContentError, self).__init__(msg)
+
+
 class InvalidSelectorError(STIXError, AssertionError):
     """Granular Marking selector violation. The selector must resolve into an existing STIX object property."""
 

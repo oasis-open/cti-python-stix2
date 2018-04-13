@@ -6,11 +6,11 @@ import datetime as dt
 
 import simplejson as json
 
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
-                         ExtraPropertiesError, ImmutableError,
-                         InvalidObjRefError, InvalidValueError,
+from .exceptions import (AtLeastOnePropertyError, CustomContentError,
+                         DependentPropertiesError, ExtraPropertiesError,
+                         ImmutableError, InvalidObjRefError, InvalidValueError,
                          MissingPropertiesError,
-                         MutuallyExclusivePropertiesError, ParseError)
+                         MutuallyExclusivePropertiesError)
 from .markings.utils import validate
 from .utils import NOW, find_property_index, format_datetime, get_timestamp
 from .utils import new_version as _new_version
@@ -61,7 +61,7 @@ class _STIXBase(collections.Mapping):
             try:
                 kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
-                if self.__allow_custom and isinstance(exc, ParseError):
+                if self.__allow_custom and isinstance(exc, CustomContentError):
                     return
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
