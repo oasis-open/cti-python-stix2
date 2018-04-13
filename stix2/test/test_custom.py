@@ -363,6 +363,7 @@ def test_parse_custom_observable_object():
     }"""
 
     nt = stix2.parse_observable(nt_string, [])
+    assert isinstance(nt, stix2.core._STIXBase)
     assert nt.property1 == 'something'
 
 
@@ -372,9 +373,45 @@ def test_parse_unregistered_custom_observable_object():
         "property1": "something"
     }"""
 
-    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+    with pytest.raises(stix2.exceptions.CustomContentError) as excinfo:
         stix2.parse_observable(nt_string)
     assert "Can't parse unknown observable type" in str(excinfo.value)
+
+    parsed_custom = stix2.parse_observable(nt_string, allow_custom=True)
+    assert parsed_custom['property1'] == 'something'
+    with pytest.raises(AttributeError) as excinfo:
+        assert parsed_custom.property1 == 'something'
+    assert not isinstance(parsed_custom, stix2.core._STIXBase)
+
+
+def test_parse_unregistered_custom_observable_object_with_no_type():
+    nt_string = """{
+        "property1": "something"
+    }"""
+
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
+        stix2.parse_observable(nt_string, allow_custom=True)
+    assert "Can't parse observable with no 'type' property" in str(excinfo.value)
+
+
+def test_parse_observed_data_with_custom_observable():
+    input_str = """{
+        "type": "observed-data",
+        "id": "observed-data--dc20c4ca-a2a3-4090-a5d5-9558c3af4758",
+        "created": "2016-04-06T19:58:16.000Z",
+        "modified": "2016-04-06T19:58:16.000Z",
+        "first_observed": "2015-12-21T19:00:00Z",
+        "last_observed": "2015-12-21T19:00:00Z",
+        "number_observed": 1,
+        "objects": {
+            "0": {
+                "type": "x-foobar-observable",
+                "property1": "something"
+            }
+        }
+    }"""
+    parsed = stix2.parse(input_str, allow_custom=True)
+    assert parsed.objects['0']['property1'] == 'something'
 
 
 def test_parse_invalid_custom_observable_object():
@@ -591,7 +628,11 @@ def test_parse_observable_with_unregistered_custom_extension():
 
     with pytest.raises(ValueError) as excinfo:
         stix2.parse_observable(input_str)
-    assert "Can't parse Unknown extension type" in str(excinfo.value)
+    assert "Can't parse unknown extension type" in str(excinfo.value)
+
+    parsed_ob = stix2.parse_observable(input_str, allow_custom=True)
+    assert parsed_ob['extensions']['x-foobar-ext']['property1'] == 'foo'
+    assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.core._STIXBase)
 
 
 def test_register_custom_object():

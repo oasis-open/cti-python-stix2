@@ -8,8 +8,8 @@ Observable and do not have a ``_type`` attribute.
 from collections import OrderedDict
 
 from ..base import _Extension, _Observable, _STIXBase
-from ..exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
-                          ParseError)
+from ..exceptions import (AtLeastOnePropertyError, CustomContentError,
+                          DependentPropertiesError, ParseError)
 from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                           EmbeddedObjectProperty, EnumProperty, FloatProperty,
                           HashesProperty, HexProperty, IntegerProperty,
@@ -67,7 +67,7 @@ class ExtensionsProperty(DictionaryProperty):
                     else:
                         raise ValueError("Cannot determine extension type.")
                 else:
-                    raise ValueError("The key used in the extensions dictionary is not an extension type name")
+                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         else:
             raise ValueError("The enclosing type '%s' has no extensions defined" % self.enclosing_type)
         return dictified
@@ -923,15 +923,23 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
-                         "use the CustomObservable decorator." % obj['type'])
+        if allow_custom:
+            # flag allows for unknown custom objects too, but will not
+            # be parsed into STIX observable object, just returned as is
+            return obj
+        raise CustomContentError("Can't parse unknown observable type '%s'! For custom observables, "
+                                 "use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
-            if name not in EXT_MAP[obj['type']]:
-                raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
-            ext_class = EXT_MAP[obj['type']][name]
-            obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
+            try:
+                ext_class = EXT_MAP[obj['type']][name]
+            except KeyError:
+                if not allow_custom:
+                    raise CustomContentError("Can't parse unknown extension type '%s'"
+                                             "for observable type '%s'!" % (name, obj['type']))
+            else:  # extension was found
+                obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
 
     return obj_class(allow_custom=allow_custom, **obj)
 
