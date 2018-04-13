@@ -166,7 +166,7 @@ def get_dict(data):
 def find_property_index(obj, properties, tuple_to_find):
     """Recursively find the property in the object model, return the index
     according to the _properties OrderedDict. If it's a list look for
-    individual objects.
+    individual objects. Returns and integer indicating its location
     """
     from .base import _STIXBase
     try:
@@ -183,6 +183,11 @@ def find_property_index(obj, properties, tuple_to_find):
                                                   tuple_to_find)
                         if val is not None:
                             return val
+                    elif isinstance(item, dict):
+                        for idx, val in enumerate(sorted(item)):
+                            if (tuple_to_find[0] == val and
+                                    item.get(val) == tuple_to_find[1]):
+                                return idx
             elif isinstance(pv, dict):
                 if pv.get(tuple_to_find[0]) is not None:
                     try:

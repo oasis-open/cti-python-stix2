@@ -479,6 +479,27 @@ def test_custom_extension_wrong_observable_type():
     assert 'Cannot determine extension type' in excinfo.value.reason
 
 
+@pytest.mark.parametrize("data", [
+    """{
+    "keys": [
+        {
+            "test123": 123,
+            "test345": "aaaa"
+        }
+    ]
+}""",
+])
+def test_custom_extension_with_list_and_dict_properties_observable_type(data):
+    @stix2.observables.CustomExtension(stix2.UserAccount, 'some-extension', [
+        ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True))
+    ])
+    class SomeCustomExtension:
+        pass
+
+    example = SomeCustomExtension(keys=[{'test123': 123, 'test345': 'aaaa'}])
+    assert data == str(example)
+
+
 def test_custom_extension_invalid_observable():
     # These extensions are being applied to improperly-created Observables.
     # The Observable classes should have been created with the CustomObservable decorator.
