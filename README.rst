@@ -179,7 +179,7 @@ repositories/maintainers-guide#additionalMaintainers>`__.
    Corporation <http://www.mitre.org/>`__
 
 About OASIS TC Open Repositories
------------------------------
+--------------------------------
 
 -  `TC Open Repositories: Overview and
    Resources <https://www.oasis-open.org/resources/open-
