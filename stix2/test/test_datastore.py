@@ -405,13 +405,11 @@ def test_apply_common_filters4():
 
 def test_apply_common_filters5():
     # "Return any object whose not revoked"
-    # Note that if 'revoked' property is not present in object.
-    # Currently we can't use such an expression to filter for... :(
     resp = list(apply_common_filters(stix_objs, [filters[5]]))
     assert len(resp) == 0
 
     resp = list(apply_common_filters(real_stix_objs, [filters[5]]))
-    assert len(resp) == 0
+    assert len(resp) == 4
 
 
 def test_apply_common_filters6():
