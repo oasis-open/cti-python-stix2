@@ -6,10 +6,6 @@
 STIX 2 Python API Documentation
 ===============================
 
-.. warning::
-
-    Prior to version 1.0, all APIs are considered unstable and subject to change.
-
 Welcome to the STIX 2 Python API's documentation. This library is designed to
 help you work with STIX 2 content. For more information about STIX 2, see the
 `website <http://cti-tc.github.io>`_ of the OASIS Cyber Threat Intelligence
