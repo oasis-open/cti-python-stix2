@@ -155,10 +155,5 @@ def stix_objs2():
 
 
 @pytest.fixture
-def real_stix_objs1(stix_objs1):
-    return [stix2.parse(x) for x in stix_objs1]
-
-
-@pytest.fixture
 def real_stix_objs2(stix_objs2):
     return [stix2.parse(x) for x in stix_objs2]
