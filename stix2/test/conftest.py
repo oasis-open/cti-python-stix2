@@ -152,3 +152,13 @@ def stix_objs2():
         "valid_from": "2017-01-27T13:49:53.935382Z"
     }
     return [ind6, ind7, ind8]
+
+
+@pytest.fixture
+def real_stix_objs1(stix_objs1):
+    return [stix2.parse(x) for x in stix_objs1]
+
+
+@pytest.fixture
+def real_stix_objs2(stix_objs2):
+    return [stix2.parse(x) for x in stix_objs2]
