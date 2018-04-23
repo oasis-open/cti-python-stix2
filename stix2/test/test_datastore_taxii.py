@@ -166,6 +166,59 @@ def test_add_str_object(collection):
     tc_sink.add(ta)
 
 
+def test_add_dict_object(collection):
+    tc_sink = TAXIICollectionSink(collection)
+
+    ta = {
+        "type": "threat-actor",
+        "id": "threat-actor--eddff64f-feb1-4469-b07c-499a73c96415",
+        "created": "2018-04-23T16:40:50.847Z",
+        "modified": "2018-04-23T16:40:50.847Z",
+        "name": "Teddy Bear",
+        "goals": [
+            "compromising environment NGOs",
+            "water-hole attacks geared towards energy sector"
+        ],
+        "sophistication": "innovator",
+        "resource_level": "government",
+        "labels": [
+            "nation-state"
+        ]
+    }
+
+    tc_sink.add(ta)
+
+
+def test_add_dict_bundle_object(collection):
+    tc_sink = TAXIICollectionSink(collection)
+
+    ta = {
+        "type": "bundle",
+        "id": "bundle--860ccc8d-56c9-4fda-9384-84276fb52fb1",
+        "spec_version": "2.0",
+        "objects": [
+            {
+                "type": "threat-actor",
+                "id": "threat-actor--dc5a2f41-f76e-425a-81fe-33afc7aabd75",
+                "created": "2018-04-23T18:45:11.390Z",
+                "modified": "2018-04-23T18:45:11.390Z",
+                "name": "Teddy Bear",
+                "goals": [
+                    "compromising environment NGOs",
+                    "water-hole attacks geared towards energy sector"
+                ],
+                "sophistication": "innovator",
+                "resource_level": "government",
+                "labels": [
+                    "nation-state"
+                ]
+            }
+        ]
+    }
+
+    tc_sink.add(ta)
+
+
 def test_get_stix2_object(collection):
     tc_sink = TAXIICollectionSource(collection)
 
