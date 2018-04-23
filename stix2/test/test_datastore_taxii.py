@@ -1,12 +1,12 @@
-from stix2 import (Bundle, ThreatActor, TAXIICollectionSink,
-                   TAXIICollectionSource, TAXIICollectionStore)
-from stix2.datastore.filters import Filter
-
 import json
-import pytest
 
-from taxii2client import Collection, _filter_kwargs_to_query_params
 from medallion.filters.basic_filter import BasicFilter
+import pytest
+from taxii2client import Collection, _filter_kwargs_to_query_params
+
+from stix2 import (Bundle, TAXIICollectionSink, TAXIICollectionSource,
+                   TAXIICollectionStore, ThreatActor)
+from stix2.datastore.filters import Filter
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 

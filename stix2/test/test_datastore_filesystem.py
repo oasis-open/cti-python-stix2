@@ -7,7 +7,6 @@ import pytest
 from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
                    FileSystemSource, FileSystemStore, Filter, Identity,
                    Indicator, Malware, Relationship, properties)
-
 from stix2.test.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
                                   IDENTITY_KWARGS, INDICATOR_ID,
                                   INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,

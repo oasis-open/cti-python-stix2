@@ -2,7 +2,7 @@ import pytest
 
 from stix2.datastore import CompositeDataSource, make_id
 from stix2.datastore.filters import Filter
-from stix2.datastore.memory import MemorySource, MemorySink
+from stix2.datastore.memory import MemorySink, MemorySource
 
 
 def test_add_remove_composite_datasource():

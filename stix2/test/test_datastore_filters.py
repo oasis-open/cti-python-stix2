@@ -4,7 +4,6 @@ from stix2 import parse
 from stix2.datastore.filters import Filter, apply_common_filters
 from stix2.utils import STIXdatetime, parse_into_datetime
 
-
 stix_objs = [
     {
         "created": "2017-01-27T13:49:53.997Z",
