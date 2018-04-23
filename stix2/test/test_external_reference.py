@@ -42,7 +42,7 @@ def test_external_reference_capec():
     )
 
     assert str(ref) == CAPEC
-    assert re.match("ExternalReference\(source_name=u?'capec', external_id=u?'CAPEC-550'\)", repr(ref))
+    assert re.match("ExternalReference\\(source_name=u?'capec', external_id=u?'CAPEC-550'\\)", repr(ref))
 
 
 CAPEC_URL = """{
@@ -109,7 +109,7 @@ def test_external_reference_offline():
     )
 
     assert str(ref) == OFFLINE
-    assert re.match("ExternalReference\(source_name=u?'ACME Threat Intel', description=u?'Threat report'\)", repr(ref))
+    assert re.match("ExternalReference\\(source_name=u?'ACME Threat Intel', description=u?'Threat report'\\)", repr(ref))
     # Yikes! This works
     assert eval("stix2." + repr(ref)) == ref
 

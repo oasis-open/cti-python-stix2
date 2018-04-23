@@ -123,8 +123,8 @@ def test_create_relationship_from_objects_rather_than_ids(indicator, malware):
 
     assert rel.relationship_type == 'indicates'
     assert rel.source_ref == 'indicator--00000000-0000-0000-0000-000000000001'
-    assert rel.target_ref == 'malware--00000000-0000-0000-0000-000000000002'
-    assert rel.id == 'relationship--00000000-0000-0000-0000-000000000003'
+    assert rel.target_ref == 'malware--00000000-0000-0000-0000-000000000003'
+    assert rel.id == 'relationship--00000000-0000-0000-0000-000000000005'
 
 
 def test_create_relationship_with_positional_args(indicator, malware):
@@ -132,8 +132,8 @@ def test_create_relationship_with_positional_args(indicator, malware):
 
     assert rel.relationship_type == 'indicates'
     assert rel.source_ref == 'indicator--00000000-0000-0000-0000-000000000001'
-    assert rel.target_ref == 'malware--00000000-0000-0000-0000-000000000002'
-    assert rel.id == 'relationship--00000000-0000-0000-0000-000000000003'
+    assert rel.target_ref == 'malware--00000000-0000-0000-0000-000000000003'
+    assert rel.id == 'relationship--00000000-0000-0000-0000-000000000005'
 
 
 @pytest.mark.parametrize("data", [

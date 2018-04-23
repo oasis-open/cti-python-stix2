@@ -6,7 +6,7 @@ from requests.exceptions import HTTPError
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
-from stix2.datastore.filters import Filter, apply_common_filters
+from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.utils import deduplicate
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
@@ -120,7 +120,7 @@ class TAXIICollectionSource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX object to be retrieved.
-            _composite_filters (set): set of filters passed from the parent
+            _composite_filters (FilterSet): collection of filters passed from the parent
                 CompositeDataSource, not user supplied
             version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
                 None, use latest version.
@@ -132,11 +132,12 @@ class TAXIICollectionSource(DataSource):
 
         """
         # combine all query filters
-        query = set()
+        query = FilterSet()
+
         if self.filters:
-            query.update(self.filters)
+            query.add(self.filters)
         if _composite_filters:
-            query.update(_composite_filters)
+            query.add(_composite_filters)
 
         # dont extract TAXII filters from query (to send to TAXII endpoint)
         # as directly retrieveing a STIX object by ID
@@ -164,7 +165,7 @@ class TAXIICollectionSource(DataSource):
 
         Args:
             stix_id (str): The STIX ID of the STIX objects to be retrieved.
-            _composite_filters (set): set of filters passed from the parent
+            _composite_filters (FilterSet): collection of filters passed from the parent
                 CompositeDataSource, not user supplied
             version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
                 None, use latest version.
@@ -198,7 +199,7 @@ class TAXIICollectionSource(DataSource):
 
         Args:
             query (list): list of filters to search on
-            _composite_filters (set): set of filters passed from the
+            _composite_filters (FilterSet): collection of filters passed from the
                 CompositeDataSource, not user supplied
             version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
                 None, use latest version.
@@ -209,20 +210,13 @@ class TAXIICollectionSource(DataSource):
                 parsed into python STIX objects and then returned.
 
         """
-        if query is None:
-            query = set()
-        else:
-            if not isinstance(query, list):
-                # make sure dont make set from a Filter object,
-                # need to make a set from a list of Filter objects (even if just one Filter)
-                query = [query]
-            query = set(query)
+        query = FilterSet(query)
 
         # combine all query filters
         if self.filters:
-            query.update(self.filters)
+            query.add(self.filters)
         if _composite_filters:
-            query.update(_composite_filters)
+            query.add(_composite_filters)
 
         # parse taxii query params (that can be applied remotely)
         taxii_filters = self._parse_taxii_filters(query)
@@ -268,17 +262,16 @@ class TAXIICollectionSource(DataSource):
 
 
         Args:
-            query (set): set of filters to extract which ones are TAXII
+            query (list): list of filters to extract which ones are TAXII
                 specific.
 
-        Returns:
-            taxii_filters (set): set of the TAXII filters
+        Returns: a list of the TAXII filters
 
         """
-        taxii_filters = set()
+        taxii_filters = []
 
         for filter_ in query:
             if filter_.property in TAXII_FILTERS:
-                taxii_filters.add(filter_)
+                taxii_filters.append(filter_)
 
         return taxii_filters

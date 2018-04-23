@@ -86,7 +86,7 @@ def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
     rel = stix2.Sighting(sighting_of_ref=malware)
 
     assert rel.sighting_of_ref == 'malware--00000000-0000-0000-0000-000000000001'
-    assert rel.id == 'sighting--00000000-0000-0000-0000-000000000002'
+    assert rel.id == 'sighting--00000000-0000-0000-0000-000000000003'
 
 
 @pytest.mark.parametrize("data", [

@@ -18,6 +18,8 @@ NOW = object()
 # STIX object properties that cannot be modified
 STIX_UNMOD_PROPERTIES = ["created", "created_by_ref", "id", "type"]
 
+TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
+
 
 class STIXdatetime(dt.datetime):
     def __new__(cls, *args, **kwargs):
@@ -140,7 +142,7 @@ def parse_into_datetime(value, precision=None):
     return STIXdatetime(ts, precision=precision)
 
 
-def get_dict(data):
+def _get_dict(data):
     """Return data as a dictionary.
 
     Input can be a dictionary, string, or file-like object.
@@ -166,7 +168,7 @@ def get_dict(data):
 def find_property_index(obj, properties, tuple_to_find):
     """Recursively find the property in the object model, return the index
     according to the _properties OrderedDict. If it's a list look for
-    individual objects.
+    individual objects. Returns and integer indicating its location
     """
     from .base import _STIXBase
     try:
@@ -183,6 +185,11 @@ def find_property_index(obj, properties, tuple_to_find):
                                                   tuple_to_find)
                         if val is not None:
                             return val
+                    elif isinstance(item, dict):
+                        for idx, val in enumerate(sorted(item)):
+                            if (tuple_to_find[0] == val and
+                                    item.get(val) == tuple_to_find[1]):
+                                return idx
             elif isinstance(pv, dict):
                 if pv.get(tuple_to_find[0]) is not None:
                     try:
@@ -263,11 +270,11 @@ def get_class_hierarchy_names(obj):
 
 
 def remove_custom_stix(stix_obj):
-    """remove any custom STIX objects or properties
+    """Remove any custom STIX objects or properties.
 
     Warning: This function is a best effort utility, in that
     it will remove custom objects and properties based on the
-    type names; i.e. if "x-" prefixes object types, and "x_"
+    type names; i.e. if "x-" prefixes object types, and "x\\_"
     prefixes property types. According to the STIX2 spec,
     those naming conventions are a SHOULDs not MUSTs, meaning
     that valid custom STIX content may ignore those conventions

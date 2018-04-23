@@ -1,6 +1,8 @@
-"""STIX 2.0 Domain Objects"""
+"""STIX 2.0 Domain Objects.
+"""
 
 from collections import OrderedDict
+import re
 
 import stix2
 
@@ -9,7 +11,7 @@ from ..markings import _MarkingsMixin
 from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
                           ListProperty, PatternProperty, ReferenceProperty,
                           StringProperty, TimestampProperty, TypeProperty)
-from ..utils import NOW
+from ..utils import NOW, TYPE_REGEX
 from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty
 
@@ -34,7 +36,7 @@ class AttackPattern(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -61,7 +63,7 @@ class Campaign(STIXDomainObject):
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('objective', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -84,7 +86,7 @@ class CourseOfAction(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -110,7 +112,7 @@ class Identity(STIXDomainObject):
         ('identity_class', StringProperty(required=True)),
         ('sectors', ListProperty(StringProperty)),
         ('contact_information', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -137,7 +139,7 @@ class Indicator(STIXDomainObject):
         ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -167,7 +169,7 @@ class IntrusionSet(STIXDomainObject):
         ('resource_level', StringProperty()),
         ('primary_motivation', StringProperty()),
         ('secondary_motivations', ListProperty(StringProperty)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -191,7 +193,7 @@ class Malware(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -216,7 +218,7 @@ class ObservedData(STIXDomainObject):
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(required=True)),
         ('objects', ObservableProperty(required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -241,7 +243,7 @@ class Report(STIXDomainObject):
         ('description', StringProperty()),
         ('published', TimestampProperty(required=True)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -272,7 +274,7 @@ class ThreatActor(STIXDomainObject):
         ('primary_motivation', StringProperty()),
         ('secondary_motivations', ListProperty(StringProperty)),
         ('personal_motivations', ListProperty(StringProperty)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -297,7 +299,7 @@ class Tool(STIXDomainObject):
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -320,7 +322,7 @@ class Vulnerability(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -356,6 +358,13 @@ def CustomObject(type='x-custom-type', properties=None):
     def custom_builder(cls):
 
         class _Custom(cls, STIXDomainObject):
+
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid type name '%s': must be between 3 and 250 characters." % type)
+
             _type = type
             _properties = OrderedDict()
             _properties.update([
@@ -373,7 +382,7 @@ def CustomObject(type='x-custom-type', properties=None):
 
             # This is to follow the general properties structure.
             _properties.update([
-                ('revoked', BooleanProperty()),
+                ('revoked', BooleanProperty(default=lambda: False)),
                 ('labels', ListProperty(StringProperty)),
                 ('external_references', ListProperty(ExternalReference)),
                 ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),

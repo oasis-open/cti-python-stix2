@@ -12,7 +12,7 @@ from stix2patterns.validator import run_validator
 
 from .base import _STIXBase
 from .exceptions import DictionaryKeyError
-from .utils import get_dict, parse_into_datetime
+from .utils import _get_dict, parse_into_datetime
 
 
 class Property(object):
@@ -129,6 +129,8 @@ class ListProperty(Property):
                 # constructor again
                 result.append(valid)
                 continue
+            elif type(self.contained) is DictionaryProperty:
+                obj_type = dict
             else:
                 obj_type = self.contained
 
@@ -232,7 +234,7 @@ class DictionaryProperty(Property):
 
     def clean(self, value):
         try:
-            dictified = get_dict(value)
+            dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
         if dictified == {}:

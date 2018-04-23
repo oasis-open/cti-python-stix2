@@ -1,6 +1,6 @@
 import pytest
 
-from stix2 import EmailMIMEComponent, ExtensionsProperty, TCPExt
+from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
 from stix2.properties import (BinaryProperty, BooleanProperty,
                               DictionaryProperty, EmbeddedObjectProperty,
@@ -16,6 +16,8 @@ def test_property():
     p = Property()
 
     assert p.required is False
+    assert p.clean('foo') == 'foo'
+    assert p.clean(3) == 3
 
 
 def test_basic_clean():
@@ -262,6 +264,17 @@ def test_dictionary_property_invalid(d):
     with pytest.raises(ValueError) as excinfo:
         dict_prop.clean(d[0])
     assert str(excinfo.value) == d[1]
+
+
+def test_property_list_of_dictionary():
+    @CustomObject('x-new-obj', [
+        ('property1', ListProperty(DictionaryProperty(), required=True)),
+    ])
+    class NewObj():
+        pass
+
+    test_obj = NewObj(property1=[{'foo': 'bar'}])
+    assert test_obj.property1[0]['foo'] == 'bar'
 
 
 @pytest.mark.parametrize("value", [

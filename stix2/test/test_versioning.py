@@ -233,12 +233,19 @@ def test_remove_custom_stix_object():
         ("animal_class", stix2.properties.StringProperty()),
     ])
     class Animal(object):
-        def __init__(self, animal_class=None, **kwargs):
-            if animal_class and animal_class not in ["mammal", "bird"]:
-                raise ValueError("Not a recognized class of animal")
+        pass
 
     animal = Animal(species="lion", animal_class="mammal")
 
     nc = stix2.utils.remove_custom_stix(animal)
 
     assert nc is None
+
+
+def test_remove_custom_stix_no_custom():
+    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v2 = stix2.utils.remove_custom_stix(campaign_v1)
+
+    assert len(campaign_v1.keys()) == len(campaign_v2.keys())
+    assert campaign_v1.id == campaign_v2.id
+    assert campaign_v1.description == campaign_v2.description

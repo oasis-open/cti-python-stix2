@@ -62,7 +62,7 @@ def test_parse_datetime_invalid(ts):
     [("a", 1,)],
 ])
 def test_get_dict(data):
-    assert stix2.utils.get_dict(data)
+    assert stix2.utils._get_dict(data)
 
 
 @pytest.mark.parametrize('data', [
@@ -73,7 +73,7 @@ def test_get_dict(data):
 ])
 def test_get_dict_invalid(data):
     with pytest.raises(ValueError):
-        stix2.utils.get_dict(data)
+        stix2.utils._get_dict(data)
 
 
 @pytest.mark.parametrize('stix_id, typ', [

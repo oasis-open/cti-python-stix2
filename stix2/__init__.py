@@ -11,6 +11,7 @@
    patterns
    properties
    utils
+   workbench
    v20.common
    v20.observables
    v20.sdo
@@ -31,11 +32,12 @@ from .environment import Environment, ObjectFactory
 from .markings import (add_markings, clear_markings, get_markings, is_marked,
                        remove_markings, set_markings)
 from .patterns import (AndBooleanExpression, AndObservationExpression,
-                       BasicObjectPathComponent, EqualityComparisonExpression,
+                       BasicObjectPathComponent, BinaryConstant,
+                       BooleanConstant, EqualityComparisonExpression,
                        FloatConstant, FollowedByObservationExpression,
                        GreaterThanComparisonExpression,
                        GreaterThanEqualComparisonExpression, HashConstant,
-                       HexConstant, IntegerConstant,
+                       HexConstant, InComparisonExpression, IntegerConstant,
                        IsSubsetComparisonExpression,
                        IsSupersetComparisonExpression,
                        LessThanComparisonExpression,
@@ -48,7 +50,7 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
                        ReferenceObjectPathComponent, RepeatQualifier,
                        StartStopQualifier, StringConstant, TimestampConstant,
                        WithinQualifier)
-from .utils import get_dict, new_version, revoke
+from .utils import new_version, revoke
 from .v20 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 

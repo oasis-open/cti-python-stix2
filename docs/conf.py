@@ -34,8 +34,8 @@ project = 'stix2'
 copyright = '2017, OASIS Open'
 author = 'OASIS Open'
 
-version = '0.5.1'
-release = '0.5.1'
+version = '1.0.0'
+release = '1.0.0'
 
 language = None
 exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
@@ -115,5 +115,16 @@ class STIXPropertyDocumenter(ClassDocumenter):
         self.add_line('', '<stixattr>')
 
 
+def autodoc_skipper(app, what, name, obj, skip, options):
+    """Customize Sphinx to skip some member we don't want documented.
+
+    Skips anything containing ':autodoc-skip:' in its docstring.
+    """
+    if obj.__doc__ and ':autodoc-skip:' in obj.__doc__:
+        return skip or True
+    return skip
+
+
 def setup(app):
     app.add_autodocumenter(STIXPropertyDocumenter)
+    app.connect('autodoc-skip-member', autodoc_skipper)

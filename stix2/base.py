@@ -6,9 +6,9 @@ import datetime as dt
 
 import simplejson as json
 
-from .exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
-                         ExtraPropertiesError, ImmutableError,
-                         InvalidObjRefError, InvalidValueError,
+from .exceptions import (AtLeastOnePropertyError, CustomContentError,
+                         DependentPropertiesError, ExtraPropertiesError,
+                         ImmutableError, InvalidObjRefError, InvalidValueError,
                          MissingPropertiesError,
                          MutuallyExclusivePropertiesError)
 from .markings.utils import validate
@@ -22,6 +22,33 @@ DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 
 
 class STIXJSONEncoder(json.JSONEncoder):
+    """Custom JSONEncoder subclass for serializing Python ``stix2`` objects.
+
+    If an optional property with a default value specified in the STIX 2 spec
+    is set to that default value, it will be left out of the serialized output.
+
+    An example of this type of property include the ``revoked`` common property.
+    """
+
+    def default(self, obj):
+        if isinstance(obj, (dt.date, dt.datetime)):
+            return format_datetime(obj)
+        elif isinstance(obj, _STIXBase):
+            tmp_obj = dict(copy.deepcopy(obj))
+            for prop_name in obj._defaulted_optional_properties:
+                del tmp_obj[prop_name]
+            return tmp_obj
+        else:
+            return super(STIXJSONEncoder, self).default(obj)
+
+
+class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
+    """Custom JSONEncoder subclass for serializing Python ``stix2`` objects.
+
+    Differs from ``STIXJSONEncoder`` in that if an optional property with a default
+    value specified in the STIX 2 spec is set to that default value, it will be
+    included in the serialized output.
+    """
 
     def default(self, obj):
         if isinstance(obj, (dt.date, dt.datetime)):
@@ -61,6 +88,8 @@ class _STIXBase(collections.Mapping):
             try:
                 kwargs[prop_name] = prop.clean(kwargs[prop_name])
             except ValueError as exc:
+                if self.__allow_custom and isinstance(exc, CustomContentError):
+                    return
                 raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
 
     # interproperty constraint methods
@@ -97,6 +126,7 @@ class _STIXBase(collections.Mapping):
 
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
+        self.__allow_custom = allow_custom
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
@@ -119,13 +149,24 @@ class _STIXBase(collections.Mapping):
                 setting_kwargs[prop_name] = prop_value
 
         # Detect any missing required properties
-        required_properties = get_required_properties(cls._properties)
-        missing_kwargs = set(required_properties) - set(setting_kwargs)
+        required_properties = set(get_required_properties(cls._properties))
+        missing_kwargs = required_properties - set(setting_kwargs)
         if missing_kwargs:
             raise MissingPropertiesError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in cls._properties.items():
             self._check_property(prop_name, prop_metadata, setting_kwargs)
+
+        # Cache defaulted optional properties for serialization
+        defaulted = []
+        for name, prop in cls._properties.items():
+            try:
+                if (not prop.required and not hasattr(prop, '_fixed_value') and
+                        prop.default() == setting_kwargs[name]):
+                    defaulted.append(name)
+            except (AttributeError, KeyError):
+                continue
+        self._defaulted_optional_properties = defaulted
 
         self._inner = setting_kwargs
 
@@ -148,7 +189,7 @@ class _STIXBase(collections.Mapping):
                              (self.__class__.__name__, name))
 
     def __setattr__(self, name, value):
-        if name != '_inner' and not name.startswith("_STIXBase__"):
+        if not name.startswith("_"):
             raise ImmutableError(self.__class__, name)
         super(_STIXBase, self).__setattr__(name, value)
 
@@ -167,6 +208,7 @@ class _STIXBase(collections.Mapping):
         if isinstance(self, _Observable):
             # Assume: valid references in the original object are still valid in the new version
             new_inner['_valid_refs'] = {'*': '*'}
+        new_inner['allow_custom'] = self.__allow_custom
         return cls(**new_inner)
 
     def properties_populated(self):
@@ -180,7 +222,7 @@ class _STIXBase(collections.Mapping):
     def revoke(self):
         return _revoke(self)
 
-    def serialize(self, pretty=False, **kwargs):
+    def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
         """
         Serialize a STIX object.
 
@@ -188,6 +230,8 @@ class _STIXBase(collections.Mapping):
             pretty (bool): If True, output properties following the STIX specs
                 formatting. This includes indentation. Refer to notes for more
                 details. (Default: ``False``)
+            include_optional_defaults (bool): Determines whether to include
+                optional properties set to the default value defined in the spec.
             **kwargs: The arguments for a json.dumps() call.
 
         Returns:
@@ -210,7 +254,10 @@ class _STIXBase(collections.Mapping):
 
             kwargs.update({'indent': 4, 'separators': (",", ": "), 'item_sort_key': sort_by})
 
-        return json.dumps(self, cls=STIXJSONEncoder, **kwargs)
+        if include_optional_defaults:
+            return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
+        else:
+            return json.dumps(self, cls=STIXJSONEncoder, **kwargs)
 
 
 class _Observable(_STIXBase):
