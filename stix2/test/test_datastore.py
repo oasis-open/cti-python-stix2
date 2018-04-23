@@ -108,3 +108,10 @@ def test_composite_datastore_add_data_sources_raises_error():
         ind = "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
         CompositeDataSource().add_data_sources(ind)
     assert "DataSource (to be added) is not of type stix2.DataSource. DataSource type is '{}'".format(type(ind)) == str(excinfo.value)
+
+
+def test_composite_datastore_no_datasource():
+    cds = CompositeDataSource()
+    with pytest.raises(AttributeError) as excinfo:
+        cds.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert 'CompositeDataSource has no data source' in str(excinfo.value)

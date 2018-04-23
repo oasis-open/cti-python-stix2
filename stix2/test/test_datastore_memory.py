@@ -62,7 +62,7 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
         Filter("valid_from", "=", "2017-01-27T13:49:53.935382Z")
     ]
 
-    cds1.filters.update(query2)
+    cds1.filters.add(query2)
 
     results = cds1.query(query1)
 
