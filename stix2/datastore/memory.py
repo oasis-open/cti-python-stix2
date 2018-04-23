@@ -268,10 +268,7 @@ class MemorySource(DataSource):
                 is returned in the same form as it as added.
 
         """
-        if query is None:
-            query = FilterSet()
-        else:
-            query = FilterSet(query)
+        query = FilterSet(query)
 
         # combine all query filters
         if self.filters:
