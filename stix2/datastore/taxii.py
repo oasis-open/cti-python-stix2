@@ -176,8 +176,8 @@ class TAXIICollectionSource(DataSource):
         """
         # make query in TAXII query format since 'id' is TAXII field
         query = [
-            Filter("match[id]", "=", stix_id),
-            Filter("match[version]", "=", "all")
+            Filter("id", "=", stix_id),
+            Filter("version", "=", "all")
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
@@ -232,7 +232,8 @@ class TAXIICollectionSource(DataSource):
             all_data = deduplicate(all_data)
 
             # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
-            all_data = list(apply_common_filters(all_data, (query - taxii_filters)))
+            query.remove(taxii_filters)
+            all_data = list(apply_common_filters(all_data, query))
 
         except HTTPError:
             # if resources not found or access is denied from TAXII server, return empty list
@@ -249,7 +250,7 @@ class TAXIICollectionSource(DataSource):
         Does not put in TAXII spec format as the TAXII2Client (that we use)
         does this for us.
 
-        NOTE:
+        Notes:
             Currently, the TAXII2Client can handle TAXII filters where the
             filter value is list, as both a comma-seperated string or python list
 
@@ -265,7 +266,8 @@ class TAXIICollectionSource(DataSource):
             query (list): list of filters to extract which ones are TAXII
                 specific.
 
-        Returns: a list of the TAXII filters
+        Returns:
+            A list of TAXII filters that meet the TAXII filtering parameters.
 
         """
         taxii_filters = []
