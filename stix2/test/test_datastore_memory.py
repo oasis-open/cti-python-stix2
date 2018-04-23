@@ -1,6 +1,7 @@
 import pytest
 
 from stix2.datastore import CompositeDataSource, make_id
+from stix2.datastore.filters import Filter
 from stix2.datastore.memory import MemorySource, MemorySink
 
 
@@ -24,18 +25,18 @@ def test_add_remove_composite_datasource():
     assert len(cds.get_all_data_sources()) == 0
 
 
-def test_composite_datasource_operations():
+def test_composite_datasource_operations(stix_objs1, stix_objs2):
     BUNDLE1 = dict(id="bundle--%s" % make_id(),
-                   objects=STIX_OBJS1,
+                   objects=stix_objs1,
                    spec_version="2.0",
                    type="bundle")
     cds1 = CompositeDataSource()
     ds1_1 = MemorySource(stix_data=BUNDLE1)
-    ds1_2 = MemorySource(stix_data=STIX_OBJS2)
+    ds1_2 = MemorySource(stix_data=stix_objs2)
 
     cds2 = CompositeDataSource()
     ds2_1 = MemorySource(stix_data=BUNDLE1)
-    ds2_2 = MemorySource(stix_data=STIX_OBJS2)
+    ds2_2 = MemorySource(stix_data=stix_objs2)
 
     cds1.add_data_sources([ds1_1, ds1_2])
     cds2.add_data_sources([ds2_1, ds2_2])

@@ -84,8 +84,8 @@ def test_get_type_from_id(stix_id, typ):
     assert stix2.utils.get_type_from_id(stix_id) == typ
 
 
-def test_deduplicate(stix1_objs):
-    unique = stix2.utils.deduplicate(stix1_objs)
+def test_deduplicate(stix_objs1):
+    unique = stix2.utils.deduplicate(stix_objs1)
 
     # Only 3 objects are unique
     # 2 id's vary

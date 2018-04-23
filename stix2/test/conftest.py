@@ -49,7 +49,7 @@ def relationship(uuid4, clock):
 
 
 @pytest.fixture
-def stix1_objs():
+def stix_objs1():
     ind1 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
@@ -114,7 +114,7 @@ def stix1_objs():
 
 
 @pytest.fixture
-def stix2_objs():
+def stix_objs2():
     ind6 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",

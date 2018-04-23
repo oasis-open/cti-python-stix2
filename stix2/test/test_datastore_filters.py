@@ -191,31 +191,31 @@ def test_apply_common_filters():
     assert len(resp) == 0
 
 
-def test_filters0():
+def test_filters0(stix_objs2):
     # "Return any object modified before 2017-01-28T13:49:53.935Z"
-    resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", "<", "2017-01-28T13:49:53.935Z")]))
-    assert resp[0]['id'] == STIX_OBJS2[1]['id']
+    resp = list(apply_common_filters(stix_objs2, [Filter("modified", "<", "2017-01-28T13:49:53.935Z")]))
+    assert resp[0]['id'] == stix_objs2[1]['id']
     assert len(resp) == 2
 
 
-def test_filters1():
+def test_filters1(stix_objs2):
     # "Return any object modified after 2017-01-28T13:49:53.935Z"
-    resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", ">", "2017-01-28T13:49:53.935Z")]))
-    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    resp = list(apply_common_filters(stix_objs2, [Filter("modified", ">", "2017-01-28T13:49:53.935Z")]))
+    assert resp[0]['id'] == stix_objs2[0]['id']
     assert len(resp) == 1
 
 
-def test_filters2():
+def test_filters2(stix_objs2):
     # "Return any object modified after or on 2017-01-28T13:49:53.935Z"
-    resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", ">=", "2017-01-27T13:49:53.935Z")]))
-    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    resp = list(apply_common_filters(stix_objs2, [Filter("modified", ">=", "2017-01-27T13:49:53.935Z")]))
+    assert resp[0]['id'] == stix_objs2[0]['id']
     assert len(resp) == 3
 
 
-def test_filters3():
+def test_filters3(stix_objs2):
     # "Return any object modified before or on 2017-01-28T13:49:53.935Z"
-    resp = list(apply_common_filters(STIX_OBJS2, [Filter("modified", "<=", "2017-01-27T13:49:53.935Z")]))
-    assert resp[0]['id'] == STIX_OBJS2[1]['id']
+    resp = list(apply_common_filters(stix_objs2, [Filter("modified", "<=", "2017-01-27T13:49:53.935Z")]))
+    assert resp[0]['id'] == stix_objs2[1]['id']
     assert len(resp) == 2
 
 
@@ -227,23 +227,23 @@ def test_filters4():
                                   "for specified property: 'modified'")
 
 
-def test_filters5():
+def test_filters5(stix_objs2):
     # "Return any object whose id is not indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
-    resp = list(apply_common_filters(STIX_OBJS2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")]))
-    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    resp = list(apply_common_filters(stix_objs2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")]))
+    assert resp[0]['id'] == stix_objs2[0]['id']
     assert len(resp) == 1
 
 
-def test_filters6():
+def test_filters6(stix_objs2):
     # Test filtering on non-common property
-    resp = list(apply_common_filters(STIX_OBJS2, [Filter("name", "=", "Malicious site hosting downloader")]))
-    assert resp[0]['id'] == STIX_OBJS2[0]['id']
+    resp = list(apply_common_filters(stix_objs2, [Filter("name", "=", "Malicious site hosting downloader")]))
+    assert resp[0]['id'] == stix_objs2[0]['id']
     assert len(resp) == 3
 
 
-def test_filters7():
+def test_filters7(stix_objs2):
     # Test filtering on embedded property
-    stix_objects = list(STIX_OBJS2) + [{
+    stix_objects = list(stix_objs2) + [{
         "type": "observed-data",
         "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
