@@ -7,10 +7,10 @@ import pytest
 from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
                    FileSystemSource, FileSystemStore, Filter, Identity,
                    Indicator, Malware, Relationship, properties)
-
-from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
-                        IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
+from stix2.test.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
+                                  IDENTITY_KWARGS, INDICATOR_ID,
+                                  INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
+                                  RELATIONSHIP_IDS)
 
 FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 

@@ -1,54 +1,39 @@
-import json
+from taxii2client import Collection
 
-from stix2.datastore.taxii import TAXIIDataSource
+import stix2
 
-# Flask TAXII server - developmental
-ROOT = 'http://localhost:5000'
-AUTH = {'user': 'mk', 'pass': 'Pass'}
+# This example is based on the medallion server with default_data.json
+# See https://github.com/oasis-open/cti-taxii-server for more information
 
 
 def main():
+    collection = Collection("http://127.0.0.1:5000/trustgroup1/collections/52892447-4d7e-4f70-b94d-d7f22742ff63/",
+                            user="admin", password="Password0")
 
     # instantiate TAXII data source
-    taxii = TAXIIDataSource(api_root=ROOT, auth=AUTH)
+    taxii = stix2.TAXIICollectionSource(collection)
 
-    # get (file watch indicator)
-    indicator_fw = taxii.get(id_="indicator--a932fcc6-e032-176c-126f-cb970a5a1ade")
+    # get (url watch indicator)
+    indicator_fw = taxii.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
     print("\n\n-------Queried for Indicator - got:")
-    print(json.dumps(indicator_fw, indent=4))
+    print(indicator_fw.serialize(indent=4))
 
-    # all versions (file watch indicator - currently only 1. maybe Emmanuelle can add a version)
-    indicator_fw_versions = taxii.get(id_="indicator--a932fcc6-e032-176c-126f-cb970a5a1ade")
+    # all versions (url watch indicator - currently two)
+    indicator_fw_versions = taxii.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
     print("\n\n------Queried for indicator (all_versions()) - got:")
-    print(json.dumps(indicator_fw_versions, indent=4))
+    for indicator in indicator_fw_versions:
+        print(indicator.serialize(indent=4))
 
     # add TAXII filter (ie filter should be passed to TAXII)
-    taxii_filter_ids, status = taxii.add_filter(
-        [
-            {
-                "field": "type",
-                "op": "in",
-                "value": "malware"
-            }
-        ])
+    query_filter = stix2.Filter("type", "in", "malware")
 
-    print("\n\n-------Added filter:")
-    print("Filter ID: {0}".format(taxii_filter_ids[0]))
-    print("Filter status: \n")
-    print(json.dumps(status, indent=4))
-    print("filters: \n")
-    print(json.dumps(taxii.get_filters(), indent=4))
-
-    # get() - but with filter attached
-    malware = taxii.query()
+    # query() - but with filter attached. There are no malware objects in this collection
+    malwares = taxii.query(query=query_filter)
     print("\n\n\n--------Queried for Malware string (with above filter attached) - got:")
-    print(json.dumps(malware, indent=4))
-
-    # remove TAXII filter
-    taxii.remove_filter(taxii_filter_ids)
-    print("\n\n-------Removed filter(TAXII filter):")
-    print("filters: \n")
-    print(json.dumps(taxii.get_filters(), indent=4))
+    for malware in malwares:
+        print(malware.serialize(indent=4))
+    if not malwares:
+        print(malwares)
 
 
 if __name__ == "__main__":
