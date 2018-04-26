@@ -147,6 +147,9 @@ class ListConstant(_Constant):
 
 
 def make_constant(value):
+    if isinstance(value, _Constant):
+        return value
+
     try:
         return parse_into_datetime(value)
     except ValueError:
