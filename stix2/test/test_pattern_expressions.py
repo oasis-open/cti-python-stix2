@@ -372,3 +372,9 @@ def test_invalid_startstop_qualifier():
         stix2.StartStopQualifier(datetime.date(2016, 6, 1),
                                  'foo')
     assert 'is not a valid argument for a Start/Stop Qualifier' in str(excinfo)
+
+
+def test_make_constant_already_a_constant():
+    str_const = stix2.StringConstant('Foo')
+    result = stix2.patterns.make_constant(str_const)
+    assert result is str_const
