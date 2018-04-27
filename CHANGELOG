@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.0.1 - 2018-04-27
+
+* Fixes bug with incorrect TAXII parameters (#169).
+* Fixes bug with constructing patterns (#171).
+
 1.0.0 - 2018-04-16
 
 * Adds the Workbench layer API.
