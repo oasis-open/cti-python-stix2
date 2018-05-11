@@ -88,6 +88,24 @@ def test_parse_identity_custom_property(data):
     assert identity.foo == "bar"
 
 
+def test_custom_property_in_observed_data():
+    artifact = stix2.File(
+        allow_custom=True,
+        name='test',
+        x_foo='bar'
+    )
+    observed_data = stix2.ObservedData(
+        allow_custom=True,
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=0,
+        objects={"0": artifact},
+    )
+
+    assert observed_data.objects['0'].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(observed_data)
+
+
 def test_custom_property_in_bundled_object():
     bundle = stix2.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
 

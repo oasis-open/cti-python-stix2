@@ -24,6 +24,10 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
+    def __init__(self, allow_custom=False, *args, **kwargs):
+        self.allow_custom = allow_custom
+        super(ObservableProperty, self).__init__(*args, **kwargs)
+
     def clean(self, value):
         try:
             dictified = _get_dict(value)
@@ -39,7 +43,10 @@ class ObservableProperty(Property):
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
         for key, obj in dictified.items():
-            parsed_obj = parse_observable(obj, valid_refs)
+            if self.allow_custom:
+                parsed_obj = parse_observable(obj, valid_refs, allow_custom=True)
+            else:
+                parsed_obj = parse_observable(obj, valid_refs)
             dictified[key] = parsed_obj
 
         return dictified

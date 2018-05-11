@@ -1,7 +1,7 @@
 import os
 
 import stix2
-from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
+from stix2.workbench import (AttackPattern, Bundle, Campaign, CourseOfAction,
                              ExternalReference, FileSystemSource, Filter,
                              Identity, Indicator, IntrusionSet, Malware,
                              MarkingDefinition, ObservedData, Relationship,
@@ -147,6 +147,12 @@ def test_workbench_get_all_vulnerabilities():
     resp = vulnerabilities()
     assert len(resp) == 1
     assert resp[0].id == VULNERABILITY_ID
+
+
+def test_workbench_add_to_bundle():
+    vuln = Vulnerability(**VULNERABILITY_KWARGS)
+    bundle = Bundle(vuln)
+    assert bundle.objects[0].name == 'Heartbleed'
 
 
 def test_workbench_relationships():
