@@ -361,7 +361,7 @@ def test_all_versions_404(collection):
     ds = TAXIICollectionStore(collection)
     with pytest.raises(HTTPError) as excinfo:
         ds.all_versions("indicator--1")
-    assert "is either not found or access is denied" in str(excinfo.value.message)
+    assert "is either not found or access is denied" in str(excinfo.value)
     assert "404" in str(excinfo.value)
 
 
@@ -373,5 +373,5 @@ def test_query_404(collection):
 
     with pytest.raises(HTTPError) as excinfo:
         ds.query(query=query)
-    assert "is either not found or access is denied" in str(excinfo.value.message)
+    assert "is either not found or access is denied" in str(excinfo.value)
     assert "404" in str(excinfo.value)

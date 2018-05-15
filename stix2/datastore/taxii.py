@@ -69,9 +69,13 @@ class TAXIICollectionSink(DataSink):
                                  " to the underlying linked Collection resource")
 
         except (HTTPError, ValidationError) as e:
-            e.message = ("The underlying TAXII Collection resource defined in the supplied TAXII"
-                         " Collection object provided could not be reached. TAXII Collection Error: "
-                         + e.message)
+            added_context = ("The underlying TAXII Collection resource defined in the supplied TAXII"
+                             " Collection object provided could not be reached.")
+            if not e.args:
+                e.args = (added_context,)
+            else:
+                e.args = (added_context,) + e.args
+
             raise
 
         self.allow_custom = allow_custom
@@ -144,9 +148,13 @@ class TAXIICollectionSource(DataSource):
                                  " to the underlying linked Collection resource")
 
         except (HTTPError, ValidationError) as e:
-            e.message = ("The underlying TAXII Collection resource defined in the supplied TAXII"
-                         " Collection object provided could not be reached. TAXII Collection Error: "
-                         + e.message)
+            added_context = ("The underlying TAXII Collection resource defined in the supplied TAXII"
+                             " Collection object provided could not be reached.")
+            if not e.args:
+                e.args = (added_context,)
+            else:
+                e.args = (added_context,) + e.args
+
             raise
 
         self.allow_custom = allow_custom
@@ -275,12 +283,17 @@ class TAXIICollectionSource(DataSource):
             query.remove(taxii_filters)
             all_data = list(apply_common_filters(all_data, query))
 
-        except HTTPError as err:
+        except HTTPError as e:
             # if resources not found or access is denied from TAXII server, return empty list
-            if err.response.status_code == 404:
-                err.message = ("The requested STIX objects for the TAXII Collection resource defined in"
-                               " the supplied TAXII Collection object is either not found or access is"
-                               " denied. Received error: " + err.message)
+            if e.response.status_code == 404:
+                added_context = ("The requested STIX objects for the TAXII Collection resource defined in"
+                                 " the supplied TAXII Collection object is either not found or access is"
+                                 " denied. Received error: ")
+            if not e.args:
+                e.args = (added_context,)
+            else:
+                e.args = (added_context,) + e.args
+
             raise
 
         # parse python STIX objects from the STIX object dicts
