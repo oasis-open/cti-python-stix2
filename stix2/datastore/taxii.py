@@ -51,7 +51,27 @@ class TAXIICollectionSink(DataSink):
     """
     def __init__(self, collection, allow_custom=False):
         super(TAXIICollectionSink, self).__init__()
-        self.collection = collection
+        try:
+            # we have to execute .can_write first in isolation because the
+            # attribute access could trigger a taxii2client.ValidationError which
+            # we catch here as a ValueError (its parent class). Later, we need to
+            # have the ability to also raise a different ValueError based on the
+            # value of .can_write
+            writeable = collection.can_write
+
+        except (HTTPError, ValueError) as e:
+            e.message = ("The underlying TAXII Collection resource defined in the supplied TAXII"
+                         " Collection object provided could not be reached. TAXII Collection Error: "
+                         + e.message)
+            raise
+
+        if writeable:
+            # now past taxii2client possible exceptions, check value for local exceptions
+            self.collection = collection
+        else:
+            raise ValueError("The TAXII Collection object provided does not have write access"
+                             " to the underlying linked Collection resource")
+
         self.allow_custom = allow_custom
 
     def add(self, stix_data, version=None):
@@ -111,7 +131,27 @@ class TAXIICollectionSource(DataSource):
     """
     def __init__(self, collection, allow_custom=True):
         super(TAXIICollectionSource, self).__init__()
-        self.collection = collection
+        try:
+            # we have to execute .can_read first in isolation because the
+            # attribute access could trigger a taxii2client.ValidationError which
+            # we catch here as a ValueError (its parent class). Later, we need to
+            # have the ability to also raise a different ValueError based on the
+            # value of .can_read
+            writeable = collection.can_read
+
+        except (HTTPError, ValueError) as e:
+            e.message = ("The underlying TAXII Collection resource defined in the supplied TAXII"
+                         " Collection object provided could not be reached. TAXII Collection Error: "
+                         + e.message)
+            raise
+
+        if writeable:
+            # now past taxii2client possible exceptions, check value for local exceptions
+            self.collection = collection
+        else:
+            raise ValueError("The TAXII Collection object provided does not have read access"
+                             " to the underlying linked Collection resource")
+
         self.allow_custom = allow_custom
 
     def get(self, stix_id, version=None, _composite_filters=None):
@@ -145,9 +185,12 @@ class TAXIICollectionSource(DataSource):
             stix_objs = self.collection.get_object(stix_id)["objects"]
             stix_obj = list(apply_common_filters(stix_objs, query))
 
-        except HTTPError:
-            # if resource not found or access is denied from TAXII server, return None
-            stix_obj = []
+        except HTTPError as err:
+            if err.response.status_code == 404:
+                # if resource not found or access is denied from TAXII server, return None
+                stix_obj = []
+            else:
+                raise
 
         if len(stix_obj):
             stix_obj = parse(stix_obj[0], allow_custom=self.allow_custom, version=version)
@@ -231,13 +274,17 @@ class TAXIICollectionSource(DataSource):
             # deduplicate data (before filtering as reduces wasted filtering)
             all_data = deduplicate(all_data)
 
-            # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
+            # a pply local (CompositeDataSource, TAXIICollectionSource and query) filters
             query.remove(taxii_filters)
             all_data = list(apply_common_filters(all_data, query))
 
-        except HTTPError:
+        except HTTPError as err:
             # if resources not found or access is denied from TAXII server, return empty list
-            all_data = []
+            if err.response.status_code == 404:
+                err.message = ("The requested STIX objects for the TAXII Collection resource defined in"
+                               " the supplied TAXII Collection object is either not found or access is"
+                               " denied. Received error: " + err.message)
+            raise
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict, allow_custom=self.allow_custom, version=version) for stix_obj_dict in all_data]
