@@ -9,6 +9,13 @@ from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.utils import deduplicate
 
+try:
+    from taxii2client import ValidationError
+    _taxii2_client = True
+except ImportError:
+    _taxii2_client = False
+
+
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
 
@@ -51,26 +58,21 @@ class TAXIICollectionSink(DataSink):
     """
     def __init__(self, collection, allow_custom=False):
         super(TAXIICollectionSink, self).__init__()
-        try:
-            # we have to execute .can_write first in isolation because the
-            # attribute access could trigger a taxii2client.ValidationError which
-            # we catch here as a ValueError (its parent class). Later, we need to
-            # have the ability to also raise a different ValueError based on the
-            # value of .can_write
-            writeable = collection.can_write
+        if not _taxii2_client:
+            raise ImportError("taxii2client library is required for usage of TAXIICollectionSink")
 
-        except (HTTPError, ValueError) as e:
+        try:
+            if collection.can_write:
+                self.collection = collection
+            else:
+                raise ValueError("The TAXII Collection object provided does not have write access"
+                                 " to the underlying linked Collection resource")
+
+        except (HTTPError, ValidationError) as e:
             e.message = ("The underlying TAXII Collection resource defined in the supplied TAXII"
                          " Collection object provided could not be reached. TAXII Collection Error: "
                          + e.message)
             raise
-
-        if writeable:
-            # now past taxii2client possible exceptions, check value for local exceptions
-            self.collection = collection
-        else:
-            raise ValueError("The TAXII Collection object provided does not have write access"
-                             " to the underlying linked Collection resource")
 
         self.allow_custom = allow_custom
 
@@ -131,26 +133,21 @@ class TAXIICollectionSource(DataSource):
     """
     def __init__(self, collection, allow_custom=True):
         super(TAXIICollectionSource, self).__init__()
-        try:
-            # we have to execute .can_read first in isolation because the
-            # attribute access could trigger a taxii2client.ValidationError which
-            # we catch here as a ValueError (its parent class). Later, we need to
-            # have the ability to also raise a different ValueError based on the
-            # value of .can_read
-            writeable = collection.can_read
+        if not _taxii2_client:
+            raise ImportError("taxii2client library is required for usage of TAXIICollectionSource")
 
-        except (HTTPError, ValueError) as e:
+        try:
+            if collection.can_read:
+                self.collection = collection
+            else:
+                raise ValueError("The TAXII Collection object provided does not have read access"
+                                 " to the underlying linked Collection resource")
+
+        except (HTTPError, ValidationError) as e:
             e.message = ("The underlying TAXII Collection resource defined in the supplied TAXII"
                          " Collection object provided could not be reached. TAXII Collection Error: "
                          + e.message)
             raise
-
-        if writeable:
-            # now past taxii2client possible exceptions, check value for local exceptions
-            self.collection = collection
-        else:
-            raise ValueError("The TAXII Collection object provided does not have read access"
-                             " to the underlying linked Collection resource")
 
         self.allow_custom = allow_custom
 

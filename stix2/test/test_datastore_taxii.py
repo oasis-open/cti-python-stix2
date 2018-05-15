@@ -339,15 +339,6 @@ def test_can_write_error(collection_no_rw_access):
     assert "Collection object provided does not have write access" in str(excinfo.value)
 
 
-def test_bad_collection():
-    """this triggers a real connectivity issue (HTTPError: 503 ServerError) """
-    with pytest.raises(HTTPError) as excinfo:
-        mock = MockTAXIICollectionEndpoint("http://doenstexist118482.org", verify=False)
-        TAXIICollectionStore(mock)
-    assert "Collection object provided could not be reached. TAXII Collection Error:" in str(excinfo.value.message)
-    assert "HTTPError" in str(excinfo.type)
-
-
 def test_get_404(collection):
     """a TAXIICollectionSource.get() call that receives an HTTP 404 response
     code from the taxii2client should be be returned as None.
