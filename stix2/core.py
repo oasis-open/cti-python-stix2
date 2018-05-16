@@ -14,9 +14,9 @@ from .utils import _get_dict, get_class_hierarchy_names
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, allow_custom=False):
+    def __init__(self, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
-        super(STIXObjectProperty, self).__init__()
+        super(STIXObjectProperty, self).__init__(*args, **kwargs)
 
     def clean(self, value):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
@@ -62,9 +62,8 @@ class Bundle(_STIXBase):
             else:
                 kwargs['objects'] = list(args) + kwargs.get('objects', [])
 
-        allow_custom = kwargs.get('allow_custom', False)
-        if allow_custom:
-            self._properties['objects'] = ListProperty(STIXObjectProperty(True))
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
         super(Bundle, self).__init__(**kwargs)
 

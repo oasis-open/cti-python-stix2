@@ -264,10 +264,11 @@ class _Observable(_STIXBase):
 
     def __init__(self, **kwargs):
         # the constructor might be called independently of an observed data object
-        if '_valid_refs' in kwargs:
-            self._STIXBase__valid_refs = kwargs.pop('_valid_refs')
-        else:
-            self._STIXBase__valid_refs = []
+        self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
+
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
+
         super(_Observable, self).__init__(**kwargs)
 
     def _check_ref(self, ref, prop, prop_name):

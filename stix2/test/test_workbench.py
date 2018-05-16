@@ -1,7 +1,7 @@
 import os
 
 import stix2
-from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
+from stix2.workbench import (AttackPattern, Bundle, Campaign, CourseOfAction,
                              ExternalReference, FileSystemSource, Filter,
                              Identity, Indicator, IntrusionSet, Malware,
                              MarkingDefinition, ObservedData, Relationship,
@@ -149,6 +149,12 @@ def test_workbench_get_all_vulnerabilities():
     assert resp[0].id == VULNERABILITY_ID
 
 
+def test_workbench_add_to_bundle():
+    vuln = Vulnerability(**VULNERABILITY_KWARGS)
+    bundle = Bundle(vuln)
+    assert bundle.objects[0].name == 'Heartbleed'
+
+
 def test_workbench_relationships():
     rel = Relationship(INDICATOR_ID, 'indicates', MALWARE_ID)
     save(rel)
@@ -260,3 +266,49 @@ def test_default_object_marking_refs():
     campaign = Campaign(**CAMPAIGN_KWARGS)
 
     assert campaign.object_marking_refs[0] == mark_def.id
+
+
+def test_workbench_custom_property_object_in_observable_extension():
+    ntfs = stix2.NTFSExt(
+        allow_custom=True,
+        sid=1,
+        x_foo='bar',
+    )
+    artifact = stix2.File(
+        name='test',
+        extensions={'ntfs-ext': ntfs},
+    )
+    observed_data = ObservedData(
+        allow_custom=True,
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=0,
+        objects={"0": artifact},
+    )
+
+    assert observed_data.objects['0'].extensions['ntfs-ext'].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(observed_data)
+
+
+def test_workbench_custom_property_dict_in_observable_extension():
+    artifact = stix2.File(
+        allow_custom=True,
+        name='test',
+        extensions={
+            'ntfs-ext': {
+                'allow_custom': True,
+                'sid': 1,
+                'x_foo': 'bar',
+            }
+        },
+    )
+    observed_data = ObservedData(
+        allow_custom=True,
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=0,
+        objects={"0": artifact},
+    )
+
+    assert observed_data.objects['0'].extensions['ntfs-ext'].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(observed_data)

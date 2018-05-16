@@ -24,6 +24,10 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
+    def __init__(self, allow_custom=False, *args, **kwargs):
+        self.allow_custom = allow_custom
+        super(ObservableProperty, self).__init__(*args, **kwargs)
+
     def clean(self, value):
         try:
             dictified = _get_dict(value)
@@ -39,7 +43,10 @@ class ObservableProperty(Property):
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
         for key, obj in dictified.items():
-            parsed_obj = parse_observable(obj, valid_refs)
+            if self.allow_custom:
+                parsed_obj = parse_observable(obj, valid_refs, allow_custom=True)
+            else:
+                parsed_obj = parse_observable(obj, valid_refs)
             dictified[key] = parsed_obj
 
         return dictified
@@ -49,7 +56,8 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, enclosing_type=None, required=False):
+    def __init__(self, allow_custom=False, enclosing_type=None, required=False):
+        self.allow_custom = allow_custom
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(required)
 
@@ -71,8 +79,13 @@ class ExtensionsProperty(DictionaryProperty):
                 if key in specific_type_map:
                     cls = specific_type_map[key]
                     if type(subvalue) is dict:
-                        dictified[key] = cls(**subvalue)
+                        if self.allow_custom:
+                            subvalue['allow_custom'] = True
+                            dictified[key] = cls(**subvalue)
+                        else:
+                            dictified[key] = cls(**subvalue)
                     elif type(subvalue) is cls:
+                        # If already an instance of an _Extension class, assume it's valid
                         dictified[key] = subvalue
                     else:
                         raise ValueError("Cannot determine extension type.")

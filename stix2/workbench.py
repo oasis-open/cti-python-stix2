@@ -110,14 +110,26 @@ def _related_wrapper(self, *args, **kwargs):
     return _environ.related_to(self, *args, **kwargs)
 
 
+def _observed_data_init(self, *args, **kwargs):
+    self.__allow_custom = kwargs.get('allow_custom', False)
+    self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
+    super(self.__class__, self).__init__(*args, **kwargs)
+
+
 def _constructor_wrapper(obj_type):
     # Use an intermediate wrapper class so the implicit environment will create objects that have our wrapper functions
-    wrapped_type = type(obj_type.__name__, obj_type.__bases__, dict(
+    class_dict = dict(
         created_by=_created_by_wrapper,
         relationships=_relationships_wrapper,
         related=_related_wrapper,
         **obj_type.__dict__
-    ))
+    )
+
+    # Avoid TypeError about super() in ObservedData
+    if 'ObservedData' in obj_type.__name__:
+        class_dict['__init__'] = _observed_data_init
+
+    wrapped_type = type(obj_type.__name__, obj_type.__bases__, class_dict)
 
     @staticmethod
     def new_constructor(cls, *args, **kwargs):

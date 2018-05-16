@@ -225,6 +225,12 @@ class ObservedData(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def __init__(self, *args, **kwargs):
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
+
+        super(ObservedData, self).__init__(*args, **kwargs)
+
 
 class Report(STIXDomainObject):
     """For more detailed information on this object's properties, see
