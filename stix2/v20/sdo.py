@@ -225,9 +225,9 @@ class ObservedData(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
-    def __init__(self, allow_custom=False, *args, **kwargs):
-        if allow_custom:
-            self._properties['objects'] = ObservableProperty(True)
+    def __init__(self, *args, **kwargs):
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
         super(ObservedData, self).__init__(*args, **kwargs)
 

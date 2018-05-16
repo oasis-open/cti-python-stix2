@@ -88,6 +88,13 @@ def test_parse_identity_custom_property(data):
     assert identity.foo == "bar"
 
 
+def test_custom_property_in_bundled_object():
+    bundle = stix2.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
+
+    assert bundle.objects[0].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(bundle)
+
+
 def test_custom_property_in_observed_data():
     artifact = stix2.File(
         allow_custom=True,
@@ -106,11 +113,61 @@ def test_custom_property_in_observed_data():
     assert '"x_foo": "bar"' in str(observed_data)
 
 
-def test_custom_property_in_bundled_object():
-    bundle = stix2.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
+def test_custom_property_object_in_observable_extension():
+    ntfs = stix2.NTFSExt(
+        allow_custom=True,
+        sid=1,
+        x_foo='bar',
+    )
+    artifact = stix2.File(
+        name='test',
+        extensions={'ntfs-ext': ntfs},
+    )
+    observed_data = stix2.ObservedData(
+        allow_custom=True,
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=0,
+        objects={"0": artifact},
+    )
 
-    assert bundle.objects[0].x_foo == "bar"
-    assert '"x_foo": "bar"' in str(bundle)
+    assert observed_data.objects['0'].extensions['ntfs-ext'].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(observed_data)
+
+
+def test_custom_property_dict_in_observable_extension():
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        artifact = stix2.File(
+            name='test',
+            extensions={
+                'ntfs-ext': {
+                    'sid': 1,
+                    'x_foo': 'bar',
+                }
+            },
+        )
+
+    artifact = stix2.File(
+        allow_custom=True,
+        name='test',
+        extensions={
+            'ntfs-ext': {
+                'allow_custom': True,
+                'sid': 1,
+                'x_foo': 'bar',
+            }
+        },
+    )
+    observed_data = stix2.ObservedData(
+        allow_custom=True,
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=0,
+        objects={"0": artifact},
+    )
+
+    assert observed_data.objects['0'].extensions['ntfs-ext'].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(observed_data)
 
 
 def test_identity_custom_property_revoke():
@@ -560,6 +617,7 @@ def test_custom_extension():
 
 
 def test_custom_extension_wrong_observable_type():
+    # NewExtension is an extension of DomainName, not File
     ext = NewExtension(property1='something')
     with pytest.raises(ValueError) as excinfo:
         stix2.File(name="abc.txt",

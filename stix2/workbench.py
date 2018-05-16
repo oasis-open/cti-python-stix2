@@ -49,7 +49,6 @@ from . import (AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,  # n
                WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
                WindowsServiceExt, X509Certificate, X509V3ExtenstionsType)
 from .datastore.filters import FilterSet
-from . import ObservableProperty
 
 # Use an implicit MemoryStore
 _environ = Environment(store=MemoryStore())
@@ -111,9 +110,9 @@ def _related_wrapper(self, *args, **kwargs):
     return _environ.related_to(self, *args, **kwargs)
 
 
-def _observed_data_init(self, allow_custom=False, *args, **kwargs):
-    if allow_custom:
-        self._properties['objects'] = ObservableProperty(True)
+def _observed_data_init(self, *args, **kwargs):
+    self.__allow_custom = kwargs.get('allow_custom', False)
+    self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
     super(self.__class__, self).__init__(*args, **kwargs)
 
 

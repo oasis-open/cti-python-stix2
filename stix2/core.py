@@ -62,9 +62,8 @@ class Bundle(_STIXBase):
             else:
                 kwargs['objects'] = list(args) + kwargs.get('objects', [])
 
-        allow_custom = kwargs.get('allow_custom', False)
-        if allow_custom:
-            self._properties['objects'] = ListProperty(STIXObjectProperty(True))
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
         super(Bundle, self).__init__(**kwargs)
 
