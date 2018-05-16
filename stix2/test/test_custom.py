@@ -88,8 +88,26 @@ def test_parse_identity_custom_property(data):
     assert identity.foo == "bar"
 
 
-def test_custom_property_in_bundled_object():
+def test_custom_property_object_in_bundled_object():
     bundle = stix2.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
+
+    assert bundle.objects[0].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(bundle)
+
+
+def test_custom_property_dict_in_bundled_object():
+    custom_identity = {
+        'type': 'identity',
+        'id': 'identity--311b2d2d-f010-5473-83ec-1edf84858f4c',
+        'created': '2015-12-21T19:59:11Z',
+        'name': 'John Smith',
+        'identity_class': 'individual',
+        'x_foo': 'bar',
+    }
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        bundle = stix2.Bundle(custom_identity)
+
+    bundle = stix2.Bundle(custom_identity, allow_custom=True)
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)

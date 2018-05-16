@@ -63,7 +63,7 @@ class Bundle(_STIXBase):
                 kwargs['objects'] = list(args) + kwargs.get('objects', [])
 
         self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].contained.allow_custom = kwargs.get('allow_custom', False)
 
         super(Bundle, self).__init__(**kwargs)
 
