@@ -45,17 +45,17 @@ class MockTAXIICollectionEndpoint(Collection):
             resp.status_code = 404
             resp.raise_for_status()
 
-    def get_object(self, id, version=None):
+    def get_object(self, id_, version=None):
         self._verify_can_read()
-        query_params = None
+        kwargs = {"id": id_}
         if version:
-            query_params = _filter_kwargs_to_query_params({"version": version})
-        if query_params:
-            query_params = json.loads(query_params)
+            kwargs.update({"version": version})
+
+        query_params = _filter_kwargs_to_query_params(kwargs)
         full_filter = BasicFilter(query_params or {})
         objs = full_filter.process_filter(
             self.objects,
-            ("version",),
+            ("version", "id"),
             []
         )
         if objs:
