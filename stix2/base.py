@@ -135,10 +135,12 @@ class _STIXBase(collections.Mapping):
         custom_props = kwargs.pop('custom_properties', {})
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
-        if not allow_custom:
-            extra_kwargs = list(set(kwargs) - set(cls._properties))
+        if not self.__allow_custom:
+            extra_kwargs = list(set(kwargs) - set(self._properties))
             if extra_kwargs:
                 raise ExtraPropertiesError(cls, extra_kwargs)
+        if custom_props:
+            self.__allow_custom = True
 
         # Remove any keyword arguments whose value is None
         setting_kwargs = {}
@@ -149,17 +151,17 @@ class _STIXBase(collections.Mapping):
                 setting_kwargs[prop_name] = prop_value
 
         # Detect any missing required properties
-        required_properties = set(get_required_properties(cls._properties))
+        required_properties = set(get_required_properties(self._properties))
         missing_kwargs = required_properties - set(setting_kwargs)
         if missing_kwargs:
             raise MissingPropertiesError(cls, missing_kwargs)
 
-        for prop_name, prop_metadata in cls._properties.items():
+        for prop_name, prop_metadata in self._properties.items():
             self._check_property(prop_name, prop_metadata, setting_kwargs)
 
         # Cache defaulted optional properties for serialization
         defaulted = []
-        for name, prop in cls._properties.items():
+        for name, prop in self._properties.items():
             try:
                 if (not prop.required and not hasattr(prop, '_fixed_value') and
                         prop.default() == setting_kwargs[name]):
