@@ -24,6 +24,20 @@ def test_identity_custom_property():
         )
     assert str(excinfo.value) == "'custom_properties' must be a dictionary"
 
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
+        stix2.Identity(
+            id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            created="2015-12-21T19:59:11Z",
+            modified="2015-12-21T19:59:11Z",
+            name="John Smith",
+            identity_class="individual",
+            custom_properties={
+                "foo": "bar",
+            },
+            foo="bar",
+            )
+    assert "Unexpected properties for Identity" in str(excinfo.value)
+
     identity = stix2.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
@@ -34,7 +48,6 @@ def test_identity_custom_property():
             "foo": "bar",
         },
     )
-
     assert identity.foo == "bar"
 
 
@@ -95,6 +108,20 @@ def test_custom_property_object_in_bundled_object():
     assert '"x_foo": "bar"' in str(bundle)
 
 
+def test_custom_properties_object_in_bundled_object():
+    obj = stix2.Identity(
+        name="John Smith",
+        identity_class="individual",
+        custom_properties={
+            "x_foo": "bar",
+        }
+    )
+    bundle = stix2.Bundle(obj, allow_custom=True)
+
+    assert bundle.objects[0].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(bundle)
+
+
 def test_custom_property_dict_in_bundled_object():
     custom_identity = {
         'type': 'identity',
@@ -108,6 +135,22 @@ def test_custom_property_dict_in_bundled_object():
         bundle = stix2.Bundle(custom_identity)
 
     bundle = stix2.Bundle(custom_identity, allow_custom=True)
+    assert bundle.objects[0].x_foo == "bar"
+    assert '"x_foo": "bar"' in str(bundle)
+
+
+def test_custom_properties_dict_in_bundled_object():
+    custom_identity = {
+        'type': 'identity',
+        'id': 'identity--311b2d2d-f010-5473-83ec-1edf84858f4c',
+        'created': '2015-12-21T19:59:11Z',
+        'name': 'John Smith',
+        'identity_class': 'individual',
+        'custom_properties': {
+            'x_foo': 'bar',
+        },
+    }
+    bundle = stix2.Bundle(custom_identity)
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
