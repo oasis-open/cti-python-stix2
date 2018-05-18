@@ -268,7 +268,7 @@ class TAXIICollectionSource(DataSource):
             # deduplicate data (before filtering as reduces wasted filtering)
             all_data = deduplicate(all_data)
 
-            # a pply local (CompositeDataSource, TAXIICollectionSource and query) filters
+            # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
             query.remove(taxii_filters)
             all_data = list(apply_common_filters(all_data, query))
 
