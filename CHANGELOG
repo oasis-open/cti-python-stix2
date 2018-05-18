@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.0.2 - 2018-05-18
+
+* Fixes bugs when using allow_custom (#176, #179).
+
 1.0.1 - 2018-04-27
 
 * Fixes bug with incorrect TAXII parameters (#169).
