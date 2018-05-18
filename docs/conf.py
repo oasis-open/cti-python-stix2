@@ -34,8 +34,8 @@ project = 'stix2'
 copyright = '2017, OASIS Open'
 author = 'OASIS Open'
 
-version = '1.0.1'
-release = '1.0.1'
+version = '1.0.2'
+release = '1.0.2'
 
 language = None
 exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
