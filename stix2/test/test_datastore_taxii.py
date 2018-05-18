@@ -45,17 +45,17 @@ class MockTAXIICollectionEndpoint(Collection):
             resp.status_code = 404
             resp.raise_for_status()
 
-    def get_object(self, id_, version=None):
+    def get_object(self, id, version=None):
         self._verify_can_read()
-        kwargs = {"id": id_}
+        query_params = None
         if version:
-            kwargs.update({"version": version})
-
-        query_params = _filter_kwargs_to_query_params(kwargs)
+            query_params = _filter_kwargs_to_query_params({"version": version})
+        if query_params:
+            query_params = json.loads(query_params)
         full_filter = BasicFilter(query_params or {})
         objs = full_filter.process_filter(
             self.objects,
-            ("version", "id"),
+            ("version",),
             []
         )
         if objs:
@@ -339,7 +339,7 @@ def test_can_write_error(collection_no_rw_access):
     assert "Collection object provided does not have write access" in str(excinfo.value)
 
 
-def test_get_404(collection):
+def test_get_404():
     """a TAXIICollectionSource.get() call that receives an HTTP 404 response
     code from the taxii2client should be be returned as None.
 
@@ -347,7 +347,16 @@ def test_get_404(collection):
     nonexistent resources or lack of access. Decided that None is acceptable
     reponse to imply that state of the TAXII endpoint.
     """
-    ds = TAXIICollectionStore(collection)
+
+    class TAXIICollection404():
+        can_read = True
+
+        def get_object(self, id, version=None):
+            resp = Response()
+            resp.status_code = 404
+            resp.raise_for_status()
+
+    ds = TAXIICollectionSource(TAXIICollection404())
 
     # this will raise 404 from mock TAXII Client but TAXIICollectionStore
     # should handle gracefully and return None
