@@ -40,8 +40,9 @@ class DataSourceError(Exception):
 
     def __str__(self):
         if self.root_exception:
-            self.message = "{} \"{}\"".format(self.message, self.root_exception)
-        return self.message
+            return "{} \"{}\"".format(self.message, self.root_exception)
+        else:
+            return self.message
 
 
 class DataStoreMixin(object):
@@ -149,7 +150,7 @@ class DataStoreMixin(object):
             obj (STIX object OR dict OR str): The STIX object (or its ID) whose
                 relationships will be looked up.
             relationship_type (str): Only retrieve Relationships of this type.
-            If None, all relationships will be returned, regardless of type.
+                If None, all relationships will be returned, regardless of type.
             source_only (bool): Only retrieve Relationships for which this
                 object is the source_ref. Default: False.
             target_only (bool): Only retrieve Relationships for which this
