@@ -24,15 +24,36 @@ def make_id():
     return str(uuid.uuid4())
 
 
+class DataSourceError(Exception):
+    """General DataSource error instance, used primarily for wrapping
+    lower level errors
+
+    Args:
+        message (str): error message
+        root_exception (Exception): Exception instance of root exception
+            in the case that DataSourceError is wrapping a lower level or
+            other exception
+    """
+    def __init__(self, message, root_exception=None):
+        self.message = message
+        self.root_exception = root_exception
+
+    def __str__(self):
+        if self.root_exception:
+            return "{} \"{}\"".format(self.message, self.root_exception)
+        else:
+            return self.message
+
+
 class DataStoreMixin(object):
     """Provides mechanisms for storing and retrieving STIX data. The specific
     behavior can be customized by subclasses.
 
     Args:
         source (DataSource): An existing DataSource to use
-             as this DataStore's DataSource component
+            as this DataStore's DataSource component
         sink (DataSink): An existing DataSink to use
-             as this DataStore's DataSink component
+            as this DataStore's DataSink component
 
     Attributes:
         id (str): A unique UUIDv4 to identify this DataStore.

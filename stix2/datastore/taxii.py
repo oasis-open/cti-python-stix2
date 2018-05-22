@@ -5,9 +5,17 @@ from requests.exceptions import HTTPError
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
-from stix2.datastore import DataSink, DataSource, DataStoreMixin
+from stix2.datastore import (DataSink, DataSource, DataSourceError,
+                             DataStoreMixin)
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.utils import deduplicate
+
+try:
+    from taxii2client import ValidationError
+    _taxii2_client = True
+except ImportError:
+    _taxii2_client = False
+
 
 TAXII_FILTERS = ['added_after', 'id', 'type', 'version']
 
@@ -51,7 +59,20 @@ class TAXIICollectionSink(DataSink):
     """
     def __init__(self, collection, allow_custom=False):
         super(TAXIICollectionSink, self).__init__()
-        self.collection = collection
+        if not _taxii2_client:
+            raise ImportError("taxii2client library is required for usage of TAXIICollectionSink")
+
+        try:
+            if collection.can_write:
+                self.collection = collection
+            else:
+                raise DataSourceError("The TAXII Collection object provided does not have write access"
+                                      " to the underlying linked Collection resource")
+
+        except (HTTPError, ValidationError) as e:
+            raise DataSourceError("The underlying TAXII Collection resource defined in the supplied TAXII"
+                                  " Collection object provided could not be reached. Receved error:", e)
+
         self.allow_custom = allow_custom
 
     def add(self, stix_data, version=None):
@@ -111,7 +132,20 @@ class TAXIICollectionSource(DataSource):
     """
     def __init__(self, collection, allow_custom=True):
         super(TAXIICollectionSource, self).__init__()
-        self.collection = collection
+        if not _taxii2_client:
+            raise ImportError("taxii2client library is required for usage of TAXIICollectionSource")
+
+        try:
+            if collection.can_read:
+                self.collection = collection
+            else:
+                raise DataSourceError("The TAXII Collection object provided does not have read access"
+                                      " to the underlying linked Collection resource")
+
+        except (HTTPError, ValidationError) as e:
+            raise DataSourceError("The underlying TAXII Collection resource defined in the supplied TAXII"
+                                  " Collection object provided could not be reached. Recieved error:", e)
+
         self.allow_custom = allow_custom
 
     def get(self, stix_id, version=None, _composite_filters=None):
@@ -145,9 +179,12 @@ class TAXIICollectionSource(DataSource):
             stix_objs = self.collection.get_object(stix_id)["objects"]
             stix_obj = list(apply_common_filters(stix_objs, query))
 
-        except HTTPError:
-            # if resource not found or access is denied from TAXII server, return None
-            stix_obj = []
+        except HTTPError as e:
+            if e.response.status_code == 404:
+                # if resource not found or access is denied from TAXII server, return None
+                stix_obj = []
+            else:
+                raise DataSourceError("TAXII Collection resource returned error", e)
 
         if len(stix_obj):
             stix_obj = parse(stix_obj[0], allow_custom=self.allow_custom, version=version)
@@ -235,9 +272,12 @@ class TAXIICollectionSource(DataSource):
             query.remove(taxii_filters)
             all_data = list(apply_common_filters(all_data, query))
 
-        except HTTPError:
+        except HTTPError as e:
             # if resources not found or access is denied from TAXII server, return empty list
-            all_data = []
+            if e.response.status_code == 404:
+                raise DataSourceError("The requested STIX objects for the TAXII Collection resource defined in"
+                                      " the supplied TAXII Collection object are either not found or access is"
+                                      " denied. Received error: ", e)
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict, allow_custom=self.allow_custom, version=version) for stix_obj_dict in all_data]

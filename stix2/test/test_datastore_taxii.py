@@ -2,10 +2,12 @@ import json
 
 from medallion.filters.basic_filter import BasicFilter
 import pytest
+from requests.models import Response
 from taxii2client import Collection, _filter_kwargs_to_query_params
 
 from stix2 import (Bundle, TAXIICollectionSink, TAXIICollectionSource,
                    TAXIICollectionStore, ThreatActor)
+from stix2.datastore import DataSourceError
 from stix2.datastore.filters import Filter
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
@@ -36,7 +38,12 @@ class MockTAXIICollectionEndpoint(Collection):
             ("id", "type", "version"),
             []
         )
-        return Bundle(objects=objs)
+        if objs:
+            return Bundle(objects=objs)
+        else:
+            resp = Response()
+            resp.status_code = 404
+            resp.raise_for_status()
 
     def get_object(self, id, version=None):
         self._verify_can_read()
@@ -51,7 +58,12 @@ class MockTAXIICollectionEndpoint(Collection):
             ("version",),
             []
         )
-        return Bundle(objects=objs)
+        if objs:
+            return Bundle(objects=objs)
+        else:
+            resp = Response()
+            resp.status_code = 404
+            resp.raise_for_status()
 
 
 @pytest.fixture
@@ -62,6 +74,23 @@ def collection(stix_objs1):
         "description": "This collection is a dropbox for submitting indicators",
         "can_read": True,
         "can_write": True,
+        "media_types": [
+            "application/vnd.oasis.stix+json; version=2.0"
+        ]
+    })
+
+    mock.objects.extend(stix_objs1)
+    return mock
+
+
+@pytest.fixture
+def collection_no_rw_access(stix_objs1):
+    mock = MockTAXIICollectionEndpoint(COLLECTION_URL, **{
+        "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
+        "title": "Not writeable or readable Collection",
+        "description": "This collection is a dropbox for submitting indicators",
+        "can_read": False,
+        "can_write": False,
         "media_types": [
             "application/vnd.oasis.stix+json; version=2.0"
         ]
@@ -292,3 +321,71 @@ def test_get_all_versions(collection):
     indicators = ds.all_versions('indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f')
     # There are 3 indicators but 2 share the same 'modified' timestamp
     assert len(indicators) == 2
+
+
+def test_can_read_error(collection_no_rw_access):
+    """create a TAXIICOllectionSource with a taxii2client.Collection
+    instance that does not have read access, check ValueError exception is raised"""
+
+    with pytest.raises(DataSourceError) as excinfo:
+        TAXIICollectionSource(collection_no_rw_access)
+    assert "Collection object provided does not have read access" in str(excinfo.value)
+
+
+def test_can_write_error(collection_no_rw_access):
+    """create a TAXIICOllectionSink with a taxii2client.Collection
+    instance that does not have write access, check ValueError exception is raised"""
+
+    with pytest.raises(DataSourceError) as excinfo:
+        TAXIICollectionSink(collection_no_rw_access)
+    assert "Collection object provided does not have write access" in str(excinfo.value)
+
+
+def test_get_404():
+    """a TAXIICollectionSource.get() call that receives an HTTP 404 response
+    code from the taxii2client should be be returned as None.
+
+    TAXII spec states that a TAXII server can return a 404 for nonexistent
+    resources or lack of access. Decided that None is acceptable reponse
+    to imply that state of the TAXII endpoint.
+    """
+
+    class TAXIICollection404():
+        can_read = True
+
+        def get_object(self, id, version=None):
+            resp = Response()
+            resp.status_code = 404
+            resp.raise_for_status()
+
+    ds = TAXIICollectionSource(TAXIICollection404())
+
+    # this will raise 404 from mock TAXII Client but TAXIICollectionStore
+    # should handle gracefully and return None
+    stix_obj = ds.get("indicator--1")
+    assert stix_obj is None
+
+
+def test_all_versions_404(collection):
+    """ a TAXIICollectionSource.all_version() call that recieves an HTTP 404
+    response code from the taxii2client should be returned as an exception"""
+
+    ds = TAXIICollectionStore(collection)
+
+    with pytest.raises(DataSourceError) as excinfo:
+        ds.all_versions("indicator--1")
+    assert "are either not found or access is denied" in str(excinfo.value)
+    assert "404" in str(excinfo.value)
+
+
+def test_query_404(collection):
+    """ a TAXIICollectionSource.query() call that recieves an HTTP 404
+    response code from the taxii2client should be returned as an exception"""
+
+    ds = TAXIICollectionStore(collection)
+    query = [Filter("type", "=", "malware")]
+
+    with pytest.raises(DataSourceError) as excinfo:
+        ds.query(query=query)
+    assert "are either not found or access is denied" in str(excinfo.value)
+    assert "404" in str(excinfo.value)
