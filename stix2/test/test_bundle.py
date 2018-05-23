@@ -6,7 +6,7 @@ import stix2
 
 EXPECTED_BUNDLE = """{
     "type": "bundle",
-    "id": "bundle--00000000-0000-0000-0000-000000000004",
+    "id": "bundle--00000000-0000-0000-0000-000000000007",
     "spec_version": "2.0",
     "objects": [
         {
@@ -22,7 +22,7 @@ EXPECTED_BUNDLE = """{
         },
         {
             "type": "malware",
-            "id": "malware--00000000-0000-0000-0000-000000000002",
+            "id": "malware--00000000-0000-0000-0000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
@@ -32,7 +32,7 @@ EXPECTED_BUNDLE = """{
         },
         {
             "type": "relationship",
-            "id": "relationship--00000000-0000-0000-0000-000000000003",
+            "id": "relationship--00000000-0000-0000-0000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "relationship_type": "indicates",
@@ -44,7 +44,7 @@ EXPECTED_BUNDLE = """{
 
 EXPECTED_BUNDLE_DICT = {
     "type": "bundle",
-    "id": "bundle--00000000-0000-0000-0000-000000000004",
+    "id": "bundle--00000000-0000-0000-0000-000000000007",
     "spec_version": "2.0",
     "objects": [
         {
@@ -60,7 +60,7 @@ EXPECTED_BUNDLE_DICT = {
         },
         {
             "type": "malware",
-            "id": "malware--00000000-0000-0000-0000-000000000002",
+            "id": "malware--00000000-0000-0000-0000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
@@ -70,7 +70,7 @@ EXPECTED_BUNDLE_DICT = {
         },
         {
             "type": "relationship",
-            "id": "relationship--00000000-0000-0000-0000-000000000003",
+            "id": "relationship--00000000-0000-0000-0000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "relationship_type": "indicates",

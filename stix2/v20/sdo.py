@@ -1,6 +1,8 @@
-"""STIX 2.0 Domain Objects"""
+"""STIX 2.0 Domain Objects.
+"""
 
 from collections import OrderedDict
+import re
 
 import stix2
 
@@ -9,7 +11,7 @@ from ..markings import _MarkingsMixin
 from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
                           ListProperty, PatternProperty, ReferenceProperty,
                           StringProperty, TimestampProperty, TypeProperty)
-from ..utils import NOW
+from ..utils import NOW, TYPE_REGEX
 from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty
 
@@ -19,6 +21,9 @@ class STIXDomainObject(_STIXBase, _MarkingsMixin):
 
 
 class AttackPattern(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714302>`__.
+    """
 
     _type = 'attack-pattern'
     _properties = OrderedDict()
@@ -31,7 +36,7 @@ class AttackPattern(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -40,6 +45,9 @@ class AttackPattern(STIXDomainObject):
 
 
 class Campaign(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714305>`__.
+    """
 
     _type = 'campaign'
     _properties = OrderedDict()
@@ -55,7 +63,7 @@ class Campaign(STIXDomainObject):
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('objective', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -64,6 +72,9 @@ class Campaign(STIXDomainObject):
 
 
 class CourseOfAction(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714308>`__.
+    """
 
     _type = 'course-of-action'
     _properties = OrderedDict()
@@ -75,7 +86,7 @@ class CourseOfAction(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -84,6 +95,9 @@ class CourseOfAction(STIXDomainObject):
 
 
 class Identity(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714311>`__.
+    """
 
     _type = 'identity'
     _properties = OrderedDict()
@@ -98,7 +112,7 @@ class Identity(STIXDomainObject):
         ('identity_class', StringProperty(required=True)),
         ('sectors', ListProperty(StringProperty)),
         ('contact_information', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -107,6 +121,9 @@ class Identity(STIXDomainObject):
 
 
 class Indicator(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714314>`__.
+    """
 
     _type = 'indicator'
     _properties = OrderedDict()
@@ -122,7 +139,7 @@ class Indicator(STIXDomainObject):
         ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -131,6 +148,9 @@ class Indicator(STIXDomainObject):
 
 
 class IntrusionSet(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714317>`__.
+    """
 
     _type = 'intrusion-set'
     _properties = OrderedDict()
@@ -149,7 +169,7 @@ class IntrusionSet(STIXDomainObject):
         ('resource_level', StringProperty()),
         ('primary_motivation', StringProperty()),
         ('secondary_motivations', ListProperty(StringProperty)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -158,6 +178,9 @@ class IntrusionSet(STIXDomainObject):
 
 
 class Malware(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714320>`__.
+    """
 
     _type = 'malware'
     _properties = OrderedDict()
@@ -170,7 +193,7 @@ class Malware(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -179,6 +202,9 @@ class Malware(STIXDomainObject):
 
 
 class ObservedData(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714323>`__.
+    """
 
     _type = 'observed-data'
     _properties = OrderedDict()
@@ -192,15 +218,24 @@ class ObservedData(STIXDomainObject):
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(required=True)),
         ('objects', ObservableProperty(required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def __init__(self, *args, **kwargs):
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
+
+        super(ObservedData, self).__init__(*args, **kwargs)
+
 
 class Report(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714326>`__.
+    """
 
     _type = 'report'
     _properties = OrderedDict()
@@ -214,7 +249,7 @@ class Report(STIXDomainObject):
         ('description', StringProperty()),
         ('published', TimestampProperty(required=True)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -223,6 +258,9 @@ class Report(STIXDomainObject):
 
 
 class ThreatActor(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714329>`__.
+    """
 
     _type = 'threat-actor'
     _properties = OrderedDict()
@@ -242,7 +280,7 @@ class ThreatActor(STIXDomainObject):
         ('primary_motivation', StringProperty()),
         ('secondary_motivations', ListProperty(StringProperty)),
         ('personal_motivations', ListProperty(StringProperty)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -251,6 +289,9 @@ class ThreatActor(STIXDomainObject):
 
 
 class Tool(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714332>`__.
+    """
 
     _type = 'tool'
     _properties = OrderedDict()
@@ -264,7 +305,7 @@ class Tool(STIXDomainObject):
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty, required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -273,6 +314,9 @@ class Tool(STIXDomainObject):
 
 
 class Vulnerability(STIXDomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714335>`__.
+    """
 
     _type = 'vulnerability'
     _properties = OrderedDict()
@@ -284,7 +328,7 @@ class Vulnerability(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -320,6 +364,13 @@ def CustomObject(type='x-custom-type', properties=None):
     def custom_builder(cls):
 
         class _Custom(cls, STIXDomainObject):
+
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid type name '%s': must be between 3 and 250 characters." % type)
+
             _type = type
             _properties = OrderedDict()
             _properties.update([
@@ -337,7 +388,7 @@ def CustomObject(type='x-custom-type', properties=None):
 
             # This is to follow the general properties structure.
             _properties.update([
-                ('revoked', BooleanProperty()),
+                ('revoked', BooleanProperty(default=lambda: False)),
                 ('labels', ListProperty(StringProperty)),
                 ('external_references', ListProperty(ExternalReference)),
                 ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),

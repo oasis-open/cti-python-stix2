@@ -6,7 +6,7 @@ import pytest
 from stix2 import (Bundle, Campaign, CustomObject, Filter, Identity, Indicator,
                    Malware, MemorySource, MemoryStore, Relationship,
                    properties)
-from stix2.sources import make_id
+from stix2.datastore import make_id
 
 from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
                         IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
@@ -136,6 +136,19 @@ def rel_mem_store():
     yield MemoryStore(stix_objs)
 
 
+@pytest.fixture
+def fs_mem_store(request, mem_store):
+    filename = 'memory_test/mem_store.json'
+    mem_store.save_to_file(filename)
+
+    def fin():
+        # teardown, excecuted regardless of exception
+        shutil.rmtree(os.path.dirname(filename))
+    request.addfinalizer(fin)
+
+    return filename
+
+
 def test_memory_source_get(mem_source):
     resp = mem_source.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
     assert resp["id"] == "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
@@ -187,9 +200,11 @@ def test_memory_store_query_multiple_filters(mem_store):
     assert len(resp) == 1
 
 
-def test_memory_store_save_load_file(mem_store):
-    filename = 'memory_test/mem_store.json'
-    mem_store.save_to_file(filename)
+def test_memory_store_save_load_file(mem_store, fs_mem_store):
+    filename = fs_mem_store  # the fixture fs_mem_store yields filename where the memory store was written to
+
+    # STIX2 contents of mem_store have already been written to file
+    # (this is done in fixture 'fs_mem_store'), so can already read-in here
     contents = open(os.path.abspath(filename)).read()
 
     assert '"id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",' in contents
@@ -200,66 +215,13 @@ def test_memory_store_save_load_file(mem_store):
     assert mem_store2.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
     assert mem_store2.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
-    shutil.rmtree(os.path.dirname(filename))
-
-
-def test_memory_store_add_stix_object_str(mem_store):
-    # add stix object string
-    camp_id = "campaign--111111b6-1112-4fb0-111b-b111107ca70a"
-    camp_name = "Aurelius"
-    camp_alias = "Purple Robes"
-    camp = """{
-        "name": "%s",
-        "type": "campaign",
-        "objective": "German and French Intelligence Services",
-        "aliases": ["%s"],
-        "id": "%s",
-        "created": "2017-05-31T21:31:53.197755Z"
-    }""" % (camp_name, camp_alias, camp_id)
-
-    mem_store.add(camp)
-
-    camp_r = mem_store.get(camp_id)
-    assert camp_r["id"] == camp_id
-    assert camp_r["name"] == camp_name
-    assert camp_alias in camp_r["aliases"]
-
-
-def test_memory_store_add_stix_bundle_str(mem_store):
-    # add stix bundle string
-    camp_id = "campaign--133111b6-1112-4fb0-111b-b111107ca70a"
-    camp_name = "Atilla"
-    camp_alias = "Huns"
-    bund = """{
-        "type": "bundle",
-        "id": "bundle--112211b6-1112-4fb0-111b-b111107ca70a",
-        "spec_version": "2.0",
-        "objects": [
-            {
-                "name": "%s",
-                "type": "campaign",
-                "objective": "Bulgarian, Albanian and Romanian Intelligence Services",
-                "aliases": ["%s"],
-                "id": "%s",
-                "created": "2017-05-31T21:31:53.197755Z"
-            }
-        ]
-    }""" % (camp_name, camp_alias, camp_id)
-
-    mem_store.add(bund)
-
-    camp_r = mem_store.get(camp_id)
-    assert camp_r["id"] == camp_id
-    assert camp_r["name"] == camp_name
-    assert camp_alias in camp_r["aliases"]
-
 
 def test_memory_store_add_invalid_object(mem_store):
     ind = ('indicator', IND1)  # tuple isn't valid
     with pytest.raises(TypeError) as excinfo:
         mem_store.add(ind)
-    assert 'stix_data must be' in str(excinfo.value)
-    assert 'a STIX object' in str(excinfo.value)
+    assert 'stix_data expected to be' in str(excinfo.value)
+    assert 'a python-stix2 object' in str(excinfo.value)
     assert 'JSON formatted STIX' in str(excinfo.value)
     assert 'JSON formatted STIX bundle' in str(excinfo.value)
 

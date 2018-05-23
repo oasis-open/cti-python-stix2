@@ -116,9 +116,9 @@ def remove_markings(obj, marking, selectors):
     granular_markings = utils.compress_markings(granular_markings)
 
     if granular_markings:
-        return new_version(obj, granular_markings=granular_markings)
+        return new_version(obj, granular_markings=granular_markings, allow_custom=True)
     else:
-        return new_version(obj, granular_markings=None)
+        return new_version(obj, granular_markings=None, allow_custom=True)
 
 
 def add_markings(obj, marking, selectors):
@@ -152,7 +152,7 @@ def add_markings(obj, marking, selectors):
 
     granular_marking = utils.expand_markings(granular_marking)
     granular_marking = utils.compress_markings(granular_marking)
-    return new_version(obj, granular_markings=granular_marking)
+    return new_version(obj, granular_markings=granular_marking, allow_custom=True)
 
 
 def clear_markings(obj, selectors):
@@ -207,9 +207,9 @@ def clear_markings(obj, selectors):
     granular_markings = utils.compress_markings(granular_markings)
 
     if granular_markings:
-        return new_version(obj, granular_markings=granular_markings)
+        return new_version(obj, granular_markings=granular_markings, allow_custom=True)
     else:
-        return new_version(obj, granular_markings=None)
+        return new_version(obj, granular_markings=None, allow_custom=True)
 
 
 def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=False):

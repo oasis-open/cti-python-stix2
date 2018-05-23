@@ -88,11 +88,15 @@ def test_versioning_error_bad_modified_value():
 
     assert excinfo.value.cls == stix2.Campaign
     assert excinfo.value.prop_name == "modified"
-    assert excinfo.value.reason == "The new modified datetime cannot be before the current modified datatime."
+    assert excinfo.value.reason == "The new modified datetime cannot be before than or equal to the current modified datetime." \
+        "It cannot be equal, as according to STIX 2 specification, objects that are different " \
+        "but have the same id and modified timestamp do not have defined consumer behavior."
 
     msg = "Invalid value for {0} '{1}': {2}"
     msg = msg.format(stix2.Campaign.__name__, "modified",
-                     "The new modified datetime cannot be before the current modified datatime.")
+                     "The new modified datetime cannot be before than or equal to the current modified datetime."
+                     "It cannot be equal, as according to STIX 2 specification, objects that are different "
+                     "but have the same id and modified timestamp do not have defined consumer behavior.")
     assert str(excinfo.value) == msg
 
 
@@ -153,7 +157,9 @@ def test_versioning_error_dict_bad_modified_value():
 
     assert excinfo.value.cls == dict
     assert excinfo.value.prop_name == "modified"
-    assert excinfo.value.reason == "The new modified datetime cannot be before the current modified datatime."
+    assert excinfo.value.reason == "The new modified datetime cannot be before than or equal to the current modified datetime." \
+        "It cannot be equal, as according to STIX 2 specification, objects that are different " \
+        "but have the same id and modified timestamp do not have defined consumer behavior."
 
 
 def test_versioning_error_dict_no_modified_value():
@@ -206,3 +212,40 @@ def test_revoke_invalid_cls():
         stix2.utils.revoke(campaign_v1)
 
     assert 'cannot revoke object of this type' in str(excinfo.value)
+
+
+def test_remove_custom_stix_property():
+    mal = stix2.Malware(name="ColePowers",
+                        labels=["rootkit"],
+                        x_custom="armada",
+                        allow_custom=True)
+
+    mal_nc = stix2.utils.remove_custom_stix(mal)
+
+    assert "x_custom" not in mal_nc
+    assert stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") < stix2.utils.parse_into_datetime(mal_nc["modified"],
+                                                                                                                       precision="millisecond")
+
+
+def test_remove_custom_stix_object():
+    @stix2.CustomObject("x-animal", [
+        ("species", stix2.properties.StringProperty(required=True)),
+        ("animal_class", stix2.properties.StringProperty()),
+    ])
+    class Animal(object):
+        pass
+
+    animal = Animal(species="lion", animal_class="mammal")
+
+    nc = stix2.utils.remove_custom_stix(animal)
+
+    assert nc is None
+
+
+def test_remove_custom_stix_no_custom():
+    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v2 = stix2.utils.remove_custom_stix(campaign_v1)
+
+    assert len(campaign_v1.keys()) == len(campaign_v2.keys())
+    assert campaign_v1.id == campaign_v2.id
+    assert campaign_v1.description == campaign_v2.description

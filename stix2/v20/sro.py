@@ -16,6 +16,9 @@ class STIXRelationshipObject(_STIXBase, _MarkingsMixin):
 
 
 class Relationship(STIXRelationshipObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714340>`__.
+    """
 
     _type = 'relationship'
     _properties = OrderedDict()
@@ -29,7 +32,7 @@ class Relationship(STIXRelationshipObject):
         ('description', StringProperty()),
         ('source_ref', ReferenceProperty(required=True)),
         ('target_ref', ReferenceProperty(required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
@@ -51,6 +54,10 @@ class Relationship(STIXRelationshipObject):
 
 
 class Sighting(STIXRelationshipObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714343>`__.
+    """
+
     _type = 'sighting'
     _properties = OrderedDict()
     _properties.update([
@@ -65,8 +72,8 @@ class Sighting(STIXRelationshipObject):
         ('sighting_of_ref', ReferenceProperty(required=True)),
         ('observed_data_refs', ListProperty(ReferenceProperty(type="observed-data"))),
         ('where_sighted_refs', ListProperty(ReferenceProperty(type="identity"))),
-        ('summary', BooleanProperty()),
-        ('revoked', BooleanProperty()),
+        ('summary', BooleanProperty(default=lambda: False)),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),

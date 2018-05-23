@@ -62,7 +62,7 @@ def test_parse_datetime_invalid(ts):
     [("a", 1,)],
 ])
 def test_get_dict(data):
-    assert stix2.utils.get_dict(data)
+    assert stix2.utils._get_dict(data)
 
 
 @pytest.mark.parametrize('data', [
@@ -73,7 +73,7 @@ def test_get_dict(data):
 ])
 def test_get_dict_invalid(data):
     with pytest.raises(ValueError):
-        stix2.utils.get_dict(data)
+        stix2.utils._get_dict(data)
 
 
 @pytest.mark.parametrize('stix_id, typ', [
@@ -82,3 +82,21 @@ def test_get_dict_invalid(data):
 ])
 def test_get_type_from_id(stix_id, typ):
     assert stix2.utils.get_type_from_id(stix_id) == typ
+
+
+def test_deduplicate(stix_objs1):
+    unique = stix2.utils.deduplicate(stix_objs1)
+
+    # Only 3 objects are unique
+    # 2 id's vary
+    # 2 modified times vary for a particular id
+
+    assert len(unique) == 3
+
+    ids = [obj['id'] for obj in unique]
+    mods = [obj['modified'] for obj in unique]
+
+    assert "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f" in ids
+    assert "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f" in ids
+    assert "2017-01-27T13:49:53.935Z" in mods
+    assert "2017-01-27T13:49:53.936Z" in mods

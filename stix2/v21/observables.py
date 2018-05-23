@@ -6,25 +6,35 @@ Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
+import copy
+import re
 
 from ..base import _Extension, _Observable, _STIXBase
-from ..exceptions import (AtLeastOnePropertyError, DependentPropertiesError,
-                          ParseError)
+from ..exceptions import (AtLeastOnePropertyError, CustomContentError,
+                          DependentPropertiesError, ParseError)
 from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                           EmbeddedObjectProperty, EnumProperty, FloatProperty,
                           HashesProperty, HexProperty, IntegerProperty,
                           ListProperty, ObjectReferenceProperty, Property,
                           StringProperty, TimestampProperty, TypeProperty)
-from ..utils import get_dict
+from ..utils import TYPE_REGEX, _get_dict
 
 
 class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
+    def __init__(self, allow_custom=False, *args, **kwargs):
+        self.allow_custom = allow_custom
+        super(ObservableProperty, self).__init__(*args, **kwargs)
+
     def clean(self, value):
         try:
-            dictified = get_dict(value)
+            dictified = _get_dict(value)
+            # get deep copy since we are going modify the dict and might
+            # modify the original dict as _get_dict() does not return new
+            # dict when passed a dict
+            dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The observable property must contain a dictionary")
         if dictified == {}:
@@ -33,7 +43,10 @@ class ObservableProperty(Property):
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
         for key, obj in dictified.items():
-            parsed_obj = parse_observable(obj, valid_refs)
+            if self.allow_custom:
+                parsed_obj = parse_observable(obj, valid_refs, allow_custom=True)
+            else:
+                parsed_obj = parse_observable(obj, valid_refs)
             dictified[key] = parsed_obj
 
         return dictified
@@ -43,13 +56,18 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, enclosing_type=None, required=False):
+    def __init__(self, allow_custom=False, enclosing_type=None, required=False):
+        self.allow_custom = allow_custom
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(required)
 
     def clean(self, value):
         try:
-            dictified = get_dict(value)
+            dictified = _get_dict(value)
+            # get deep copy since we are going modify the dict and might
+            # modify the original dict as _get_dict() does not return new
+            # dict when passed a dict
+            dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
         if dictified == {}:
@@ -61,13 +79,18 @@ class ExtensionsProperty(DictionaryProperty):
                 if key in specific_type_map:
                     cls = specific_type_map[key]
                     if type(subvalue) is dict:
-                        dictified[key] = cls(**subvalue)
+                        if self.allow_custom:
+                            subvalue['allow_custom'] = True
+                            dictified[key] = cls(**subvalue)
+                        else:
+                            dictified[key] = cls(**subvalue)
                     elif type(subvalue) is cls:
+                        # If already an instance of an _Extension class, assume it's valid
                         dictified[key] = subvalue
                     else:
                         raise ValueError("Cannot determine extension type.")
                 else:
-                    raise ValueError("The key used in the extensions dictionary is not an extension type name")
+                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         else:
             raise ValueError("The enclosing type '%s' has no extensions defined" % self.enclosing_type)
         return dictified
@@ -807,7 +830,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
         An instantiated Python STIX Cyber Observable object.
     """
 
-    obj = get_dict(data)
+    obj = _get_dict(data)
     obj['_valid_refs'] = _valid_refs or []
 
     if 'type' not in obj:
@@ -820,11 +843,14 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
-            if name not in EXT_MAP[obj['type']]:
-                raise ParseError("Can't parse Unknown extension type '%s' for observable type '%s'!" % (name, obj['type']))
-            ext_class = EXT_MAP[obj['type']][name]
-            obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
-
+            try:
+                ext_class = EXT_MAP[obj['type']][name]
+            except KeyError:
+                if not allow_custom:
+                    raise CustomContentError("Can't parse unknown extension type '%s'"
+                                             "for observable type '%s'!" % (name, obj['type']))
+            else:  # extension was found
+                obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
     return obj_class(allow_custom=allow_custom, **obj)
 
 
@@ -851,6 +877,12 @@ def CustomObservable(type='x-custom-observable', properties=None):
 
         class _Custom(cls, _Observable):
 
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid observable type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid observable type name '%s': must be between 3 and 250 characters." % type)
+
             _type = type
             _properties = OrderedDict()
             _properties.update([
@@ -871,6 +903,9 @@ def CustomObservable(type='x-custom-observable', properties=None):
                                      "is not a ListProperty containing ObjectReferenceProperty." % prop_name)
 
             _properties.update(properties)
+            _properties.update([
+                ('extensions', ExtensionsProperty(enclosing_type=_type)),
+            ])
 
             def __init__(self, **kwargs):
                 _Observable.__init__(self, **kwargs)
@@ -921,13 +956,19 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
 
         class _Custom(cls, _Extension):
 
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError("Invalid extension type name '%s': must only contain the "
+                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
+            elif len(type) < 3 or len(type) > 250:
+                raise ValueError("Invalid extension type name '%s': must be between 3 and 250 characters." % type)
+
             _type = type
             _properties = {
                 'extensions': ExtensionsProperty(enclosing_type=_type),
             }
 
-            if not isinstance(properties, dict) or not properties:
-                raise ValueError("'properties' must be a dict!")
+            if not properties or not isinstance(properties, list):
+                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
             _properties.update(properties)
 

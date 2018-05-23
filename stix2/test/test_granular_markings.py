@@ -2,6 +2,7 @@
 import pytest
 
 from stix2 import TLP_RED, Malware, markings
+from stix2.exceptions import MarkingNotFoundError
 
 from .constants import MALWARE_MORE_KWARGS as MALWARE_KWARGS_CONST
 from .constants import MARKING_IDS
@@ -546,6 +547,20 @@ def test_remove_marking_bad_selector():
         markings.remove_markings(before, ["marking-definition--1", "marking-definition--2"], ["title"])
 
 
+def test_remove_marking_not_present():
+    before = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[0]
+            }
+        ],
+        **MALWARE_KWARGS
+    )
+    with pytest.raises(MarkingNotFoundError):
+        markings.remove_markings(before, [MARKING_IDS[1]], ["description"])
+
+
 IS_MARKED_TEST_DATA = [
     Malware(
         granular_markings=[
@@ -1044,3 +1059,10 @@ def test_clear_marking_bad_selector(data, selector):
     """Test bad selector raises exception."""
     with pytest.raises(AssertionError):
         markings.clear_markings(data, selector)
+
+
+@pytest.mark.parametrize("data", CLEAR_MARKINGS_TEST_DATA)
+def test_clear_marking_not_present(data):
+    """Test clearing markings for a selector that has no associated markings."""
+    with pytest.raises(MarkingNotFoundError):
+        data = markings.clear_markings(data, ["labels"])

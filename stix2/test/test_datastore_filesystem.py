@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 
@@ -6,10 +7,10 @@ import pytest
 from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
                    FileSystemSource, FileSystemStore, Filter, Identity,
                    Indicator, Malware, Relationship, properties)
-
-from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
-                        IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
+from stix2.test.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
+                                  IDENTITY_KWARGS, INDICATOR_ID,
+                                  INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
+                                  RELATIONSHIP_IDS)
 
 FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
@@ -45,6 +46,41 @@ def fs_sink():
     shutil.rmtree(os.path.join(FS_PATH, "campaign"), True)
 
 
+@pytest.fixture
+def bad_json_files():
+    # create erroneous JSON files for tests to make sure handled gracefully
+
+    with open(os.path.join(FS_PATH, "intrusion-set", "intrusion-set--test-non-json.txt"), "w+") as f:
+        f.write("Im not a JSON file")
+
+    with open(os.path.join(FS_PATH, "intrusion-set", "intrusion-set--test-bad-json.json"), "w+") as f:
+        f.write("Im not a JSON formatted file")
+
+    yield True  # dummy yield so can have teardown
+
+    os.remove(os.path.join(FS_PATH, "intrusion-set", "intrusion-set--test-non-json.txt"))
+    os.remove(os.path.join(FS_PATH, "intrusion-set", "intrusion-set--test-bad-json.json"))
+
+
+@pytest.fixture
+def bad_stix_files():
+    # create erroneous STIX JSON files for tests to make sure handled correctly
+
+    # bad STIX object
+    stix_obj = {
+        "id": "intrusion-set--test-bad-stix",
+        "spec_version": "2.0"
+        # no "type" field
+    }
+
+    with open(os.path.join(FS_PATH, "intrusion-set", "intrusion-set--test-non-stix.json"), "w+") as f:
+        f.write(json.dumps(stix_obj))
+
+    yield True  # dummy yield so can have teardown
+
+    os.remove(os.path.join(FS_PATH, "intrusion-set", "intrusion-set--test-non-stix.json"))
+
+
 @pytest.fixture(scope='module')
 def rel_fs_store():
     cam = Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
@@ -74,6 +110,26 @@ def test_filesystem_sink_nonexistent_folder():
     with pytest.raises(ValueError) as excinfo:
         FileSystemSink('nonexistent-folder')
     assert "for STIX data does not exist" in str(excinfo)
+
+
+def test_filesystem_source_bad_json_file(fs_source, bad_json_files):
+    # this tests the handling of two bad json files
+    #  - one file should just be skipped (silently) as its a ".txt" extension
+    #  - one file should be parsed and raise Exception bc its not JSON
+    try:
+        fs_source.get("intrusion-set--test-bad-json")
+    except TypeError as e:
+        assert "intrusion-set--test-bad-json" in str(e)
+        assert "could either not be parsed to JSON or was not valid STIX JSON" in str(e)
+
+
+def test_filesystem_source_bad_stix_file(fs_source, bad_stix_files):
+    # this tests handling of bad STIX json object
+    try:
+        fs_source.get("intrusion-set--test-non-stix")
+    except TypeError as e:
+        assert "intrusion-set--test-non-stix" in str(e)
+        assert "could either not be parsed to JSON or was not valid STIX JSON" in str(e)
 
 
 def test_filesytem_source_get_object(fs_source):
@@ -364,7 +420,7 @@ def test_filesystem_object_with_custom_property(fs_store):
 
     fs_store.add(camp, True)
 
-    camp_r = fs_store.get(camp.id, allow_custom=True)
+    camp_r = fs_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
 
@@ -376,9 +432,9 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
                     allow_custom=True)
 
     bundle = Bundle(camp, allow_custom=True)
-    fs_store.add(bundle, allow_custom=True)
+    fs_store.add(bundle)
 
-    camp_r = fs_store.get(camp.id, allow_custom=True)
+    camp_r = fs_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
 
@@ -391,9 +447,9 @@ def test_filesystem_custom_object(fs_store):
         pass
 
     newobj = NewObj(property1='something')
-    fs_store.add(newobj, allow_custom=True)
+    fs_store.add(newobj)
 
-    newobj_r = fs_store.get(newobj.id, allow_custom=True)
+    newobj_r = fs_store.get(newobj.id)
     assert newobj_r.id == newobj.id
     assert newobj_r.property1 == 'something'
 

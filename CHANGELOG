@@ -1,6 +1,45 @@
 CHANGELOG
 =========
 
+1.0.2 - 2018-05-18
+
+* Fixes bugs when using allow_custom (#176, #179).
+
+1.0.1 - 2018-04-27
+
+* Fixes bug with incorrect TAXII parameters (#169).
+* Fixes bug with constructing patterns (#171).
+
+1.0.0 - 2018-04-16
+
+* Adds the Workbench layer API.
+* Adds checks to ensure valid type names are provided.
+* Supports parsing generic custom STIX 2 content without needing to create classes for them.
+* Fixes "Not JSON serializable" error in TAXIICollectionStore.
+* Fixes bug with parsing JSON files in FileSystemStore.
+* Fixes bug with Filters in TAXIICollectionStore.
+* Fixes minor bugs in the patterning API.
+* Fixes bug with ListProperty containing DictionaryProperty.
+* Fixes bug with parsing observables.
+* Fixes bug involving optional properties with default values.
+* Changes custom observable extensions to require properties to be defined as a list of tuples rather than a dictionary.
+* Changes Filters to allow passing a dictionary as a filter value.
+* Changes `get_dict` to a private function.
+* `taxii2-client` is now an optional dependency.
+
+0.5.1 - 2018-03-06
+
+* Fixes issue with PyPI.
+
+0.5.0 - 2018-03-06
+
+* Adds functions to dereference relationships.
+* Adds a function to get an object's type from its ID.
+* Reorganizes DataStore api, renaming: stix2.sources to stix2.datastore.
+* Fixes various bugs involving CustomMarking, creating new versions of objects
+  with custom properties, and a missing IntrusionSet property.
+* Drops Python 3.3 support.
+
 0.4.0 - 2017-11-13
 
 * Adds `creator_of` function to easily get the Identity that created an object,

@@ -45,6 +45,7 @@ def test_indicator_with_all_required_properties():
         labels=['malicious-activity'],
     )
 
+    assert ind.revoked is False
     assert str(ind) == EXPECTED_INDICATOR
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(ind))
     assert rep == EXPECTED_INDICATOR_REPR
