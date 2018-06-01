@@ -203,6 +203,8 @@ def find_property_index(obj, properties, tuple_to_find):
                                                   tuple_to_find)
                         if val is not None:
                             return val
+                    else:
+                        return 0
 
 
 def new_version(data, **kwargs):
