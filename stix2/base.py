@@ -185,7 +185,13 @@ class _STIXBase(collections.Mapping):
 
     # Handle attribute access just like key access
     def __getattr__(self, name):
-        if name in self:
+        # Pickle-proofing: pickle invokes this on uninitialized instances (i.e.
+        # __init__ has not run).  So no "self" attributes are set yet.  The
+        # usual behavior of this method reads an __init__-assigned attribute,
+        # which would cause infinite recursion.  So this check disables all
+        # attribute reads until the instance has been properly initialized.
+        unpickling = "_inner" not in self.__dict__
+        if not unpickling and name in self:
             return self.__getitem__(name)
         raise AttributeError("'%s' object has no attribute '%s'" %
                              (self.__class__.__name__, name))
