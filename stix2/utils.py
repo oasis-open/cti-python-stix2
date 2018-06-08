@@ -165,46 +165,88 @@ def _get_dict(data):
             raise ValueError("Cannot convert '%s' to dictionary." % str(data))
 
 
+def _iterate_over_values(dict_values, tuple_to_find):
+    """Loop recursively over dictionary values"""
+    from .base import _STIXBase
+    for pv in dict_values:
+        if isinstance(pv, list):
+            for item in pv:
+                if isinstance(item, _STIXBase):
+                    val = find_property_index(
+                        item,
+                        item.object_properties(),
+                        tuple_to_find
+                    )
+                    if val is not None:
+                        return val
+                elif isinstance(item, dict):
+                    for idx, val in enumerate(sorted(item)):
+                        if (tuple_to_find[0] == val and
+                                item.get(val) == tuple_to_find[1]):
+                            return idx
+        elif isinstance(pv, dict):
+            if pv.get(tuple_to_find[0]) is not None:
+                try:
+                    return int(tuple_to_find[0])
+                except ValueError:
+                    return len(tuple_to_find[0])
+            for item in pv.values():
+                if isinstance(item, _STIXBase):
+                    index = find_property_index(
+                        item,
+                        item.object_properties(),
+                        tuple_to_find
+                    )
+                    if index is not None:
+                        return index
+                elif isinstance(item, dict):
+                    dict_properties = item.keys()
+                    index = find_property_index(
+                        item,
+                        dict_properties,
+                        tuple_to_find
+                    )
+                    if index is not None:
+                        return index
+
+
 def find_property_index(obj, properties, tuple_to_find):
     """Recursively find the property in the object model, return the index
-    according to the _properties OrderedDict. If it's a list look for
-    individual objects. Returns and integer indicating its location
+    according to the ``properties`` OrderedDict when working with `stix2`
+    objects. If it's a list look for individual objects. Returns and integer
+    indicating its location.
+
+    Notes:
+        This method is intended to pretty print `stix2` properties for better
+        visual feedback when working with the library.
+
+    Warnings:
+        This method may not be able to produce the same output if called
+        multiple times and makes a best effort attempt to print the properties
+        according to the technical specification.
+
+    See Also:
+        py:meth:`stix2.base._STIXBase.serialize` for more information.
+
     """
     from .base import _STIXBase
     try:
-        if tuple_to_find[1] in obj._inner.values():
-            return properties.index(tuple_to_find[0])
+        if isinstance(obj, _STIXBase):
+            if tuple_to_find[1] in obj._inner.values():
+                return properties.index(tuple_to_find[0])
+        elif isinstance(obj, dict):
+            for idx, val in enumerate(sorted(obj)):
+                if (tuple_to_find[0] == val and
+                        obj.get(val) == tuple_to_find[1]):
+                    return idx
         raise ValueError
     except ValueError:
-        for pv in obj._inner.values():
-            if isinstance(pv, list):
-                for item in pv:
-                    if isinstance(item, _STIXBase):
-                        val = find_property_index(item,
-                                                  item.object_properties(),
-                                                  tuple_to_find)
-                        if val is not None:
-                            return val
-                    elif isinstance(item, dict):
-                        for idx, val in enumerate(sorted(item)):
-                            if (tuple_to_find[0] == val and
-                                    item.get(val) == tuple_to_find[1]):
-                                return idx
-            elif isinstance(pv, dict):
-                if pv.get(tuple_to_find[0]) is not None:
-                    try:
-                        return int(tuple_to_find[0])
-                    except ValueError:
-                        return len(tuple_to_find[0])
-                for item in pv.values():
-                    if isinstance(item, _STIXBase):
-                        val = find_property_index(item,
-                                                  item.object_properties(),
-                                                  tuple_to_find)
-                        if val is not None:
-                            return val
-                    else:
-                        return 0
+        if isinstance(obj, _STIXBase):
+            index = _iterate_over_values(obj._inner.values(), tuple_to_find)
+            return index
+        elif isinstance(obj, dict):
+            index = _iterate_over_values(obj.values(), tuple_to_find)
+            return index
 
 
 def new_version(data, **kwargs):
