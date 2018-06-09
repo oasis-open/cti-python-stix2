@@ -50,7 +50,7 @@ class Bundle(_STIXBase):
     _properties.update([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('spec_version', Property(fixed="2.0")),
+        ('spec_version', Property(fixed="2.1")),
         ('objects', ListProperty(STIXObjectProperty)),
     ])
 
