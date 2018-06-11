@@ -196,7 +196,8 @@ def test_parse_malware():
         "name": "Cryptolocker",
         "labels": [
             "ransomware"
-        ]
+        ],
+        "is_family": false
     }"""
     mal = env.parse(data)
 

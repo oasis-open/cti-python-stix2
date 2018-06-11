@@ -220,7 +220,7 @@ def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
     bund = {
         "type": "bundle",
         "id": "bundle--112211b6-1112-4fb0-111b-b111107ca70a",
-        "spec_version": "2.0",
+        "spec_version": "2.1",
         "objects": [
             {
                 "name": "Atilla",
@@ -264,7 +264,7 @@ def test_filesystem_sink_add_json_stix_object(fs_sink, fs_source):
 def test_filesystem_sink_json_stix_bundle(fs_sink, fs_source):
     # add json-encoded stix bundle
     bund2 = '{"type": "bundle", "id": "bundle--332211b6-1132-4fb0-111b-b111107ca70a",' \
-            ' "spec_version": "2.0", "objects": [{"type": "campaign", "id": "campaign--155155b6-1112-4fb0-111b-b111107ca70a",' \
+            ' "spec_version": "2.1", "objects": [{"type": "campaign", "id": "campaign--155155b6-1112-4fb0-111b-b111107ca70a",' \
             ' "created":"2017-05-31T21:31:53.197755Z", "name": "Spartacus", "objective": "Oppressive regimes of Africa and Middle East"}]}'
     fs_sink.add(bund2)
 
