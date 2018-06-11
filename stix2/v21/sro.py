@@ -16,6 +16,10 @@ class STIXRelationshipObject(_STIXBase, _MarkingsMixin):
 
 
 class Relationship(STIXRelationshipObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'relationship'
     _properties = OrderedDict()
@@ -29,7 +33,7 @@ class Relationship(STIXRelationshipObject):
         ('description', StringProperty()),
         ('source_ref', ReferenceProperty(required=True)),
         ('target_ref', ReferenceProperty(required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
@@ -53,6 +57,10 @@ class Relationship(STIXRelationshipObject):
 
 
 class Sighting(STIXRelationshipObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'sighting'
     _properties = OrderedDict()
@@ -69,7 +77,7 @@ class Sighting(STIXRelationshipObject):
         ('observed_data_refs', ListProperty(ReferenceProperty(type="observed-data"))),
         ('where_sighted_refs', ListProperty(ReferenceProperty(type="identity"))),
         ('summary', BooleanProperty()),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),

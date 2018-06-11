@@ -97,6 +97,10 @@ class ExtensionsProperty(DictionaryProperty):
 
 
 class Artifact(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'artifact'
     _properties = OrderedDict()
@@ -116,6 +120,10 @@ class Artifact(_Observable):
 
 
 class AutonomousSystem(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'autonomous-system'
     _properties = OrderedDict()
@@ -129,6 +137,10 @@ class AutonomousSystem(_Observable):
 
 
 class Directory(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'directory'
     _properties = OrderedDict()
@@ -146,6 +158,10 @@ class Directory(_Observable):
 
 
 class DomainName(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'domain-name'
     _properties = OrderedDict()
@@ -158,6 +174,10 @@ class DomainName(_Observable):
 
 
 class EmailAddress(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'email-addr'
     _properties = OrderedDict()
@@ -171,6 +191,10 @@ class EmailAddress(_Observable):
 
 
 class EmailMIMEComponent(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -186,6 +210,10 @@ class EmailMIMEComponent(_STIXBase):
 
 
 class EmailMessage(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'email-message'
     _properties = OrderedDict()
@@ -217,6 +245,10 @@ class EmailMessage(_Observable):
 
 
 class ArchiveExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'archive-ext'
     _properties = OrderedDict()
@@ -228,6 +260,10 @@ class ArchiveExt(_Extension):
 
 
 class AlternateDataStream(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -238,6 +274,10 @@ class AlternateDataStream(_STIXBase):
 
 
 class NTFSExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'ntfs-ext'
     _properties = OrderedDict()
@@ -248,6 +288,10 @@ class NTFSExt(_Extension):
 
 
 class PDFExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'pdf-ext'
     _properties = OrderedDict()
@@ -261,6 +305,10 @@ class PDFExt(_Extension):
 
 
 class RasterImageExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'raster-image-ext'
     _properties = OrderedDict()
@@ -274,6 +322,10 @@ class RasterImageExt(_Extension):
 
 
 class WindowsPEOptionalHeaderType(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -316,6 +368,10 @@ class WindowsPEOptionalHeaderType(_STIXBase):
 
 
 class WindowsPESection(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict()
     _properties.update([
@@ -327,6 +383,10 @@ class WindowsPESection(_STIXBase):
 
 
 class WindowsPEBinaryExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'windows-pebinary-ext'
     _properties = OrderedDict()
@@ -347,6 +407,10 @@ class WindowsPEBinaryExt(_Extension):
 
 
 class File(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'file'
     _properties = OrderedDict()
@@ -378,6 +442,10 @@ class File(_Observable):
 
 
 class IPv4Address(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'ipv4-addr'
     _properties = OrderedDict()
@@ -391,6 +459,10 @@ class IPv4Address(_Observable):
 
 
 class IPv6Address(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'ipv6-addr'
     _properties = OrderedDict()
@@ -404,6 +476,10 @@ class IPv6Address(_Observable):
 
 
 class MACAddress(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'mac-addr'
     _properties = OrderedDict()
@@ -415,6 +491,10 @@ class MACAddress(_Observable):
 
 
 class Mutex(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'mutex'
     _properties = OrderedDict()
@@ -426,6 +506,10 @@ class Mutex(_Observable):
 
 
 class HTTPRequestExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'http-request-ext'
     _properties = OrderedDict()
@@ -440,6 +524,10 @@ class HTTPRequestExt(_Extension):
 
 
 class ICMPExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'icmp-ext'
     _properties = OrderedDict()
@@ -450,6 +538,10 @@ class ICMPExt(_Extension):
 
 
 class SocketExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'socket-ext'
     _properties = OrderedDict()
@@ -488,6 +580,10 @@ class SocketExt(_Extension):
 
 
 class TCPExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'tcp-ext'
     _properties = OrderedDict()
@@ -498,6 +594,10 @@ class TCPExt(_Extension):
 
 
 class NetworkTraffic(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'network-traffic'
     _properties = OrderedDict()
@@ -529,6 +629,10 @@ class NetworkTraffic(_Observable):
 
 
 class WindowsProcessExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'windows-process-ext'
     _properties = OrderedDict()
@@ -543,6 +647,10 @@ class WindowsProcessExt(_Extension):
 
 
 class WindowsServiceExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'windows-service-ext'
     _properties = OrderedDict()
@@ -578,6 +686,10 @@ class WindowsServiceExt(_Extension):
 
 
 class Process(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'process'
     _properties = OrderedDict()
@@ -616,6 +728,10 @@ class Process(_Observable):
 
 
 class Software(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'software'
     _properties = OrderedDict()
@@ -631,6 +747,10 @@ class Software(_Observable):
 
 
 class URL(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'url'
     _properties = OrderedDict()
@@ -642,6 +762,10 @@ class URL(_Observable):
 
 
 class UNIXAccountExt(_Extension):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'unix-account-ext'
     _properties = OrderedDict()
@@ -654,6 +778,10 @@ class UNIXAccountExt(_Extension):
 
 
 class UserAccount(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'user-account'
     _properties = OrderedDict()
@@ -677,6 +805,10 @@ class UserAccount(_Observable):
 
 
 class WindowsRegistryValueType(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'windows-registry-value-type'
     _properties = OrderedDict()
@@ -702,6 +834,10 @@ class WindowsRegistryValueType(_STIXBase):
 
 
 class WindowsRegistryKey(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'windows-registry-key'
     _properties = OrderedDict()
@@ -723,6 +859,10 @@ class WindowsRegistryKey(_Observable):
 
 
 class X509V3ExtenstionsType(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'x509-v3-extensions-type'
     _properties = OrderedDict()
@@ -747,6 +887,10 @@ class X509V3ExtenstionsType(_STIXBase):
 
 
 class X509Certificate(_Observable):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'x509-certificate'
     _properties = OrderedDict()
@@ -831,6 +975,11 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
     """
 
     obj = _get_dict(data)
+    # get deep copy since we are going modify the dict and might
+    # modify the original dict as _get_dict() does not return new
+    # dict when passed a dict
+    obj = copy.deepcopy(obj)
+
     obj['_valid_refs'] = _valid_refs or []
 
     if 'type' not in obj:
@@ -838,8 +987,12 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
     try:
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
-        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
-                         "use the CustomObservable decorator." % obj['type'])
+        if allow_custom:
+            # flag allows for unknown custom objects too, but will not
+            # be parsed into STIX observable object, just returned as is
+            return obj
+        raise CustomContentError("Can't parse unknown observable type '%s'! For custom observables, "
+                                 "use the CustomObservable decorator." % obj['type'])
 
     if 'extensions' in obj and obj['type'] in EXT_MAP:
         for name, ext in obj['extensions'].items():
@@ -851,6 +1004,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False):
                                              "for observable type '%s'!" % (name, obj['type']))
             else:  # extension was found
                 obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
+
     return obj_class(allow_custom=allow_custom, **obj)
 
 
@@ -963,9 +1117,7 @@ def CustomExtension(observable=None, type='x-custom-observable', properties=None
                 raise ValueError("Invalid extension type name '%s': must be between 3 and 250 characters." % type)
 
             _type = type
-            _properties = {
-                'extensions': ExtensionsProperty(enclosing_type=_type),
-            }
+            _properties = OrderedDict()
 
             if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
