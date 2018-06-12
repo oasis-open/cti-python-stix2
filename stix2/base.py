@@ -242,6 +242,21 @@ class _STIXBase(collections.Mapping):
                 optional properties set to the default value defined in the spec.
             **kwargs: The arguments for a json.dumps() call.
 
+        Examples:
+            >>> import stix2
+            >>> identity = stix2.Identity(name='Example Corp.', identity_class='organization')
+            >>> print(identity.serialize(sort_keys=True))
+            {"created": "2018-06-08T19:03:54.066Z", ... "name": "Example Corp.", "type": "identity"}
+            >>> print(identity.serialize(sort_keys=True, indent=4))
+            {
+                "created": "2018-06-08T19:03:54.066Z",
+                "id": "identity--d7f3e25a-ba1c-447a-ab71-6434b092b05e",
+                "identity_class": "organization",
+                "modified": "2018-06-08T19:03:54.066Z",
+                "name": "Example Corp.",
+                "type": "identity"
+            }
+
         Returns:
             str: The serialized JSON object.
 
