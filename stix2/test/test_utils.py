@@ -10,7 +10,7 @@ amsterdam = pytz.timezone('Europe/Amsterdam')
 eastern = pytz.timezone('US/Eastern')
 
 
-@pytest.mark.parametrize('dttm,timestamp', [
+@pytest.mark.parametrize('dttm, timestamp', [
     (dt.datetime(2017, 1, 1, tzinfo=pytz.utc), '2017-01-01T00:00:00Z'),
     (amsterdam.localize(dt.datetime(2017, 1, 1)), '2016-12-31T23:00:00Z'),
     (eastern.localize(dt.datetime(2017, 1, 1, 12, 34, 56)), '2017-01-01T17:34:56Z'),
@@ -76,12 +76,12 @@ def test_get_dict_invalid(data):
         stix2.utils._get_dict(data)
 
 
-@pytest.mark.parametrize('stix_id, typ', [
+@pytest.mark.parametrize('stix_id, type', [
     ('malware--d69c8146-ab35-4d50-8382-6fc80e641d43', 'malware'),
     ('intrusion-set--899ce53f-13a0-479b-a0e4-67d46e241542', 'intrusion-set')
 ])
-def test_get_type_from_id(stix_id, typ):
-    assert stix2.utils.get_type_from_id(stix_id) == typ
+def test_get_type_from_id(stix_id, type):
+    assert stix2.utils.get_type_from_id(stix_id) == type
 
 
 def test_deduplicate(stix_objs1):
@@ -100,3 +100,69 @@ def test_deduplicate(stix_objs1):
     assert "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f" in ids
     assert "2017-01-27T13:49:53.935Z" in mods
     assert "2017-01-27T13:49:53.936Z" in mods
+
+
+@pytest.mark.parametrize('object, tuple_to_find, expected_index', [
+    (stix2.ObservedData(
+        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created="2016-04-06T19:58:16.000Z",
+        modified="2016-04-06T19:58:16.000Z",
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=50,
+        objects={
+            "0": {
+                "name": "foo.exe",
+                "type": "file"
+            },
+            "1": {
+                "type": "ipv4-addr",
+                "value": "198.51.100.3"
+            },
+            "2": {
+                "type": "network-traffic",
+                "src_ref": "1",
+                "protocols": [
+                  "tcp",
+                  "http"
+                ],
+                "extensions": {
+                    "http-request-ext": {
+                        "request_method": "get",
+                        "request_value": "/download.html",
+                        "request_version": "http/1.1",
+                        "request_header": {
+                            "Accept-Encoding": "gzip,deflate",
+                            "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
+                            "Host": "www.example.com"
+                        }
+                    }
+                }
+            }
+        },
+    ), ('1', {"type": "ipv4-addr", "value": "198.51.100.3"}), 1),
+    ({
+        "type": "x-example",
+        "id": "x-example--d5413db2-c26c-42e0-b0e0-ec800a310bfb",
+        "created": "2018-06-11T01:25:22.063Z",
+        "modified": "2018-06-11T01:25:22.063Z",
+        "dictionary": {
+            "key": {
+                "key_one": "value",
+                "key_two": "value"
+            }
+        }
+    }, ('key', {'key_one': 'value', 'key_two': 'value'}), 0)
+])
+def test_find_property_index(object, tuple_to_find, expected_index):
+    assert stix2.utils.find_property_index(
+        object,
+        [],
+        tuple_to_find
+    ) == expected_index
+
+
+
+def test_iterate_over_values():
+    pass
