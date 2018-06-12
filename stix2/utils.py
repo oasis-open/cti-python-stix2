@@ -185,25 +185,30 @@ def _iterate_over_values(dict_values, tuple_to_find):
                                 item.get(val) == tuple_to_find[1]):
                             return idx
         elif isinstance(pv, dict):
-            for idx, item in enumerate(sorted(pv.keys())):
-                if ((item == tuple_to_find[0] and str.isdigit(item)) and
-                        (pv[item] == tuple_to_find[1])):
-                    return int(tuple_to_find[0])
-                elif pv[item] == tuple_to_find[1]:
-                    return idx
+            if pv.get(tuple_to_find[0]) is not None:
+                for idx, item in enumerate(sorted(pv.keys())):
+                    if ((item == tuple_to_find[0] and str.isdigit(item)) and
+                            (pv[item] == tuple_to_find[1])):
+                        return int(tuple_to_find[0])
+                    elif pv[item] == tuple_to_find[1]:
+                        return idx
             for item in pv.values():
                 if isinstance(item, _STIXBase):
-                    return find_property_index(
+                    index = find_property_index(
                         item,
                         item.object_properties(),
                         tuple_to_find
                     )
+                    if index is not None:
+                        return index
                 elif isinstance(item, dict):
-                    return find_property_index(
+                    index = find_property_index(
                         item,
                         item.keys(),
                         tuple_to_find
                     )
+                    if index is not None:
+                        return index
 
 
 def find_property_index(obj, properties, tuple_to_find):
