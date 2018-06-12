@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import datetime as dt
 from io import StringIO
 
@@ -153,7 +155,25 @@ def test_deduplicate(stix_objs1):
                 "key_two": "value"
             }
         }
-    }, ('key', {'key_one': 'value', 'key_two': 'value'}), 0)
+    }, ('key', {'key_one': 'value', 'key_two': 'value'}), 0),
+    ({
+        "type": "language-content",
+        "id": "language-content--b86bd89f-98bb-4fa9-8cb2-9ad421da981d",
+        "created": "2017-02-08T21:31:22.007Z",
+        "modified": "2017-02-08T21:31:22.007Z",
+        "object_ref": "campaign--12a111f0-b824-4baf-a224-83b80237a094",
+        "object_modified": "2017-02-08T21:31:22.007Z",
+        "contents": {
+            "de": {
+                "name": "Bank Angriff 1",
+                "description": "Weitere Informationen über Banküberfall"
+            },
+            "fr": {
+                "name": "Attaque Bank 1",
+                "description": "Plus d'informations sur la crise bancaire"
+            }
+        }
+    }, ('fr', {"name": "Attaque Bank 1", "description": "Plus d'informations sur la crise bancaire"}), 1)
 ])
 def test_find_property_index(object, tuple_to_find, expected_index):
     assert stix2.utils.find_property_index(
@@ -163,6 +183,29 @@ def test_find_property_index(object, tuple_to_find, expected_index):
     ) == expected_index
 
 
-
-def test_iterate_over_values():
-    pass
+@pytest.mark.parametrize('dict_value, tuple_to_find, expected_index', [
+    ({
+        "contents": {
+            "de": {
+                "name": "Bank Angriff 1",
+                "description": "Weitere Informationen über Banküberfall"
+            },
+            "fr": {
+                "name": "Attaque Bank 1",
+                "description": "Plus d'informations sur la crise bancaire"
+            },
+            "es": {
+                "name": "Ataque al Banco",
+                "description": "Mas informacion sobre el ataque al banco"
+            }
+        }
+    }, ('es', {"name": "Ataque al Banco", "description": "Mas informacion sobre el ataque al banco"}), 1),  # Sorted alphabetically
+    ({
+        'my_list': [
+            {"key_one": 1},
+            {"key_two": 2}
+        ]
+    }, ('key_one', 1), 0)
+])
+def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
+    assert stix2.utils._iterate_over_values(dict_value.values(), tuple_to_find) == expected_index
