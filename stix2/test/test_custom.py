@@ -884,6 +884,9 @@ def test_custom_object_nested_dictionary(data):
         def __init__(self, **kwargs):
             pass
 
-    example = Example(id='x-example--336d8a9f-91f1-46c5-b142-6441bb9f8b8d', created='2018-06-12T16:20:58.059Z', modified='2018-06-12T16:20:58.059Z', dictionary={'key':{'key_b':'value', 'key_a':'value'}})
+    example = Example(id='x-example--336d8a9f-91f1-46c5-b142-6441bb9f8b8d',
+                      created='2018-06-12T16:20:58.059Z',
+                      modified='2018-06-12T16:20:58.059Z',
+                      dictionary={'key': {'key_b': 'value', 'key_a': 'value'}})
 
     assert data == str(example)
