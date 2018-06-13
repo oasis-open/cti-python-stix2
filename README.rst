@@ -60,8 +60,7 @@ To parse a STIX JSON string into a Python STIX object, use
             "malicious-activity"
         ],
         "name": "File hash for malware variant",
-        "pattern": "[file:hashes.md5 =
-        'd41d8cd98f00b204e9800998ecf8427e']",
+        "pattern": "[file:hashes.md5 ='d41d8cd98f00b204e9800998ecf8427e']",
         "valid_from": "2017-09-26T23:33:39.829952Z"
     }""")
     print(indicator)
