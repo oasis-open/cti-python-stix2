@@ -6,7 +6,6 @@ import stix2
 import stix2.v20.sdo
 import stix2.v21.bundle
 
-
 EXPECTED_BUNDLE = """{
     "type": "bundle",
     "id": "bundle--00000000-0000-0000-0000-000000000007",
@@ -36,6 +35,7 @@ EXPECTED_BUNDLE = """{
         },
         {
             "type": "relationship",
+            "spec_version": "2.1",
             "id": "relationship--00000000-0000-0000-0000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
@@ -75,6 +75,7 @@ EXPECTED_BUNDLE_DICT = {
         },
         {
             "type": "relationship",
+            "spec_version": "2.1",
             "id": "relationship--00000000-0000-0000-0000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
