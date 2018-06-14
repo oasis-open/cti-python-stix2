@@ -24,6 +24,12 @@
    v21.observables
    v21.sdo
    v21.sro
+
+   The .v21 import can't be relocated, or we get circular import problems.
+   The 'isort:skip' line comment didn't work to skip only that one problematic
+   import.  The only thing that did was telling it to skip the whole file.
+
+   isort:skip_file
 """
 
 # flake8: noqa

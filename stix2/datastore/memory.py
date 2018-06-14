@@ -15,9 +15,9 @@ Note:
 import json
 import os
 
+from stix2 import Bundle
 from stix2.base import _STIXBase
 from stix2.core import parse
-from stix2 import Bundle
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 

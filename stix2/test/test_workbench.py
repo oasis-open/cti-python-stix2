@@ -1,6 +1,7 @@
 import os
 
 import stix2
+from stix2 import Bundle
 from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
                              ExternalReference, FileSystemSource, Filter,
                              Identity, Indicator, IntrusionSet, Malware,
@@ -14,7 +15,6 @@ from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
                              set_default_creator, set_default_external_refs,
                              set_default_object_marking_refs, threat_actors,
                              tools, vulnerabilities)
-from stix2 import Bundle
 
 from .constants import (ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID,
                         CAMPAIGN_KWARGS, COURSE_OF_ACTION_ID,
