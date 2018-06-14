@@ -17,8 +17,10 @@ def parse(data, allow_custom=False, version=None):
         allow_custom (bool): Whether to allow custom properties as well unknown
             custom objects. Note that unknown custom objects cannot be parsed
             into STIX objects, and will be returned as is. Default: False.
-        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-            None, use latest version.
+        version (str): Only used for bundles.  If the spec_version property is
+            missing, it is ambiguous what spec should be used to parse the
+            bundle.  In this case, this version parameter gives the spec
+            version to use.
 
     Returns:
         An instantiated Python STIX object.
@@ -50,9 +52,10 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             allow_custom (bool): Whether to allow custom properties as well unknown
                 custom objects. Note that unknown custom objects cannot be parsed
                 into STIX objects, and will be returned as is. Default: False.
-            version: If version can't be determined from stix_dict, use this
-                version of the STIX spec.  If None, use the latest supported
-                version.  Default: None
+            version: Only used for bundles.  If the spec_version property is
+                missing, it is ambiguous what spec should be used to parse the
+                bundle.  In this case, this version parameter gives the spec
+                version to use.
 
         Returns:
             An instantiated Python STIX object
