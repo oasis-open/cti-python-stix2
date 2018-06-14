@@ -224,7 +224,6 @@ def test_add_dict_bundle_object(collection):
     ta = {
         "type": "bundle",
         "id": "bundle--860ccc8d-56c9-4fda-9384-84276fb52fb1",
-        "spec_version": "2.1",
         "objects": [
             {
                 "type": "threat-actor",

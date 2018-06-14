@@ -1,7 +1,7 @@
 import os
 
 import stix2
-from stix2.workbench import (AttackPattern, Bundle, Campaign, CourseOfAction,
+from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
                              ExternalReference, FileSystemSource, Filter,
                              Identity, Indicator, IntrusionSet, Malware,
                              MarkingDefinition, ObservedData, Relationship,
@@ -14,6 +14,7 @@ from stix2.workbench import (AttackPattern, Bundle, Campaign, CourseOfAction,
                              set_default_creator, set_default_external_refs,
                              set_default_object_marking_refs, threat_actors,
                              tools, vulnerabilities)
+from stix2 import Bundle
 
 from .constants import (ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID,
                         CAMPAIGN_KWARGS, COURSE_OF_ACTION_ID,
@@ -190,7 +191,8 @@ def test_workbench_related():
 
 
 def test_workbench_related_with_filters():
-    malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID)
+    malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID,
+                      is_family=False)
     rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
     save([malware, rel])
 

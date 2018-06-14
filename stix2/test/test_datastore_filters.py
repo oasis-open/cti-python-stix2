@@ -9,6 +9,7 @@ stix_objs = [
         "created": "2017-01-27T13:49:53.997Z",
         "description": "\n\nTITLE:\n\tPoison Ivy",
         "id": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
+        "spec_version": "2.1",
         "labels": [
             "remote-access-trojan"
         ],

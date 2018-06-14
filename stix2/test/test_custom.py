@@ -1,6 +1,8 @@
 import pytest
 
 import stix2
+import stix2.base
+import stix2.v20.sdo
 
 from .constants import FAKE_TIME, MARKING_DEFINITION_ID
 
@@ -93,7 +95,8 @@ def test_identity_custom_property_allowed():
 def test_parse_identity_custom_property(data):
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         identity = stix2.parse(data)
-    assert excinfo.value.cls == stix2.Identity
+    # TODO: update to create and check a STIX 2.1 Identity object
+    assert excinfo.value.cls == stix2.v20.sdo.Identity
     assert excinfo.value.properties == ['foo']
     assert "Unexpected properties for" in str(excinfo.value)
 
@@ -358,8 +361,8 @@ def test_parse_custom_object_type():
         "property1": "something"
     }"""
 
-    nt = stix2.parse(nt_string)
-    assert nt.property1 == 'something'
+    nt = stix2.parse(nt_string, allow_custom=True)
+    assert nt["property1"] == 'something'
 
 
 def test_parse_unregistered_custom_object_type():
@@ -535,7 +538,7 @@ def test_parse_custom_observable_object():
     }"""
 
     nt = stix2.parse_observable(nt_string, [])
-    assert isinstance(nt, stix2.core._STIXBase)
+    assert isinstance(nt, stix2.base._STIXBase)
     assert nt.property1 == 'something'
 
 
@@ -553,7 +556,7 @@ def test_parse_unregistered_custom_observable_object():
     assert parsed_custom['property1'] == 'something'
     with pytest.raises(AttributeError) as excinfo:
         assert parsed_custom.property1 == 'something'
-    assert not isinstance(parsed_custom, stix2.core._STIXBase)
+    assert not isinstance(parsed_custom, stix2.base._STIXBase)
 
 
 def test_parse_unregistered_custom_observable_object_with_no_type():
@@ -844,7 +847,7 @@ def test_parse_observable_with_unregistered_custom_extension():
 
     parsed_ob = stix2.parse_observable(input_str, allow_custom=True)
     assert parsed_ob['extensions']['x-foobar-ext']['property1'] == 'foo'
-    assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.core._STIXBase)
+    assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.base._STIXBase)
 
 
 def test_register_custom_object():

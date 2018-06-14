@@ -190,6 +190,7 @@ def test_parse_malware():
     env = stix2.Environment()
     data = """{
         "type": "malware",
+        "spec_version": "2.1",
         "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
         "created": "2017-01-01T12:34:56.000Z",
         "modified": "2017-01-01T12:34:56.000Z",

@@ -1,72 +1,10 @@
-"""STIX 2.X Objects that are neither SDOs nor SROs."""
-
-from collections import OrderedDict
 import importlib
 import pkgutil
 
 import stix2
 
 from . import exceptions
-from .base import _STIXBase
-from .properties import IDProperty, ListProperty, Property, TypeProperty
-from .utils import _get_dict, get_class_hierarchy_names
-
-
-class STIXObjectProperty(Property):
-
-    def __init__(self, allow_custom=False, *args, **kwargs):
-        self.allow_custom = allow_custom
-        super(STIXObjectProperty, self).__init__(*args, **kwargs)
-
-    def clean(self, value):
-        # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
-        # a bundle with no further checks.
-        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
-               for x in get_class_hierarchy_names(value)):
-            return value
-        try:
-            dictified = _get_dict(value)
-        except ValueError:
-            raise ValueError("This property may only contain a dictionary or object")
-        if dictified == {}:
-            raise ValueError("This property may only contain a non-empty dictionary or object")
-        if 'type' in dictified and dictified['type'] == 'bundle':
-            raise ValueError('This property may not contain a Bundle object')
-
-        if self.allow_custom:
-            parsed_obj = parse(dictified, allow_custom=True)
-        else:
-            parsed_obj = parse(dictified)
-        return parsed_obj
-
-
-class Bundle(_STIXBase):
-    """For more detailed information on this object's properties, see
-    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709293>`__.
-    """
-
-    _type = 'bundle'
-    _properties = OrderedDict()
-    _properties.update([
-        ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
-        ('spec_version', Property(fixed="2.1")),
-        ('objects', ListProperty(STIXObjectProperty)),
-    ])
-
-    def __init__(self, *args, **kwargs):
-        # Add any positional arguments to the 'objects' kwarg.
-        if args:
-            if isinstance(args[0], list):
-                kwargs['objects'] = args[0] + list(args[1:]) + kwargs.get('objects', [])
-            else:
-                kwargs['objects'] = list(args) + kwargs.get('objects', [])
-
-        self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].contained.allow_custom = kwargs.get('allow_custom', False)
-
-        super(Bundle, self).__init__(**kwargs)
-
+from .utils import _get_dict
 
 STIX2_OBJ_MAPS = {}
 
@@ -112,6 +50,9 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             allow_custom (bool): Whether to allow custom properties as well unknown
                 custom objects. Note that unknown custom objects cannot be parsed
                 into STIX objects, and will be returned as is. Default: False.
+            version: If version can't be determined from stix_dict, use this
+                version of the STIX spec.  If None, use the latest supported
+                version.  Default: None
 
         Returns:
             An instantiated Python STIX object
@@ -124,16 +65,23 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         STIX objects that I dont know about ahead of time)
 
     """
-    if not version:
-        # Use latest version
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
-    else:
-        v = 'v' + version.replace('.', '')
-
-    OBJ_MAP = STIX2_OBJ_MAPS[v]
-
     if 'type' not in stix_dict:
         raise exceptions.ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
+
+    if "spec_version" in stix_dict:
+        # For STIX 2.0, applies to bundles only.
+        # For STIX 2.1+, applies to SDOs, SROs, and markings only.
+        v = 'v' + stix_dict["spec_version"].replace('.', '')
+    elif stix_dict["type"] == "bundle":
+        # bundles without spec_version are ambiguous.
+        if version:
+            v = 'v' + version.replace('.', '')
+        else:
+            v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+    else:
+        v = 'v20'
+
+    OBJ_MAP = STIX2_OBJ_MAPS[v]
 
     try:
         obj_class = OBJ_MAP[stix_dict['type']]

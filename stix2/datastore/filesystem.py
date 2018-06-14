@@ -6,7 +6,8 @@ Python STIX 2.0 FileSystem Source/Sink
 import json
 import os
 
-from stix2.core import Bundle, parse
+from stix2.core import parse
+from stix2 import Bundle
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.utils import deduplicate, get_class_hierarchy_names

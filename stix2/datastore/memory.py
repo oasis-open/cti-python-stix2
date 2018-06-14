@@ -16,7 +16,8 @@ import json
 import os
 
 from stix2.base import _STIXBase
-from stix2.core import Bundle, parse
+from stix2.core import parse
+from stix2 import Bundle
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 
@@ -286,7 +287,7 @@ class MemorySource(DataSource):
 
         if stix_data["type"] == "bundle":
             for stix_obj in stix_data["objects"]:
-                _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom, version=stix_data["spec_version"]))
+                _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom))
         else:
             _add(self, stix_data=parse(stix_data, allow_custom=self.allow_custom, version=version))
     load_from_file.__doc__ = MemoryStore.load_from_file.__doc__

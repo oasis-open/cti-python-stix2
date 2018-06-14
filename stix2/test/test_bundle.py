@@ -3,11 +3,13 @@ import json
 import pytest
 
 import stix2
+import stix2.v20.sdo
+import stix2.v21.bundle
+
 
 EXPECTED_BUNDLE = """{
     "type": "bundle",
     "id": "bundle--00000000-0000-0000-0000-000000000007",
-    "spec_version": "2.0",
     "objects": [
         {
             "type": "indicator",
@@ -22,13 +24,15 @@ EXPECTED_BUNDLE = """{
         },
         {
             "type": "malware",
+            "spec_version": "2.1",
             "id": "malware--00000000-0000-0000-0000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
             "labels": [
                 "ransomware"
-            ]
+            ],
+            "is_family": false
         },
         {
             "type": "relationship",
@@ -45,7 +49,6 @@ EXPECTED_BUNDLE = """{
 EXPECTED_BUNDLE_DICT = {
     "type": "bundle",
     "id": "bundle--00000000-0000-0000-0000-000000000007",
-    "spec_version": "2.0",
     "objects": [
         {
             "type": "indicator",
@@ -60,13 +63,15 @@ EXPECTED_BUNDLE_DICT = {
         },
         {
             "type": "malware",
+            "spec_version": "2.1",
             "id": "malware--00000000-0000-0000-0000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
             "labels": [
                 "ransomware"
-            ]
+            ],
+            "is_family": False
         },
         {
             "type": "relationship",
@@ -86,7 +91,6 @@ def test_empty_bundle():
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    assert bundle.spec_version == "2.0"
     with pytest.raises(AttributeError):
         assert bundle.objects
 
@@ -109,16 +113,6 @@ def test_bundle_id_must_start_with_bundle():
     assert excinfo.value.prop_name == "id"
     assert excinfo.value.reason == "must start with 'bundle--'."
     assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
-
-
-def test_bundle_with_wrong_spec_version():
-    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.Bundle(spec_version="1.2")
-
-    assert excinfo.value.cls == stix2.Bundle
-    assert excinfo.value.prop_name == "spec_version"
-    assert excinfo.value.reason == "must equal '2.0'."
-    assert str(excinfo.value) == "Invalid value for Bundle 'spec_version': must equal '2.0'."
 
 
 def test_create_bundle1(indicator, malware, relationship):
@@ -178,14 +172,14 @@ def test_create_bundle_invalid(indicator, malware, relationship):
     assert excinfo.value.reason == 'This property may not contain a Bundle object'
 
 
-@pytest.mark.parametrize("version", ["2.0"])
+@pytest.mark.parametrize("version", ["2.1"])
 def test_parse_bundle(version):
     bundle = stix2.parse(EXPECTED_BUNDLE, version=version)
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    assert bundle.spec_version == "2.0"
-    assert type(bundle.objects[0]) is stix2.Indicator
+    # TODO: update this to a STIX 2.1 indicator
+    assert type(bundle.objects[0]) is stix2.v20.sdo.Indicator
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'
@@ -208,7 +202,7 @@ def test_parse_unknown_type():
 
 
 def test_stix_object_property():
-    prop = stix2.core.STIXObjectProperty()
+    prop = stix2.v21.bundle.STIXObjectProperty()
 
     identity = stix2.Identity(name="test", identity_class="individual")
     assert prop.clean(identity) is identity
