@@ -860,3 +860,33 @@ def test_register_custom_object():
 def test_extension_property_location():
     assert 'extensions' in stix2.v21.observables.OBJ_MAP_OBSERVABLE['x-new-observable']._properties
     assert 'extensions' not in stix2.v21.observables.EXT_MAP['domain-name']['x-new-ext']._properties
+
+
+@pytest.mark.parametrize("data", [
+    """{
+    "type": "x-example",
+    "id": "x-example--336d8a9f-91f1-46c5-b142-6441bb9f8b8d",
+    "created": "2018-06-12T16:20:58.059Z",
+    "modified": "2018-06-12T16:20:58.059Z",
+    "dictionary": {
+        "key": {
+            "key_a": "value",
+            "key_b": "value"
+        }
+    }
+}""",
+])
+def test_custom_object_nested_dictionary(data):
+    @stix2.sdo.CustomObject('x-example', [
+        ('dictionary', stix2.properties.DictionaryProperty()),
+    ])
+    class Example(object):
+        def __init__(self, **kwargs):
+            pass
+
+    example = Example(id='x-example--336d8a9f-91f1-46c5-b142-6441bb9f8b8d',
+                      created='2018-06-12T16:20:58.059Z',
+                      modified='2018-06-12T16:20:58.059Z',
+                      dictionary={'key': {'key_b': 'value', 'key_a': 'value'}})
+
+    assert data == str(example)
