@@ -270,10 +270,8 @@ class _STIXBase(collections.Mapping):
             overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
         """
         if pretty:
-            properties = self.object_properties()
-
             def sort_by(element):
-                return find_property_index(self, properties, element)
+                return find_property_index(self, *element)
 
             kwargs.update({'indent': 4, 'separators': (",", ": "), 'item_sort_key': sort_by})
 

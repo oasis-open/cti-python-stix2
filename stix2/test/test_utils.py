@@ -178,8 +178,7 @@ def test_deduplicate(stix_objs1):
 def test_find_property_index(object, tuple_to_find, expected_index):
     assert stix2.utils.find_property_index(
         object,
-        [],
-        tuple_to_find
+        *tuple_to_find
     ) == expected_index
 
 
@@ -208,4 +207,4 @@ def test_find_property_index(object, tuple_to_find, expected_index):
     }, ('key_one', 1), 0)
 ])
 def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
-    assert stix2.utils._iterate_over_values(dict_value.values(), tuple_to_find) == expected_index
+    assert stix2.utils._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index
