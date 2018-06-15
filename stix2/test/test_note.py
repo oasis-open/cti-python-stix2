@@ -15,6 +15,7 @@ DESCRIPTION = ('This note indicates the various steps taken by the threat'
 
 EXPECTED_NOTE = """{
     "type": "note",
+    "spec_version": "2.1",
     "id": "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
     "created": "2016-05-12T08:17:27.000Z",
     "modified": "2016-05-12T08:17:27.000Z",
@@ -36,6 +37,7 @@ EXPECTED_NOTE = """{
 
 EXPECTED_OPINION_REPR = "Note(" + " ".join(("""
     type='note',
+    spec_version='2.1',
     id='note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061',
     created='2016-05-12T08:17:27.000Z',
     modified='2016-05-12T08:17:27.000Z',
@@ -76,6 +78,7 @@ def test_note_with_required_properties():
     EXPECTED_NOTE,
     {
         "type": "note",
+        "spec_version": "2.1",
         "id": "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
         "created": "2016-05-12T08:17:27.000Z",
         "modified": "2016-05-12T08:17:27.000Z",

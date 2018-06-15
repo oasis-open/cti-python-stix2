@@ -3,8 +3,9 @@ Python STIX 2.x TAXIICollectionStore
 """
 from requests.exceptions import HTTPError
 
+from stix2 import Bundle
 from stix2.base import _STIXBase
-from stix2.core import Bundle, parse
+from stix2.core import parse
 from stix2.datastore import (DataSink, DataSource, DataSourceError,
                              DataStoreMixin)
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters

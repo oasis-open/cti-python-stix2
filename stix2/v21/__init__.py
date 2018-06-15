@@ -1,7 +1,7 @@
 
 # flake8: noqa
 
-from ..core import Bundle
+from .bundle import Bundle
 from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
                      ExternalReference, GranularMarking, KillChainPhase,
                      LanguageContent, MarkingDefinition, StatementMarking,

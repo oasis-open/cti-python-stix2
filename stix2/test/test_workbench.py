@@ -1,7 +1,8 @@
 import os
 
 import stix2
-from stix2.workbench import (AttackPattern, Bundle, Campaign, CourseOfAction,
+from stix2 import Bundle
+from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
                              ExternalReference, FileSystemSource, Filter,
                              Identity, Indicator, IntrusionSet, Malware,
                              MarkingDefinition, ObservedData, Relationship,
@@ -190,7 +191,8 @@ def test_workbench_related():
 
 
 def test_workbench_related_with_filters():
-    malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID)
+    malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID,
+                      is_family=False)
     rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
     save([malware, rel])
 

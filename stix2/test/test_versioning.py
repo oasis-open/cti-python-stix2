@@ -217,6 +217,7 @@ def test_revoke_invalid_cls():
 def test_remove_custom_stix_property():
     mal = stix2.Malware(name="ColePowers",
                         labels=["rootkit"],
+                        is_family=False,
                         x_custom="armada",
                         allow_custom=True)
 

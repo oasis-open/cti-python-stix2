@@ -7,7 +7,8 @@ import stix2
 
 from ..base import _STIXBase
 from ..markings import _MarkingsMixin
-from ..properties import (BooleanProperty, EnumProperty, FloatProperty,
+from ..properties import (BooleanProperty, DictionaryProperty,
+                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
                           IDProperty, IntegerProperty, ListProperty,
                           PatternProperty, ReferenceProperty, StringProperty,
                           TimestampProperty, TypeProperty)
@@ -205,6 +206,7 @@ class Location(STIXDomainObject):
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type="identity")),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -229,6 +231,32 @@ class Location(STIXDomainObject):
     ])
 
 
+class AnalysisType(_STIXBase):
+
+    _properties = OrderedDict()
+    _properties.update([
+        ('start_time', TimestampProperty()),
+        ('end_time', TimestampProperty()),
+        ('analysis_tools', ObservableProperty()),
+        ('analysis_environment', DictionaryProperty()),
+        ('results', DictionaryProperty(required=True))
+    ])
+
+
+class AVResultsType(_STIXBase):
+
+    _properties = OrderedDict()
+    _properties.update([
+        ('product', StringProperty()),
+        ('engine_version', StringProperty()),
+        ('definition_version', StringProperty()),
+        ('submitted', TimestampProperty()),
+        ('scanned', TimestampProperty()),
+        ('result', StringProperty()),
+        ('details', StringProperty())
+    ])
+
+
 class Malware(STIXDomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
@@ -239,6 +267,7 @@ class Malware(STIXDomainObject):
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type="identity")),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -253,6 +282,17 @@ class Malware(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('is_family', BooleanProperty(required=True)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
+        ('os_execution_envs', ListProperty(StringProperty)),
+        ('architecture_execution_envs', ListProperty(StringProperty)),
+        ('implementation_languages', ListProperty(StringProperty)),
+        ('samples', ObservableProperty()),
+        ('static_analysis_results', ListProperty(EmbeddedObjectProperty(AnalysisType))),
+        ('dynamic_analysis_results', ListProperty(EmbeddedObjectProperty(AnalysisType))),
+        ('av_results', ListProperty(EmbeddedObjectProperty(AVResultsType))),
+        ('capabilities', ListProperty(StringProperty))
     ])
 
 
@@ -266,6 +306,7 @@ class Note(STIXDomainObject):
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type="identity")),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -328,6 +369,7 @@ class Opinion(STIXDomainObject):
     _properties = OrderedDict()
     _properties.update([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type="identity")),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),

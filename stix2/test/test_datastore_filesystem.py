@@ -220,7 +220,6 @@ def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
     bund = {
         "type": "bundle",
         "id": "bundle--112211b6-1112-4fb0-111b-b111107ca70a",
-        "spec_version": "2.0",
         "objects": [
             {
                 "name": "Atilla",
@@ -264,7 +263,7 @@ def test_filesystem_sink_add_json_stix_object(fs_sink, fs_source):
 def test_filesystem_sink_json_stix_bundle(fs_sink, fs_source):
     # add json-encoded stix bundle
     bund2 = '{"type": "bundle", "id": "bundle--332211b6-1132-4fb0-111b-b111107ca70a",' \
-            ' "spec_version": "2.0", "objects": [{"type": "campaign", "id": "campaign--155155b6-1112-4fb0-111b-b111107ca70a",' \
+            ' "objects": [{"type": "campaign", "id": "campaign--155155b6-1112-4fb0-111b-b111107ca70a",' \
             ' "created":"2017-05-31T21:31:53.197755Z", "name": "Spartacus", "objective": "Oppressive regimes of Africa and Middle East"}]}'
     fs_sink.add(bund2)
 
@@ -348,8 +347,8 @@ def test_filesystem_store_query_single_filter(fs_store):
 def test_filesystem_store_empty_query(fs_store):
     results = fs_store.query()  # returns all
     assert len(results) == 26
-    assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj.id for obj in results]
-    assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj.id for obj in results]
+    assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj["id"] for obj in results]
+    assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj["id"] for obj in results]
 
 
 def test_filesystem_store_query_multiple_filters(fs_store):
@@ -450,8 +449,8 @@ def test_filesystem_custom_object(fs_store):
     fs_store.add(newobj)
 
     newobj_r = fs_store.get(newobj.id)
-    assert newobj_r.id == newobj.id
-    assert newobj_r.property1 == 'something'
+    assert newobj_r["id"] == newobj["id"]
+    assert newobj_r["property1"] == 'something'
 
     # remove dir
     shutil.rmtree(os.path.join(FS_PATH, "x-new-obj"), True)

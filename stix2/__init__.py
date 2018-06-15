@@ -24,11 +24,18 @@
    v21.observables
    v21.sdo
    v21.sro
+
+   The .v21 import can't be relocated, or we get circular import problems.
+   The 'isort:skip' line comment didn't work to skip only that one problematic
+   import.  The only thing that did was telling it to skip the whole file.
+
+   isort:skip_file
 """
 
 # flake8: noqa
 
-from .core import Bundle, _collect_stix2_obj_maps, _register_type, parse
+from .core import _collect_stix2_obj_maps, _register_type, parse
+from .v21 import *  # This import will always be the latest STIX 2.X version
 from .datastore import CompositeDataSource
 from .datastore.filesystem import (FileSystemSink, FileSystemSource,
                                    FileSystemStore)
@@ -59,7 +66,6 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
                        StartStopQualifier, StringConstant, TimestampConstant,
                        WithinQualifier)
 from .utils import new_version, revoke
-from .v21 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 
 _collect_stix2_obj_maps()

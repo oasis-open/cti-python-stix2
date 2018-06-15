@@ -10,6 +10,7 @@ from .constants import LOCATION_ID
 
 EXPECTED_LOCATION_1 = """{
     "type": "location",
+    "spec_version": "2.1",
     "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
     "created": "2016-04-06T20:03:00.000Z",
     "modified": "2016-04-06T20:03:00.000Z",
@@ -19,6 +20,7 @@ EXPECTED_LOCATION_1 = """{
 
 EXPECTED_LOCATION_1_REPR = "Location(" + " ".join("""
     type='location',
+    spec_version='2.1',
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
@@ -27,6 +29,7 @@ EXPECTED_LOCATION_1_REPR = "Location(" + " ".join("""
 
 EXPECTED_LOCATION_2 = """{
     "type": "location",
+    "spec_version": "2.1",
     "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
     "created": "2016-04-06T20:03:00.000Z",
     "modified": "2016-04-06T20:03:00.000Z",
@@ -36,6 +39,7 @@ EXPECTED_LOCATION_2 = """{
 
 EXPECTED_LOCATION_2_REPR = "Location(" + " ".join("""
     type='location',
+    spec_version='2.1',
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
@@ -63,6 +67,7 @@ def test_location_with_some_required_properties():
     EXPECTED_LOCATION_2,
     {
         "type": "location",
+        "spec_version": "2.1",
         "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
         "created": "2016-04-06T20:03:00.000Z",
         "modified": "2016-04-06T20:03:00.000Z",
