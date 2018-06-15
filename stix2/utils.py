@@ -165,87 +165,74 @@ def _get_dict(data):
             raise ValueError("Cannot convert '%s' to dictionary." % str(data))
 
 
-def _iterate_over_values(dict_values, tuple_to_find):
-    """Loop recursively over dictionary values"""
-    from .base import _STIXBase
-    for pv in dict_values:
-        if isinstance(pv, list):
-            for item in pv:
-                if isinstance(item, _STIXBase):
-                    index = find_property_index(
-                        item,
-                        item.object_properties(),
-                        tuple_to_find
-                    )
-                    if index is not None:
-                        return index
-                elif isinstance(item, dict):
-                    for idx, val in enumerate(sorted(item)):
-                        if (tuple_to_find[0] == val and
-                                item.get(val) == tuple_to_find[1]):
-                            return idx
-        elif isinstance(pv, dict):
-            if pv.get(tuple_to_find[0]) is not None:
-                for idx, item in enumerate(sorted(pv.keys())):
-                    if ((item == tuple_to_find[0] and str.isdigit(item)) and
-                            (pv[item] == tuple_to_find[1])):
-                        return int(tuple_to_find[0])
-                    elif pv[item] == tuple_to_find[1]:
-                        return idx
-            for item in pv.values():
-                if isinstance(item, _STIXBase):
-                    index = find_property_index(
-                        item,
-                        item.object_properties(),
-                        tuple_to_find
-                    )
-                    if index is not None:
-                        return index
-                elif isinstance(item, dict):
-                    index = find_property_index(
-                        item,
-                        item.keys(),
-                        tuple_to_find
-                    )
-                    if index is not None:
-                        return index
+def _find(seq, val):
+    """
+    Search sequence 'seq' for val.  This behaves like str.find(): if not found,
+    -1 is returned instead of throwing an exception.
+
+    :param seq: The sequence to search
+    :param val: The value to search for
+    :return: The index of the value if found, or -1 if not found
+    """
+    try:
+        return seq.index(val)
+    except ValueError:
+        return -1
 
 
-def find_property_index(obj, properties, tuple_to_find):
-    """Recursively find the property in the object model, return the index
-    according to the ``properties`` OrderedDict when working with `stix2`
-    objects. If it's a list look for individual objects. Returns and integer
-    indicating its location.
+def _find_property_in_seq(seq, search_key, search_value):
+    """
+    Helper for find_property_index(): search for the property in all elements
+    of the given sequence.
 
-    Notes:
-        This method is intended to pretty print `stix2` properties for better
-        visual feedback when working with the library.
+    :param seq: The sequence
+    :param search_key: Property name to find
+    :param search_value: Property value to find
+    :return: A property index, or -1 if the property was not found
+    """
+    idx = -1
+    for elem in seq:
+        idx = find_property_index(elem, search_key, search_value)
+        if idx >= 0:
+            break
 
-    Warnings:
-        This method may not be able to produce the same output if called
-        multiple times and makes a best effort attempt to print the properties
-        according to the STIX technical specification.
+    return idx
 
-    See Also:
-        py:meth:`stix2.base._STIXBase.serialize` for more information.
 
+def find_property_index(obj, search_key, search_value):
+    """
+    Search (recursively) for the given key and value in the given object.
+    Return an index for the key, relative to whatever object it's found in.
+
+    :param obj: The object to search (list, dict, or stix object)
+    :param search_key: A search key
+    :param search_value: A search value
+    :return: An index; -1 if the key and value aren't found
     """
     from .base import _STIXBase
-    try:
-        if isinstance(obj, _STIXBase):
-            if tuple_to_find[1] in obj._inner.values():
-                return properties.index(tuple_to_find[0])
-        elif isinstance(obj, dict):
-            for idx, val in enumerate(sorted(obj)):
-                if (tuple_to_find[0] == val and
-                        obj.get(val) == tuple_to_find[1]):
-                    return idx
-        raise ValueError
-    except ValueError:
-        if isinstance(obj, _STIXBase):
-            return _iterate_over_values(obj._inner.values(), tuple_to_find)
-        elif isinstance(obj, dict):
-            return _iterate_over_values(obj.values(), tuple_to_find)
+
+    # Special-case keys which are numbers-as-strings, e.g. for cyber-observable
+    # mappings.  Use the int value of the key as the index.
+    if search_key.isdigit():
+        return int(search_key)
+
+    if isinstance(obj, _STIXBase):
+        if search_key in obj and obj[search_key] == search_value:
+            idx = _find(obj.object_properties(), search_key)
+        else:
+            idx = _find_property_in_seq(obj.values(), search_key, search_value)
+    elif isinstance(obj, dict):
+        if search_key in obj and obj[search_key] == search_value:
+            idx = _find(sorted(obj), search_key)
+        else:
+            idx = _find_property_in_seq(obj.values(), search_key, search_value)
+    elif isinstance(obj, list):
+        idx = _find_property_in_seq(obj, search_key, search_value)
+    else:
+        # Don't know how to search this type
+        idx = -1
+
+    return idx
 
 
 def new_version(data, **kwargs):
