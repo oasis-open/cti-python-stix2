@@ -765,6 +765,51 @@ def test_file_example_with_RasterImageExt_Object():
     assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
 
 
+RASTER_IMAGE_EXT = """{
+"type": "observed-data",
+"id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+"created": "2016-04-06T19:58:16.000Z",
+"modified": "2016-04-06T19:58:16.000Z",
+"first_observed": "2015-12-21T19:00:00Z",
+"last_observed": "2015-12-21T19:00:00Z",
+"number_observed": 1,
+"objects": {
+  "0": {
+    "type": "file",
+    "name": "picture.jpg",
+    "hashes": {
+      "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+    },
+    "extensions": {
+      "raster-image-ext": {
+        "image_height": 768,
+        "image_width": 1024,
+        "bits_per_pixel": 72,
+        "image_compression_algorithm": "JPEG",
+        "exif_tags": {
+          "Make": "Nikon",
+          "Model": "D7000",
+          "XResolution": 4928,
+          "YResolution": 3264
+        }
+      }
+    }
+  }
+}
+}
+"""
+
+
+def test_raster_image_ext_parse():
+    obj = stix2.parse(RASTER_IMAGE_EXT, allow_custom=False)
+    assert obj.objects["0"].extensions['raster-image-ext'].image_width == 1024
+
+
+def test_raster_images_ext_create():
+    ext = stix2.RasterImageExt(image_width=1024)
+    assert "image_width" in str(ext)
+
+
 def test_file_example_with_WindowsPEBinaryExt():
     f = stix2.File(name="qwerty.dll",
                    extensions={
