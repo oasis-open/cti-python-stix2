@@ -801,7 +801,7 @@ RASTER_IMAGE_EXT = """{
 
 
 def test_raster_image_ext_parse():
-    obj = stix2.parse(RASTER_IMAGE_EXT, allow_custom=False)
+    obj = stix2.parse(RASTER_IMAGE_EXT)
     assert obj.objects["0"].extensions['raster-image-ext'].image_width == 1024
 
 
