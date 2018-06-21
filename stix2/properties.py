@@ -172,10 +172,13 @@ class IDProperty(Property):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{0}'.".format(self.required_prefix))
         try:
-            uuid.UUID(value.split('--', 1)[1])
-        except Exception:
+            type, orig_id = value.split('--', maxsplit=1)
+            new_uuid = uuid.UUID(orig_id)
+            if new_uuid.variant != uuid.RFC_4122 or new_uuid.version != 4:
+                raise ValueError()
+        except ValueError:
             raise ValueError("must have a valid UUID after the prefix.")
-        return value
+        return "--".join([type, str(new_uuid)])
 
     def default(self):
         return self.required_prefix + str(uuid.uuid4())

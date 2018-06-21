@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
@@ -85,18 +87,58 @@ def test_type_property():
     assert prop.clean(prop.default())
 
 
-def test_id_property():
-    idprop = IDProperty('my-type')
+ID_PROP = IDProperty('my-type')
+MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 
-    assert idprop.clean('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+
+@pytest.mark.parametrize("value", [
+    MY_ID,
+    'my-type--00000000-0000-4000-8000-000000000000',
+])
+def test_id_property_valid(value):
+    assert ID_PROP.clean(value) == value
+
+
+@pytest.mark.parametrize("value", [
+    # These are all acceptable input formats that will get translated to the
+    # same ID shown above
+    MY_ID,
+    # These formats are all used in the uuid.UUID() documentation as valid ways
+    # to initialize a UUID. We are ok with accepting them, as they will
+    # get coerced to the right format for an ID.
+    'my-type--{232c9d3f-49fc-4440-bb01-607f638778e7}',
+    'my-type--232c9d3f49fc4440bb01607f638778e7',
+    'my-type--urn:uuid:232c9d3f-49fc-4440-bb01-607f638778e7',
+    # The extra "--" are ignored by split() and accepted by uuid.UUID()
+    'my-type--232c9d3f--49fc--4440--bb01--607f638778e7',
+])
+def test_id_property_transform(value):
+    assert ID_PROP.clean(value) == MY_ID
+
+
+def test_id_property_wrong_type():
     with pytest.raises(ValueError) as excinfo:
-        idprop.clean('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+        ID_PROP.clean('not-my-type--232c9d3f-49fc-4440-bb01-607f638778e7')
     assert str(excinfo.value) == "must start with 'my-type--'."
+
+
+@pytest.mark.parametrize("value", [
+    'my-type--foo',
+    # Not a v4 UUID
+    'my-type--00000000-0000-0000-0000-000000000000',
+    'my-type--' + str(uuid.uuid1()),
+    'my-type--' + str(uuid.uuid3(uuid.NAMESPACE_DNS, "example.org")),
+    'my-type--' + str(uuid.uuid5(uuid.NAMESPACE_DNS, "example.org")),
+])
+def test_id_property_not_a_valid_hex_uuid(value):
     with pytest.raises(ValueError) as excinfo:
-        idprop.clean('my-type--foo')
+        ID_PROP.clean(value)
     assert str(excinfo.value) == "must have a valid UUID after the prefix."
 
-    assert idprop.clean(idprop.default())
+
+def test_id_property_default():
+    default = ID_PROP.default()
+    assert ID_PROP.clean(default) == default
 
 
 @pytest.mark.parametrize("value", [
