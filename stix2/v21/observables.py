@@ -314,7 +314,7 @@ class RasterImageExt(_Extension):
     _properties = OrderedDict()
     _properties.update([
         ('image_height', IntegerProperty()),
-        ('image_weight', IntegerProperty()),
+        ('image_width', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
         ('image_compression_algorithm', StringProperty()),
         ('exif_tags', DictionaryProperty()),
