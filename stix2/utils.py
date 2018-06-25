@@ -170,9 +170,12 @@ def _find(seq, val):
     Search sequence 'seq' for val.  This behaves like str.find(): if not found,
     -1 is returned instead of throwing an exception.
 
-    :param seq: The sequence to search
-    :param val: The value to search for
-    :return: The index of the value if found, or -1 if not found
+    Args:
+        seq: The sequence to search
+        val: The value to search for
+
+    Returns:
+        int: The index of the value if found, or -1 if not found
     """
     try:
         return seq.index(val)
@@ -185,10 +188,13 @@ def _find_property_in_seq(seq, search_key, search_value):
     Helper for find_property_index(): search for the property in all elements
     of the given sequence.
 
-    :param seq: The sequence
-    :param search_key: Property name to find
-    :param search_value: Property value to find
-    :return: A property index, or -1 if the property was not found
+    Args:
+        seq: The sequence
+        search_key: Property name to find
+        search_value: Property value to find
+
+    Returns:
+        int: A property index, or -1 if the property was not found
     """
     idx = -1
     for elem in seq:
@@ -204,10 +210,13 @@ def find_property_index(obj, search_key, search_value):
     Search (recursively) for the given key and value in the given object.
     Return an index for the key, relative to whatever object it's found in.
 
-    :param obj: The object to search (list, dict, or stix object)
-    :param search_key: A search key
-    :param search_value: A search value
-    :return: An index; -1 if the key and value aren't found
+    Args:
+        obj: The object to search (list, dict, or stix object)
+        search_key: A search key
+        search_value: A search value
+
+    Returns:
+        int: An index; -1 if the key and value aren't found
     """
     from .base import _STIXBase
 
@@ -302,14 +311,14 @@ def get_class_hierarchy_names(obj):
 def remove_custom_stix(stix_obj):
     """Remove any custom STIX objects or properties.
 
-    Warning: This function is a best effort utility, in that
-    it will remove custom objects and properties based on the
-    type names; i.e. if "x-" prefixes object types, and "x\\_"
-    prefixes property types. According to the STIX2 spec,
-    those naming conventions are a SHOULDs not MUSTs, meaning
-    that valid custom STIX content may ignore those conventions
-    and in effect render this utility function invalid when used
-    on that STIX content.
+    Warnings:
+        This function is a best effort utility, in that it will remove custom
+        objects and properties based on the type names; i.e. if "x-" prefixes
+        object types, and "x\\_" prefixes property types. According to the
+        STIX2 spec, those naming conventions are a SHOULDs not MUSTs, meaning
+        that valid custom STIX content may ignore those conventions and in
+        effect render this utility function invalid when used on that STIX
+        content.
 
     Args:
         stix_obj (dict OR python-stix obj): a single python-stix object

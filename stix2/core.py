@@ -25,12 +25,14 @@ def parse(data, allow_custom=False, version=None):
     Returns:
         An instantiated Python STIX object.
 
-    WARNING: 'allow_custom=True' will allow for the return of any supplied STIX
-        dict(s) that cannot be found to map to any known STIX object types (both STIX2
-        domain objects or defined custom STIX2 objects); NO validation is done. This is
-        done to allow the processing of possibly unknown custom STIX objects (example
-        scenario: I need to query a third-party TAXII endpoint that could provide custom
-        STIX objects that I dont know about ahead of time)
+    Warnings:
+        'allow_custom=True' will allow for the return of any supplied STIX
+        dict(s) that cannot be found to map to any known STIX object types
+        (both STIX2 domain objects or defined custom STIX2 objects); NO
+        validation is done. This is done to allow the processing of possibly
+        unknown custom STIX objects (example scenario: I need to query a
+        third-party TAXII endpoint that could provide custom STIX objects that
+        I don't know about ahead of time)
 
     """
     # convert STIX object to dict, if not already
@@ -49,9 +51,10 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             stix_dict (dict): a python dictionary of a STIX object
                 that (presumably) is semantically correct to be parsed
                 into a full python-stix2 obj
-            allow_custom (bool): Whether to allow custom properties as well unknown
-                custom objects. Note that unknown custom objects cannot be parsed
-                into STIX objects, and will be returned as is. Default: False.
+            allow_custom (bool): Whether to allow custom properties as well
+                unknown custom objects. Note that unknown custom objects cannot
+                be parsed into STIX objects, and will be returned as is.
+                Default: False.
             version: Only used for bundles.  If the spec_version property is
                 missing, it is ambiguous what spec should be used to parse the
                 bundle.  In this case, this version parameter gives the spec
@@ -60,12 +63,14 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         Returns:
             An instantiated Python STIX object
 
-        WARNING: 'allow_custom=True' will allow for the return of any supplied STIX
-        dict(s) that cannot be found to map to any known STIX object types (both STIX2
-        domain objects or defined custom STIX2 objects); NO validation is done. This is
-        done to allow the processing of possibly unknown custom STIX objects (example
-        scenario: I need to query a third-party TAXII endpoint that could provide custom
-        STIX objects that I dont know about ahead of time)
+        Warnings:
+            'allow_custom=True' will allow for the return of any supplied STIX
+            dict(s) that cannot be found to map to any known STIX object types
+            (both STIX2 domain objects or defined custom STIX2 objects); NO
+            validation is done. This is done to allow the processing of
+            possibly unknown custom STIX objects (example scenario: I need to
+            query a third-party TAXII endpoint that could provide custom STIX
+            objects that I don't know about ahead of time)
 
     """
     if 'type' not in stix_dict:
