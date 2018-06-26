@@ -241,9 +241,7 @@ class DictionaryProperty(Property):
             raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         for k in dictified.keys():
-            if len(k) < 3:
-                raise DictionaryKeyError(k, "shorter than 3 characters")
-            elif len(k) > 256:
+            if len(k) > 256:
                 raise DictionaryKeyError(k, "longer than 256 characters")
             if not re.match('^[a-zA-Z0-9_-]+$', k):
                 raise DictionaryKeyError(k, "contains characters other than"
