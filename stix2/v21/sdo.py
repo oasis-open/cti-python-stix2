@@ -7,11 +7,11 @@ import stix2
 
 from ..base import _STIXBase
 from ..markings import _MarkingsMixin
-from ..properties import (BooleanProperty, DictionaryProperty,
-                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                          IDProperty, IntegerProperty, ListProperty,
-                          PatternProperty, ReferenceProperty, StringProperty,
-                          TimestampProperty, TypeProperty)
+from .properties import (BooleanProperty, DictionaryProperty,
+                         EmbeddedObjectProperty, EnumProperty, FloatProperty,
+                         IDProperty, IntegerProperty, ListProperty,
+                         PatternProperty, ReferenceProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from ..utils import NOW, TYPE_REGEX
 from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty

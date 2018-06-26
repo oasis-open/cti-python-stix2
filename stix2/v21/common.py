@@ -4,10 +4,10 @@ from collections import OrderedDict
 
 from ..base import _STIXBase
 from ..markings import _MarkingsMixin
-from ..properties import (BooleanProperty, DictionaryProperty, HashesProperty,
-                          IDProperty, ListProperty, Property,
-                          ReferenceProperty, SelectorProperty, StringProperty,
-                          TimestampProperty, TypeProperty)
+from .properties import (BooleanProperty, DictionaryProperty, HashesProperty,
+                         IDProperty, ListProperty, Property,
+                         ReferenceProperty, SelectorProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 from ..utils import NOW, _get_dict
 
 

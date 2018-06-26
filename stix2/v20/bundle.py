@@ -2,8 +2,8 @@ from collections import OrderedDict
 
 from stix2 import parse
 from stix2.base import _STIXBase
-from stix2.properties import (IDProperty, ListProperty, Property,
-                              StringProperty, TypeProperty)
+from .properties import (IDProperty, ListProperty, Property,
+                         StringProperty, TypeProperty)
 from stix2.utils import _get_dict, get_class_hierarchy_names
 
 
