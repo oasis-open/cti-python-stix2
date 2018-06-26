@@ -4,11 +4,11 @@ from collections import OrderedDict
 
 from ..base import _STIXBase
 from ..markings import _MarkingsMixin
+from ..utils import NOW
+from .common import ExternalReference, GranularMarking
 from .properties import (BooleanProperty, IDProperty, IntegerProperty,
                          ListProperty, ReferenceProperty, StringProperty,
                          TimestampProperty, TypeProperty)
-from ..utils import NOW
-from .common import ExternalReference, GranularMarking
 
 
 class STIXRelationshipObject(_STIXBase, _MarkingsMixin):

@@ -10,9 +10,9 @@ import uuid
 from six import string_types, text_type
 from stix2patterns.validator import run_validator
 
-from stix2.base import _STIXBase
-from stix2.exceptions import DictionaryKeyError
-from stix2.utils import _get_dict, parse_into_datetime
+from ..base import _STIXBase
+from ..exceptions import DictionaryKeyError
+from ..utils import _get_dict, parse_into_datetime
 
 
 class Property(object):

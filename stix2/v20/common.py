@@ -4,10 +4,10 @@ from collections import OrderedDict
 
 from ..base import _STIXBase
 from ..markings import _MarkingsMixin
+from ..utils import NOW, _get_dict
 from .properties import (HashesProperty, IDProperty, ListProperty, Property,
                          ReferenceProperty, SelectorProperty, StringProperty,
                          TimestampProperty, TypeProperty)
-from ..utils import NOW, _get_dict
 
 
 class ExternalReference(_STIXBase):

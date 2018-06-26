@@ -1,10 +1,10 @@
 from collections import OrderedDict
 
-from stix2 import parse
-from stix2.base import _STIXBase
-from .properties import (IDProperty, ListProperty, Property,
-                         StringProperty, TypeProperty)
-from stix2.utils import _get_dict, get_class_hierarchy_names
+from ..base import _STIXBase
+from ..core import parse
+from ..utils import _get_dict, get_class_hierarchy_names
+from .properties import (IDProperty, ListProperty, Property, StringProperty,
+                         TypeProperty)
 
 
 class STIXObjectProperty(Property):
