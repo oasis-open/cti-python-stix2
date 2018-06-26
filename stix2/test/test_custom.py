@@ -2,7 +2,7 @@ import pytest
 
 import stix2
 import stix2.base
-import stix2.v20.sdo
+import stix2.v21.sdo
 
 from .constants import FAKE_TIME, MARKING_DEFINITION_ID
 
@@ -95,8 +95,7 @@ def test_identity_custom_property_allowed():
 def test_parse_identity_custom_property(data):
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         identity = stix2.parse(data)
-    # TODO: update to create and check a STIX 2.1 Identity object
-    assert excinfo.value.cls == stix2.v20.sdo.Identity
+    assert excinfo.value.cls == stix2.v21.sdo.Identity
     assert excinfo.value.properties == ['foo']
     assert "Unexpected properties for" in str(excinfo.value)
 

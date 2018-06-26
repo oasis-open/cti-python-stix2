@@ -3,8 +3,8 @@ import json
 import pytest
 
 import stix2
-import stix2.v20.sdo
 import stix2.v21.bundle
+import stix2.v21.sdo
 
 EXPECTED_BUNDLE = """{
     "type": "bundle",
@@ -179,8 +179,7 @@ def test_parse_bundle(version):
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    # TODO: update this to a STIX 2.1 indicator
-    assert type(bundle.objects[0]) is stix2.v20.sdo.Indicator
+    assert type(bundle.objects[0]) is stix2.v21.sdo.Indicator
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'

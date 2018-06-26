@@ -2,6 +2,7 @@ import importlib
 import pkgutil
 
 import stix2
+
 from .exceptions import ParseError
 from .utils import _get_dict
 

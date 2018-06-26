@@ -2,12 +2,13 @@ import pytest
 
 from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.properties import (BinaryProperty, BooleanProperty,
-                              DictionaryProperty, EmbeddedObjectProperty,
-                              EnumProperty, FloatProperty, HashesProperty,
-                              HexProperty, IDProperty, IntegerProperty,
-                              ListProperty, Property, ReferenceProperty,
-                              StringProperty, TimestampProperty, TypeProperty)
+from stix2.v20.properties import (BinaryProperty, BooleanProperty,
+                                  DictionaryProperty, EmbeddedObjectProperty,
+                                  EnumProperty, FloatProperty, HashesProperty,
+                                  HexProperty, IDProperty, IntegerProperty,
+                                  ListProperty, Property, ReferenceProperty,
+                                  StringProperty, TimestampProperty,
+                                  TypeProperty)
 
 from .constants import FAKE_TIME
 
