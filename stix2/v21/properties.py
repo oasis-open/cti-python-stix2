@@ -10,9 +10,9 @@ import uuid
 from six import string_types, text_type
 from stix2patterns.validator import run_validator
 
-from .base import _STIXBase
-from .exceptions import DictionaryKeyError
-from .utils import _get_dict, parse_into_datetime
+from ..base import _STIXBase
+from ..exceptions import DictionaryKeyError
+from ..utils import _get_dict, parse_into_datetime
 
 
 class Property(object):
@@ -241,10 +241,8 @@ class DictionaryProperty(Property):
             raise ValueError("The dictionary property must contain a non-empty dictionary")
 
         for k in dictified.keys():
-            if len(k) < 3:
-                raise DictionaryKeyError(k, "shorter than 3 characters")
-            elif len(k) > 256:
-                raise DictionaryKeyError(k, "longer than 256 characters")
+            if len(k) > 250:
+                raise DictionaryKeyError(k, "longer than 250 characters")
             if not re.match('^[a-zA-Z0-9_-]+$', k):
                 raise DictionaryKeyError(k, "contains characters other than"
                                          "lowercase a-z, uppercase A-Z, "

@@ -2,7 +2,6 @@
 
 import datetime as dt
 
-import pytest
 import pytz
 
 import stix2
@@ -21,7 +20,7 @@ TEST_CAMPAIGN = """{
     "description": "More information about bank attack"
 }"""
 
-TEST_LANGUAGE_CONTENT = """{
+TEST_LANGUAGE_CONTENT = u"""{
     "type": "language-content",
     "id": "language-content--b86bd89f-98bb-4fa9-8cb2-9ad421da981d",
     "created": "2017-02-08T21:31:22.007Z",
@@ -30,18 +29,17 @@ TEST_LANGUAGE_CONTENT = """{
     "object_modified": "2017-02-08T21:31:22.007Z",
     "contents": {
         "de": {
-            "name": "Bank Angriff 1",
-            "description": "Weitere Informationen über Banküberfall"
+            "description": "Weitere Informationen über Banküberfall",
+            "name": "Bank Angriff 1"
         },
         "fr": {
-            "name": "Attaque Bank 1",
-            "description": "Plus d'informations sur la crise bancaire"
+            "description": "Plus d'informations sur la crise bancaire",
+            "name": "Attaque Bank 1"
         }
     }
 }"""
 
 
-@pytest.mark.xfail(reason="Dictionary keys are too short")
 def test_language_content_campaign():
     now = dt.datetime(2017, 2, 8, 21, 31, 22, microsecond=7000, tzinfo=pytz.utc)
 
@@ -66,5 +64,8 @@ def test_language_content_campaign():
 
     camp = stix2.parse(TEST_CAMPAIGN)
 
-    assert str(lc) in TEST_LANGUAGE_CONTENT
+    # In order to provide the same representation, we need to disable escaping
+    # in json.dumps(). https://docs.python.org/3/library/json.html#json.dumps
+    # or https://docs.python.org/2/library/json.html#json.dumps
+    assert lc.serialize(pretty=True, ensure_ascii=False) == TEST_LANGUAGE_CONTENT
     assert lc.modified == camp.modified

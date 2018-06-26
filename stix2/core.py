@@ -3,7 +3,7 @@ import pkgutil
 
 import stix2
 
-from . import exceptions
+from .exceptions import ParseError
 from .utils import _get_dict
 
 STIX2_OBJ_MAPS = {}
@@ -74,7 +74,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
 
     """
     if 'type' not in stix_dict:
-        raise exceptions.ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
+        raise ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
 
     if "spec_version" in stix_dict:
         # For STIX 2.0, applies to bundles only.
@@ -87,7 +87,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         else:
             v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
     else:
-        v = 'v20'
+        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP = STIX2_OBJ_MAPS[v]
 
@@ -98,7 +98,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX object, returned as is
             return stix_dict
-        raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
+        raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
 
     return obj_class(allow_custom=allow_custom, **stix_dict)
 

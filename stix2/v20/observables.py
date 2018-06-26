@@ -12,12 +12,12 @@ import re
 from ..base import _Extension, _Observable, _STIXBase
 from ..exceptions import (AtLeastOnePropertyError, CustomContentError,
                           DependentPropertiesError, ParseError)
-from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                          HashesProperty, HexProperty, IntegerProperty,
-                          ListProperty, ObjectReferenceProperty, Property,
-                          StringProperty, TimestampProperty, TypeProperty)
 from ..utils import TYPE_REGEX, _get_dict
+from .properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
+                         EmbeddedObjectProperty, EnumProperty, FloatProperty,
+                         HashesProperty, HexProperty, IntegerProperty,
+                         ListProperty, ObjectReferenceProperty, Property,
+                         StringProperty, TimestampProperty, TypeProperty)
 
 
 class ObservableProperty(Property):

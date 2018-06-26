@@ -3,18 +3,17 @@
 from collections import OrderedDict
 import re
 
-import stix2
-
 from ..base import _STIXBase
+from ..core import _register_type
 from ..markings import _MarkingsMixin
-from ..properties import (BooleanProperty, DictionaryProperty,
-                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                          IDProperty, IntegerProperty, ListProperty,
-                          PatternProperty, ReferenceProperty, StringProperty,
-                          TimestampProperty, TypeProperty)
 from ..utils import NOW, TYPE_REGEX
 from .common import ExternalReference, GranularMarking, KillChainPhase
 from .observables import ObservableProperty
+from .properties import (BooleanProperty, DictionaryProperty,
+                         EmbeddedObjectProperty, EnumProperty, FloatProperty,
+                         IDProperty, IntegerProperty, ListProperty,
+                         PatternProperty, ReferenceProperty, StringProperty,
+                         TimestampProperty, TypeProperty)
 
 
 class STIXDomainObject(_STIXBase, _MarkingsMixin):
@@ -585,7 +584,7 @@ def CustomObject(type='x-custom-type', properties=None):
                         return
                     raise e
 
-        stix2._register_type(_Custom, version="2.1")
+        _register_type(_Custom, version="2.1")
         return _Custom
 
     return custom_builder

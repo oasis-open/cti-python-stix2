@@ -56,7 +56,7 @@ class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
         elif isinstance(obj, _STIXBase):
             return dict(obj)
         else:
-            return super(STIXJSONEncoder, self).default(obj)
+            return super(STIXJSONIncludeOptionalDefaultsEncoder, self).default(obj)
 
 
 def get_required_properties(properties):
