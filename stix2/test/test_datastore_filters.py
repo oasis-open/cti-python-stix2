@@ -97,7 +97,7 @@ filters = [
     Filter("granular_markings.marking_ref", "=", "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"),
     Filter("external_references.external_id", "in", "CVE-2014-0160,CVE-2017-6608"),
     Filter("created_by_ref", "=", "identity--f1350682-3290-4e0d-be58-69e290537647"),
-    Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9"),
+    Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9"),
     Filter("granular_markings.selectors", "in", "description"),
     Filter("external_references.source_name", "=", "CVE"),
     Filter("objects", "=", {"0": {"type": "file", "name": "HAL 9000.exe"}})
@@ -262,7 +262,7 @@ def test_apply_common_filters9():
 
 
 def test_apply_common_filters10():
-    # "Return any object that matches marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9 in object_marking_refs" (None)
+    # "Return any object that matches marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9 in object_marking_refs" (None)
     resp = list(apply_common_filters(stix_objs, [filters[11]]))
     assert len(resp) == 0
 

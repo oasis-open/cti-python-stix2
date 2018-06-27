@@ -245,9 +245,13 @@ def test_boolean_property_invalid(value):
 def test_reference_property():
     ref_prop = ReferenceProperty()
 
-    assert ref_prop.clean("my-type--3a331bfe-0566-55e1-a4a0-9a2cd355a300")
+    assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
     with pytest.raises(ValueError):
         ref_prop.clean("foo")
+
+    # This is not a valid V4 UUID
+    with pytest.raises(ValueError):
+        ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000")
 
 
 @pytest.mark.parametrize("value", [

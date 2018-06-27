@@ -155,7 +155,7 @@ def test_memory_source_get(mem_source):
 
 
 def test_memory_source_get_nonexistant_object(mem_source):
-    resp = mem_source.get("tool--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
+    resp = mem_source.get("tool--8d0b222c-7a3b-44a0-b9c6-31b051efb32e")
     assert resp is None
 
 
