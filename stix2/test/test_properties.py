@@ -99,7 +99,7 @@ def test_id_property_valid(value):
     assert ID_PROP.clean(value) == value
 
 
-@pytest.mark.parametrize("value", [
+CONSTANT_IDS = [
     constants.ATTACK_PATTERN_ID,
     constants.CAMPAIGN_ID,
     constants.COURSE_OF_ACTION_ID,
@@ -115,11 +115,14 @@ def test_id_property_valid(value):
     constants.THREAT_ACTOR_ID,
     constants.TOOL_ID,
     constants.VULNERABILITY_ID,
-    *constants.MARKING_IDS,
-    *constants.RELATIONSHIP_IDS,
-])
+]
+CONSTANT_IDS.extend(constants.MARKING_IDS)
+CONSTANT_IDS.extend(constants.RELATIONSHIP_IDS)
+
+
+@pytest.mark.parametrize("value", CONSTANT_IDS)
 def test_id_property_valid_for_type(value):
-    type = value.split('--', maxsplit=1)[0]
+    type = value.split('--', 1)[0]
     assert IDProperty(type=type).clean(value) == value
 
 
