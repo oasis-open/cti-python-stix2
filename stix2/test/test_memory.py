@@ -14,7 +14,7 @@ from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
 
 IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
         "url-watchlist"
     ],
@@ -26,7 +26,7 @@ IND1 = {
 }
 IND2 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
         "url-watchlist"
     ],
@@ -38,7 +38,7 @@ IND2 = {
 }
 IND3 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
         "url-watchlist"
     ],
@@ -50,7 +50,7 @@ IND3 = {
 }
 IND4 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
         "url-watchlist"
     ],
@@ -62,7 +62,7 @@ IND4 = {
 }
 IND5 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
         "url-watchlist"
     ],
@@ -74,7 +74,7 @@ IND5 = {
 }
 IND6 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
         "url-watchlist"
     ],
@@ -86,7 +86,7 @@ IND6 = {
 }
 IND7 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
         "url-watchlist"
     ],
@@ -98,7 +98,7 @@ IND7 = {
 }
 IND8 = {
     "created": "2017-01-27T13:49:53.935Z",
-    "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+    "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
         "url-watchlist"
     ],
@@ -150,8 +150,8 @@ def fs_mem_store(request, mem_store):
 
 
 def test_memory_source_get(mem_source):
-    resp = mem_source.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
-    assert resp["id"] == "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
+    resp = mem_source.get("indicator--00000000-0000-4000-8000-000000000001")
+    assert resp["id"] == "indicator--00000000-0000-4000-8000-000000000001"
 
 
 def test_memory_source_get_nonexistant_object(mem_source):
@@ -166,7 +166,7 @@ def test_memory_store_all_versions(mem_store):
                   spec_version="2.0",
                   type="bundle"))
 
-    resp = mem_store.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    resp = mem_store.all_versions("indicator--00000000-0000-4000-8000-000000000001")
     assert len(resp) == 1  # MemoryStore can only store 1 version of each object
 
 
@@ -177,7 +177,7 @@ def test_memory_store_query(mem_store):
 
 
 def test_memory_store_query_single_filter(mem_store):
-    query = Filter('id', '=', 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f')
+    query = Filter('id', '=', 'indicator--00000000-0000-4000-8000-000000000001')
     resp = mem_store.query(query)
     assert len(resp) == 1
 
@@ -187,15 +187,15 @@ def test_memory_store_query_empty_query(mem_store):
     # sort since returned in random order
     resp = sorted(resp, key=lambda k: k['id'])
     assert len(resp) == 2
-    assert resp[0]['id'] == 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f'
-    assert resp[0]['modified'] == '2017-01-27T13:49:53.935Z'
-    assert resp[1]['id'] == 'indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f'
-    assert resp[1]['modified'] == '2017-01-27T13:49:53.936Z'
+    assert resp[0]['id'] == 'indicator--00000000-0000-4000-8000-000000000001'
+    assert resp[0]['modified'] == '2017-01-27T13:49:53.936Z'
+    assert resp[1]['id'] == 'indicator--00000000-0000-4000-8000-000000000002'
+    assert resp[1]['modified'] == '2017-01-27T13:49:53.935Z'
 
 
 def test_memory_store_query_multiple_filters(mem_store):
     mem_store.source.filters.add(Filter('type', '=', 'indicator'))
-    query = Filter('id', '=', 'indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f')
+    query = Filter('id', '=', 'indicator--00000000-0000-4000-8000-000000000001')
     resp = mem_store.query(query)
     assert len(resp) == 1
 
@@ -207,13 +207,13 @@ def test_memory_store_save_load_file(mem_store, fs_mem_store):
     # (this is done in fixture 'fs_mem_store'), so can already read-in here
     contents = open(os.path.abspath(filename)).read()
 
-    assert '"id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",' in contents
-    assert '"id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",' in contents
+    assert '"id": "indicator--00000000-0000-4000-8000-000000000001",' in contents
+    assert '"id": "indicator--00000000-0000-4000-8000-000000000001",' in contents
 
     mem_store2 = MemoryStore()
     mem_store2.load_from_file(filename)
-    assert mem_store2.get("indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")
-    assert mem_store2.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    assert mem_store2.get("indicator--00000000-0000-4000-8000-000000000001")
+    assert mem_store2.get("indicator--00000000-0000-4000-8000-000000000001")
 
 
 def test_memory_store_add_invalid_object(mem_store):

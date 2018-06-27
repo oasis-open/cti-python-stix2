@@ -11,7 +11,7 @@ from stix2.properties import (BinaryProperty, BooleanProperty,
                               ListProperty, Property, ReferenceProperty,
                               StringProperty, TimestampProperty, TypeProperty)
 
-from .constants import FAKE_TIME
+from . import constants
 
 
 def test_property():
@@ -97,6 +97,30 @@ MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 ])
 def test_id_property_valid(value):
     assert ID_PROP.clean(value) == value
+
+
+@pytest.mark.parametrize("value", [
+    constants.ATTACK_PATTERN_ID,
+    constants.CAMPAIGN_ID,
+    constants.COURSE_OF_ACTION_ID,
+    constants.IDENTITY_ID,
+    constants.INDICATOR_ID,
+    constants.INTRUSION_SET_ID,
+    constants.MALWARE_ID,
+    constants.MARKING_DEFINITION_ID,
+    constants.OBSERVED_DATA_ID,
+    constants.RELATIONSHIP_ID,
+    constants.REPORT_ID,
+    constants.SIGHTING_ID,
+    constants.THREAT_ACTOR_ID,
+    constants.TOOL_ID,
+    constants.VULNERABILITY_ID,
+    *constants.MARKING_IDS,
+    *constants.RELATIONSHIP_IDS,
+])
+def test_id_property_valid_for_type(value):
+    type = value.split('--', maxsplit=1)[0]
+    assert IDProperty(type=type).clean(value) == value
 
 
 @pytest.mark.parametrize("value", [
@@ -233,7 +257,7 @@ def test_reference_property():
 ])
 def test_timestamp_property_valid(value):
     ts_prop = TimestampProperty()
-    assert ts_prop.clean(value) == FAKE_TIME
+    assert ts_prop.clean(value) == constants.FAKE_TIME
 
 
 def test_timestamp_property_invalid():
