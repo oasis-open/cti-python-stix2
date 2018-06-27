@@ -13,11 +13,11 @@ INTRUSION_SET_ID = "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29"
 MALWARE_ID = "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
 MARKING_DEFINITION_ID = "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
 OBSERVED_DATA_ID = "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
-REPORT_ID = "report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3"
 RELATIONSHIP_ID = "relationship--df7c87eb-75d2-4948-af81-9d49d246f301"
+REPORT_ID = "report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3"
+SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 THREAT_ACTOR_ID = "threat-actor--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 TOOL_ID = "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
-SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 VULNERABILITY_ID = "vulnerability--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 
 MARKING_IDS = [
