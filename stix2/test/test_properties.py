@@ -123,23 +123,6 @@ def test_id_property_valid_for_type(value):
     assert IDProperty(type=type).clean(value) == value
 
 
-@pytest.mark.parametrize("value", [
-    # These are all acceptable input formats that will get translated to the
-    # same ID shown above
-    MY_ID,
-    # These formats are all used in the uuid.UUID() documentation as valid ways
-    # to initialize a UUID. We are ok with accepting them, as they will
-    # get coerced to the right format for an ID.
-    'my-type--{232c9d3f-49fc-4440-bb01-607f638778e7}',
-    'my-type--232c9d3f49fc4440bb01607f638778e7',
-    'my-type--urn:uuid:232c9d3f-49fc-4440-bb01-607f638778e7',
-    # The extra "--" are ignored by split() and accepted by uuid.UUID()
-    'my-type--232c9d3f--49fc--4440--bb01--607f638778e7',
-])
-def test_id_property_transform(value):
-    assert ID_PROP.clean(value) == MY_ID
-
-
 def test_id_property_wrong_type():
     with pytest.raises(ValueError) as excinfo:
         ID_PROP.clean('not-my-type--232c9d3f-49fc-4440-bb01-607f638778e7')

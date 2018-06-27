@@ -14,6 +14,17 @@ from .base import _STIXBase
 from .exceptions import DictionaryKeyError
 from .utils import _get_dict, parse_into_datetime
 
+# This uses the regular expression for a RFC 4122, Version 4 UUID. In the
+# 8-4-4-4-12 hexadecimal representation, the first hex digit of the third
+# component must be a 4, and the first hex digit of the fourth component must be
+# 8, 9, a, or b (10xx bit pattern).
+ID_REGEX = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
+                      "[0-9a-fA-F]{8}-"
+                      "[0-9a-fA-F]{4}-"
+                      "4[0-9a-fA-F]{3}-"
+                      "[89abAB][0-9a-fA-F]{3}-"
+                      "[0-9a-fA-F]{12}$")
+
 
 class Property(object):
     """Represent a property of STIX data type.
@@ -171,14 +182,9 @@ class IDProperty(Property):
     def clean(self, value):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{0}'.".format(self.required_prefix))
-        try:
-            type, orig_id = value.split('--', maxsplit=1)
-            new_uuid = uuid.UUID(orig_id)
-            if new_uuid.variant != uuid.RFC_4122 or new_uuid.version != 4:
-                raise ValueError()
-        except ValueError:
+        if not ID_REGEX.match(value):
             raise ValueError("must have a valid UUID after the prefix.")
-        return "--".join([type, str(new_uuid)])
+        return value
 
     def default(self):
         return self.required_prefix + str(uuid.uuid4())
@@ -308,10 +314,6 @@ class HexProperty(Property):
         return value
 
 
-REF_REGEX = re.compile("^[a-z][a-z-]+[a-z]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}"
-                       "-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$")
-
-
 class ReferenceProperty(Property):
 
     def __init__(self, required=False, type=None):
@@ -328,7 +330,7 @@ class ReferenceProperty(Property):
         if self.type:
             if not value.startswith(self.type):
                 raise ValueError("must start with '{0}'.".format(self.type))
-        if not REF_REGEX.match(value):
+        if not ID_REGEX.match(value):
             raise ValueError("must match <object-type>--<guid>.")
         return value
 
