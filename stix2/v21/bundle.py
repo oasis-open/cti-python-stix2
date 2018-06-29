@@ -39,8 +39,7 @@ class Bundle(_STIXBase):
     """
 
     _type = 'bundle'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
         ('objects', ListProperty(STIXObjectProperty)),

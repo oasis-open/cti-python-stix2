@@ -1,7 +1,4 @@
-"""
-Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
-
-"""
+"""Filters for Python STIX 2.0 DataSources, DataSinks, DataStores"""
 
 import collections
 from datetime import datetime
@@ -40,14 +37,14 @@ def _check_filter_components(prop, op, value):
         # check filter value type is supported
         raise TypeError("Filter value of '%s' is not supported. The type must be a Python immutable type or dictionary" % type(value))
 
-    if prop == "type" and "_" in value:
+    if prop == 'type' and '_' in value:
         # check filter where the property is type, value (type name) cannot have underscores
         raise ValueError("Filter for property 'type' cannot have its value '%s' include underscores" % value)
 
     return True
 
 
-class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
+class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
     """STIX 2 filters that support the querying functionality of STIX 2
     DataStores and DataSources.
 
@@ -94,19 +91,19 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             # but will put here for now
             stix_obj_property = format_datetime(stix_obj_property)
 
-        if self.op == "=":
+        if self.op == '=':
             return stix_obj_property == self.value
-        elif self.op == "!=":
+        elif self.op == '!=':
             return stix_obj_property != self.value
-        elif self.op == "in":
+        elif self.op == 'in':
             return stix_obj_property in self.value
-        elif self.op == ">":
+        elif self.op == '>':
             return stix_obj_property > self.value
-        elif self.op == "<":
+        elif self.op == '<':
             return stix_obj_property < self.value
-        elif self.op == ">=":
+        elif self.op == '>=':
             return stix_obj_property >= self.value
-        elif self.op == "<=":
+        elif self.op == '<=':
             return stix_obj_property <= self.value
         else:
             raise ValueError("Filter operator: {0} not supported for specified property: {1}".format(self.op, self.property))
@@ -153,7 +150,7 @@ def _check_filter(filter_, stix_obj):
     """
     # For properties like granular_markings and external_references
     # need to extract the first property from the string.
-    prop = filter_.property.split(".")[0]
+    prop = filter_.property.split('.')[0]
 
     if prop not in stix_obj.keys():
         # check filter "property" is in STIX object - if cant be
@@ -161,9 +158,9 @@ def _check_filter(filter_, stix_obj):
         # (i.e. did not make it through the filter)
         return False
 
-    if "." in filter_.property:
+    if '.' in filter_.property:
         # Check embedded properties, from e.g. granular_markings or external_references
-        sub_property = filter_.property.split(".", 1)[1]
+        sub_property = filter_.property.split('.', 1)[1]
         sub_filter = filter_._replace(property=sub_property)
 
         if isinstance(stix_obj[prop], list):

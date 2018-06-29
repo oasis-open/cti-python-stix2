@@ -16,7 +16,7 @@ from .exceptions import (InvalidValueError, RevokeError,
 NOW = object()
 
 # STIX object properties that cannot be modified
-STIX_UNMOD_PROPERTIES = ["created", "created_by_ref", "id", "type"]
+STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
 
 TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
 
@@ -90,16 +90,16 @@ def format_datetime(dttm):
         zoned = pytz.utc.localize(dttm)
     else:
         zoned = dttm.astimezone(pytz.utc)
-    ts = zoned.strftime("%Y-%m-%dT%H:%M:%S")
-    ms = zoned.strftime("%f")
-    precision = getattr(dttm, "precision", None)
+    ts = zoned.strftime('%Y-%m-%dT%H:%M:%S')
+    ms = zoned.strftime('%f')
+    precision = getattr(dttm, 'precision', None)
     if precision == 'second':
         pass  # Already precise to the second
-    elif precision == "millisecond":
+    elif precision == 'millisecond':
         ts = ts + '.' + ms[:3]
     elif zoned.microsecond > 0:
-        ts = ts + '.' + ms.rstrip("0")
-    return ts + "Z"
+        ts = ts + '.' + ms.rstrip('0')
+    return ts + 'Z'
 
 
 def parse_into_datetime(value, precision=None):
@@ -250,11 +250,11 @@ def new_version(data, **kwargs):
     """
 
     if not isinstance(data, Mapping):
-        raise ValueError('cannot create new version of object of this type! '
-                         'Try a dictionary or instance of an SDO or SRO class.')
+        raise ValueError("cannot create new version of object of this type! "
+                         "Try a dictionary or instance of an SDO or SRO class.")
 
     unchangable_properties = []
-    if data.get("revoked"):
+    if data.get('revoked'):
         raise RevokeError("new_version")
     try:
         new_obj_inner = copy.deepcopy(data._inner)
@@ -292,10 +292,10 @@ def revoke(data):
         A new version of the object with ``revoked`` set to ``True``.
     """
     if not isinstance(data, Mapping):
-        raise ValueError('cannot revoke object of this type! Try a dictionary '
-                         'or instance of an SDO or SRO class.')
+        raise ValueError("cannot revoke object of this type! Try a dictionary "
+                         "or instance of an SDO or SRO class.")
 
-    if data.get("revoked"):
+    if data.get('revoked'):
         raise RevokeError("revoke")
     return new_version(data, revoked=True, allow_custom=True)
 
@@ -328,13 +328,13 @@ def remove_custom_stix(stix_obj):
         A new version of the object with any custom content removed
     """
 
-    if stix_obj["type"].startswith("x-"):
+    if stix_obj['type'].startswith('x-'):
         # if entire object is custom, discard
         return None
 
     custom_props = []
     for prop in stix_obj.items():
-        if prop[0].startswith("x_"):
+        if prop[0].startswith('x_'):
             # for every custom property, record it and set value to None
             # (so we can pass it to new_version() and it will be dropped)
             custom_props.append((prop[0], None))
@@ -351,7 +351,7 @@ def remove_custom_stix(stix_obj):
         # existing STIX object) and the "modified" property. We dont supply the
         # "modified" property so that new_version() creates a new datetime
         # value for this property
-        non_supplied_props = STIX_UNMOD_PROPERTIES + ["modified"]
+        non_supplied_props = STIX_UNMOD_PROPERTIES + ['modified']
 
         props = [(prop, stix_obj[prop]) for prop in stix_obj if prop not in non_supplied_props]
 
@@ -360,7 +360,7 @@ def remove_custom_stix(stix_obj):
 
         new_obj = new_version(stix_obj, **(dict(props)))
 
-        while parse_into_datetime(new_obj["modified"]) == parse_into_datetime(stix_obj["modified"]):
+        while parse_into_datetime(new_obj['modified']) == parse_into_datetime(stix_obj['modified']):
             # Prevents bug when fast computation allows multiple STIX object
             # versions to be created in single unit of time
             new_obj = new_version(stix_obj, **(dict(props)))

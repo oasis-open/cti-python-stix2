@@ -21,11 +21,10 @@ class Relationship(STIXRelationshipObject):
     """
 
     _type = 'relationship'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('relationship_type', StringProperty(required=True)),
@@ -35,7 +34,7 @@ class Relationship(STIXRelationshipObject):
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -59,24 +58,23 @@ class Sighting(STIXRelationshipObject):
     """
 
     _type = 'sighting'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('count', IntegerProperty()),
         ('sighting_of_ref', ReferenceProperty(required=True)),
-        ('observed_data_refs', ListProperty(ReferenceProperty(type="observed-data"))),
-        ('where_sighted_refs', ListProperty(ReferenceProperty(type="identity"))),
+        ('observed_data_refs', ListProperty(ReferenceProperty(type='observed-data'))),
+        ('where_sighted_refs', ListProperty(ReferenceProperty(type='identity'))),
         ('summary', BooleanProperty(default=lambda: False)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 

@@ -24,7 +24,7 @@ class STIXObjectProperty(Property):
             # validation here depend on the value of another property
             # (spec_version).  So this is a hack, and not technically spec-
             # compliant.
-            if "spec_version" in value:
+            if 'spec_version' in value:
                 raise ValueError("Spec version 2.0 bundles don't yet support "
                                  "containing objects of a different spec "
                                  "version.")
@@ -37,7 +37,7 @@ class STIXObjectProperty(Property):
             raise ValueError("This property may only contain a non-empty dictionary or object")
         if 'type' in dictified and dictified['type'] == 'bundle':
             raise ValueError('This property may not contain a Bundle object')
-        if "spec_version" in dictified:
+        if 'spec_version' in dictified:
             # See above comment regarding spec_version.
             raise ValueError("Spec version 2.0 bundles don't yet support "
                              "containing objects of a different spec version.")
@@ -53,13 +53,12 @@ class Bundle(_STIXBase):
     """
 
     _type = 'bundle'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
         # Not technically correct: STIX 2.0 spec doesn't say spec_version must
         # have this value, but it's all we support for now.
-        ('spec_version', StringProperty(fixed="2.0")),
+        ('spec_version', StringProperty(fixed='2.0')),
         ('objects', ListProperty(STIXObjectProperty)),
     ])
 

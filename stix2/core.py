@@ -76,11 +76,11 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     if 'type' not in stix_dict:
         raise ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
 
-    if "spec_version" in stix_dict:
+    if 'spec_version' in stix_dict:
         # For STIX 2.0, applies to bundles only.
         # For STIX 2.1+, applies to SDOs, SROs, and markings only.
-        v = 'v' + stix_dict["spec_version"].replace('.', '')
-    elif stix_dict["type"] == "bundle":
+        v = 'v' + stix_dict['spec_version'].replace('.', '')
+    elif stix_dict['type'] == 'bundle':
         # bundles without spec_version are ambiguous.
         if version:
             v = 'v' + version.replace('.', '')

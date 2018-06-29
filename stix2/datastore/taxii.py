@@ -1,6 +1,4 @@
-"""
-Python STIX 2.x TAXIICollectionStore
-"""
+"""Python STIX 2.x TAXIICollectionStore"""
 from requests.exceptions import HTTPError
 
 from stix2 import Bundle
@@ -89,17 +87,17 @@ class TAXIICollectionSink(DataSink):
         """
         if isinstance(stix_data, _STIXBase):
             # adding python STIX object
-            if stix_data["type"] == "bundle":
-                bundle = stix_data.serialize(encoding="utf-8")
+            if stix_data['type'] == 'bundle':
+                bundle = stix_data.serialize(encoding='utf-8')
             else:
-                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding="utf-8")
+                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8')
 
         elif isinstance(stix_data, dict):
             # adding python dict (of either Bundle or STIX obj)
-            if stix_data["type"] == "bundle":
-                bundle = parse(stix_data, allow_custom=self.allow_custom, version=version).serialize(encoding="utf-8")
+            if stix_data['type'] == 'bundle':
+                bundle = parse(stix_data, allow_custom=self.allow_custom, version=version).serialize(encoding='utf-8')
             else:
-                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding="utf-8")
+                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8')
 
         elif isinstance(stix_data, list):
             # adding list of something - recurse on each
@@ -110,10 +108,10 @@ class TAXIICollectionSink(DataSink):
         elif isinstance(stix_data, str):
             # adding json encoded string of STIX content
             stix_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
-            if stix_data["type"] == "bundle":
-                bundle = stix_data.serialize(encoding="utf-8")
+            if stix_data['type'] == 'bundle':
+                bundle = stix_data.serialize(encoding='utf-8')
             else:
-                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding="utf-8")
+                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8')
 
         else:
             raise TypeError("stix_data must be as STIX object(or list of),json formatted STIX (or list of), or a json formatted STIX bundle")
@@ -177,7 +175,7 @@ class TAXIICollectionSource(DataSource):
         # dont extract TAXII filters from query (to send to TAXII endpoint)
         # as directly retrieveing a STIX object by ID
         try:
-            stix_objs = self.collection.get_object(stix_id)["objects"]
+            stix_objs = self.collection.get_object(stix_id)['objects']
             stix_obj = list(apply_common_filters(stix_objs, query))
 
         except HTTPError as e:
@@ -214,8 +212,8 @@ class TAXIICollectionSource(DataSource):
         """
         # make query in TAXII query format since 'id' is TAXII field
         query = [
-            Filter("id", "=", stix_id),
-            Filter("version", "=", "all")
+            Filter('id', '=', stix_id),
+            Filter('version', '=', 'all')
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
@@ -264,7 +262,7 @@ class TAXIICollectionSource(DataSource):
 
         # query TAXII collection
         try:
-            all_data = self.collection.get_objects(**taxii_filters_dict)["objects"]
+            all_data = self.collection.get_objects(**taxii_filters_dict)['objects']
 
             # deduplicate data (before filtering as reduces wasted filtering)
             all_data = deduplicate(all_data)

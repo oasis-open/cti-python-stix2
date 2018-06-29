@@ -104,11 +104,11 @@ class _STIXBase(collections.Mapping):
     def _check_at_least_one_property(self, list_of_properties=None):
         if not list_of_properties:
             list_of_properties = sorted(list(self.__class__._properties.keys()))
-            if "type" in list_of_properties:
-                list_of_properties.remove("type")
+            if 'type' in list_of_properties:
+                list_of_properties.remove('type')
         current_properties = self.properties_populated()
         list_of_properties_populated = set(list_of_properties).intersection(current_properties)
-        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(["extensions"])):
+        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(['extensions'])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties):
@@ -121,8 +121,8 @@ class _STIXBase(collections.Mapping):
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
 
     def _check_object_constraints(self):
-        for m in self.get("granular_markings", []):
-            validate(self, m.get("selectors"))
+        for m in self.get('granular_markings', []):
+            validate(self, m.get('selectors'))
 
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
@@ -190,7 +190,7 @@ class _STIXBase(collections.Mapping):
         # usual behavior of this method reads an __init__-assigned attribute,
         # which would cause infinite recursion.  So this check disables all
         # attribute reads until the instance has been properly initialized.
-        unpickling = "_inner" not in self.__dict__
+        unpickling = '_inner' not in self.__dict__
         if not unpickling and name in self:
             return self.__getitem__(name)
         raise AttributeError("'%s' object has no attribute '%s'" %
@@ -206,8 +206,8 @@ class _STIXBase(collections.Mapping):
 
     def __repr__(self):
         props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
-        return "{0}({1})".format(self.__class__.__name__,
-                                 ", ".join(["{0!s}={1!r}".format(k, v) for k, v in props]))
+        return '{0}({1})'.format(self.__class__.__name__,
+                                 ', '.join(['{0!s}={1!r}'.format(k, v) for k, v in props]))
 
     def __deepcopy__(self, memo):
         # Assume: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
@@ -273,7 +273,7 @@ class _STIXBase(collections.Mapping):
             def sort_by(element):
                 return find_property_index(self, *element)
 
-            kwargs.update({'indent': 4, 'separators': (",", ": "), 'item_sort_key': sort_by})
+            kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
 
         if include_optional_defaults:
             return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)

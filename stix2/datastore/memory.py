@@ -36,16 +36,16 @@ def _add(store, stix_data=None, version=None):
     """
     if isinstance(stix_data, _STIXBase):
         # adding a python STIX object
-        store._data[stix_data["id"]] = stix_data
+        store._data[stix_data['id']] = stix_data
 
     elif isinstance(stix_data, dict):
-        if stix_data["type"] == "bundle":
+        if stix_data['type'] == 'bundle':
             # adding a json bundle - so just grab STIX objects
-            for stix_obj in stix_data.get("objects", []):
+            for stix_obj in stix_data.get('objects', []):
                 _add(store, stix_obj, version=version)
         else:
             # adding a json STIX object
-            store._data[stix_data["id"]] = stix_data
+            store._data[stix_data['id']] = stix_data
 
     elif isinstance(stix_data, list):
         # STIX objects are in a list- recurse on each object
@@ -156,7 +156,7 @@ class MemorySink(DataSink):
 
         if not os.path.exists(os.path.dirname(file_path)):
             os.makedirs(os.path.dirname(file_path))
-        with open(file_path, "w") as f:
+        with open(file_path, 'w') as f:
             f.write(str(Bundle(list(self._data.values()), allow_custom=self.allow_custom)))
     save_to_file.__doc__ = MemoryStore.save_to_file.__doc__
 
@@ -217,7 +217,7 @@ class MemorySource(DataSource):
             return stix_obj
 
         # if there are filters from the composite level, process full query
-        query = [Filter("id", "=", stix_id)]
+        query = [Filter('id', '=', stix_id)]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
 
@@ -283,10 +283,10 @@ class MemorySource(DataSource):
         return all_data
 
     def load_from_file(self, file_path, version=None):
-        stix_data = json.load(open(os.path.abspath(file_path), "r"))
+        stix_data = json.load(open(os.path.abspath(file_path), 'r'))
 
-        if stix_data["type"] == "bundle":
-            for stix_obj in stix_data["objects"]:
+        if stix_data['type'] == 'bundle':
+            for stix_obj in stix_data['objects']:
                 _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom))
         else:
             _add(self, stix_data=parse(stix_data, allow_custom=self.allow_custom, version=version))

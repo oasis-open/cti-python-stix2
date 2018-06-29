@@ -70,4 +70,4 @@ from .version import __version__
 
 _collect_stix2_obj_maps()
 
-DEFAULT_VERSION = "2.1"  # Default version will always be the latest STIX 2.X version
+DEFAULT_VERSION = '2.1'  # Default version will always be the latest STIX 2.X version

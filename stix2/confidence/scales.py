@@ -31,13 +31,13 @@ def none_low_med_high_to_value(scale_value):
     Raises:
         ValueError: If `scale_value` is not within the accepted strings.
     """
-    if scale_value == "None":
+    if scale_value == 'None':
         return 0
-    elif scale_value == "Low":
+    elif scale_value == 'Low':
         return 15
-    elif scale_value == "Med":
+    elif scale_value == 'Med':
         return 50
-    elif scale_value == "High":
+    elif scale_value == 'High':
         return 85
     else:
         raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)
@@ -69,13 +69,13 @@ def value_to_none_low_medium_high(confidence_value):
 
     """
     if confidence_value == 0:
-        return "None"
+        return 'None'
     elif 29 >= confidence_value >= 1:
-        return "Low"
+        return 'Low'
     elif 69 >= confidence_value >= 30:
-        return "Med"
+        return 'Med'
     elif 100 >= confidence_value >= 70:
-        return "High"
+        return 'High'
     else:
         raise ValueError("Range of values out of bounds: %s" % confidence_value)
 
@@ -114,27 +114,27 @@ def zero_ten_to_value(scale_value):
         ValueError: If `scale_value` is not within the accepted strings.
 
     """
-    if scale_value == "0":
+    if scale_value == '0':
         return 0
-    elif scale_value == "1":
+    elif scale_value == '1':
         return 10
-    elif scale_value == "2":
+    elif scale_value == '2':
         return 20
-    elif scale_value == "3":
+    elif scale_value == '3':
         return 30
-    elif scale_value == "4":
+    elif scale_value == '4':
         return 40
-    elif scale_value == "5":
+    elif scale_value == '5':
         return 50
-    elif scale_value == "6":
+    elif scale_value == '6':
         return 60
-    elif scale_value == "7":
+    elif scale_value == '7':
         return 70
-    elif scale_value == "8":
+    elif scale_value == '8':
         return 80
-    elif scale_value == "9":
+    elif scale_value == '9':
         return 90
-    elif scale_value == "10":
+    elif scale_value == '10':
         return 100
     else:
         raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)
@@ -173,27 +173,27 @@ def value_to_zero_ten(confidence_value):
 
     """
     if 4 >= confidence_value >= 0:
-        return "0"
+        return '0'
     elif 14 >= confidence_value >= 5:
-        return "1"
+        return '1'
     elif 24 >= confidence_value >= 15:
-        return "2"
+        return '2'
     elif 34 >= confidence_value >= 25:
-        return "3"
+        return '3'
     elif 44 >= confidence_value >= 35:
-        return "4"
+        return '4'
     elif 54 >= confidence_value >= 45:
-        return "5"
+        return '5'
     elif 64 >= confidence_value >= 55:
-        return "6"
+        return '6'
     elif 74 >= confidence_value >= 65:
-        return "7"
+        return '7'
     elif 84 >= confidence_value >= 75:
-        return "8"
+        return '8'
     elif 94 >= confidence_value >= 85:
-        return "9"
+        return '9'
     elif 100 >= confidence_value >= 95:
-        return "10"
+        return '10'
     else:
         raise ValueError("Range of values out of bounds: %s" % confidence_value)
 
@@ -229,17 +229,17 @@ def admiralty_credibility_to_value(scale_value):
         ValueError: If `scale_value` is not within the accepted strings.
 
     """
-    if scale_value == "6 - Truth cannot be judged":
-        raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)  # TODO: What happens here?
-    elif scale_value == "5 - Improbable":
+    if scale_value == '6 - Truth cannot be judged':
+        raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)
+    elif scale_value == '5 - Improbable':
         return 10
-    elif scale_value == "4 - Doubtful":
+    elif scale_value == '4 - Doubtful':
         return 30
-    elif scale_value == "3 - Possibly True":
+    elif scale_value == '3 - Possibly True':
         return 50
-    elif scale_value == "2 - Probably True":
+    elif scale_value == '2 - Probably True':
         return 70
-    elif scale_value == "1 - Confirmed by other sources":
+    elif scale_value == '1 - Confirmed by other sources':
         return 90
     else:
         raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)
@@ -272,17 +272,16 @@ def value_to_admiralty_credibility(confidence_value):
         ValueError: If `confidence_value` is out of bounds.
 
     """
-    # TODO: Case "6 - Truth cannot be judged"
     if 19 >= confidence_value >= 0:
-        return "5 - Improbable"
+        return '5 - Improbable'
     elif 39 >= confidence_value >= 20:
-        return "4 - Doubtful"
+        return '4 - Doubtful'
     elif 59 >= confidence_value >= 40:
-        return "3 - Possibly True"
+        return '3 - Possibly True'
     elif 79 >= confidence_value >= 60:
-        return "2 - Probably True"
+        return '2 - Probably True'
     elif 100 >= confidence_value >= 80:
-        return "1 - Confirmed by other sources"
+        return '1 - Confirmed by other sources'
     else:
         raise ValueError("Range of values out of bounds: %s" % confidence_value)
 
@@ -320,19 +319,19 @@ def wep_to_value(scale_value):
         ValueError: If `scale_value` is not within the accepted strings.
 
     """
-    if scale_value == "Impossible":
+    if scale_value == 'Impossible':
         return 0
-    elif scale_value == "Highly Unlikely/Almost Certainly Not":
+    elif scale_value == 'Highly Unlikely/Almost Certainly Not':
         return 10
-    elif scale_value == "Unlikely/Probably Not":
+    elif scale_value == 'Unlikely/Probably Not':
         return 30
-    elif scale_value == "Even Chance":
+    elif scale_value == 'Even Chance':
         return 50
-    elif scale_value == "Likely/Probable":
+    elif scale_value == 'Likely/Probable':
         return 70
-    elif scale_value == "Highly likely/Almost Certain":
+    elif scale_value == 'Highly likely/Almost Certain':
         return 90
-    elif scale_value == "Certain":
+    elif scale_value == 'Certain':
         return 100
     else:
         raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)
@@ -367,19 +366,19 @@ def value_to_wep(confidence_value):
 
     """
     if confidence_value == 0:
-        return "Impossible"
+        return 'Impossible'
     elif 19 >= confidence_value >= 1:
-        return "Highly Unlikely/Almost Certainly Not"
+        return 'Highly Unlikely/Almost Certainly Not'
     elif 39 >= confidence_value >= 20:
-        return "Unlikely/Probably Not"
+        return 'Unlikely/Probably Not'
     elif 59 >= confidence_value >= 40:
-        return "Even Chance"
+        return 'Even Chance'
     elif 79 >= confidence_value >= 60:
-        return "Likely/Probable"
+        return 'Likely/Probable'
     elif 99 >= confidence_value >= 80:
-        return "Highly likely/Almost Certain"
+        return 'Highly likely/Almost Certain'
     elif confidence_value == 100:
-        return "Certain"
+        return 'Certain'
     else:
         raise ValueError("Range of values out of bounds: %s" % confidence_value)
 
@@ -417,19 +416,19 @@ def dni_to_value(scale_value):
         ValueError: If `scale_value` is not within the accepted strings.
 
     """
-    if scale_value == "Almost No Chance / Remote":
+    if scale_value == 'Almost No Chance / Remote':
         return 5
-    elif scale_value == "Very Unlikely / Highly Improbable":
+    elif scale_value == 'Very Unlikely / Highly Improbable':
         return 15
-    elif scale_value == "Unlikely / Improbable":
+    elif scale_value == 'Unlikely / Improbable':
         return 30
-    elif scale_value == "Roughly Even Change / Roughly Even Odds":
+    elif scale_value == 'Roughly Even Change / Roughly Even Odds':
         return 50
-    elif scale_value == "Likely / Probable":
+    elif scale_value == 'Likely / Probable':
         return 70
-    elif scale_value == "Very Likely / Highly Probable":
+    elif scale_value == 'Very Likely / Highly Probable':
         return 85
-    elif scale_value == "Almost Certain / Nearly Certain":
+    elif scale_value == 'Almost Certain / Nearly Certain':
         return 95
     else:
         raise ValueError("STIX Confidence value cannot be determined for %s" % scale_value)
@@ -464,18 +463,18 @@ def value_to_dni(confidence_value):
 
     """
     if 9 >= confidence_value >= 0:
-        return "Almost No Chance / Remote"
+        return 'Almost No Chance / Remote'
     elif 19 >= confidence_value >= 10:
-        return "Very Unlikely / Highly Improbable"
+        return 'Very Unlikely / Highly Improbable'
     elif 39 >= confidence_value >= 20:
-        return "Unlikely / Improbable"
+        return 'Unlikely / Improbable'
     elif 59 >= confidence_value >= 40:
-        return "Roughly Even Change / Roughly Even Odds"
+        return 'Roughly Even Change / Roughly Even Odds'
     elif 79 >= confidence_value >= 60:
-        return "Likely / Probable"
+        return 'Likely / Probable'
     elif 89 >= confidence_value >= 80:
-        return "Very Likely / Highly Probable"
+        return 'Very Likely / Highly Probable'
     elif 100 >= confidence_value >= 90:
-        return "Almost Certain / Nearly Certain"
+        return 'Almost Certain / Nearly Certain'
     else:
         raise ValueError("Range of values out of bounds: %s" % confidence_value)

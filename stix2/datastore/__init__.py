@@ -83,7 +83,8 @@ class DataStoreMixin(object):
         try:
             return self.source.get(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+            msg = "%s has no data source to query"
+            raise AttributeError(msg % self.__class__.__name__)
 
     def all_versions(self, *args, **kwargs):
         """Retrieve all versions of a single STIX object by ID.
@@ -100,7 +101,8 @@ class DataStoreMixin(object):
         try:
             return self.source.all_versions(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+            msg = "%s has no data source to query"
+            raise AttributeError(msg % self.__class__.__name__)
 
     def query(self, *args, **kwargs):
         """Retrieve STIX objects matching a set of filters.
@@ -118,7 +120,8 @@ class DataStoreMixin(object):
         try:
             return self.source.query(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+            msg = "%s has no data source to query"
+            raise AttributeError(msg % self.__class__.__name__)
 
     def creator_of(self, *args, **kwargs):
         """Retrieve the Identity refered to by the object's `created_by_ref`.
@@ -137,7 +140,8 @@ class DataStoreMixin(object):
         try:
             return self.source.creator_of(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+            msg = "%s has no data source to query"
+            raise AttributeError(msg % self.__class__.__name__)
 
     def relationships(self, *args, **kwargs):
         """Retrieve Relationships involving the given STIX object.
@@ -163,7 +167,8 @@ class DataStoreMixin(object):
         try:
             return self.source.relationships(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+            msg = "%s has no data source to query"
+            raise AttributeError(msg % self.__class__.__name__)
 
     def related_to(self, *args, **kwargs):
         """Retrieve STIX Objects that have a Relationship involving the given
@@ -193,7 +198,8 @@ class DataStoreMixin(object):
         try:
             return self.source.related_to(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data source to query' % self.__class__.__name__)
+            msg = "%s has no data source to query"
+            raise AttributeError(msg % self.__class__.__name__)
 
     def add(self, *args, **kwargs):
         """Method for storing STIX objects.
@@ -208,7 +214,8 @@ class DataStoreMixin(object):
         try:
             return self.sink.add(*args, **kwargs)
         except AttributeError:
-            raise AttributeError('%s has no data sink to put objects in' % self.__class__.__name__)
+            msg = "%s has no data sink to put objects in"
+            raise AttributeError(msg % self.__class__.__name__)
 
 
 class DataSink(with_metaclass(ABCMeta)):
@@ -457,7 +464,7 @@ class CompositeDataSource(DataSource):
 
         """
         if not self.has_data_sources():
-            raise AttributeError('CompositeDataSource has no data sources')
+            raise AttributeError("CompositeDataSource has no data sources")
 
         all_data = []
         all_filters = FilterSet()
@@ -504,7 +511,7 @@ class CompositeDataSource(DataSource):
 
         """
         if not self.has_data_sources():
-            raise AttributeError('CompositeDataSource has no data sources')
+            raise AttributeError("CompositeDataSource has no data sources")
 
         all_data = []
         all_filters = FilterSet()
@@ -543,7 +550,7 @@ class CompositeDataSource(DataSource):
 
         """
         if not self.has_data_sources():
-            raise AttributeError('CompositeDataSource has no data sources')
+            raise AttributeError("CompositeDataSource has no data sources")
 
         if not query:
             # don't mess with the query (i.e. deduplicate, as that's done
@@ -594,7 +601,7 @@ class CompositeDataSource(DataSource):
 
         """
         if not self.has_data_sources():
-            raise AttributeError('CompositeDataSource has no data sources')
+            raise AttributeError("CompositeDataSource has no data sources")
 
         results = []
         for ds in self.data_sources:
@@ -634,7 +641,7 @@ class CompositeDataSource(DataSource):
 
         """
         if not self.has_data_sources():
-            raise AttributeError('CompositeDataSource has no data sources')
+            raise AttributeError("CompositeDataSource has no data sources")
 
         results = []
         for ds in self.data_sources:

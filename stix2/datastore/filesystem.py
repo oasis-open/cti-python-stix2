@@ -1,7 +1,4 @@
-"""
-Python STIX 2.0 FileSystem Source/Sink
-
-"""
+"""Python STIX 2.0 FileSystem Source/Sink"""
 
 import json
 import os
@@ -78,7 +75,7 @@ class FileSystemSink(DataSink):
     def _check_path_and_write(self, stix_obj):
         """Write the given STIX object to a file in the STIX file directory.
         """
-        path = os.path.join(self._stix_dir, stix_obj["type"], stix_obj["id"] + ".json")
+        path = os.path.join(self._stix_dir, stix_obj['type'], stix_obj['id'] + '.json')
 
         if not os.path.exists(os.path.dirname(path)):
             os.makedirs(os.path.dirname(path))
@@ -86,7 +83,7 @@ class FileSystemSink(DataSink):
         if self.bundlify:
             stix_obj = Bundle(stix_obj, allow_custom=self.allow_custom)
 
-        with open(path, "w") as f:
+        with open(path, 'w') as f:
             f.write(str(stix_obj))
 
     def add(self, stix_data=None, version=None):
@@ -112,9 +109,9 @@ class FileSystemSink(DataSink):
 
         elif isinstance(stix_data, (str, dict)):
             stix_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
-            if stix_data["type"] == "bundle":
+            if stix_data['type'] == 'bundle':
                 # extract STIX objects
-                for stix_obj in stix_data.get("objects", []):
+                for stix_obj in stix_data.get('objects', []):
                     self.add(stix_obj, version=version)
             else:
                 # adding json-formatted STIX
@@ -122,7 +119,7 @@ class FileSystemSink(DataSink):
 
         elif isinstance(stix_data, Bundle):
             # recursively add individual STIX objects
-            for stix_obj in stix_data.get("objects", []):
+            for stix_obj in stix_data.get('objects', []):
                 self.add(stix_obj, version=version)
 
         elif isinstance(stix_data, list):
@@ -177,7 +174,7 @@ class FileSystemSource(DataSource):
                 a python STIX object and then returned
 
         """
-        query = [Filter("id", "=", stix_id)]
+        query = [Filter('id', '=', stix_id)]
 
         all_data = self.query(query=query, version=version, _composite_filters=_composite_filters)
 
@@ -252,12 +249,12 @@ class FileSystemSource(DataSource):
         # the corresponding subdirectories as well
         include_paths = []
         declude_paths = []
-        if "type" in [filter.property for filter in file_filters]:
+        if 'type' in [filter.property for filter in file_filters]:
             for filter in file_filters:
-                if filter.property == "type":
-                    if filter.op == "=":
+                if filter.property == 'type':
+                    if filter.op == '=':
                         include_paths.append(os.path.join(self._stix_dir, filter.value))
-                    elif filter.op == "!=":
+                    elif filter.op == '!=':
                         declude_paths.append(os.path.join(self._stix_dir, filter.value))
         else:
             # have to walk entire STIX directory
@@ -281,9 +278,9 @@ class FileSystemSource(DataSource):
 
         # grab stix object ID as well - if present in filters, as
         # may forgo the loading of STIX content into memory
-        if "id" in [filter.property for filter in file_filters]:
+        if 'id' in [filter.property for filter in file_filters]:
             for filter in file_filters:
-                if filter.property == "id" and filter.op == "=":
+                if filter.property == 'id' and filter.op == '=':
                     id_ = filter.value
                     break
             else:
@@ -295,21 +292,21 @@ class FileSystemSource(DataSource):
         for path in include_paths:
             for root, dirs, files in os.walk(path):
                 for file_ in files:
-                    if not file_.endswith(".json"):
+                    if not file_.endswith('.json'):
                         # skip non '.json' files as more likely to be random non-STIX files
                         continue
 
-                    if not id_ or id_ == file_.split(".")[0]:
+                    if not id_ or id_ == file_.split('.')[0]:
                         # have to load into memory regardless to evaluate other filters
                         try:
                             stix_obj = json.load(open(os.path.join(root, file_)))
 
-                            if stix_obj["type"] == "bundle":
-                                stix_obj = stix_obj["objects"][0]
+                            if stix_obj['type'] == 'bundle':
+                                stix_obj = stix_obj['objects'][0]
 
                             # naive STIX type checking
-                            stix_obj["type"]
-                            stix_obj["id"]
+                            stix_obj['type']
+                            stix_obj['id']
 
                         except (ValueError, KeyError):  # likely not a JSON file
                             raise TypeError("STIX JSON object at '{0}' could either not be parsed to "
@@ -339,6 +336,6 @@ class FileSystemSource(DataSource):
         """
         file_filters = []
         for filter_ in query:
-            if filter_.property == "id" or filter_.property == "type":
+            if filter_.property == 'id' or filter_.property == 'type':
                 file_filters.append(filter_)
         return file_filters

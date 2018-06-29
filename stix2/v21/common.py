@@ -13,8 +13,7 @@ from .properties import (BooleanProperty, DictionaryProperty, HashesProperty,
 
 class ExternalReference(_STIXBase):
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
@@ -24,13 +23,12 @@ class ExternalReference(_STIXBase):
 
     def _check_object_constraints(self):
         super(ExternalReference, self)._check_object_constraints()
-        self._check_at_least_one_property(["description", "external_id", "url"])
+        self._check_at_least_one_property(['description', 'external_id', 'url'])
 
 
 class KillChainPhase(_STIXBase):
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('kill_chain_name', StringProperty(required=True)),
         ('phase_name', StringProperty(required=True)),
     ])
@@ -38,26 +36,24 @@ class KillChainPhase(_STIXBase):
 
 class GranularMarking(_STIXBase):
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('lang', StringProperty()),
-        ('marking_ref', ReferenceProperty(type="marking-definition")),
+        ('marking_ref', ReferenceProperty(type='marking-definition')),
         ('selectors', ListProperty(SelectorProperty, required=True)),
     ])
 
     def _check_object_constraints(self):
         super(GranularMarking, self)._check_object_constraints()
-        self._check_at_least_one_property(["lang", "marking_ref"])
+        self._check_at_least_one_property(['lang', 'marking_ref'])
 
 
 class LanguageContent(_STIXBase):
 
     _type = 'language-content'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('object_ref', ReferenceProperty(required=True)),
@@ -68,7 +64,7 @@ class LanguageContent(_STIXBase):
         ('revoked', BooleanProperty()),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -76,8 +72,7 @@ class LanguageContent(_STIXBase):
 class TLPMarking(_STIXBase):
 
     _type = 'tlp'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('tlp', Property(required=True))
     ])
 
@@ -85,8 +80,7 @@ class TLPMarking(_STIXBase):
 class StatementMarking(_STIXBase):
 
     _type = 'statement'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('statement', StringProperty(required=True))
     ])
 
@@ -113,14 +107,13 @@ class MarkingProperty(Property):
 class MarkingDefinition(_STIXBase, _MarkingsMixin):
 
     _type = 'marking-definition'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('definition_type', StringProperty(required=True)),
         ('definition', MarkingProperty(required=True)),
@@ -170,12 +163,11 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
         class _Custom(cls, _STIXBase):
             _type = type
-            _properties = OrderedDict()
 
             if not properties or not isinstance(properties, list):
                 raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
-            _properties.update(properties)
+            _properties = OrderedDict(properties)
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
@@ -197,29 +189,29 @@ def CustomMarking(type='x-custom-marking', properties=None):
 # TODO: don't allow the creation of any other TLPMarkings than the ones below
 
 TLP_WHITE = MarkingDefinition(
-    id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-    created="2017-01-20T00:00:00.000Z",
-    definition_type="tlp",
-    definition=TLPMarking(tlp="white")
+    id='marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
+    created='2017-01-20T00:00:00.000Z',
+    definition_type='tlp',
+    definition=TLPMarking(tlp='white')
 )
 
 TLP_GREEN = MarkingDefinition(
-    id="marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
-    created="2017-01-20T00:00:00.000Z",
-    definition_type="tlp",
-    definition=TLPMarking(tlp="green")
+    id='marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
+    created='2017-01-20T00:00:00.000Z',
+    definition_type='tlp',
+    definition=TLPMarking(tlp='green')
 )
 
 TLP_AMBER = MarkingDefinition(
-    id="marking-definition--f88d31f6-486f-44da-b317-01333bde0b82",
-    created="2017-01-20T00:00:00.000Z",
-    definition_type="tlp",
-    definition=TLPMarking(tlp="amber")
+    id='marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
+    created='2017-01-20T00:00:00.000Z',
+    definition_type='tlp',
+    definition=TLPMarking(tlp='amber')
 )
 
 TLP_RED = MarkingDefinition(
-    id="marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
-    created="2017-01-20T00:00:00.000Z",
-    definition_type="tlp",
-    definition=TLPMarking(tlp="red")
+    id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
+    created='2017-01-20T00:00:00.000Z',
+    definition_type='tlp',
+    definition=TLPMarking(tlp='red')
 )

@@ -29,7 +29,7 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
     selectors = utils.convert_to_list(selectors)
     utils.validate(obj, selectors)
 
-    granular_markings = obj.get("granular_markings", [])
+    granular_markings = obj.get('granular_markings', [])
 
     if not granular_markings:
         return []
@@ -38,11 +38,11 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
 
     for marking in granular_markings:
         for user_selector in selectors:
-            for marking_selector in marking.get("selectors", []):
+            for marking_selector in marking.get('selectors', []):
                 if any([(user_selector == marking_selector),  # Catch explicit selectors.
                         (user_selector.startswith(marking_selector) and inherited),  # Catch inherited selectors.
                         (marking_selector.startswith(user_selector) and descendants)]):  # Catch descendants selectors
-                    refs = marking.get("marking_ref", [])
+                    refs = marking.get('marking_ref', [])
                     results.update([refs])
 
     return list(results)
@@ -93,7 +93,7 @@ def remove_markings(obj, marking, selectors):
     marking = utils.convert_to_marking_list(marking)
     utils.validate(obj, selectors)
 
-    granular_markings = obj.get("granular_markings")
+    granular_markings = obj.get('granular_markings')
 
     if not granular_markings:
         return obj
@@ -102,9 +102,9 @@ def remove_markings(obj, marking, selectors):
 
     to_remove = []
     for m in marking:
-        to_remove.append({"marking_ref": m, "selectors": selectors})
+        to_remove.append({'marking_ref': m, 'selectors': selectors})
 
-    remove = utils.build_granular_marking(to_remove).get("granular_markings")
+    remove = utils.build_granular_marking(to_remove).get('granular_markings')
 
     if not any(marking in granular_markings for marking in remove):
         raise exceptions.MarkingNotFoundError(obj, remove)
@@ -145,10 +145,10 @@ def add_markings(obj, marking, selectors):
 
     granular_marking = []
     for m in marking:
-        granular_marking.append({"marking_ref": m, "selectors": sorted(selectors)})
+        granular_marking.append({'marking_ref': m, 'selectors': sorted(selectors)})
 
-    if obj.get("granular_markings"):
-        granular_marking.extend(obj.get("granular_markings"))
+    if obj.get('granular_markings'):
+        granular_marking.extend(obj.get('granular_markings'))
 
     granular_marking = utils.expand_markings(granular_marking)
     granular_marking = utils.compress_markings(granular_marking)
@@ -176,7 +176,7 @@ def clear_markings(obj, selectors):
     selectors = utils.convert_to_list(selectors)
     utils.validate(obj, selectors)
 
-    granular_markings = obj.get("granular_markings")
+    granular_markings = obj.get('granular_markings')
 
     if not granular_markings:
         return obj
@@ -184,25 +184,25 @@ def clear_markings(obj, selectors):
     granular_markings = utils.expand_markings(granular_markings)
 
     sdo = utils.build_granular_marking(
-        [{"selectors": selectors, "marking_ref": "N/A"}]
+        [{'selectors': selectors, 'marking_ref': 'N/A'}]
     )
 
-    clear = sdo.get("granular_markings", [])
+    clear = sdo.get('granular_markings', [])
 
-    if not any(clear_selector in sdo_selectors.get("selectors", [])
+    if not any(clear_selector in sdo_selectors.get('selectors', [])
                for sdo_selectors in granular_markings
                for clear_marking in clear
-               for clear_selector in clear_marking.get("selectors", [])
+               for clear_selector in clear_marking.get('selectors', [])
                ):
         raise exceptions.MarkingNotFoundError(obj, clear)
 
     for granular_marking in granular_markings:
         for s in selectors:
-            if s in granular_marking.get("selectors", []):
-                marking_refs = granular_marking.get("marking_ref")
+            if s in granular_marking.get('selectors', []):
+                marking_refs = granular_marking.get('marking_ref')
 
                 if marking_refs:
-                    granular_marking["marking_ref"] = ""
+                    granular_marking['marking_ref'] = ''
 
     granular_markings = utils.compress_markings(granular_markings)
 
@@ -245,19 +245,19 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
     marking = utils.convert_to_marking_list(marking)
     utils.validate(obj, selectors)
 
-    granular_markings = obj.get("granular_markings", [])
+    granular_markings = obj.get('granular_markings', [])
 
     marked = False
     markings = set()
 
     for granular_marking in granular_markings:
         for user_selector in selectors:
-            for marking_selector in granular_marking.get("selectors", []):
+            for marking_selector in granular_marking.get('selectors', []):
 
                 if any([(user_selector == marking_selector),  # Catch explicit selectors.
                         (user_selector.startswith(marking_selector) and inherited),  # Catch inherited selectors.
                         (marking_selector.startswith(user_selector) and descendants)]):  # Catch descendants selectors
-                    marking_ref = granular_marking.get("marking_ref", "")
+                    marking_ref = granular_marking.get('marking_ref', '')
 
                     if marking and any(x == marking_ref for x in marking):
                         markings.update([marking_ref])
