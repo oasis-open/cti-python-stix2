@@ -29,6 +29,7 @@ class AttackPattern(STIXDomainObject):
     _type = 'attack-pattern'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -55,6 +56,7 @@ class Campaign(STIXDomainObject):
     _type = 'campaign'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -84,6 +86,7 @@ class CourseOfAction(STIXDomainObject):
     _type = 'course-of-action'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -109,6 +112,7 @@ class Identity(STIXDomainObject):
     _type = 'identity'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -137,6 +141,7 @@ class Indicator(STIXDomainObject):
     _type = 'indicator'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -166,6 +171,7 @@ class IntrusionSet(STIXDomainObject):
     _type = 'intrusion-set'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -322,6 +328,7 @@ class ObservedData(STIXDomainObject):
     _type = 'observed-data'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -389,6 +396,7 @@ class Report(STIXDomainObject):
     _type = 'report'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -416,6 +424,7 @@ class ThreatActor(STIXDomainObject):
     _type = 'threat-actor'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -449,6 +458,7 @@ class Tool(STIXDomainObject):
     _type = 'tool'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -476,6 +486,7 @@ class Vulnerability(STIXDomainObject):
     _type = 'vulnerability'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -530,6 +541,7 @@ def CustomObject(type='x-custom-type', properties=None):
             _type = type
             _properties = OrderedDict([
                 ('type', TypeProperty(_type)),
+                ('spec_version', StringProperty(fixed='2.1')),
                 ('id', IDProperty(_type)),
                 ('created_by_ref', ReferenceProperty(type='identity')),
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),

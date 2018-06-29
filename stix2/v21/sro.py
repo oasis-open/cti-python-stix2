@@ -65,6 +65,7 @@ class Sighting(STIXRelationshipObject):
     _type = 'sighting'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
