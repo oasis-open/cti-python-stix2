@@ -12,6 +12,7 @@ LANGUAGE_CONTENT_ID = "language-content--b86bd89f-98bb-4fa9-8cb2-9ad421da981d"
 
 TEST_CAMPAIGN = """{
     "type": "campaign",
+    "spec_version": "2.1",
     "id": "campaign--12a111f0-b824-4baf-a224-83b80237a094",
     "lang": "en",
     "created": "2017-02-08T21:31:22.007Z",
@@ -22,6 +23,7 @@ TEST_CAMPAIGN = """{
 
 TEST_LANGUAGE_CONTENT = u"""{
     "type": "language-content",
+    "spec_version": "2.1",
     "id": "language-content--b86bd89f-98bb-4fa9-8cb2-9ad421da981d",
     "created": "2017-02-08T21:31:22.007Z",
     "modified": "2017-02-08T21:31:22.007Z",
@@ -51,13 +53,13 @@ def test_language_content_campaign():
         object_ref=CAMPAIGN_ID,
         object_modified=now,
         contents={
-            "de": {
-                "name": "Bank Angriff 1",
-                "description": "Weitere Informationen über Banküberfall"
+            'de': {
+                'name': 'Bank Angriff 1',
+                'description': 'Weitere Informationen über Banküberfall'
             },
-            "fr": {
-                "name": "Attaque Bank 1",
-                "description": "Plus d'informations sur la crise bancaire"
+            'fr': {
+                'name': 'Attaque Bank 1',
+                'description': 'Plus d\'informations sur la crise bancaire'
             }
         }
     )
