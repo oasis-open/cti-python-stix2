@@ -8,6 +8,7 @@ import stix2.v21.sdo
 
 EXPECTED_BUNDLE = """{
     "type": "bundle",
+    "spec_version": "2.0",
     "id": "bundle--00000000-0000-0000-0000-000000000007",
     "objects": [
         {
@@ -48,6 +49,7 @@ EXPECTED_BUNDLE = """{
 
 EXPECTED_BUNDLE_DICT = {
     "type": "bundle",
+    "spec_version": "2.0",
     "id": "bundle--00000000-0000-0000-0000-000000000007",
     "objects": [
         {
