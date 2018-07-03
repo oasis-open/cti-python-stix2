@@ -580,11 +580,12 @@ def test_observed_data_with_process_example():
 #  creating cyber observables directly
 
 def test_artifact_example():
-    art = stix2.v21.Artifact(mime_type="image/jpeg",
-                             url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
-                             hashes={
-                                "MD5": "6826f9a05da08134006557758bb3afbb"
-                             })
+    art = stix2.v21.Artifact(
+        mime_type="image/jpeg",
+        url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
+        hashes={
+            "MD5": "6826f9a05da08134006557758bb3afbb"
+        })
     assert art.mime_type == "image/jpeg"
     assert art.url == "https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg"
     assert art.hashes["MD5"] == "6826f9a05da08134006557758bb3afbb"
@@ -592,12 +593,13 @@ def test_artifact_example():
 
 def test_artifact_mutual_exclusion_error():
     with pytest.raises(stix2.exceptions.MutuallyExclusivePropertiesError) as excinfo:
-        stix2.v21.Artifact(mime_type="image/jpeg",
-                           url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
-                           hashes={
-                                "MD5": "6826f9a05da08134006557758bb3afbb"
-                           },
-                           payload_bin="VBORw0KGgoAAAANSUhEUgAAADI==")
+        stix2.v21.Artifact(
+            mime_type="image/jpeg",
+            url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
+            hashes={
+                "MD5": "6826f9a05da08134006557758bb3afbb"
+            },
+            payload_bin="VBORw0KGgoAAAANSUhEUgAAADI==")
 
     assert excinfo.value.cls == stix2.v21.Artifact
     assert excinfo.value.properties == ["payload_bin", "url"]
@@ -605,12 +607,13 @@ def test_artifact_mutual_exclusion_error():
 
 
 def test_directory_example():
-    dir = stix2.v21.Directory(_valid_refs={"1": "file"},
-                              path='/usr/lib',
-                              created="2015-12-21T19:00:00Z",
-                              modified="2015-12-24T19:00:00Z",
-                              accessed="2015-12-21T20:00:00Z",
-                              contains_refs=["1"])
+    dir = stix2.v21.Directory(
+        _valid_refs={"1": "file"},
+        path='/usr/lib',
+        created="2015-12-21T19:00:00Z",
+        modified="2015-12-24T19:00:00Z",
+        accessed="2015-12-21T20:00:00Z",
+        contains_refs=["1"])
 
     assert dir.path == '/usr/lib'
     assert dir.created == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
@@ -621,21 +624,23 @@ def test_directory_example():
 
 def test_directory_example_ref_error():
     with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
-        stix2.v21.Directory(_valid_refs=[],
-                            path='/usr/lib',
-                            created="2015-12-21T19:00:00Z",
-                            modified="2015-12-24T19:00:00Z",
-                            accessed="2015-12-21T20:00:00Z",
-                            contains_refs=["1"])
+        stix2.v21.Directory(
+            _valid_refs=[],
+            path='/usr/lib',
+            created="2015-12-21T19:00:00Z",
+            modified="2015-12-24T19:00:00Z",
+            accessed="2015-12-21T20:00:00Z",
+            contains_refs=["1"])
 
     assert excinfo.value.cls == stix2.v21.Directory
     assert excinfo.value.prop_name == "contains_refs"
 
 
 def test_domain_name_example():
-    dn = stix2.v21.DomainName(_valid_refs={"1": 'domain-name'},
-                              value="example.com",
-                              resolves_to_refs=["1"])
+    dn = stix2.v21.DomainName(
+        _valid_refs={"1": 'domain-name'},
+        value="example.com",
+        resolves_to_refs=["1"])
 
     assert dn.value == "example.com"
     assert dn.resolves_to_refs == ["1"]
@@ -643,28 +648,29 @@ def test_domain_name_example():
 
 def test_domain_name_example_invalid_ref_type():
     with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
-        stix2.v21.DomainName(_valid_refs={"1": "file"},
-                             value="example.com",
-                             resolves_to_refs=["1"])
+        stix2.v21.DomainName(
+            _valid_refs={"1": "file"},
+            value="example.com",
+            resolves_to_refs=["1"])
 
     assert excinfo.value.cls == stix2.v21.DomainName
     assert excinfo.value.prop_name == "resolves_to_refs"
 
 
 def test_file_example():
-    f = stix2.v21.File(name="qwerty.dll",
-                       hashes={
-                        "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"},
-                       size=100,
-                       magic_number_hex="1C",
-                       mime_type="application/msword",
-                       created="2016-12-21T19:00:00Z",
-                       modified="2016-12-24T19:00:00Z",
-                       accessed="2016-12-21T20:00:00Z",
-                       is_encrypted=True,
-                       encryption_algorithm="AES128-CBC",
-                       decryption_key="fred"
-                       )
+    f = stix2.v21.File(
+        name="qwerty.dll",
+        hashes={
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"},
+        size=100,
+        magic_number_hex="1C",
+        mime_type="application/msword",
+        created="2016-12-21T19:00:00Z",
+        modified="2016-12-24T19:00:00Z",
+        accessed="2016-12-21T20:00:00Z",
+        is_encrypted=True,
+        encryption_algorithm="AES128-CBC",
+        decryption_key="fred")
 
     assert f.name == "qwerty.dll"
     assert f.size == 100
@@ -680,17 +686,18 @@ def test_file_example():
 
 
 def test_file_example_with_NTFSExt():
-    f = stix2.v21.File(name="abc.txt",
-                       extensions={
-                           "ntfs-ext": {
-                               "alternate_data_streams": [
-                                    {
-                                        "name": "second.stream",
-                                        "size": 25536
-                                    }
-                                ]
-                            }
-                       })
+    f = stix2.v21.File(
+        name="abc.txt",
+        extensions={
+            "ntfs-ext": {
+                "alternate_data_streams": [
+                    {
+                        "name": "second.stream",
+                        "size": 25536
+                    }
+                ]
+            }
+        })
 
     assert f.name == "abc.txt"
     assert f.extensions["ntfs-ext"].alternate_data_streams[0].size == 25536
@@ -698,32 +705,33 @@ def test_file_example_with_NTFSExt():
 
 def test_file_example_with_empty_NTFSExt():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.v21.File(name="abc.txt",
-                       extensions={
-                           "ntfs-ext": {
-                            }
-                       })
+        stix2.v21.File(
+            name="abc.txt",
+            extensions={
+                "ntfs-ext": {}
+            })
 
     assert excinfo.value.cls == stix2.NTFSExt
     assert excinfo.value.properties == sorted(list(stix2.NTFSExt._properties.keys()))
 
 
 def test_file_example_with_PDFExt():
-    f = stix2.v21.File(name="qwerty.dll",
-                       extensions={
-                           "pdf-ext": {
-                               "version": "1.7",
-                               "document_info_dict": {
-                                   "Title": "Sample document",
-                                   "Author": "Adobe Systems Incorporated",
-                                   "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
-                                   "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
-                                   "CreationDate": "20070412090123-02"
-                               },
-                               "pdfid0": "DFCE52BD827ECF765649852119D",
-                               "pdfid1": "57A1E0F9ED2AE523E313C"
-                           }
-                       })
+    f = stix2.v21.File(
+        name="qwerty.dll",
+        extensions={
+            "pdf-ext": {
+                "version": "1.7",
+                "document_info_dict": {
+                    "Title": "Sample document",
+                    "Author": "Adobe Systems Incorporated",
+                    "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+                    "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+                    "CreationDate": "20070412090123-02"
+                },
+                "pdfid0": "DFCE52BD827ECF765649852119D",
+                "pdfid1": "57A1E0F9ED2AE523E313C"
+            }
+        })
 
     assert f.name == "qwerty.dll"
     assert f.extensions["pdf-ext"].version == "1.7"
@@ -731,20 +739,21 @@ def test_file_example_with_PDFExt():
 
 
 def test_file_example_with_PDFExt_Object():
-    f = stix2.v21.File(name="qwerty.dll",
-                       extensions={
-                           "pdf-ext":
-                               stix2.v21.PDFExt(version="1.7",
-                                                document_info_dict={
-                                                            "Title": "Sample document",
-                                                            "Author": "Adobe Systems Incorporated",
-                                                            "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
-                                                            "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
-                                                            "CreationDate": "20070412090123-02"
-                                                },
-                                                pdfid0="DFCE52BD827ECF765649852119D",
-                                                pdfid1="57A1E0F9ED2AE523E313C")
-                       })
+    f = stix2.v21.File(
+        name="qwerty.dll",
+        extensions={
+            "pdf-ext": stix2.v21.PDFExt(
+                version="1.7",
+                document_info_dict={
+                    "Title": "Sample document",
+                    "Author": "Adobe Systems Incorporated",
+                    "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+                    "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+                    "CreationDate": "20070412090123-02"
+                },
+                pdfid0="DFCE52BD827ECF765649852119D",
+                pdfid1="57A1E0F9ED2AE523E313C")
+        })
 
     assert f.name == "qwerty.dll"
     assert f.extensions["pdf-ext"].version == "1.7"
@@ -752,18 +761,19 @@ def test_file_example_with_PDFExt_Object():
 
 
 def test_file_example_with_RasterImageExt_Object():
-    f = stix2.v21.File(name="qwerty.jpeg",
-                       extensions={
-                            "raster-image-ext": {
-                                    "bits_per_pixel": 123,
-                                    "exif_tags": {
-                                        "Make": "Nikon",
-                                        "Model": "D7000",
-                                        "XResolution": 4928,
-                                        "YResolution": 3264
-                                    }
-                            }
-                       })
+    f = stix2.v21.File(
+        name="qwerty.jpeg",
+        extensions={
+            "raster-image-ext": {
+                "bits_per_pixel": 123,
+                "exif_tags": {
+                    "Make": "Nikon",
+                    "Model": "D7000",
+                    "XResolution": 4928,
+                    "YResolution": 3264
+                }
+            }
+        })
     assert f.name == "qwerty.jpeg"
     assert f.extensions["raster-image-ext"].bits_per_pixel == 123
     assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
@@ -816,78 +826,80 @@ def test_raster_images_ext_create():
 
 
 def test_file_example_with_WindowsPEBinaryExt():
-    f = stix2.v21.File(name="qwerty.dll",
-                       extensions={
-                           "windows-pebinary-ext": {
-                                "pe_type": "exe",
-                                "machine_hex": "014c",
-                                "number_of_sections": 4,
-                                "time_date_stamp": "2016-01-22T12:31:12Z",
-                                "pointer_to_symbol_table_hex": "74726144",
-                                "number_of_symbols": 4542568,
-                                "size_of_optional_header": 224,
-                                "characteristics_hex": "818f",
-                                "optional_header": {
-                                  "magic_hex": "010b",
-                                  "major_linker_version": 2,
-                                  "minor_linker_version": 25,
-                                  "size_of_code": 512,
-                                  "size_of_initialized_data": 283648,
-                                  "size_of_uninitialized_data": 0,
-                                  "address_of_entry_point": 4096,
-                                  "base_of_code": 4096,
-                                  "base_of_data": 8192,
-                                  "image_base": 14548992,
-                                  "section_alignment": 4096,
-                                  "file_alignment": 4096,
-                                  "major_os_version": 1,
-                                  "minor_os_version": 0,
-                                  "major_image_version": 0,
-                                  "minor_image_version": 0,
-                                  "major_subsystem_version": 4,
-                                  "minor_subsystem_version": 0,
-                                  "win32_version_value_hex": "00",
-                                  "size_of_image": 299008,
-                                  "size_of_headers": 4096,
-                                  "checksum_hex": "00",
-                                  "subsystem_hex": "03",
-                                  "dll_characteristics_hex": "00",
-                                  "size_of_stack_reserve": 100000,
-                                  "size_of_stack_commit": 8192,
-                                  "size_of_heap_reserve": 100000,
-                                  "size_of_heap_commit": 4096,
-                                  "loader_flags_hex": "abdbffde",
-                                  "number_of_rva_and_sizes": 3758087646
-                                },
-                                "sections": [
-                                  {
-                                    "name": "CODE",
-                                    "entropy": 0.061089
-                                  },
-                                  {
-                                    "name": "DATA",
-                                    "entropy": 7.980693
-                                  },
-                                  {
-                                    "name": "NicolasB",
-                                    "entropy": 0.607433
-                                  },
-                                  {
-                                    "name": ".idata",
-                                    "entropy": 0.607433
-                                  }
-                                ]
-                            }
-                       })
+    f = stix2.v21.File(
+        name="qwerty.dll",
+        extensions={
+            "windows-pebinary-ext": {
+                "pe_type": "exe",
+                "machine_hex": "014c",
+                "number_of_sections": 4,
+                "time_date_stamp": "2016-01-22T12:31:12Z",
+                "pointer_to_symbol_table_hex": "74726144",
+                "number_of_symbols": 4542568,
+                "size_of_optional_header": 224,
+                "characteristics_hex": "818f",
+                "optional_header": {
+                    "magic_hex": "010b",
+                    "major_linker_version": 2,
+                    "minor_linker_version": 25,
+                    "size_of_code": 512,
+                    "size_of_initialized_data": 283648,
+                    "size_of_uninitialized_data": 0,
+                    "address_of_entry_point": 4096,
+                    "base_of_code": 4096,
+                    "base_of_data": 8192,
+                    "image_base": 14548992,
+                    "section_alignment": 4096,
+                    "file_alignment": 4096,
+                    "major_os_version": 1,
+                    "minor_os_version": 0,
+                    "major_image_version": 0,
+                    "minor_image_version": 0,
+                    "major_subsystem_version": 4,
+                    "minor_subsystem_version": 0,
+                    "win32_version_value_hex": "00",
+                    "size_of_image": 299008,
+                    "size_of_headers": 4096,
+                    "checksum_hex": "00",
+                    "subsystem_hex": "03",
+                    "dll_characteristics_hex": "00",
+                    "size_of_stack_reserve": 100000,
+                    "size_of_stack_commit": 8192,
+                    "size_of_heap_reserve": 100000,
+                    "size_of_heap_commit": 4096,
+                    "loader_flags_hex": "abdbffde",
+                    "number_of_rva_and_sizes": 3758087646
+                },
+                "sections": [
+                    {
+                        "name": "CODE",
+                        "entropy": 0.061089
+                    },
+                    {
+                        "name": "DATA",
+                        "entropy": 7.980693
+                    },
+                    {
+                        "name": "NicolasB",
+                        "entropy": 0.607433
+                    },
+                    {
+                        "name": ".idata",
+                        "entropy": 0.607433
+                    }
+                ]
+            }
+        })
     assert f.name == "qwerty.dll"
     assert f.extensions["windows-pebinary-ext"].sections[2].entropy == 0.607433
 
 
 def test_file_example_encryption_error():
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.v21.File(name="qwerty.dll",
-                       is_encrypted=False,
-                       encryption_algorithm="AES128-CBC")
+        stix2.v21.File(
+            name="qwerty.dll",
+            is_encrypted=False,
+            encryption_algorithm="AES128-CBC")
 
     assert excinfo.value.cls == stix2.v21.File
     assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
@@ -899,9 +911,10 @@ def test_file_example_encryption_error():
 
 
 def test_ip4_address_example():
-    ip4 = stix2.v21.IPv4Address(_valid_refs={"4": "mac-addr", "5": "mac-addr"},
-                                value="198.51.100.3",
-                                resolves_to_refs=["4", "5"])
+    ip4 = stix2.v21.IPv4Address(
+        _valid_refs={"4": "mac-addr", "5": "mac-addr"},
+        value="198.51.100.3",
+        resolves_to_refs=["4", "5"])
 
     assert ip4.value == "198.51.100.3"
     assert ip4.resolves_to_refs == ["4", "5"]
@@ -926,28 +939,31 @@ def test_mac_address_example():
 
 
 def test_network_traffic_example():
-    nt = stix2.v21.NetworkTraffic(_valid_refs={"0": "ipv4-addr", "1": "ipv4-addr"},
-                                  protocols="tcp",
-                                  src_ref="0",
-                                  dst_ref="1")
+    nt = stix2.v21.NetworkTraffic(
+        _valid_refs={"0": "ipv4-addr", "1": "ipv4-addr"},
+        protocols="tcp",
+        src_ref="0",
+        dst_ref="1")
     assert nt.protocols == ["tcp"]
     assert nt.src_ref == "0"
     assert nt.dst_ref == "1"
 
 
 def test_network_traffic_http_request_example():
-    h = stix2.v21.HTTPRequestExt(request_method="get",
-                                 request_value="/download.html",
-                                 request_version="http/1.1",
-                                 request_header={
-                                     "Accept-Encoding": "gzip,deflate",
-                                     "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
-                                     "Host": "www.example.com"
-                                 })
-    nt = stix2.v21.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
-                                  protocols="tcp",
-                                  src_ref="0",
-                                  extensions={'http-request-ext': h})
+    h = stix2.v21.HTTPRequestExt(
+        request_method="get",
+        request_value="/download.html",
+        request_version="http/1.1",
+        request_header={
+            "Accept-Encoding": "gzip,deflate",
+            "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
+            "Host": "www.example.com"
+        })
+    nt = stix2.v21.NetworkTraffic(
+        _valid_refs={"0": "ipv4-addr"},
+        protocols="tcp",
+        src_ref="0",
+        extensions={'http-request-ext': h})
     assert nt.extensions['http-request-ext'].request_method == "get"
     assert nt.extensions['http-request-ext'].request_value == "/download.html"
     assert nt.extensions['http-request-ext'].request_version == "http/1.1"
@@ -957,25 +973,27 @@ def test_network_traffic_http_request_example():
 
 
 def test_network_traffic_icmp_example():
-    h = stix2.v21.ICMPExt(icmp_type_hex="08",
-                          icmp_code_hex="00")
-    nt = stix2.v21.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
-                                  protocols="tcp",
-                                  src_ref="0",
-                                  extensions={'icmp-ext': h})
+    h = stix2.v21.ICMPExt(icmp_type_hex="08", icmp_code_hex="00")
+    nt = stix2.v21.NetworkTraffic(
+        _valid_refs={"0": "ipv4-addr"},
+        protocols="tcp",
+        src_ref="0",
+        extensions={'icmp-ext': h})
     assert nt.extensions['icmp-ext'].icmp_type_hex == "08"
     assert nt.extensions['icmp-ext'].icmp_code_hex == "00"
 
 
 def test_network_traffic_socket_example():
-    h = stix2.v21.SocketExt(is_listening=True,
-                            address_family="AF_INET",
-                            protocol_family="PF_INET",
-                            socket_type="SOCK_STREAM")
-    nt = stix2.v21.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
-                                  protocols="tcp",
-                                  src_ref="0",
-                                  extensions={'socket-ext': h})
+    h = stix2.v21.SocketExt(
+        is_listening=True,
+        address_family="AF_INET",
+        protocol_family="PF_INET",
+        socket_type="SOCK_STREAM")
+    nt = stix2.v21.NetworkTraffic(
+        _valid_refs={"0": "ipv4-addr"},
+        protocols="tcp",
+        src_ref="0",
+        extensions={'socket-ext': h})
     assert nt.extensions['socket-ext'].is_listening
     assert nt.extensions['socket-ext'].address_family == "AF_INET"
     assert nt.extensions['socket-ext'].protocol_family == "PF_INET"
@@ -984,10 +1002,11 @@ def test_network_traffic_socket_example():
 
 def test_network_traffic_tcp_example():
     h = stix2.v21.TCPExt(src_flags_hex="00000002")
-    nt = stix2.v21.NetworkTraffic(_valid_refs={"0": "ipv4-addr"},
-                                  protocols="tcp",
-                                  src_ref="0",
-                                  extensions={'tcp-ext': h})
+    nt = stix2.v21.NetworkTraffic(
+        _valid_refs={"0": "ipv4-addr"},
+        protocols="tcp",
+        src_ref="0",
+        extensions={'tcp-ext': h})
     assert nt.extensions['tcp-ext'].src_flags_hex == "00000002"
 
 
@@ -998,12 +1017,13 @@ def test_mutex_example():
 
 
 def test_process_example():
-    p = stix2.v21.Process(_valid_refs={"0": "file"},
-                          pid=1221,
-                          name="gedit-bin",
-                          created="2016-01-20T14:11:25.55Z",
-                          arguments=["--new-window"],
-                          binary_ref="0")
+    p = stix2.v21.Process(
+        _valid_refs={"0": "file"},
+        pid=1221,
+        name="gedit-bin",
+        created="2016-01-20T14:11:25.55Z",
+        arguments=["--new-window"],
+        binary_ref="0")
 
     assert p.name == "gedit-bin"
     assert p.arguments == ["--new-window"]
@@ -1035,16 +1055,17 @@ def test_process_example_empty_with_extensions():
 
 
 def test_process_example_windows_process_ext():
-    proc = stix2.v21.Process(pid=314,
-                             name="foobar.exe",
-                             extensions={
-                                 "windows-process-ext": {
-                                     "aslr_enabled": True,
-                                     "dep_enabled": True,
-                                     "priority": "HIGH_PRIORITY_CLASS",
-                                     "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
-                                 }
-                             })
+    proc = stix2.v21.Process(
+        pid=314,
+        name="foobar.exe",
+        extensions={
+            "windows-process-ext": {
+                "aslr_enabled": True,
+                "dep_enabled": True,
+                "priority": "HIGH_PRIORITY_CLASS",
+                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
+            }
+        })
     assert proc.extensions["windows-process-ext"].aslr_enabled
     assert proc.extensions["windows-process-ext"].dep_enabled
     assert proc.extensions["windows-process-ext"].priority == "HIGH_PRIORITY_CLASS"
@@ -1053,11 +1074,12 @@ def test_process_example_windows_process_ext():
 
 def test_process_example_windows_process_ext_empty():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-            stix2.v21.Process(pid=1221,
-                              name="gedit-bin",
-                              extensions={
-                                "windows-process-ext": {}
-                              })
+            stix2.v21.Process(
+                pid=1221,
+                name="gedit-bin",
+                extensions={
+                    "windows-process-ext": {}
+                })
 
     assert excinfo.value.cls == stix2.v21.WindowsProcessExt
     properties_of_extension = list(stix2.v21.WindowsProcessExt._properties.keys())
@@ -1075,10 +1097,11 @@ def test_process_example_extensions_empty():
 
 def test_process_example_with_WindowsProcessExt_Object():
     p = stix2.v21.Process(extensions={
-        "windows-process-ext": stix2.v21.WindowsProcessExt(aslr_enabled=True,
-                                                           dep_enabled=True,
-                                                           priority="HIGH_PRIORITY_CLASS",
-                                                           owner_sid="S-1-5-21-186985262-1144665072-74031268-1309")   # noqa
+        "windows-process-ext": stix2.v21.WindowsProcessExt(
+            aslr_enabled=True,
+            dep_enabled=True,
+            priority="HIGH_PRIORITY_CLASS",
+            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309")   # noqa
     })
 
     assert p.extensions["windows-process-ext"].dep_enabled
@@ -1087,13 +1110,13 @@ def test_process_example_with_WindowsProcessExt_Object():
 
 def test_process_example_with_WindowsServiceExt():
     p = stix2.v21.Process(extensions={
-                        "windows-service-ext": {
-                            "service_name": "sirvizio",
-                            "display_name": "Sirvizio",
-                            "start_type": "SERVICE_AUTO_START",
-                            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-                            "service_status": "SERVICE_RUNNING"
-                        }
+        "windows-service-ext": {
+            "service_name": "sirvizio",
+            "display_name": "Sirvizio",
+            "start_type": "SERVICE_AUTO_START",
+            "service_type": "SERVICE_WIN32_OWN_PROCESS",
+            "service_status": "SERVICE_RUNNING"
+        }
     })
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
@@ -1124,10 +1147,11 @@ def test_process_example_with_WindowsProcessServiceExt():
 
 
 def test_software_example():
-    s = stix2.v21.Software(name="Word",
-                           cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
-                           version="2002",
-                           vendor="Microsoft")
+    s = stix2.v21.Software(
+        name="Word",
+        cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
+        version="2002",
+        vendor="Microsoft")
 
     assert s.name == "Word"
     assert s.cpe == "cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*"
@@ -1143,17 +1167,18 @@ def test_url_example():
 
 
 def test_user_account_example():
-    a = stix2.v21.UserAccount(user_id="1001",
-                              account_login="jdoe",
-                              account_type="unix",
-                              display_name="John Doe",
-                              is_service_account=False,
-                              is_privileged=False,
-                              can_escalate_privs=True,
-                              account_created="2016-01-20T12:31:12Z",
-                              password_last_changed="2016-01-20T14:27:43Z",
-                              account_first_login="2016-01-20T14:26:07Z",
-                              account_last_login="2016-07-22T16:08:28Z")
+    a = stix2.v21.UserAccount(
+        user_id="1001",
+        account_login="jdoe",
+        account_type="unix",
+        display_name="John Doe",
+        is_service_account=False,
+        is_privileged=False,
+        can_escalate_privs=True,
+        account_created="2016-01-20T12:31:12Z",
+        password_last_changed="2016-01-20T14:27:43Z",
+        account_first_login="2016-01-20T14:26:07Z",
+        account_last_login="2016-07-22T16:08:28Z")
 
     assert a.user_id == "1001"
     assert a.account_login == "jdoe"
@@ -1169,14 +1194,16 @@ def test_user_account_example():
 
 
 def test_user_account_unix_account_ext_example():
-    u = stix2.v21.UNIXAccountExt(gid=1001,
-                             groups=["wheel"],
-                             home_dir="/home/jdoe",
-                             shell="/bin/bash")
-    a = stix2.v21.UserAccount(user_id="1001",
-                          account_login="jdoe",
-                          account_type="unix",
-                          extensions={'unix-account-ext': u})
+    u = stix2.v21.UNIXAccountExt(
+        gid=1001,
+        groups=["wheel"],
+        home_dir="/home/jdoe",
+        shell="/bin/bash")
+    a = stix2.v21.UserAccount(
+        user_id="1001",
+        account_login="jdoe",
+        account_type="unix",
+        extensions={'unix-account-ext': u})
     assert a.extensions['unix-account-ext'].gid == 1001
     assert a.extensions['unix-account-ext'].groups == ["wheel"]
     assert a.extensions['unix-account-ext'].home_dir == "/home/jdoe"
@@ -1185,15 +1212,18 @@ def test_user_account_unix_account_ext_example():
 
 def test_windows_registry_key_example():
     with pytest.raises(ValueError):
-        stix2.v21.WindowsRegistryValueType(name="Foo",
-                                           data="qwerty",
-                                           data_type="string")
+        stix2.v21.WindowsRegistryValueType(
+            name="Foo",
+            data="qwerty",
+            data_type="string")
 
-    v = stix2.v21.WindowsRegistryValueType(name="Foo",
-                                       data="qwerty",
-                                       data_type="REG_SZ")
-    w = stix2.v21.WindowsRegistryKey(key="hkey_local_machine\\system\\bar\\foo",
-                                 values=[v])
+    v = stix2.v21.WindowsRegistryValueType(
+        name="Foo",
+        data="qwerty",
+        data_type="REG_SZ")
+    w = stix2.v21.WindowsRegistryKey(
+        key="hkey_local_machine\\system\\bar\\foo",
+        values=[v])
     assert w.key == "hkey_local_machine\\system\\bar\\foo"
     assert w.values[0].name == "Foo"
     assert w.values[0].data == "qwerty"
