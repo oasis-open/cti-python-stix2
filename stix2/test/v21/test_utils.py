@@ -105,7 +105,7 @@ def test_deduplicate(stix_objs1):
 
 
 @pytest.mark.parametrize('object, tuple_to_find, expected_index', [
-    (stix2.ObservedData(
+    (stix2.v21.ObservedData(
         id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T19:58:16.000Z",
@@ -158,6 +158,7 @@ def test_deduplicate(stix_objs1):
     }, ('key', {'key_one': 'value', 'key_two': 'value'}), 0),
     ({
         "type": "language-content",
+        "spec_version": "2.1",
         "id": "language-content--b86bd89f-98bb-4fa9-8cb2-9ad421da981d",
         "created": "2017-02-08T21:31:22.007Z",
         "modified": "2017-02-08T21:31:22.007Z",

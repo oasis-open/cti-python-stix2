@@ -3,7 +3,7 @@ import pytest
 from stix2.datastore import (CompositeDataSource, DataSink, DataSource,
                              DataStoreMixin)
 from stix2.datastore.filters import Filter
-from stix2.test.constants import CAMPAIGN_MORE_KWARGS
+from stix2.test.v21.constants import CAMPAIGN_MORE_KWARGS
 
 
 def test_datasource_abstract_class_raises_error():

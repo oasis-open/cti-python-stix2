@@ -11,10 +11,10 @@
             ],
             "relationship_type": "uses",
             "source_ref": "intrusion-set--f3bdec95-3d62-42d9-a840-29630f6cdc1a",
-            "target_ref": "malware--b42378e0-f147-496f-992a-26a49705395b",
+            "spec_version": "2.1",
+            "target_ref": "malware--92ec0cbd-2c30-44a2-b270-73f4ec949841",
             "type": "relationship"
         }
     ],
-    "spec_version": "2.0",
     "type": "bundle"
 }

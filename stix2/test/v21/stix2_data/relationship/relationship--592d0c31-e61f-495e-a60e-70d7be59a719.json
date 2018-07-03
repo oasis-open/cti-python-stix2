@@ -11,10 +11,10 @@
             ],
             "relationship_type": "mitigates",
             "source_ref": "course-of-action--d9727aee-48b8-4fdb-89e2-4c49746ba4dd",
-            "target_ref": "attack-pattern--ae676644-d2d2-41b7-af7e-9bed1b55898c",
+            "spec_version": "2.1",
+            "target_ref": "malware--92ec0cbd-2c30-44a2-b270-73f4ec949841",
             "type": "relationship"
         }
     ],
-    "spec_version": "2.0",
     "type": "bundle"
 }

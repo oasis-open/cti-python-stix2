@@ -6,7 +6,7 @@ import stix2.v21.sdo
 
 from .constants import FAKE_TIME, MARKING_DEFINITION_ID
 
-IDENTITY_CUSTOM_PROP = stix2.Identity(
+IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
     name="John Smith",
     identity_class="individual",
     x_foo="bar",
@@ -16,7 +16,7 @@ IDENTITY_CUSTOM_PROP = stix2.Identity(
 
 def test_identity_custom_property():
     with pytest.raises(ValueError) as excinfo:
-        stix2.Identity(
+        stix2.v21.Identity(
             id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
             modified="2015-12-21T19:59:11Z",
@@ -27,7 +27,7 @@ def test_identity_custom_property():
     assert str(excinfo.value) == "'custom_properties' must be a dictionary"
 
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
-        stix2.Identity(
+        stix2.v21.Identity(
             id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
             modified="2015-12-21T19:59:11Z",
@@ -40,7 +40,7 @@ def test_identity_custom_property():
             )
     assert "Unexpected properties for Identity" in str(excinfo.value)
 
-    identity = stix2.Identity(
+    identity = stix2.v21.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
         modified="2015-12-21T19:59:11Z",
@@ -55,7 +55,7 @@ def test_identity_custom_property():
 
 def test_identity_custom_property_invalid():
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
-        stix2.Identity(
+        stix2.v21.Identity(
             id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
             modified="2015-12-21T19:59:11Z",
@@ -63,13 +63,13 @@ def test_identity_custom_property_invalid():
             identity_class="individual",
             x_foo="bar",
         )
-    assert excinfo.value.cls == stix2.Identity
+    assert excinfo.value.cls == stix2.v21.Identity
     assert excinfo.value.properties == ['x_foo']
     assert "Unexpected properties for" in str(excinfo.value)
 
 
 def test_identity_custom_property_allowed():
-    identity = stix2.Identity(
+    identity = stix2.v21.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
         modified="2015-12-21T19:59:11Z",
@@ -84,6 +84,7 @@ def test_identity_custom_property_allowed():
 @pytest.mark.parametrize("data", [
     """{
         "type": "identity",
+        "spec_version": "2.1",
         "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         "created": "2015-12-21T19:59:11Z",
         "modified": "2015-12-21T19:59:11Z",
@@ -94,31 +95,31 @@ def test_identity_custom_property_allowed():
 ])
 def test_parse_identity_custom_property(data):
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
-        identity = stix2.parse(data)
-    assert excinfo.value.cls == stix2.v21.sdo.Identity
+        stix2.parse(data, version="2.1")
+    assert excinfo.value.cls == stix2.v21.Identity
     assert excinfo.value.properties == ['foo']
     assert "Unexpected properties for" in str(excinfo.value)
 
-    identity = stix2.parse(data, allow_custom=True)
+    identity = stix2.parse(data, version="2.1", allow_custom=True)
     assert identity.foo == "bar"
 
 
 def test_custom_property_object_in_bundled_object():
-    bundle = stix2.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
+    bundle = stix2.v21.Bundle(IDENTITY_CUSTOM_PROP, allow_custom=True)
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
 
 
 def test_custom_properties_object_in_bundled_object():
-    obj = stix2.Identity(
+    obj = stix2.v21.Identity(
         name="John Smith",
         identity_class="individual",
         custom_properties={
             "x_foo": "bar",
         }
     )
-    bundle = stix2.Bundle(obj, allow_custom=True)
+    bundle = stix2.v21.Bundle(obj, allow_custom=True)
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
@@ -127,6 +128,7 @@ def test_custom_properties_object_in_bundled_object():
 def test_custom_property_dict_in_bundled_object():
     custom_identity = {
         'type': 'identity',
+        'spec_version': '2.1',
         'id': 'identity--311b2d2d-f010-5473-83ec-1edf84858f4c',
         'created': '2015-12-21T19:59:11Z',
         'name': 'John Smith',
@@ -134,9 +136,9 @@ def test_custom_property_dict_in_bundled_object():
         'x_foo': 'bar',
     }
     with pytest.raises(stix2.exceptions.ExtraPropertiesError):
-        bundle = stix2.Bundle(custom_identity)
+        stix2.v21.Bundle(custom_identity)
 
-    bundle = stix2.Bundle(custom_identity, allow_custom=True)
+    bundle = stix2.v21.Bundle(custom_identity, allow_custom=True)
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
 
@@ -144,6 +146,7 @@ def test_custom_property_dict_in_bundled_object():
 def test_custom_properties_dict_in_bundled_object():
     custom_identity = {
         'type': 'identity',
+        'spec_version': '2.1',
         'id': 'identity--311b2d2d-f010-5473-83ec-1edf84858f4c',
         'created': '2015-12-21T19:59:11Z',
         'name': 'John Smith',
@@ -152,19 +155,19 @@ def test_custom_properties_dict_in_bundled_object():
             'x_foo': 'bar',
         },
     }
-    bundle = stix2.Bundle(custom_identity)
+    bundle = stix2.v21.Bundle(custom_identity)
 
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
 
 
 def test_custom_property_in_observed_data():
-    artifact = stix2.File(
+    artifact = stix2.v21.File(
         allow_custom=True,
         name='test',
         x_foo='bar'
     )
-    observed_data = stix2.ObservedData(
+    observed_data = stix2.v21.ObservedData(
         allow_custom=True,
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
@@ -177,16 +180,16 @@ def test_custom_property_in_observed_data():
 
 
 def test_custom_property_object_in_observable_extension():
-    ntfs = stix2.NTFSExt(
+    ntfs = stix2.v21.NTFSExt(
         allow_custom=True,
         sid=1,
         x_foo='bar',
     )
-    artifact = stix2.File(
+    artifact = stix2.v21.File(
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
-    observed_data = stix2.ObservedData(
+    observed_data = stix2.v21.ObservedData(
         allow_custom=True,
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
@@ -200,7 +203,7 @@ def test_custom_property_object_in_observable_extension():
 
 def test_custom_property_dict_in_observable_extension():
     with pytest.raises(stix2.exceptions.ExtraPropertiesError):
-        artifact = stix2.File(
+        stix2.v21.File(
             name='test',
             extensions={
                 'ntfs-ext': {
@@ -210,7 +213,7 @@ def test_custom_property_dict_in_observable_extension():
             },
         )
 
-    artifact = stix2.File(
+    artifact = stix2.v21.File(
         allow_custom=True,
         name='test',
         extensions={
@@ -221,7 +224,7 @@ def test_custom_property_dict_in_observable_extension():
             }
         },
     )
-    observed_data = stix2.ObservedData(
+    observed_data = stix2.v21.ObservedData(
         allow_custom=True,
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
@@ -239,15 +242,15 @@ def test_identity_custom_property_revoke():
 
 
 def test_identity_custom_property_edit_markings():
-    marking_obj = stix2.MarkingDefinition(
+    marking_obj = stix2.v21.MarkingDefinition(
         id=MARKING_DEFINITION_ID,
         definition_type="statement",
-        definition=stix2.StatementMarking(statement="Copyright 2016, Example Corp")
+        definition=stix2.v21.StatementMarking(statement="Copyright 2016, Example Corp")
     )
-    marking_obj2 = stix2.MarkingDefinition(
+    marking_obj2 = stix2.v21.MarkingDefinition(
         id=MARKING_DEFINITION_ID,
         definition_type="statement",
-        definition=stix2.StatementMarking(statement="Another one")
+        definition=stix2.v21.StatementMarking(statement="Another one")
     )
 
     # None of the following should throw exceptions
@@ -261,7 +264,7 @@ def test_identity_custom_property_edit_markings():
 
 def test_custom_marking_no_init_1():
     @stix2.CustomMarking('x-new-obj', [
-        ('property1', stix2.properties.StringProperty(required=True)),
+        ('property1', stix2.v21.properties.StringProperty(required=True)),
     ])
     class NewObj():
         pass
@@ -272,7 +275,7 @@ def test_custom_marking_no_init_1():
 
 def test_custom_marking_no_init_2():
     @stix2.CustomMarking('x-new-obj2', [
-        ('property1', stix2.properties.StringProperty(required=True)),
+        ('property1', stix2.v21.properties.StringProperty(required=True)),
     ])
     class NewObj2(object):
         pass
@@ -282,8 +285,8 @@ def test_custom_marking_no_init_2():
 
 
 @stix2.sdo.CustomObject('x-new-type', [
-    ('property1', stix2.properties.StringProperty(required=True)),
-    ('property2', stix2.properties.IntegerProperty()),
+    ('property1', stix2.v21.properties.StringProperty(required=True)),
+    ('property2', stix2.v21.properties.IntegerProperty()),
 ])
 class NewType(object):
     def __init__(self, property2=None, **kwargs):
@@ -867,6 +870,7 @@ def test_extension_property_location():
 @pytest.mark.parametrize("data", [
     """{
     "type": "x-example",
+    "spec_version": "2.1",
     "id": "x-example--336d8a9f-91f1-46c5-b142-6441bb9f8b8d",
     "created": "2018-06-12T16:20:58.059Z",
     "modified": "2018-06-12T16:20:58.059Z",
@@ -880,7 +884,7 @@ def test_extension_property_location():
 ])
 def test_custom_object_nested_dictionary(data):
     @stix2.sdo.CustomObject('x-example', [
-        ('dictionary', stix2.properties.DictionaryProperty()),
+        ('dictionary', stix2.v21.properties.DictionaryProperty()),
     ])
     class Example(object):
         def __init__(self, **kwargs):

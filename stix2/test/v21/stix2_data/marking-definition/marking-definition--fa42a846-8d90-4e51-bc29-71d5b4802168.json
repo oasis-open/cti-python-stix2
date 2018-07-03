@@ -8,9 +8,9 @@
             },
             "definition_type": "statement",
             "id": "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168",
+            "spec_version": "2.1",
             "type": "marking-definition"
         }
     ],
-    "spec_version": "2.0",
     "type": "bundle"
 }

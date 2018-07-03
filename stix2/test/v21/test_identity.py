@@ -19,7 +19,7 @@ EXPECTED = """{
 
 
 def test_identity_example():
-    identity = stix2.Identity(
+    identity = stix2.v21.Identity(
         id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11.000Z",
         modified="2015-12-21T19:59:11.000Z",
@@ -43,9 +43,10 @@ def test_identity_example():
     },
 ])
 def test_parse_identity(data):
-    identity = stix2.parse(data)
+    identity = stix2.parse(data, version="2.1")
 
     assert identity.type == 'identity'
+    assert identity.spec_version == '2.1'
     assert identity.id == IDENTITY_ID
     assert identity.created == dt.datetime(2015, 12, 21, 19, 59, 11, tzinfo=pytz.utc)
     assert identity.modified == dt.datetime(2015, 12, 21, 19, 59, 11, tzinfo=pytz.utc)
@@ -61,11 +62,11 @@ def test_parse_no_type():
             "modified": "2015-12-21T19:59:11.000Z",
             "name": "John Smith",
             "identity_class": "individual"
-        }""")
+        }""", version="2.1")
 
 
 def test_identity_with_custom():
-    identity = stix2.Identity(
+    identity = stix2.v21.Identity(
         name="John Smith",
         identity_class="individual",
         custom_properties={'x_foo': 'bar'}

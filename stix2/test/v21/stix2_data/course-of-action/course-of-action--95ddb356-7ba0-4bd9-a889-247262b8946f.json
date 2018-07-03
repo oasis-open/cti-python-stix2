@@ -8,9 +8,9 @@
             "id": "course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f",
             "modified": "2017-05-31T21:30:26.495974Z",
             "name": "Rootkit Mitigation",
+            "spec_version": "2.1",
             "type": "course-of-action"
         }
     ],
-    "spec_version": "2.0",
     "type": "bundle"
 }

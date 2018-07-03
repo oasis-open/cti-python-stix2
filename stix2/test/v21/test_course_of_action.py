@@ -20,7 +20,7 @@ EXPECTED = """{
 
 
 def test_course_of_action_example():
-    coa = stix2.CourseOfAction(
+    coa = stix2.v21.CourseOfAction(
         id="course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
@@ -46,9 +46,10 @@ def test_course_of_action_example():
     },
 ])
 def test_parse_course_of_action(data):
-    coa = stix2.parse(data)
+    coa = stix2.parse(data, version="2.1")
 
     assert coa.type == 'course-of-action'
+    assert coa.spec_version == '2.1'
     assert coa.id == COURSE_OF_ACTION_ID
     assert coa.created == dt.datetime(2016, 4, 6, 20, 3, 48, tzinfo=pytz.utc)
     assert coa.modified == dt.datetime(2016, 4, 6, 20, 3, 48, tzinfo=pytz.utc)

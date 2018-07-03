@@ -11,7 +11,7 @@ LMCO_RECON = """{
 
 
 def test_lockheed_martin_cyber_kill_chain():
-    recon = stix2.KillChainPhase(
+    recon = stix2.v21.KillChainPhase(
         kill_chain_name="lockheed-martin-cyber-kill-chain",
         phase_name="reconnaissance",
     )
@@ -26,7 +26,7 @@ FOO_PRE_ATTACK = """{
 
 
 def test_kill_chain_example():
-    preattack = stix2.KillChainPhase(
+    preattack = stix2.v21.KillChainPhase(
         kill_chain_name="foo",
         phase_name="pre-attack",
     )
@@ -37,25 +37,25 @@ def test_kill_chain_example():
 def test_kill_chain_required_properties():
 
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
-        stix2.KillChainPhase()
+        stix2.v21.KillChainPhase()
 
-    assert excinfo.value.cls == stix2.KillChainPhase
+    assert excinfo.value.cls == stix2.v21.KillChainPhase
     assert excinfo.value.properties == ["kill_chain_name", "phase_name"]
 
 
 def test_kill_chain_required_property_chain_name():
 
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
-        stix2.KillChainPhase(phase_name="weaponization")
+        stix2.v21.KillChainPhase(phase_name="weaponization")
 
-    assert excinfo.value.cls == stix2.KillChainPhase
+    assert excinfo.value.cls == stix2.v21.KillChainPhase
     assert excinfo.value.properties == ["kill_chain_name"]
 
 
 def test_kill_chain_required_property_phase_name():
 
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
-        stix2.KillChainPhase(kill_chain_name="lockheed-martin-cyber-kill-chain")
+        stix2.v21.KillChainPhase(kill_chain_name="lockheed-martin-cyber-kill-chain")
 
-    assert excinfo.value.cls == stix2.KillChainPhase
+    assert excinfo.value.cls == stix2.v21.KillChainPhase
     assert excinfo.value.properties == ["phase_name"]

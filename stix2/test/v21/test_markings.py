@@ -79,7 +79,7 @@ def test_marking_def_example_with_tlp():
 
 
 def test_marking_def_example_with_statement_positional_argument():
-    marking_definition = stix2.MarkingDefinition(
+    marking_definition = stix2.v21.MarkingDefinition(
         id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
@@ -91,7 +91,7 @@ def test_marking_def_example_with_statement_positional_argument():
 
 def test_marking_def_example_with_kwargs_statement():
     kwargs = dict(statement="Copyright 2016, Example Corp")
-    marking_definition = stix2.MarkingDefinition(
+    marking_definition = stix2.v21.MarkingDefinition(
         id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
@@ -103,7 +103,7 @@ def test_marking_def_example_with_kwargs_statement():
 
 def test_marking_def_invalid_type():
     with pytest.raises(ValueError):
-        stix2.MarkingDefinition(
+        stix2.v21.MarkingDefinition(
             id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
             created="2017-01-20T00:00:00.000Z",
             definition_type="my-definition-type",
@@ -112,7 +112,7 @@ def test_marking_def_invalid_type():
 
 
 def test_campaign_with_markings_example():
-    campaign = stix2.Campaign(
+    campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:00Z",
@@ -125,7 +125,7 @@ def test_campaign_with_markings_example():
 
 
 def test_granular_example():
-    granular_marking = stix2.GranularMarking(
+    granular_marking = stix2.v21.GranularMarking(
         marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         selectors=["abc", "abc.[23]", "abc.def", "abc.[2].efg"]
     )
@@ -135,19 +135,19 @@ def test_granular_example():
 
 def test_granular_example_with_bad_selector():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.GranularMarking(
+        stix2.v21.GranularMarking(
             marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
             selectors=["abc[0]"]   # missing "."
         )
 
-    assert excinfo.value.cls == stix2.GranularMarking
+    assert excinfo.value.cls == stix2.v21.GranularMarking
     assert excinfo.value.prop_name == "selectors"
     assert excinfo.value.reason == "must adhere to selector syntax."
     assert str(excinfo.value) == "Invalid value for GranularMarking 'selectors': must adhere to selector syntax."
 
 
 def test_campaign_with_granular_markings_example():
-    campaign = stix2.Campaign(
+    campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:00Z",
@@ -155,7 +155,7 @@ def test_campaign_with_granular_markings_example():
         name="Green Group Attacks Against Finance",
         description="Campaign by Green Group against a series of targets in the financial services sector.",
         granular_markings=[
-            stix2.GranularMarking(
+            stix2.v21.GranularMarking(
                 marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
                 selectors=["description"])
             ])
@@ -175,9 +175,10 @@ def test_campaign_with_granular_markings_example():
     },
 ])
 def test_parse_marking_definition(data):
-    gm = stix2.parse(data)
+    gm = stix2.parse(data, version="2.1")
 
     assert gm.type == 'marking-definition'
+    assert gm.spec_version == '2.1'
     assert gm.id == MARKING_DEFINITION_ID
     assert gm.created == dt.datetime(2017, 1, 20, 0, 0, 0, tzinfo=pytz.utc)
     assert gm.definition.tlp == "white"
@@ -185,8 +186,8 @@ def test_parse_marking_definition(data):
 
 
 @stix2.common.CustomMarking('x-new-marking-type', [
-    ('property1', stix2.properties.StringProperty(required=True)),
-    ('property2', stix2.properties.IntegerProperty()),
+    ('property1', stix2.v21.properties.StringProperty(required=True)),
+    ('property2', stix2.v21.properties.IntegerProperty()),
 ])
 class NewMarking(object):
     def __init__(self, property2=None, **kwargs):
@@ -197,7 +198,7 @@ class NewMarking(object):
 def test_registered_custom_marking():
     nm = NewMarking(property1='something', property2=55)
 
-    marking_def = stix2.MarkingDefinition(
+    marking_def = stix2.v21.MarkingDefinition(
         id="marking-definition--00000000-0000-0000-0000-000000000012",
         created="2017-01-22T00:00:00.000Z",
         definition_type="x-new-marking-type",
@@ -223,8 +224,8 @@ def test_not_registered_marking_raises_exception():
     with pytest.raises(ValueError) as excinfo:
         # Used custom object on purpose to demonstrate a not-registered marking
         @stix2.sdo.CustomObject('x-new-marking-type2', [
-            ('property1', stix2.properties.StringProperty(required=True)),
-            ('property2', stix2.properties.IntegerProperty()),
+            ('property1', stix2.v21.properties.StringProperty(required=True)),
+            ('property2', stix2.v21.properties.IntegerProperty()),
         ])
         class NewObject2(object):
             def __init__(self, property2=None, **kwargs):
@@ -232,7 +233,7 @@ def test_not_registered_marking_raises_exception():
 
         no = NewObject2(property1='something', property2=55)
 
-        stix2.MarkingDefinition(
+        stix2.v21.MarkingDefinition(
             id="marking-definition--00000000-0000-0000-0000-000000000012",
             created="2017-01-22T00:00:00.000Z",
             definition_type="x-new-marking-type2",
@@ -253,7 +254,7 @@ def test_marking_wrong_type_construction():
 
 
 def test_campaign_add_markings():
-    campaign = stix2.Campaign(
+    campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:00Z",

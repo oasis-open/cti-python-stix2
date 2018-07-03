@@ -45,7 +45,7 @@ TEST_LANGUAGE_CONTENT = u"""{
 def test_language_content_campaign():
     now = dt.datetime(2017, 2, 8, 21, 31, 22, microsecond=7000, tzinfo=pytz.utc)
 
-    lc = stix2.LanguageContent(
+    lc = stix2.v21.LanguageContent(
         type='language-content',
         id=LANGUAGE_CONTENT_ID,
         created=now,
@@ -64,7 +64,7 @@ def test_language_content_campaign():
         }
     )
 
-    camp = stix2.parse(TEST_CAMPAIGN)
+    camp = stix2.parse(TEST_CAMPAIGN, version='2.1')
 
     # In order to provide the same representation, we need to disable escaping
     # in json.dumps(). https://docs.python.org/3/library/json.html#json.dumps

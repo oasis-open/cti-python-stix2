@@ -9,92 +9,92 @@ from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, FAKE_TIME, IDENTITY_ID,
 
 @pytest.fixture
 def ds():
-    cam = stix2.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
-    idy = stix2.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
-    ind = stix2.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
-    mal = stix2.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
-    rel1 = stix2.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
-    rel2 = stix2.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
-    rel3 = stix2.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    cam = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    mal = stix2.v21.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
+    rel1 = stix2.v21.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.v21.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.v21.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
     stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
     yield stix2.MemoryStore(stix_objs)
 
 
 def test_object_factory_created_by_ref_str():
     factory = stix2.ObjectFactory(created_by_ref=IDENTITY_ID)
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert ind.created_by_ref == IDENTITY_ID
 
 
 def test_object_factory_created_by_ref_obj():
-    id_obj = stix2.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    id_obj = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=id_obj)
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert ind.created_by_ref == IDENTITY_ID
 
 
 def test_object_factory_override_default():
     factory = stix2.ObjectFactory(created_by_ref=IDENTITY_ID)
     new_id = "identity--983b3172-44fe-4a80-8091-eb8098841fe8"
-    ind = factory.create(stix2.Indicator, created_by_ref=new_id, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, created_by_ref=new_id, **INDICATOR_KWARGS)
     assert ind.created_by_ref == new_id
 
 
 def test_object_factory_created():
     factory = stix2.ObjectFactory(created=FAKE_TIME)
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert ind.created == FAKE_TIME
     assert ind.modified == FAKE_TIME
 
 
 def test_object_factory_external_reference():
-    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
-                                      description="Threat report")
+    ext_ref = stix2.v21.ExternalReference(source_name="ACME Threat Intel",
+                                          description="Threat report")
     factory = stix2.ObjectFactory(external_references=ext_ref)
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert ind.external_references[0].source_name == "ACME Threat Intel"
     assert ind.external_references[0].description == "Threat report"
 
-    ind2 = factory.create(stix2.Indicator, external_references=None, **INDICATOR_KWARGS)
+    ind2 = factory.create(stix2.v21.Indicator, external_references=None, **INDICATOR_KWARGS)
     assert 'external_references' not in ind2
 
 
 def test_object_factory_obj_markings():
-    stmt_marking = stix2.StatementMarking("Copyright 2016, Example Corp")
-    mark_def = stix2.MarkingDefinition(definition_type="statement",
-                                       definition=stmt_marking)
+    stmt_marking = stix2.v21.StatementMarking("Copyright 2016, Example Corp")
+    mark_def = stix2.v21.MarkingDefinition(definition_type="statement",
+                                           definition=stmt_marking)
     factory = stix2.ObjectFactory(object_marking_refs=[mark_def, stix2.TLP_AMBER])
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert mark_def.id in ind.object_marking_refs
     assert stix2.TLP_AMBER.id in ind.object_marking_refs
 
     factory = stix2.ObjectFactory(object_marking_refs=stix2.TLP_RED)
-    ind = factory.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert stix2.TLP_RED.id in ind.object_marking_refs
 
 
 def test_object_factory_list_append():
-    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
-                                      description="Threat report from ACME")
-    ext_ref2 = stix2.ExternalReference(source_name="Yet Another Threat Report",
-                                       description="Threat report from YATR")
-    ext_ref3 = stix2.ExternalReference(source_name="Threat Report #3",
-                                       description="One more threat report")
+    ext_ref = stix2.v21.ExternalReference(source_name="ACME Threat Intel",
+                                          description="Threat report from ACME")
+    ext_ref2 = stix2.v21.ExternalReference(source_name="Yet Another Threat Report",
+                                           description="Threat report from YATR")
+    ext_ref3 = stix2.v21.ExternalReference(source_name="Threat Report #3",
+                                           description="One more threat report")
     factory = stix2.ObjectFactory(external_references=ext_ref)
-    ind = factory.create(stix2.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
     assert ind.external_references[1].source_name == "Yet Another Threat Report"
 
-    ind = factory.create(stix2.Indicator, external_references=[ext_ref2, ext_ref3], **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, external_references=[ext_ref2, ext_ref3], **INDICATOR_KWARGS)
     assert ind.external_references[2].source_name == "Threat Report #3"
 
 
 def test_object_factory_list_replace():
-    ext_ref = stix2.ExternalReference(source_name="ACME Threat Intel",
-                                      description="Threat report from ACME")
-    ext_ref2 = stix2.ExternalReference(source_name="Yet Another Threat Report",
-                                       description="Threat report from YATR")
+    ext_ref = stix2.v21.ExternalReference(source_name="ACME Threat Intel",
+                                          description="Threat report from ACME")
+    ext_ref2 = stix2.v21.ExternalReference(source_name="Yet Another Threat Report",
+                                           description="Threat report from YATR")
     factory = stix2.ObjectFactory(external_references=ext_ref, list_append=False)
-    ind = factory.create(stix2.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
+    ind = factory.create(stix2.v21.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
     assert len(ind.external_references) == 1
     assert ind.external_references[0].source_name == "Yet Another Threat Report"
 
@@ -104,7 +104,7 @@ def test_environment_functions():
                             stix2.MemoryStore())
 
     # Create a STIX object
-    ind = env.create(stix2.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
+    ind = env.create(stix2.v21.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
     assert ind.created_by_ref == IDENTITY_ID
 
     # Add objects to datastore
@@ -133,7 +133,7 @@ def test_environment_functions():
 
 
 def test_environment_source_and_sink():
-    ind = stix2.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    ind = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     env = stix2.Environment(source=stix2.MemorySource([ind]), sink=stix2.MemorySink([ind]))
     assert env.get(INDICATOR_ID).labels[0] == 'malicious-activity'
 
@@ -149,7 +149,7 @@ def test_environment_no_datastore():
     env = stix2.Environment(factory=stix2.ObjectFactory())
 
     with pytest.raises(AttributeError) as excinfo:
-        env.add(stix2.Indicator(**INDICATOR_KWARGS))
+        env.add(stix2.v21.Indicator(**INDICATOR_KWARGS))
     assert 'Environment has no data sink to put objects in' in str(excinfo.value)
 
     with pytest.raises(AttributeError) as excinfo:
@@ -182,7 +182,7 @@ def test_environment_add_filters():
 def test_environment_datastore_and_no_object_factory():
     # Uses a default object factory
     env = stix2.Environment(store=stix2.MemoryStore())
-    ind = env.create(stix2.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
+    ind = env.create(stix2.v21.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
     assert ind.id == INDICATOR_ID
 
 
@@ -203,6 +203,7 @@ def test_parse_malware():
     mal = env.parse(data)
 
     assert mal.type == 'malware'
+    assert mal.spec_version == '2.1'
     assert mal.id == MALWARE_ID
     assert mal.created == FAKE_TIME
     assert mal.modified == FAKE_TIME
@@ -211,40 +212,40 @@ def test_parse_malware():
 
 
 def test_creator_of():
-    identity = stix2.Identity(**IDENTITY_KWARGS)
+    identity = stix2.v21.Identity(**IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=identity.id)
     env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
     env.add(identity)
 
-    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = env.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     creator = env.creator_of(ind)
     assert creator is identity
 
 
 def test_creator_of_no_datasource():
-    identity = stix2.Identity(**IDENTITY_KWARGS)
+    identity = stix2.v21.Identity(**IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=identity.id)
     env = stix2.Environment(factory=factory)
 
-    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = env.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     with pytest.raises(AttributeError) as excinfo:
         env.creator_of(ind)
     assert 'Environment has no data source' in str(excinfo.value)
 
 
 def test_creator_of_not_found():
-    identity = stix2.Identity(**IDENTITY_KWARGS)
+    identity = stix2.v21.Identity(**IDENTITY_KWARGS)
     factory = stix2.ObjectFactory(created_by_ref=identity.id)
     env = stix2.Environment(store=stix2.MemoryStore(), factory=factory)
 
-    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = env.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     creator = env.creator_of(ind)
     assert creator is None
 
 
 def test_creator_of_no_created_by_ref():
     env = stix2.Environment(store=stix2.MemoryStore())
-    ind = env.create(stix2.Indicator, **INDICATOR_KWARGS)
+    ind = env.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     creator = env.creator_of(ind)
     assert creator is None
 

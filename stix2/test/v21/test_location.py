@@ -49,7 +49,7 @@ EXPECTED_LOCATION_2_REPR = "Location(" + " ".join("""
 def test_location_with_some_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
 
-    loc = stix2.Location(
+    loc = stix2.v21.Location(
         type="location",
         id=LOCATION_ID,
         created=now,
@@ -75,9 +75,10 @@ def test_location_with_some_required_properties():
     }
 ])
 def test_parse_location(data):
-    location = stix2.parse(data)
+    location = stix2.parse(data, version="2.1")
 
     assert location.type == 'location'
+    assert location.spec_version == '2.1'
     assert location.id == LOCATION_ID
     assert location.created == dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
     assert location.modified == dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)

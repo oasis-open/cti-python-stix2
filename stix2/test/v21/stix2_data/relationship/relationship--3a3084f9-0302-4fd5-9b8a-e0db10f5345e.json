@@ -11,10 +11,10 @@
             ],
             "relationship_type": "uses",
             "source_ref": "attack-pattern--7e150503-88e7-4861-866b-ff1ac82c4475",
-            "target_ref": "tool--03342581-f790-4f03-ba41-e82e67392e23",
+            "spec_version": "2.1",
+            "target_ref": "malware--92ec0cbd-2c30-44a2-b270-73f4ec949841",
             "type": "relationship"
         }
     ],
-    "spec_version": "2.0",
     "type": "bundle"
 }

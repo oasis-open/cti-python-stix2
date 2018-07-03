@@ -1,4 +1,3 @@
-
 import pytest
 
 from stix2 import TLP_AMBER, Malware, exceptions, markings

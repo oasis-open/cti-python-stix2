@@ -1,4 +1,3 @@
-
 import pytest
 
 from stix2 import TLP_RED, Malware, markings
@@ -1065,4 +1064,4 @@ def test_clear_marking_bad_selector(data, selector):
 def test_clear_marking_not_present(data):
     """Test clearing markings for a selector that has no associated markings."""
     with pytest.raises(MarkingNotFoundError):
-        data = markings.clear_markings(data, ["labels"])
+        markings.clear_markings(data, ["labels"])

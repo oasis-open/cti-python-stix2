@@ -41,7 +41,7 @@ EXPECTED_OPINION_REPR = "Opinion(" + " ".join(("""
 def test_opinion_with_required_properties():
     now = dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
 
-    opi = stix2.Opinion(
+    opi = stix2.v21.Opinion(
         type='opinion',
         id=OPINION_ID,
         created=now,
@@ -72,9 +72,10 @@ def test_opinion_with_required_properties():
     }
 ])
 def test_parse_opinion(data):
-    opinion = stix2.parse(data)
+    opinion = stix2.parse(data, version="2.1")
 
     assert opinion.type == 'opinion'
+    assert opinion.spec_version == '2.1'
     assert opinion.id == OPINION_ID
     assert opinion.created == dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
     assert opinion.modified == dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)

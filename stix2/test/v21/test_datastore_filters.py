@@ -27,6 +27,7 @@ stix_objs = [
         "modified": "2014-05-08T09:00:00.000Z",
         "name": "File hash for Poison Ivy variant",
         "pattern": "[file:hashes.'SHA-256' = 'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c']",
+        "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2014-05-08T09:00:00.000000Z"
     },
@@ -48,11 +49,13 @@ stix_objs = [
         "relationship_type": "indicates",
         "revoked": True,
         "source_ref": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
+        "spec_version": "2.1",
         "target_ref": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
         "type": "relationship"
     },
     {
         "id": "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef",
+        "spec_version": "2.1",
         "created": "2016-02-14T00:00:00.000Z",
         "created_by_ref": "identity--00000000-0000-0000-0000-b8e91df99dc9",
         "modified": "2016-02-14T00:00:00.000Z",
@@ -69,6 +72,7 @@ stix_objs = [
     },
     {
         "type": "observed-data",
+        "spec_version": "2.1",
         "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         "created": "2016-04-06T19:58:16.000Z",
@@ -422,6 +426,7 @@ def test_filters7(stix_objs2, real_stix_objs2):
     # Test filtering on embedded property
     obsvd_data_obj = {
         "type": "observed-data",
+        "spec_version": "2.1",
         "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
         "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         "created": "2016-04-06T19:58:16.000Z",

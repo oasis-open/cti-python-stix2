@@ -2,7 +2,7 @@ import pytest
 
 from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.v20.properties import (BinaryProperty, BooleanProperty,
+from stix2.v21.properties import (BinaryProperty, BooleanProperty,
                                   DictionaryProperty, EmbeddedObjectProperty,
                                   EnumProperty, FloatProperty, HashesProperty,
                                   HexProperty, IDProperty, IntegerProperty,
@@ -230,11 +230,22 @@ def test_dictionary_property_valid(d):
 
 @pytest.mark.parametrize("d", [
     [{'a': 'something'}, "Invalid dictionary key a: (shorter than 3 characters)."],
+])
+def test_dictionary_no_longer_raises(d):
+    dict_prop = DictionaryProperty()
+
+    try:
+        dict_prop.clean(d[0])
+    except DictionaryKeyError:
+        pytest.fail("Unexpected DictionaryKeyError...")
+
+
+@pytest.mark.parametrize("d", [
     [{'a'*300: 'something'}, "Invalid dictionary key aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-                             "aaaaaaaaaaaaaaaaaaaaaaa: (longer than 256 characters)."],
+                             "aaaaaaaaaaaaaaaaaaaaaaa: (longer than 250 characters)."],
     [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other thanlowercase a-z, "
                             "uppercase A-Z, numerals 0-9, hyphen (-), or underscore (_))."],
 ])
