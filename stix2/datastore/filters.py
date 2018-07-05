@@ -9,7 +9,7 @@ from datetime import datetime
 from stix2.utils import format_datetime
 
 """Supported filter operations"""
-FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=']
+FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
 FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
@@ -100,6 +100,11 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             return stix_obj_property != self.value
         elif self.op == "in":
             return stix_obj_property in self.value
+        elif self.op == "contains":
+            if isinstance(self.value, dict):
+                return self.value in stix_obj_property.values()
+            else:
+                return self.value in stix_obj_property
         elif self.op == ">":
             return stix_obj_property > self.value
         elif self.op == "<":

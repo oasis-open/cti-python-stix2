@@ -100,7 +100,9 @@ filters = [
     Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9"),
     Filter("granular_markings.selectors", "in", "description"),
     Filter("external_references.source_name", "=", "CVE"),
-    Filter("objects", "=", {"0": {"type": "file", "name": "HAL 9000.exe"}})
+    Filter("objects", "=", {"0": {"type": "file", "name": "HAL 9000.exe"}}),
+    Filter("objects", "contains", {"type": "file", "name": "HAL 9000.exe"}),
+    Filter("labels", "contains", "heartbleed"),
 ]
 
 # same as above objects but converted to real Python STIX2 objects
@@ -299,6 +301,28 @@ def test_apply_common_filters13():
 
     resp = list(apply_common_filters(real_stix_objs, [filters[14]]))
     assert resp[0].id == real_stix_objs[4].id
+    assert len(resp) == 1
+
+
+def test_apply_common_filters14():
+    # Return any object that contains a specific File Cyber Observable Object
+    resp = list(apply_common_filters(stix_objs, [filters[15]]))
+    assert resp[0]['id'] == stix_objs[4]['id']
+    assert len(resp) == 1
+
+    resp = list(apply_common_filters(real_stix_objs, [filters[15]]))
+    assert resp[0].id == real_stix_objs[4].id
+    assert len(resp) == 1
+
+
+def test_apply_common_filters15():
+    # Return any object that contains 'heartbleed' in "labels"
+    resp = list(apply_common_filters(stix_objs, [filters[16]]))
+    assert resp[0]['id'] == stix_objs[3]['id']
+    assert len(resp) == 1
+
+    resp = list(apply_common_filters(real_stix_objs, [filters[16]]))
+    assert resp[0].id == real_stix_objs[3].id
     assert len(resp) == 1
 
 
