@@ -1,6 +1,7 @@
 import pytest
 
-from stix2 import TLP_RED, Malware, markings
+from stix2 import markings
+from stix2.v21 import Malware, TLP_RED
 from stix2.exceptions import MarkingNotFoundError
 
 from .constants import MALWARE_MORE_KWARGS as MALWARE_KWARGS_CONST

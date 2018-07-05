@@ -275,12 +275,12 @@ def test_parse_autonomous_system_valid(data):
     }""",
 ])
 def test_parse_email_address(data):
-    odata = stix2.parse_observable(data, {"0": "user-account"})
+    odata = stix2.parse_observable(data, {"0": "user-account"}, version='2.1')
     assert odata.type == "email-addr"
 
     odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', data)
     with pytest.raises(stix2.exceptions.InvalidObjRefError):
-        stix2.parse_observable(odata_str, {"0": "user-account"})
+        stix2.parse_observable(odata_str, {"0": "user-account"}, version='2.1')
 
 
 @pytest.mark.parametrize("data", [
@@ -332,7 +332,7 @@ def test_parse_email_message(data):
         "4": "artifact",
         "5": "file",
     }
-    odata = stix2.parse_observable(data, valid_refs)
+    odata = stix2.parse_observable(data, valid_refs, version='2.1')
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
 
@@ -356,7 +356,7 @@ def test_parse_email_message_not_multipart(data):
         "1": "email-addr",
     }
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.parse_observable(data, valid_refs)
+        stix2.parse_observable(data, valid_refs, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
     assert excinfo.value.dependencies == [("is_multipart", "body")]
@@ -455,7 +455,7 @@ def test_parse_email_message_with_at_least_one_error(data):
         "5": "file",
     }
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, valid_refs)
+        stix2.parse_observable(data, valid_refs, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMIMEComponent
     assert excinfo.value.properties == ["body", "body_raw_ref"]
@@ -476,7 +476,8 @@ def test_parse_email_message_with_at_least_one_error(data):
     """
 ])
 def test_parse_basic_tcp_traffic(data):
-    odata = stix2.parse_observable(data, {"0": "ipv4-addr", "1": "ipv4-addr"})
+    odata = stix2.parse_observable(data, {"0": "ipv4-addr", "1": "ipv4-addr"},
+                                   version='2.1')
 
     assert odata.type == "network-traffic"
     assert odata.src_ref == "0"
@@ -504,7 +505,7 @@ def test_parse_basic_tcp_traffic(data):
 ])
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, {"4": "network-traffic"})
+        stix2.parse_observable(data, {"4": "network-traffic"}, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.NetworkTraffic
     assert excinfo.value.properties == ["dst_ref", "src_ref"]

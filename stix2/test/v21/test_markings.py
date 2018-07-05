@@ -4,7 +4,7 @@ import pytest
 import pytz
 
 import stix2
-from stix2 import TLP_WHITE
+from stix2.v21 import TLP_WHITE
 
 from .constants import MARKING_DEFINITION_ID
 
@@ -166,6 +166,7 @@ def test_campaign_with_granular_markings_example():
     EXPECTED_TLP_MARKING_DEFINITION,
     {
         "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        "spec_version": "2.1",
         "type": "marking-definition",
         "created": "2017-01-20T00:00:00Z",
         "definition": {
@@ -185,7 +186,7 @@ def test_parse_marking_definition(data):
     assert gm.definition_type == "tlp"
 
 
-@stix2.common.CustomMarking('x-new-marking-type', [
+@stix2.v21.CustomMarking('x-new-marking-type', [
     ('property1', stix2.v21.properties.StringProperty(required=True)),
     ('property2', stix2.v21.properties.IntegerProperty()),
 ])
@@ -223,7 +224,7 @@ def test_registered_custom_marking_raises_exception():
 def test_not_registered_marking_raises_exception():
     with pytest.raises(ValueError) as excinfo:
         # Used custom object on purpose to demonstrate a not-registered marking
-        @stix2.sdo.CustomObject('x-new-marking-type2', [
+        @stix2.v21.CustomObject('x-new-marking-type2', [
             ('property1', stix2.v21.properties.StringProperty(required=True)),
             ('property2', stix2.v21.properties.IntegerProperty()),
         ])
@@ -246,7 +247,7 @@ def test_not_registered_marking_raises_exception():
 def test_marking_wrong_type_construction():
     with pytest.raises(ValueError) as excinfo:
         # Test passing wrong type for properties.
-        @stix2.CustomMarking('x-new-marking-type2', ("a", "b"))
+        @stix2.v21.CustomMarking('x-new-marking-type2', ("a", "b"))
         class NewObject3(object):
             pass
 

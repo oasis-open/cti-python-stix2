@@ -3,9 +3,9 @@ import shutil
 
 import pytest
 
-from stix2 import (Bundle, Campaign, CustomObject, Filter, Identity, Indicator,
-                   Malware, MemorySource, MemoryStore, Relationship,
-                   properties)
+from stix2 import (Filter, MemorySource, MemoryStore, properties)
+from stix2.v21 import (Bundle, Campaign, CustomObject, Identity, Indicator,
+                       Malware, Relationship)
 from stix2.datastore import make_id
 
 from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
@@ -21,6 +21,7 @@ IND1 = {
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -33,6 +34,7 @@ IND2 = {
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -45,6 +47,7 @@ IND3 = {
     "modified": "2017-01-27T13:49:53.936Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -57,6 +60,7 @@ IND4 = {
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -69,6 +73,7 @@ IND5 = {
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -81,6 +86,7 @@ IND6 = {
     "modified": "2017-01-31T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -93,6 +99,7 @@ IND7 = {
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }
@@ -105,6 +112,7 @@ IND8 = {
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+    "spec_version": "2.1",
     "type": "indicator",
     "valid_from": "2017-01-27T13:49:53.935382Z"
 }

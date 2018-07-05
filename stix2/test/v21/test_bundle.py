@@ -100,7 +100,7 @@ def test_bundle_with_wrong_type():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Bundle(type="not-a-bundle")
 
-    assert excinfo.value.cls == stix2.Bundle
+    assert excinfo.value.cls == stix2.v21.Bundle
     assert excinfo.value.prop_name == "type"
     assert excinfo.value.reason == "must equal 'bundle'."
     assert str(excinfo.value) == "Invalid value for Bundle 'type': must equal 'bundle'."
@@ -110,7 +110,7 @@ def test_bundle_id_must_start_with_bundle():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Bundle(id='my-prefix--')
 
-    assert excinfo.value.cls == stix2.Bundle
+    assert excinfo.value.cls == stix2.v21.Bundle
     assert excinfo.value.prop_name == "id"
     assert excinfo.value.reason == "must start with 'bundle--'."
     assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
@@ -179,7 +179,7 @@ def test_parse_bundle(version):
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    assert type(bundle.objects[0]) is stix2.v21.sdo.Indicator
+    assert type(bundle.objects[0]) is stix2.v21.Indicator
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'

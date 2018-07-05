@@ -63,14 +63,14 @@ def test_object_factory_obj_markings():
     stmt_marking = stix2.v21.StatementMarking("Copyright 2016, Example Corp")
     mark_def = stix2.v21.MarkingDefinition(definition_type="statement",
                                            definition=stmt_marking)
-    factory = stix2.ObjectFactory(object_marking_refs=[mark_def, stix2.TLP_AMBER])
+    factory = stix2.ObjectFactory(object_marking_refs=[mark_def, stix2.v21.TLP_AMBER])
     ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert mark_def.id in ind.object_marking_refs
-    assert stix2.TLP_AMBER.id in ind.object_marking_refs
+    assert stix2.v21.TLP_AMBER.id in ind.object_marking_refs
 
-    factory = stix2.ObjectFactory(object_marking_refs=stix2.TLP_RED)
+    factory = stix2.ObjectFactory(object_marking_refs=stix2.v21.TLP_RED)
     ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
-    assert stix2.TLP_RED.id in ind.object_marking_refs
+    assert stix2.v21.TLP_RED.id in ind.object_marking_refs
 
 
 def test_object_factory_list_append():
@@ -200,7 +200,7 @@ def test_parse_malware():
         ],
         "is_family": false
     }"""
-    mal = env.parse(data)
+    mal = env.parse(data, version="2.1")
 
     assert mal.type == 'malware'
     assert mal.spec_version == '2.1'
