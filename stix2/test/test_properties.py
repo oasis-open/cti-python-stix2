@@ -4,12 +4,13 @@ import pytest
 
 from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.properties import (BinaryProperty, BooleanProperty,
-                              DictionaryProperty, EmbeddedObjectProperty,
-                              EnumProperty, FloatProperty, HashesProperty,
-                              HexProperty, IDProperty, IntegerProperty,
-                              ListProperty, Property, ReferenceProperty,
-                              StringProperty, TimestampProperty, TypeProperty)
+from stix2.properties import (ERROR_INVALID_ID, BinaryProperty,
+                              BooleanProperty, DictionaryProperty,
+                              EmbeddedObjectProperty, EnumProperty,
+                              FloatProperty, HashesProperty, HexProperty,
+                              IDProperty, IntegerProperty, ListProperty,
+                              Property, ReferenceProperty, StringProperty,
+                              TimestampProperty, TypeProperty)
 
 from . import constants
 
@@ -143,7 +144,7 @@ def test_id_property_wrong_type():
 def test_id_property_not_a_valid_hex_uuid(value):
     with pytest.raises(ValueError) as excinfo:
         ID_PROP.clean(value)
-    assert str(excinfo.value) == "must have a valid UUID after the prefix."
+    assert str(excinfo.value) == ERROR_INVALID_ID
 
 
 def test_id_property_default():

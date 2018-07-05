@@ -25,6 +25,10 @@ ID_REGEX = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
                       "[89abAB][0-9a-fA-F]{3}-"
                       "[0-9a-fA-F]{12}$")
 
+ERROR_INVALID_ID = (
+    "not a valid STIX identifier, must match <object-type>--<UUIDv4>"
+)
+
 
 class Property(object):
     """Represent a property of STIX data type.
@@ -183,7 +187,7 @@ class IDProperty(Property):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{0}'.".format(self.required_prefix))
         if not ID_REGEX.match(value):
-            raise ValueError("must have a valid UUID after the prefix.")
+            raise ValueError(ERROR_INVALID_ID)
         return value
 
     def default(self):
@@ -331,7 +335,7 @@ class ReferenceProperty(Property):
             if not value.startswith(self.type):
                 raise ValueError("must start with '{0}'.".format(self.type))
         if not ID_REGEX.match(value):
-            raise ValueError("must match <object-type>--<guid>.")
+            raise ValueError(ERROR_INVALID_ID)
         return value
 
 
