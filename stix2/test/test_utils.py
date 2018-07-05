@@ -98,8 +98,8 @@ def test_deduplicate(stix_objs1):
     ids = [obj['id'] for obj in unique]
     mods = [obj['modified'] for obj in unique]
 
-    assert "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f" in ids
-    assert "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f" in ids
+    assert "indicator--00000000-0000-4000-8000-000000000001" in ids
+    assert "indicator--00000000-0000-4000-8000-000000000001" in ids
     assert "2017-01-27T13:49:53.935Z" in mods
     assert "2017-01-27T13:49:53.936Z" in mods
 

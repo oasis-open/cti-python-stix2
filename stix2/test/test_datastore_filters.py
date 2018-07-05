@@ -8,7 +8,7 @@ stix_objs = [
     {
         "created": "2017-01-27T13:49:53.997Z",
         "description": "\n\nTITLE:\n\tPoison Ivy",
-        "id": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
+        "id": "malware--fdd60b30-b67c-41e3-b0b9-f01faf20d111",
         "labels": [
             "remote-access-trojan"
         ],
@@ -18,7 +18,7 @@ stix_objs = [
     },
     {
         "created": "2014-05-08T09:00:00.000Z",
-        "id": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
+        "id": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
         "labels": [
             "file-hash-watchlist"
         ],
@@ -45,14 +45,14 @@ stix_objs = [
         ],
         "relationship_type": "indicates",
         "revoked": True,
-        "source_ref": "indicator--a932fcc6-e032-176c-126f-cb970a5a1ade",
-        "target_ref": "malware--fdd60b30-b67c-11e3-b0b9-f01faf20d111",
+        "source_ref": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
+        "target_ref": "malware--fdd60b30-b67c-41e3-b0b9-f01faf20d111",
         "type": "relationship"
     },
     {
         "id": "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef",
         "created": "2016-02-14T00:00:00.000Z",
-        "created_by_ref": "identity--00000000-0000-0000-0000-b8e91df99dc9",
+        "created_by_ref": "identity--f1350682-3290-4e0d-be58-69e290537647",
         "modified": "2016-02-14T00:00:00.000Z",
         "type": "vulnerability",
         "name": "CVE-2014-0160",
@@ -96,8 +96,8 @@ filters = [
     Filter("granular_markings.selectors", "in", "relationship_type"),
     Filter("granular_markings.marking_ref", "=", "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed"),
     Filter("external_references.external_id", "in", "CVE-2014-0160,CVE-2017-6608"),
-    Filter("created_by_ref", "=", "identity--00000000-0000-0000-0000-b8e91df99dc9"),
-    Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9"),
+    Filter("created_by_ref", "=", "identity--f1350682-3290-4e0d-be58-69e290537647"),
+    Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9"),
     Filter("granular_markings.selectors", "in", "description"),
     Filter("external_references.source_name", "=", "CVE"),
     Filter("objects", "=", {"0": {"type": "file", "name": "HAL 9000.exe"}})
@@ -253,7 +253,7 @@ def test_apply_common_filters8():
 
 
 def test_apply_common_filters9():
-    # "Return any object that matches created_by_ref identity--00000000-0000-0000-0000-b8e91df99dc9"
+    # "Return any object that matches created_by_ref identity--f1350682-3290-4e0d-be58-69e290537647"
     resp = list(apply_common_filters(stix_objs, [filters[10]]))
     assert len(resp) == 1
 
@@ -262,7 +262,7 @@ def test_apply_common_filters9():
 
 
 def test_apply_common_filters10():
-    # "Return any object that matches marking-definition--613f2e26-0000-0000-0000-b8e91df99dc9 in object_marking_refs" (None)
+    # "Return any object that matches marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9 in object_marking_refs" (None)
     resp = list(apply_common_filters(stix_objs, [filters[11]]))
     assert len(resp) == 0
 
@@ -395,12 +395,12 @@ def test_filters4():
 
 
 def test_filters5(stix_objs2, real_stix_objs2):
-    # "Return any object whose id is not indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f"
-    resp = list(apply_common_filters(stix_objs2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")]))
+    # "Return any object whose id is not indicator--00000000-0000-4000-8000-000000000002"
+    resp = list(apply_common_filters(stix_objs2, [Filter("id", "!=", "indicator--00000000-0000-4000-8000-000000000002")]))
     assert resp[0]['id'] == stix_objs2[0]['id']
     assert len(resp) == 1
 
-    resp = list(apply_common_filters(real_stix_objs2, [Filter("id", "!=", "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f")]))
+    resp = list(apply_common_filters(real_stix_objs2, [Filter("id", "!=", "indicator--00000000-0000-4000-8000-000000000002")]))
     assert resp[0].id == real_stix_objs2[0].id
     assert len(resp) == 1
 

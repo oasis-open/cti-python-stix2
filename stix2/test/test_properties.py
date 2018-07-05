@@ -1,15 +1,18 @@
+import uuid
+
 import pytest
 
 from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.properties import (BinaryProperty, BooleanProperty,
-                              DictionaryProperty, EmbeddedObjectProperty,
-                              EnumProperty, FloatProperty, HashesProperty,
-                              HexProperty, IDProperty, IntegerProperty,
-                              ListProperty, Property, ReferenceProperty,
-                              StringProperty, TimestampProperty, TypeProperty)
+from stix2.properties import (ERROR_INVALID_ID, BinaryProperty,
+                              BooleanProperty, DictionaryProperty,
+                              EmbeddedObjectProperty, EnumProperty,
+                              FloatProperty, HashesProperty, HexProperty,
+                              IDProperty, IntegerProperty, ListProperty,
+                              Property, ReferenceProperty, StringProperty,
+                              TimestampProperty, TypeProperty)
 
-from .constants import FAKE_TIME
+from . import constants
 
 
 def test_property():
@@ -85,18 +88,68 @@ def test_type_property():
     assert prop.clean(prop.default())
 
 
-def test_id_property():
-    idprop = IDProperty('my-type')
+ID_PROP = IDProperty('my-type')
+MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 
-    assert idprop.clean('my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+
+@pytest.mark.parametrize("value", [
+    MY_ID,
+    'my-type--00000000-0000-4000-8000-000000000000',
+])
+def test_id_property_valid(value):
+    assert ID_PROP.clean(value) == value
+
+
+CONSTANT_IDS = [
+    constants.ATTACK_PATTERN_ID,
+    constants.CAMPAIGN_ID,
+    constants.COURSE_OF_ACTION_ID,
+    constants.IDENTITY_ID,
+    constants.INDICATOR_ID,
+    constants.INTRUSION_SET_ID,
+    constants.MALWARE_ID,
+    constants.MARKING_DEFINITION_ID,
+    constants.OBSERVED_DATA_ID,
+    constants.RELATIONSHIP_ID,
+    constants.REPORT_ID,
+    constants.SIGHTING_ID,
+    constants.THREAT_ACTOR_ID,
+    constants.TOOL_ID,
+    constants.VULNERABILITY_ID,
+]
+CONSTANT_IDS.extend(constants.MARKING_IDS)
+CONSTANT_IDS.extend(constants.RELATIONSHIP_IDS)
+
+
+@pytest.mark.parametrize("value", CONSTANT_IDS)
+def test_id_property_valid_for_type(value):
+    type = value.split('--', 1)[0]
+    assert IDProperty(type=type).clean(value) == value
+
+
+def test_id_property_wrong_type():
     with pytest.raises(ValueError) as excinfo:
-        idprop.clean('not-my-type--90aaca8a-1110-5d32-956d-ac2f34a1bd8c')
+        ID_PROP.clean('not-my-type--232c9d3f-49fc-4440-bb01-607f638778e7')
     assert str(excinfo.value) == "must start with 'my-type--'."
-    with pytest.raises(ValueError) as excinfo:
-        idprop.clean('my-type--foo')
-    assert str(excinfo.value) == "must have a valid UUID after the prefix."
 
-    assert idprop.clean(idprop.default())
+
+@pytest.mark.parametrize("value", [
+    'my-type--foo',
+    # Not a v4 UUID
+    'my-type--00000000-0000-0000-0000-000000000000',
+    'my-type--' + str(uuid.uuid1()),
+    'my-type--' + str(uuid.uuid3(uuid.NAMESPACE_DNS, "example.org")),
+    'my-type--' + str(uuid.uuid5(uuid.NAMESPACE_DNS, "example.org")),
+])
+def test_id_property_not_a_valid_hex_uuid(value):
+    with pytest.raises(ValueError) as excinfo:
+        ID_PROP.clean(value)
+    assert str(excinfo.value) == ERROR_INVALID_ID
+
+
+def test_id_property_default():
+    default = ID_PROP.default()
+    assert ID_PROP.clean(default) == default
 
 
 @pytest.mark.parametrize("value", [
@@ -179,9 +232,13 @@ def test_boolean_property_invalid(value):
 def test_reference_property():
     ref_prop = ReferenceProperty()
 
-    assert ref_prop.clean("my-type--3a331bfe-0566-55e1-a4a0-9a2cd355a300")
+    assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
     with pytest.raises(ValueError):
         ref_prop.clean("foo")
+
+    # This is not a valid V4 UUID
+    with pytest.raises(ValueError):
+        ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000")
 
 
 @pytest.mark.parametrize("value", [
@@ -191,7 +248,7 @@ def test_reference_property():
 ])
 def test_timestamp_property_valid(value):
     ts_prop = TimestampProperty()
-    assert ts_prop.clean(value) == FAKE_TIME
+    assert ts_prop.clean(value) == constants.FAKE_TIME
 
 
 def test_timestamp_property_invalid():

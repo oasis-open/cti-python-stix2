@@ -14,12 +14,12 @@ def main():
     taxii = stix2.TAXIICollectionSource(collection)
 
     # get (url watch indicator)
-    indicator_fw = taxii.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    indicator_fw = taxii.get("indicator--00000000-0000-4000-8000-000000000001")
     print("\n\n-------Queried for Indicator - got:")
     print(indicator_fw.serialize(indent=4))
 
     # all versions (url watch indicator - currently two)
-    indicator_fw_versions = taxii.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    indicator_fw_versions = taxii.all_versions("indicator--00000000-0000-4000-8000-000000000001")
     print("\n\n------Queried for indicator (all_versions()) - got:")
     for indicator in indicator_fw_versions:
         print(indicator.serialize(indent=4))
