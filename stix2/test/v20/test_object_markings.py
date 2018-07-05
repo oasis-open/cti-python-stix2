@@ -1,7 +1,8 @@
 
 import pytest
 
-from stix2 import TLP_AMBER, Malware, exceptions, markings
+from stix2 import exceptions, markings
+from stix2.v20 import TLP_AMBER, Malware
 
 from .constants import FAKE_TIME, MALWARE_ID
 from .constants import MALWARE_KWARGS as MALWARE_KWARGS_CONST

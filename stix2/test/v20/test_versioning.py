@@ -6,7 +6,7 @@ from .constants import CAMPAIGN_MORE_KWARGS
 
 
 def test_making_new_version():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
 
     campaign_v2 = campaign_v1.new_version(name="fred")
 
@@ -20,7 +20,7 @@ def test_making_new_version():
 
 
 def test_making_new_version_with_unset():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
 
     campaign_v2 = campaign_v1.new_version(description=None)
 
@@ -34,7 +34,7 @@ def test_making_new_version_with_unset():
 
 
 def test_making_new_version_with_embedded_object():
-    campaign_v1 = stix2.Campaign(
+    campaign_v1 = stix2.v20.Campaign(
         external_references=[{
             "source_name": "capec",
             "external_id": "CAPEC-163"
@@ -57,7 +57,7 @@ def test_making_new_version_with_embedded_object():
 
 
 def test_revoke():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
 
     campaign_v2 = campaign_v1.revoke()
 
@@ -72,7 +72,7 @@ def test_revoke():
 
 
 def test_versioning_error_invalid_property():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
 
     with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as excinfo:
         campaign_v1.new_version(type="threat-actor")
@@ -81,19 +81,19 @@ def test_versioning_error_invalid_property():
 
 
 def test_versioning_error_bad_modified_value():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
 
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         campaign_v1.new_version(modified="2015-04-06T20:03:00.000Z")
 
-    assert excinfo.value.cls == stix2.Campaign
+    assert excinfo.value.cls == stix2.v20.Campaign
     assert excinfo.value.prop_name == "modified"
     assert excinfo.value.reason == "The new modified datetime cannot be before than or equal to the current modified datetime." \
         "It cannot be equal, as according to STIX 2 specification, objects that are different " \
         "but have the same id and modified timestamp do not have defined consumer behavior."
 
     msg = "Invalid value for {0} '{1}': {2}"
-    msg = msg.format(stix2.Campaign.__name__, "modified",
+    msg = msg.format(stix2.v20.Campaign.__name__, "modified",
                      "The new modified datetime cannot be before than or equal to the current modified datetime."
                      "It cannot be equal, as according to STIX 2 specification, objects that are different "
                      "but have the same id and modified timestamp do not have defined consumer behavior.")
@@ -101,21 +101,21 @@ def test_versioning_error_bad_modified_value():
 
 
 def test_versioning_error_usetting_required_property():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
 
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         campaign_v1.new_version(name=None)
 
-    assert excinfo.value.cls == stix2.Campaign
+    assert excinfo.value.cls == stix2.v20.Campaign
     assert excinfo.value.properties == ["name"]
 
     msg = "No values for required properties for {0}: ({1})."
-    msg = msg.format(stix2.Campaign.__name__, "name")
+    msg = msg.format(stix2.v20.Campaign.__name__, "name")
     assert str(excinfo.value) == msg
 
 
 def test_versioning_error_new_version_of_revoked():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
     campaign_v2 = campaign_v1.revoke()
 
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
@@ -127,7 +127,7 @@ def test_versioning_error_new_version_of_revoked():
 
 
 def test_versioning_error_revoke_of_revoked():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
     campaign_v2 = campaign_v1.revoke()
 
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
@@ -230,8 +230,8 @@ def test_remove_custom_stix_property():
 
 def test_remove_custom_stix_object():
     @stix2.CustomObject("x-animal", [
-        ("species", stix2.properties.StringProperty(required=True)),
-        ("animal_class", stix2.properties.StringProperty()),
+        ("species", stix2.v20.properties.StringProperty(required=True)),
+        ("animal_class", stix2.v20.properties.StringProperty()),
     ])
     class Animal(object):
         pass
@@ -244,7 +244,7 @@ def test_remove_custom_stix_object():
 
 
 def test_remove_custom_stix_no_custom():
-    campaign_v1 = stix2.Campaign(**CAMPAIGN_MORE_KWARGS)
+    campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
     campaign_v2 = stix2.utils.remove_custom_stix(campaign_v1)
 
     assert len(campaign_v1.keys()) == len(campaign_v2.keys())

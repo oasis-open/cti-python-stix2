@@ -27,7 +27,7 @@ EXPECTED = """{
 
 
 def test_intrusion_set_example():
-    intrusion_set = stix2.IntrusionSet(
+    intrusion_set = stix2.v20.IntrusionSet(
         id="intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
@@ -62,7 +62,7 @@ def test_intrusion_set_example():
     },
 ])
 def test_parse_intrusion_set(data):
-    intset = stix2.parse(data)
+    intset = stix2.parse(data, version="2.0")
 
     assert intset.type == "intrusion-set"
     assert intset.id == INTRUSION_SET_ID

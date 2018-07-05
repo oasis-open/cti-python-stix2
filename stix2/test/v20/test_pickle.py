@@ -7,7 +7,7 @@ def test_pickling():
     """
     Ensure a pickle/unpickle cycle works okay.
     """
-    identity = stix2.Identity(
+    identity = stix2.v20.Identity(
         id="identity--d66cb89d-5228-4983-958c-fa84ef75c88c",
         name="alice",
         description="this is a pickle test",

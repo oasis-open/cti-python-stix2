@@ -35,17 +35,17 @@ def uuid4(monkeypatch):
 
 @pytest.fixture
 def indicator(uuid4, clock):
-    return stix2.Indicator(**INDICATOR_KWARGS)
+    return stix2.v20.Indicator(**INDICATOR_KWARGS)
 
 
 @pytest.fixture
 def malware(uuid4, clock):
-    return stix2.Malware(**MALWARE_KWARGS)
+    return stix2.v20.Malware(**MALWARE_KWARGS)
 
 
 @pytest.fixture
 def relationship(uuid4, clock):
-    return stix2.Relationship(**RELATIONSHIP_KWARGS)
+    return stix2.v20.Relationship(**RELATIONSHIP_KWARGS)
 
 
 @pytest.fixture
@@ -156,4 +156,4 @@ def stix_objs2():
 
 @pytest.fixture
 def real_stix_objs2(stix_objs2):
-    return [stix2.parse(x) for x in stix_objs2]
+    return [stix2.parse(x, version="2.0") for x in stix_objs2]

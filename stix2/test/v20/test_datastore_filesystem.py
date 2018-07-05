@@ -4,13 +4,12 @@ import shutil
 
 import pytest
 
-from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
-                   FileSystemSource, FileSystemStore, Filter, Identity,
-                   Indicator, Malware, Relationship, properties)
-from stix2.test.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
-                                  IDENTITY_KWARGS, INDICATOR_ID,
-                                  INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
-                                  RELATIONSHIP_IDS)
+import stix2
+from stix2.test.v20.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS,
+                                      IDENTITY_ID, IDENTITY_KWARGS,
+                                      INDICATOR_ID, INDICATOR_KWARGS,
+                                      MALWARE_ID, MALWARE_KWARGS,
+                                      RELATIONSHIP_IDS)
 
 FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
@@ -18,7 +17,7 @@ FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data"
 @pytest.fixture
 def fs_store():
     # create
-    yield FileSystemStore(FS_PATH)
+    yield stix2.FileSystemStore(FS_PATH)
 
     # remove campaign dir
     shutil.rmtree(os.path.join(FS_PATH, "campaign"), True)
@@ -27,7 +26,7 @@ def fs_store():
 @pytest.fixture
 def fs_source():
     # create
-    fs = FileSystemSource(FS_PATH)
+    fs = stix2.FileSystemSource(FS_PATH)
     assert fs.stix_dir == FS_PATH
     yield fs
 
@@ -38,7 +37,7 @@ def fs_source():
 @pytest.fixture
 def fs_sink():
     # create
-    fs = FileSystemSink(FS_PATH)
+    fs = stix2.FileSystemSink(FS_PATH)
     assert fs.stix_dir == FS_PATH
     yield fs
 
@@ -83,15 +82,15 @@ def bad_stix_files():
 
 @pytest.fixture(scope='module')
 def rel_fs_store():
-    cam = Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
-    idy = Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
-    ind = Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
-    mal = Malware(id=MALWARE_ID, **MALWARE_KWARGS)
-    rel1 = Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
-    rel2 = Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
-    rel3 = Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    cam = stix2.v20.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = stix2.v20.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = stix2.v20.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    mal = stix2.v20.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
+    rel1 = stix2.v20.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.v20.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.v20.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
     stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
-    fs = FileSystemStore(FS_PATH)
+    fs = stix2.FileSystemStore(FS_PATH)
     for o in stix_objs:
         fs.add(o)
     yield fs
@@ -102,13 +101,13 @@ def rel_fs_store():
 
 def test_filesystem_source_nonexistent_folder():
     with pytest.raises(ValueError) as excinfo:
-        FileSystemSource('nonexistent-folder')
+        stix2.FileSystemSource('nonexistent-folder')
     assert "for STIX data does not exist" in str(excinfo)
 
 
 def test_filesystem_sink_nonexistent_folder():
     with pytest.raises(ValueError) as excinfo:
-        FileSystemSink('nonexistent-folder')
+        stix2.FileSystemSink('nonexistent-folder')
     assert "for STIX data does not exist" in str(excinfo)
 
 
@@ -154,7 +153,7 @@ def test_filesytem_source_all_versions(fs_source):
 
 def test_filesytem_source_query_single(fs_source):
     # query2
-    is_2 = fs_source.query([Filter("external_references.external_id", '=', "T1027")])
+    is_2 = fs_source.query([stix2.Filter("external_references.external_id", '=', "T1027")])
     assert len(is_2) == 1
 
     is_2 = is_2[0]
@@ -164,7 +163,7 @@ def test_filesytem_source_query_single(fs_source):
 
 def test_filesytem_source_query_multiple(fs_source):
     # query
-    intrusion_sets = fs_source.query([Filter("type", '=', "intrusion-set")])
+    intrusion_sets = fs_source.query([stix2.Filter("type", '=', "intrusion-set")])
     assert len(intrusion_sets) == 2
     assert "intrusion-set--a653431d-6a5e-4600-8ad3-609b5af57064" in [is_.id for is_ in intrusion_sets]
     assert "intrusion-set--f3bdec95-3d62-42d9-a840-29630f6cdc1a" in [is_.id for is_ in intrusion_sets]
@@ -176,9 +175,10 @@ def test_filesytem_source_query_multiple(fs_source):
 
 def test_filesystem_sink_add_python_stix_object(fs_sink, fs_source):
     # add python stix object
-    camp1 = Campaign(name="Hannibal",
-                     objective="Targeting Italian and Spanish Diplomat internet accounts",
-                     aliases=["War Elephant"])
+    camp1 = stix2.v20.Campaign(
+        name="Hannibal",
+        objective="Targeting Italian and Spanish Diplomat internet accounts",
+        aliases=["War Elephant"])
 
     fs_sink.add(camp1)
 
@@ -278,9 +278,10 @@ def test_filesystem_sink_json_stix_bundle(fs_sink, fs_source):
 
 def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     # add list of objects
-    camp6 = Campaign(name="Comanche",
-                     objective="US Midwest manufacturing firms, oil refineries, and businesses",
-                     aliases=["Horse Warrior"])
+    camp6 = stix2.v20.Campaign(
+        name="Comanche",
+        objective="US Midwest manufacturing firms, oil refineries, and businesses",
+        aliases=["Horse Warrior"])
 
     camp7 = {
         "name": "Napolean",
@@ -330,14 +331,14 @@ def test_filesystem_store_all_versions(fs_store):
 
 def test_filesystem_store_query(fs_store):
     # query()
-    tools = fs_store.query([Filter("labels", "in", "tool")])
+    tools = fs_store.query([stix2.Filter("labels", "in", "tool")])
     assert len(tools) == 2
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [tool.id for tool in tools]
     assert "tool--03342581-f790-4f03-ba41-e82e67392e23" in [tool.id for tool in tools]
 
 
 def test_filesystem_store_query_single_filter(fs_store):
-    query = Filter("labels", "in", "tool")
+    query = stix2.Filter("labels", "in", "tool")
     tools = fs_store.query(query)
     assert len(tools) == 2
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [tool.id for tool in tools]
@@ -352,22 +353,23 @@ def test_filesystem_store_empty_query(fs_store):
 
 
 def test_filesystem_store_query_multiple_filters(fs_store):
-    fs_store.source.filters.add(Filter("labels", "in", "tool"))
-    tools = fs_store.query(Filter("id", "=", "tool--242f3da3-4425-4d11-8f5c-b842886da966"))
+    fs_store.source.filters.add(stix2.Filter("labels", "in", "tool"))
+    tools = fs_store.query(stix2.Filter("id", "=", "tool--242f3da3-4425-4d11-8f5c-b842886da966"))
     assert len(tools) == 1
     assert tools[0].id == "tool--242f3da3-4425-4d11-8f5c-b842886da966"
 
 
 def test_filesystem_store_query_dont_include_type_folder(fs_store):
-    results = fs_store.query(Filter("type", "!=", "tool"))
+    results = fs_store.query(stix2.Filter("type", "!=", "tool"))
     assert len(results) == 24
 
 
 def test_filesystem_store_add(fs_store):
     # add()
-    camp1 = Campaign(name="Great Heathen Army",
-                     objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
-                     aliases=["Ragnar"])
+    camp1 = stix2.v20.Campaign(
+        name="Great Heathen Army",
+        objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
+        aliases=["Ragnar"])
     fs_store.add(camp1)
 
     camp1_r = fs_store.get(camp1.id)
@@ -379,11 +381,12 @@ def test_filesystem_store_add(fs_store):
 
 
 def test_filesystem_store_add_as_bundle():
-    fs_store = FileSystemStore(FS_PATH, bundlify=True)
+    fs_store = stix2.FileSystemStore(FS_PATH, bundlify=True)
 
-    camp1 = Campaign(name="Great Heathen Army",
-                     objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
-                     aliases=["Ragnar"])
+    camp1 = stix2.v20.Campaign(
+        name="Great Heathen Army",
+        objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
+        aliases=["Ragnar"])
     fs_store.add(camp1)
 
     with open(os.path.join(FS_PATH, "campaign", camp1.id + ".json")) as bundle_file:
@@ -397,7 +400,7 @@ def test_filesystem_store_add_as_bundle():
 
 
 def test_filesystem_add_bundle_object(fs_store):
-    bundle = Bundle()
+    bundle = stix2.v20.Bundle()
     fs_store.add(bundle)
 
 
@@ -412,10 +415,11 @@ def test_filesystem_store_add_invalid_object(fs_store):
 
 
 def test_filesystem_object_with_custom_property(fs_store):
-    camp = Campaign(name="Scipio Africanus",
-                    objective="Defeat the Carthaginians",
-                    x_empire="Roman",
-                    allow_custom=True)
+    camp = stix2.v20.Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        x_empire="Roman",
+        allow_custom=True)
 
     fs_store.add(camp, True)
 
@@ -425,12 +429,13 @@ def test_filesystem_object_with_custom_property(fs_store):
 
 
 def test_filesystem_object_with_custom_property_in_bundle(fs_store):
-    camp = Campaign(name="Scipio Africanus",
-                    objective="Defeat the Carthaginians",
-                    x_empire="Roman",
-                    allow_custom=True)
+    camp = stix2.v20.Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        x_empire="Roman",
+        allow_custom=True)
 
-    bundle = Bundle(camp, allow_custom=True)
+    bundle = stix2.v20.Bundle(camp, allow_custom=True)
     fs_store.add(bundle)
 
     camp_r = fs_store.get(camp.id)
@@ -439,8 +444,8 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
 
 
 def test_filesystem_custom_object(fs_store):
-    @CustomObject('x-new-obj', [
-        ('property1', properties.StringProperty(required=True)),
+    @stix2.v20.CustomObject('x-new-obj', [
+        ('property1', stix2.v20.properties.StringProperty(required=True)),
     ])
     class NewObj():
         pass

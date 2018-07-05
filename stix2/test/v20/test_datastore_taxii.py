@@ -5,8 +5,7 @@ import pytest
 from requests.models import Response
 from taxii2client import Collection, _filter_kwargs_to_query_params
 
-from stix2 import (Bundle, TAXIICollectionSink, TAXIICollectionSource,
-                   TAXIICollectionStore, ThreatActor)
+import stix2
 from stix2.datastore import DataSourceError
 from stix2.datastore.filters import Filter
 
@@ -39,7 +38,7 @@ class MockTAXIICollectionEndpoint(Collection):
             []
         )
         if objs:
-            return Bundle(objects=objs)
+            return stix2.v20.Bundle(objects=objs)
         else:
             resp = Response()
             resp.status_code = 404
@@ -59,7 +58,7 @@ class MockTAXIICollectionEndpoint(Collection):
             []
         )
         if objs:
-            return Bundle(objects=objs)
+            return stix2.v20.Bundle(objects=objs)
         else:
             resp = Response()
             resp.status_code = 404
@@ -101,78 +100,82 @@ def collection_no_rw_access(stix_objs1):
 
 
 def test_ds_taxii(collection):
-    ds = TAXIICollectionSource(collection)
+    ds = stix2.TAXIICollectionSource(collection)
     assert ds.collection is not None
 
 
 def test_add_stix2_object(collection):
-    tc_sink = TAXIICollectionSink(collection)
+    tc_sink = stix2.TAXIICollectionSink(collection)
 
     # create new STIX threat-actor
-    ta = ThreatActor(name="Teddy Bear",
-                     labels=["nation-state"],
-                     sophistication="innovator",
-                     resource_level="government",
-                     goals=[
-                         "compromising environment NGOs",
-                         "water-hole attacks geared towards energy sector",
-                     ])
+    ta = stix2.v20.ThreatActor(
+        name="Teddy Bear",
+        labels=["nation-state"],
+        sophistication="innovator",
+        resource_level="government",
+        goals=[
+            "compromising environment NGOs",
+            "water-hole attacks geared towards energy sector",
+        ])
 
     tc_sink.add(ta)
 
 
 def test_add_stix2_with_custom_object(collection):
-    tc_sink = TAXIICollectionStore(collection, allow_custom=True)
+    tc_sink = stix2.TAXIICollectionStore(collection, allow_custom=True)
 
     # create new STIX threat-actor
-    ta = ThreatActor(name="Teddy Bear",
-                     labels=["nation-state"],
-                     sophistication="innovator",
-                     resource_level="government",
-                     goals=[
-                         "compromising environment NGOs",
-                         "water-hole attacks geared towards energy sector",
-                     ],
-                     foo="bar",
-                     allow_custom=True)
+    ta = stix2.v20.ThreatActor(
+        name="Teddy Bear",
+        labels=["nation-state"],
+        sophistication="innovator",
+        resource_level="government",
+        goals=[
+            "compromising environment NGOs",
+            "water-hole attacks geared towards energy sector",
+        ],
+        foo="bar",
+        allow_custom=True)
 
     tc_sink.add(ta)
 
 
 def test_add_list_object(collection, indicator):
-    tc_sink = TAXIICollectionSink(collection)
+    tc_sink = stix2.TAXIICollectionSink(collection)
 
     # create new STIX threat-actor
-    ta = ThreatActor(name="Teddy Bear",
-                     labels=["nation-state"],
-                     sophistication="innovator",
-                     resource_level="government",
-                     goals=[
-                         "compromising environment NGOs",
-                         "water-hole attacks geared towards energy sector",
-                     ])
+    ta = stix2.v20.ThreatActor(
+        name="Teddy Bear",
+        labels=["nation-state"],
+        sophistication="innovator",
+        resource_level="government",
+        goals=[
+            "compromising environment NGOs",
+            "water-hole attacks geared towards energy sector",
+        ])
 
     tc_sink.add([ta, indicator])
 
 
 def test_add_stix2_bundle_object(collection):
-    tc_sink = TAXIICollectionSink(collection)
+    tc_sink = stix2.TAXIICollectionSink(collection)
 
     # create new STIX threat-actor
-    ta = ThreatActor(name="Teddy Bear",
-                     labels=["nation-state"],
-                     sophistication="innovator",
-                     resource_level="government",
-                     goals=[
-                         "compromising environment NGOs",
-                         "water-hole attacks geared towards energy sector",
-                     ])
+    ta = stix2.v20.ThreatActor(
+        name="Teddy Bear",
+        labels=["nation-state"],
+        sophistication="innovator",
+        resource_level="government",
+        goals=[
+            "compromising environment NGOs",
+            "water-hole attacks geared towards energy sector",
+        ])
 
-    tc_sink.add(Bundle(objects=[ta]))
+    tc_sink.add(stix2.v20.Bundle(objects=[ta]))
 
 
 def test_add_str_object(collection):
-    tc_sink = TAXIICollectionSink(collection)
+    tc_sink = stix2.TAXIICollectionSink(collection)
 
     # create new STIX threat-actor
     ta = """{
@@ -196,7 +199,7 @@ def test_add_str_object(collection):
 
 
 def test_add_dict_object(collection):
-    tc_sink = TAXIICollectionSink(collection)
+    tc_sink = stix2.TAXIICollectionSink(collection)
 
     ta = {
         "type": "threat-actor",
@@ -219,7 +222,7 @@ def test_add_dict_object(collection):
 
 
 def test_add_dict_bundle_object(collection):
-    tc_sink = TAXIICollectionSink(collection)
+    tc_sink = stix2.TAXIICollectionSink(collection)
 
     ta = {
         "type": "bundle",
@@ -248,7 +251,7 @@ def test_add_dict_bundle_object(collection):
 
 
 def test_get_stix2_object(collection):
-    tc_sink = TAXIICollectionSource(collection)
+    tc_sink = stix2.TAXIICollectionSource(collection)
 
     objects = tc_sink.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
 
@@ -271,7 +274,7 @@ def test_parse_taxii_filters(collection):
         Filter("version", "=", "first")
     ]
 
-    ds = TAXIICollectionSource(collection)
+    ds = stix2.TAXIICollectionSource(collection)
 
     taxii_filters = ds._parse_taxii_filters(query)
 
@@ -279,7 +282,7 @@ def test_parse_taxii_filters(collection):
 
 
 def test_add_get_remove_filter(collection):
-    ds = TAXIICollectionSource(collection)
+    ds = stix2.TAXIICollectionSource(collection)
 
     # First 3 filters are valid, remaining properties are erroneous in some way
     valid_filters = [
@@ -315,7 +318,7 @@ def test_add_get_remove_filter(collection):
 
 
 def test_get_all_versions(collection):
-    ds = TAXIICollectionStore(collection)
+    ds = stix2.TAXIICollectionStore(collection)
 
     indicators = ds.all_versions('indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f')
     # There are 3 indicators but 2 share the same 'modified' timestamp
@@ -327,7 +330,7 @@ def test_can_read_error(collection_no_rw_access):
     instance that does not have read access, check ValueError exception is raised"""
 
     with pytest.raises(DataSourceError) as excinfo:
-        TAXIICollectionSource(collection_no_rw_access)
+        stix2.TAXIICollectionSource(collection_no_rw_access)
     assert "Collection object provided does not have read access" in str(excinfo.value)
 
 
@@ -336,7 +339,7 @@ def test_can_write_error(collection_no_rw_access):
     instance that does not have write access, check ValueError exception is raised"""
 
     with pytest.raises(DataSourceError) as excinfo:
-        TAXIICollectionSink(collection_no_rw_access)
+        stix2.TAXIICollectionSink(collection_no_rw_access)
     assert "Collection object provided does not have write access" in str(excinfo.value)
 
 
@@ -357,7 +360,7 @@ def test_get_404():
             resp.status_code = 404
             resp.raise_for_status()
 
-    ds = TAXIICollectionSource(TAXIICollection404())
+    ds = stix2.TAXIICollectionSource(TAXIICollection404())
 
     # this will raise 404 from mock TAXII Client but TAXIICollectionStore
     # should handle gracefully and return None
@@ -369,7 +372,7 @@ def test_all_versions_404(collection):
     """ a TAXIICollectionSource.all_version() call that recieves an HTTP 404
     response code from the taxii2client should be returned as an exception"""
 
-    ds = TAXIICollectionStore(collection)
+    ds = stix2.TAXIICollectionStore(collection)
 
     with pytest.raises(DataSourceError) as excinfo:
         ds.all_versions("indicator--1")
@@ -381,7 +384,7 @@ def test_query_404(collection):
     """ a TAXIICollectionSource.query() call that recieves an HTTP 404
     response code from the taxii2client should be returned as an exception"""
 
-    ds = TAXIICollectionStore(collection)
+    ds = stix2.TAXIICollectionStore(collection)
     query = [Filter("type", "=", "malware")]
 
     with pytest.raises(DataSourceError) as excinfo:

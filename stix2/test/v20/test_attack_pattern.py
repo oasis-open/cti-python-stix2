@@ -24,7 +24,7 @@ EXPECTED = """{
 
 
 def test_attack_pattern_example():
-    ap = stix2.AttackPattern(
+    ap = stix2.v20.AttackPattern(
         id="attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
         created="2016-05-12T08:17:27.000Z",
         modified="2016-05-12T08:17:27.000Z",
@@ -57,7 +57,7 @@ def test_attack_pattern_example():
     },
 ])
 def test_parse_attack_pattern(data):
-    ap = stix2.parse(data)
+    ap = stix2.parse(data, version="2.0")
 
     assert ap.type == 'attack-pattern'
     assert ap.id == ATTACK_PATTERN_ID
@@ -71,7 +71,7 @@ def test_parse_attack_pattern(data):
 
 def test_attack_pattern_invalid_labels():
     with pytest.raises(stix2.exceptions.InvalidValueError):
-        stix2.AttackPattern(
+        stix2.v20.AttackPattern(
             id="attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
             created="2016-05-12T08:17:27Z",
             modified="2016-05-12T08:17:27Z",

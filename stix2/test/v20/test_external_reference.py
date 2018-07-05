@@ -17,7 +17,7 @@ VERIS = """{
 
 
 def test_external_reference_veris():
-    ref = stix2.ExternalReference(
+    ref = stix2.v20.ExternalReference(
         source_name="veris",
         external_id="0001AA7F-C601-424A-B2B8-BE6C9F5164E7",
         hashes={
@@ -36,7 +36,7 @@ CAPEC = """{
 
 
 def test_external_reference_capec():
-    ref = stix2.ExternalReference(
+    ref = stix2.v20.ExternalReference(
         source_name="capec",
         external_id="CAPEC-550",
     )
@@ -53,7 +53,7 @@ CAPEC_URL = """{
 
 
 def test_external_reference_capec_url():
-    ref = stix2.ExternalReference(
+    ref = stix2.v20.ExternalReference(
         source_name="capec",
         external_id="CAPEC-550",
         url="http://capec.mitre.org/data/definitions/550.html",
@@ -70,7 +70,7 @@ THREAT_REPORT = """{
 
 
 def test_external_reference_threat_report():
-    ref = stix2.ExternalReference(
+    ref = stix2.v20.ExternalReference(
         source_name="ACME Threat Intel",
         description="Threat report",
         url="http://www.example.com/threat-report.pdf",
@@ -87,7 +87,7 @@ BUGZILLA = """{
 
 
 def test_external_reference_bugzilla():
-    ref = stix2.ExternalReference(
+    ref = stix2.v20.ExternalReference(
         source_name="ACME Bugzilla",
         external_id="1370",
         url="https://www.example.com/bugs/1370",
@@ -103,7 +103,7 @@ OFFLINE = """{
 
 
 def test_external_reference_offline():
-    ref = stix2.ExternalReference(
+    ref = stix2.v20.ExternalReference(
         source_name="ACME Threat Intel",
         description="Threat report",
     )
@@ -116,7 +116,7 @@ def test_external_reference_offline():
 
 def test_external_reference_source_required():
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
-        stix2.ExternalReference()
+        stix2.v20.ExternalReference()
 
-    assert excinfo.value.cls == stix2.ExternalReference
+    assert excinfo.value.cls == stix2.v20.ExternalReference
     assert excinfo.value.properties == ["source_name"]

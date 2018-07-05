@@ -3,9 +3,9 @@ import shutil
 
 import pytest
 
-from stix2 import (Bundle, Campaign, CustomObject, Filter, Identity, Indicator,
-                   Malware, MemorySource, MemoryStore, Relationship,
-                   properties)
+from stix2 import (Filter, MemorySource, MemoryStore, properties)
+from stix2.v20 import (Bundle, Campaign, CustomObject, Identity, Indicator,
+                       Malware, Relationship)
 from stix2.datastore import make_id
 
 from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
