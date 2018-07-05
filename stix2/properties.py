@@ -80,9 +80,8 @@ class Property(object):
             raise ValueError("must equal '{0}'.".format(self._fixed_value))
         return value
 
-    def __init__(self, required=False, fixed=None, default=None, type=None):
+    def __init__(self, required=False, fixed=None, default=None):
         self.required = required
-        self.type = type
         if fixed:
             self._fixed_value = fixed
             self.clean = self._default_clean
@@ -204,6 +203,7 @@ class IntegerProperty(Property):
 
 
 class FloatProperty(Property):
+
     def clean(self, value):
         try:
             return float(value)
@@ -320,12 +320,12 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, required=False, type=None):
+    def __init__(self, type=None, **kwargs):
         """
         references sometimes must be to a specific object type
         """
         self.type = type
-        super(ReferenceProperty, self).__init__(required, type=type)
+        super(ReferenceProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         if isinstance(value, _STIXBase):
@@ -344,10 +344,6 @@ SELECTOR_REGEX = re.compile("^[a-z0-9_-]{3,250}(\\.(\\[\\d+\\]|[a-z0-9_-]{1,250}
 
 class SelectorProperty(Property):
 
-    def __init__(self, type=None):
-        # ignore type
-        super(SelectorProperty, self).__init__()
-
     def clean(self, value):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("must adhere to selector syntax.")
@@ -365,9 +361,9 @@ class ObjectReferenceProperty(StringProperty):
 
 class EmbeddedObjectProperty(Property):
 
-    def __init__(self, type, required=False):
+    def __init__(self, type, **kwargs):
         self.type = type
-        super(EmbeddedObjectProperty, self).__init__(required, type=type)
+        super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         if type(value) is dict:
@@ -393,9 +389,6 @@ class EnumProperty(StringProperty):
 
 
 class PatternProperty(StringProperty):
-
-    def __init__(self, **kwargs):
-        super(PatternProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         str_value = super(PatternProperty, self).clean(value)
