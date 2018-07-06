@@ -857,7 +857,7 @@ def test_register_custom_object():
     class CustomObject2(object):
         _type = 'awesome-object'
 
-    stix2._register_object(CustomObject2, version="2.1")
+    stix2.core._register_object(CustomObject2, version="2.1")
     # Note that we will always check against newest OBJ_MAP.
     assert (CustomObject2._type, CustomObject2) in stix2.v21.OBJ_MAP.items()
 

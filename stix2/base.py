@@ -260,7 +260,7 @@ class _STIXBase(collections.Mapping):
         Returns:
             str: The serialized JSON object.
 
-        Note:
+        Notes:
             The argument ``pretty=True`` will output the STIX object following
             spec order. Using this argument greatly impacts object serialization
             performance. If your use case is centered across machine-to-machine
