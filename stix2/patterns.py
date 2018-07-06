@@ -64,8 +64,8 @@ class BooleanConstant(_Constant):
             self.value = value
             return
 
-        trues = ['true', 't']
-        falses = ['false', 'f']
+        trues = ['true', 't', '1']
+        falses = ['false', 'f', '0']
         try:
             if value.lower() in trues:
                 self.value = True
@@ -112,7 +112,7 @@ class HashConstant(StringConstant):
             vocab_key = _HASH_REGEX[key][1]
             if not re.match(_HASH_REGEX[key][0], value):
                 raise ValueError("'%s' is not a valid %s hash" % (value, vocab_key))
-            self.value = value
+            super(HashConstant, self).__init__(value)
 
 
 class BinaryConstant(_Constant):
