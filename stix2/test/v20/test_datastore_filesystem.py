@@ -421,7 +421,7 @@ def test_filesystem_object_with_custom_property(fs_store):
         x_empire="Roman",
         allow_custom=True)
 
-    fs_store.add(camp, True)
+    fs_store.add(camp)
 
     camp_r = fs_store.get(camp.id)
     assert camp_r.id == camp.id

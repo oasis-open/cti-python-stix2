@@ -674,7 +674,7 @@ def test_custom_extension():
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         NewExtension(property2=42)
     assert excinfo.value.properties == ['property1']
-    assert str(excinfo.value) == "No values for required properties for _Custom: (property1)."
+    assert str(excinfo.value) == "No values for required properties for _CustomExtension: (property1)."
 
     with pytest.raises(ValueError) as excinfo:
         NewExtension(property1='something', property2=4)
