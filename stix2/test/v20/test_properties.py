@@ -1,14 +1,14 @@
 import pytest
 
-from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
+import stix2
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.v20.properties import (BinaryProperty, BooleanProperty,
-                                  DictionaryProperty, EmbeddedObjectProperty,
-                                  EnumProperty, FloatProperty, HashesProperty,
-                                  HexProperty, IDProperty, IntegerProperty,
-                                  ListProperty, Property, ReferenceProperty,
-                                  StringProperty, TimestampProperty,
-                                  TypeProperty)
+from stix2.properties import (BinaryProperty, BooleanProperty,
+                              DictionaryProperty, EmbeddedObjectProperty,
+                              EnumProperty, ExtensionsProperty, FloatProperty,
+                              HashesProperty, HexProperty, IDProperty,
+                              IntegerProperty, ListProperty, Property,
+                              ReferenceProperty, StringProperty,
+                              TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME
 
@@ -235,7 +235,7 @@ def test_dictionary_property_valid(d):
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaa: (longer than 256 characters)."],
-    [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other thanlowercase a-z, "
+    [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other than lowercase a-z, "
                             "uppercase A-Z, numerals 0-9, hyphen (-), or underscore (_))."],
 ])
 def test_dictionary_property_invalid_key(d):
@@ -268,7 +268,7 @@ def test_dictionary_property_invalid(d):
 
 
 def test_property_list_of_dictionary():
-    @CustomObject('x-new-obj', [
+    @stix2.v20.CustomObject('x-new-obj', [
         ('property1', ListProperty(DictionaryProperty(), required=True)),
     ])
     class NewObj():
@@ -299,8 +299,8 @@ def test_hashes_property_invalid(value):
 
 
 def test_embedded_property():
-    emb_prop = EmbeddedObjectProperty(type=EmailMIMEComponent)
-    mime = EmailMIMEComponent(
+    emb_prop = EmbeddedObjectProperty(type=stix2.v20.EmailMIMEComponent)
+    mime = stix2.v20.EmailMIMEComponent(
         content_type="text/plain; charset=utf-8",
         content_disposition="inline",
         body="Cats are funny!"
@@ -361,4 +361,4 @@ def test_extension_property_invalid_type():
 
 def test_extension_at_least_one_property_constraint():
     with pytest.raises(AtLeastOnePropertyError):
-        TCPExt()
+        stix2.v20.TCPExt()

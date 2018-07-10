@@ -1,14 +1,14 @@
 import pytest
 
-from stix2 import CustomObject, EmailMIMEComponent, ExtensionsProperty, TCPExt
+import stix2
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
-from stix2.v21.properties import (BinaryProperty, BooleanProperty,
-                                  DictionaryProperty, EmbeddedObjectProperty,
-                                  EnumProperty, FloatProperty, HashesProperty,
-                                  HexProperty, IDProperty, IntegerProperty,
-                                  ListProperty, Property, ReferenceProperty,
-                                  StringProperty, TimestampProperty,
-                                  TypeProperty)
+from stix2.properties import (BinaryProperty, BooleanProperty,
+                              DictionaryProperty, EmbeddedObjectProperty,
+                              EnumProperty, ExtensionsProperty, FloatProperty,
+                              HashesProperty, HexProperty, IDProperty,
+                              IntegerProperty, ListProperty, Property,
+                              ReferenceProperty, StringProperty,
+                              TimestampProperty, TypeProperty)
 
 from .constants import FAKE_TIME
 
@@ -224,7 +224,7 @@ def test_hex_property():
     [('abc', 1), ('bcd', 2), ('cde', 3)],
 ])
 def test_dictionary_property_valid(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version='2.1')
     assert dict_prop.clean(d)
 
 
@@ -232,7 +232,7 @@ def test_dictionary_property_valid(d):
     [{'a': 'something'}, "Invalid dictionary key a: (shorter than 3 characters)."],
 ])
 def test_dictionary_no_longer_raises(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version='2.1')
 
     try:
         dict_prop.clean(d[0])
@@ -246,11 +246,11 @@ def test_dictionary_no_longer_raises(d):
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                              "aaaaaaaaaaaaaaaaaaaaaaa: (longer than 250 characters)."],
-    [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other thanlowercase a-z, "
+    [{'Hey!': 'something'}, "Invalid dictionary key Hey!: (contains characters other than lowercase a-z, "
                             "uppercase A-Z, numerals 0-9, hyphen (-), or underscore (_))."],
 ])
 def test_dictionary_property_invalid_key(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version='2.1')
 
     with pytest.raises(DictionaryKeyError) as excinfo:
         dict_prop.clean(d[0])
@@ -271,7 +271,7 @@ def test_dictionary_property_invalid_key(d):
     ("{'description': 'something'}", "The dictionary property must contain a dictionary"),
 ])
 def test_dictionary_property_invalid(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version='2.1')
 
     with pytest.raises(ValueError) as excinfo:
         dict_prop.clean(d[0])
@@ -279,8 +279,8 @@ def test_dictionary_property_invalid(d):
 
 
 def test_property_list_of_dictionary():
-    @CustomObject('x-new-obj', [
-        ('property1', ListProperty(DictionaryProperty(), required=True)),
+    @stix2.v21.CustomObject('x-new-obj', [
+        ('property1', ListProperty(DictionaryProperty(spec_version='2.1'), required=True)),
     ])
     class NewObj():
         pass
@@ -310,8 +310,8 @@ def test_hashes_property_invalid(value):
 
 
 def test_embedded_property():
-    emb_prop = EmbeddedObjectProperty(type=EmailMIMEComponent)
-    mime = EmailMIMEComponent(
+    emb_prop = EmbeddedObjectProperty(type=stix2.v21.EmailMIMEComponent)
+    mime = stix2.v21.EmailMIMEComponent(
         content_type="text/plain; charset=utf-8",
         content_disposition="inline",
         body="Cats are funny!"
@@ -339,7 +339,7 @@ def test_enum_property_invalid():
 
 
 def test_extension_property_valid():
-    ext_prop = ExtensionsProperty(enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
     assert ext_prop({
         'windows-pebinary-ext': {
             'pe_type': 'exe'
@@ -354,13 +354,13 @@ def test_extension_property_valid():
     }},
 ])
 def test_extension_property_invalid(data):
-    ext_prop = ExtensionsProperty(enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
     with pytest.raises(ValueError):
         ext_prop.clean(data)
 
 
 def test_extension_property_invalid_type():
-    ext_prop = ExtensionsProperty(enclosing_type='indicator')
+    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='indicator')
     with pytest.raises(ValueError) as excinfo:
         ext_prop.clean({
             'windows-pebinary-ext': {
@@ -372,4 +372,4 @@ def test_extension_property_invalid_type():
 
 def test_extension_at_least_one_property_constraint():
     with pytest.raises(AtLeastOnePropertyError):
-        TCPExt()
+        stix2.v21.TCPExt()
