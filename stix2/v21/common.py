@@ -3,12 +3,13 @@
 from collections import OrderedDict
 
 from ..base import _STIXBase
+from ..custom import custom_marking_builder
 from ..markings import _MarkingsMixin
+from ..properties import (BooleanProperty, DictionaryProperty, HashesProperty,
+                          IDProperty, ListProperty, Property,
+                          ReferenceProperty, SelectorProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
 from ..utils import NOW, _get_dict
-from .properties import (BooleanProperty, DictionaryProperty, HashesProperty,
-                         IDProperty, ListProperty, Property, ReferenceProperty,
-                         SelectorProperty, StringProperty, TimestampProperty,
-                         TypeProperty)
 
 
 class ExternalReference(_STIXBase):
@@ -61,7 +62,7 @@ class LanguageContent(_STIXBase):
         # TODO: 'object_modified' it MUST be an exact match for the modified time of the STIX Object (SRO or SDO) being referenced.
         ('object_modified', TimestampProperty(required=True, precision='millisecond')),
         # TODO: 'contents' https://docs.google.com/document/d/1ShNq4c3e1CkfANmD9O--mdZ5H0O_GLnjN28a_yrEaco/edit#heading=h.cfz5hcantmvx
-        ('contents', DictionaryProperty(required=True)),
+        ('contents', DictionaryProperty(spec_version='2.1', required=True)),
         ('revoked', BooleanProperty()),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
@@ -142,17 +143,12 @@ OBJ_MAP_MARKING = {
 }
 
 
-def _register_marking(cls):
-    """Register a custom STIX Marking Definition type.
-    """
-    OBJ_MAP_MARKING[cls._type] = cls
-    return cls
-
-
 def CustomMarking(type='x-custom-marking', properties=None):
     """Custom STIX Marking decorator.
 
     Example:
+        >>> from stix2.v21 import CustomMarking
+        >>> from stix2.properties import IntegerProperty, StringProperty
         >>> @CustomMarking('x-custom-marking', [
         ...     ('property1', StringProperty(required=True)),
         ...     ('property2', IntegerProperty()),
@@ -161,31 +157,9 @@ def CustomMarking(type='x-custom-marking', properties=None):
         ...     pass
 
     """
-    def custom_builder(cls):
-
-        class _Custom(cls, _STIXBase):
-            _type = type
-
-            if not properties or not isinstance(properties, list):
-                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
-            _properties = OrderedDict(properties)
-
-            def __init__(self, **kwargs):
-                _STIXBase.__init__(self, **kwargs)
-                try:
-                    cls.__init__(self, **kwargs)
-                except (AttributeError, TypeError) as e:
-                    # Don't accidentally catch errors raised in a custom __init__()
-                    if ("has no attribute '__init__'" in str(e) or
-                            str(e) == "object.__init__() takes no parameters"):
-                        return
-                    raise e
-
-        _register_marking(_Custom)
-        return _Custom
-
-    return custom_builder
+    def wrapper(cls):
+        return custom_marking_builder(cls, type, properties, '2.1')
+    return wrapper
 
 
 # TODO: don't allow the creation of any other TLPMarkings than the ones below

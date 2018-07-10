@@ -3,15 +3,15 @@
 from collections import OrderedDict
 
 from ..base import _STIXBase
+from ..custom import custom_marking_builder
 from ..markings import _MarkingsMixin
+from ..properties import (HashesProperty, IDProperty, ListProperty, Property,
+                          ReferenceProperty, SelectorProperty, StringProperty,
+                          TimestampProperty, TypeProperty)
 from ..utils import NOW, _get_dict
-from .properties import (HashesProperty, IDProperty, ListProperty, Property,
-                         ReferenceProperty, SelectorProperty, StringProperty,
-                         TimestampProperty, TypeProperty)
 
 
 class ExternalReference(_STIXBase):
-    # TODO: Update with 2.1 Link
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709261>`__.
     """
@@ -30,7 +30,6 @@ class ExternalReference(_STIXBase):
 
 
 class KillChainPhase(_STIXBase):
-    # TODO: Update with 2.1 Link
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709267>`__.
     """
@@ -42,7 +41,6 @@ class KillChainPhase(_STIXBase):
 
 
 class GranularMarking(_STIXBase):
-    # TODO: Update with 2.1 Link
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709290>`__.
     """
@@ -54,7 +52,6 @@ class GranularMarking(_STIXBase):
 
 
 class TLPMarking(_STIXBase):
-    # TODO: Update with 2.1 Link
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709287>`__.
     """
@@ -67,7 +64,6 @@ class TLPMarking(_STIXBase):
 
 
 class StatementMarking(_STIXBase):
-    # TODO: Update with 2.1 Link
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709286>`__.
     """
@@ -98,7 +94,6 @@ class MarkingProperty(Property):
 
 
 class MarkingDefinition(_STIXBase, _MarkingsMixin):
-    # TODO: Update with 2.1 Link
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709284>`__.
     """
@@ -137,17 +132,12 @@ OBJ_MAP_MARKING = {
 }
 
 
-def _register_marking(cls):
-    """Register a custom STIX Marking Definition type.
-    """
-    OBJ_MAP_MARKING[cls._type] = cls
-    return cls
-
-
 def CustomMarking(type='x-custom-marking', properties=None):
     """Custom STIX Marking decorator.
 
     Example:
+        >>> from stix2 import CustomMarking
+        >>> from stix2.properties import IntegerProperty, StringProperty
         >>> @CustomMarking('x-custom-marking', [
         ...     ('property1', StringProperty(required=True)),
         ...     ('property2', IntegerProperty()),
@@ -156,32 +146,9 @@ def CustomMarking(type='x-custom-marking', properties=None):
         ...     pass
 
     """
-    def custom_builder(cls):
-
-        class _Custom(cls, _STIXBase):
-            _type = type
-            _properties = OrderedDict()
-
-            if not properties or not isinstance(properties, list):
-                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
-            _properties.update(properties)
-
-            def __init__(self, **kwargs):
-                _STIXBase.__init__(self, **kwargs)
-                try:
-                    cls.__init__(self, **kwargs)
-                except (AttributeError, TypeError) as e:
-                    # Don't accidentally catch errors raised in a custom __init__()
-                    if ("has no attribute '__init__'" in str(e) or
-                            str(e) == "object.__init__() takes no parameters"):
-                        return
-                    raise e
-
-        _register_marking(_Custom)
-        return _Custom
-
-    return custom_builder
+    def wrapper(cls):
+        return custom_marking_builder(cls, type, properties, '2.0')
+    return wrapper
 
 
 # TODO: don't allow the creation of any other TLPMarkings than the ones below
