@@ -248,8 +248,7 @@ def test_memory_store_object_with_custom_property_in_bundle(mem_store):
     bundle = Bundle(camp, allow_custom=True)
     mem_store.add(bundle)
 
-    bundle_r = mem_store.get(bundle.id)
-    camp_r = bundle_r['objects'][0]
+    camp_r = mem_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
 
