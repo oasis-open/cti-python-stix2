@@ -196,7 +196,7 @@ def test_parse_unknown_type():
 
 
 def test_stix_object_property():
-    prop = stix2.v20.bundle.STIXObjectProperty()
+    prop = stix2.properties.STIXObjectProperty(spec_version='2.0')
 
     identity = stix2.v20.Identity(name="test", identity_class="individual")
     assert prop.clean(identity) is identity
