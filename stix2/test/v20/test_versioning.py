@@ -230,8 +230,8 @@ def test_remove_custom_stix_property():
 
 def test_remove_custom_stix_object():
     @stix2.CustomObject("x-animal", [
-        ("species", stix2.v20.properties.StringProperty(required=True)),
-        ("animal_class", stix2.v20.properties.StringProperty()),
+        ("species", stix2.properties.StringProperty(required=True)),
+        ("animal_class", stix2.properties.StringProperty()),
     ])
     class Animal(object):
         pass

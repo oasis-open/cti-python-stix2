@@ -440,7 +440,7 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
 
 def test_filesystem_custom_object(fs_store):
     @stix2.v21.CustomObject('x-new-obj', [
-        ('property1', stix2.v21.properties.StringProperty(required=True)),
+        ('property1', stix2.properties.StringProperty(required=True)),
     ])
     class NewObj():
         pass

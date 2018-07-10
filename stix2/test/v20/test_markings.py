@@ -181,8 +181,8 @@ def test_parse_marking_definition(data):
 
 
 @stix2.v20.CustomMarking('x-new-marking-type', [
-    ('property1', stix2.v20.properties.StringProperty(required=True)),
-    ('property2', stix2.v20.properties.IntegerProperty()),
+    ('property1', stix2.properties.StringProperty(required=True)),
+    ('property2', stix2.properties.IntegerProperty()),
 ])
 class NewMarking(object):
     def __init__(self, property2=None, **kwargs):
@@ -219,8 +219,8 @@ def test_not_registered_marking_raises_exception():
     with pytest.raises(ValueError) as excinfo:
         # Used custom object on purpose to demonstrate a not-registered marking
         @stix2.v20.CustomObject('x-new-marking-type2', [
-            ('property1', stix2.v20.properties.StringProperty(required=True)),
-            ('property2', stix2.v20.properties.IntegerProperty()),
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
         ])
         class NewObject2(object):
             def __init__(self, property2=None, **kwargs):
