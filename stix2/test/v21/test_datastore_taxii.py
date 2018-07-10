@@ -160,13 +160,13 @@ def test_add_stix2_bundle_object(collection):
 
     # create new STIX threat-actor
     ta = stix2.v21.ThreatActor(name="Teddy Bear",
-                     labels=["nation-state"],
-                     sophistication="innovator",
-                     resource_level="government",
-                     goals=[
-                         "compromising environment NGOs",
-                         "water-hole attacks geared towards energy sector",
-                     ])
+                               labels=["nation-state"],
+                               sophistication="innovator",
+                               resource_level="government",
+                               goals=[
+                                   "compromising environment NGOs",
+                                   "water-hole attacks geared towards energy sector",
+                               ])
 
     tc_sink.add(stix2.v21.Bundle(objects=[ta]))
 

@@ -657,7 +657,8 @@ def test_file_example():
     f = stix2.v20.File(
         name="qwerty.dll",
         hashes={
-        "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"},
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+        },
         size=100,
         magic_number_hex="1C",
         mime_type="application/msword",
