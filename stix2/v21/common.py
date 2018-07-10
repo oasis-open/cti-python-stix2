@@ -13,6 +13,10 @@ from ..utils import NOW, _get_dict
 
 
 class ExternalReference(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict([
         ('source_name', StringProperty(required=True)),
@@ -28,6 +32,10 @@ class ExternalReference(_STIXBase):
 
 
 class KillChainPhase(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict([
         ('kill_chain_name', StringProperty(required=True)),
@@ -36,6 +44,10 @@ class KillChainPhase(_STIXBase):
 
 
 class GranularMarking(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _properties = OrderedDict([
         ('lang', StringProperty()),
@@ -49,6 +61,10 @@ class GranularMarking(_STIXBase):
 
 
 class LanguageContent(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'language-content'
     _properties = OrderedDict([
@@ -72,6 +88,10 @@ class LanguageContent(_STIXBase):
 
 
 class TLPMarking(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'tlp'
     _properties = OrderedDict([
@@ -80,6 +100,10 @@ class TLPMarking(_STIXBase):
 
 
 class StatementMarking(_STIXBase):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'statement'
     _properties = OrderedDict([
@@ -107,6 +131,10 @@ class MarkingProperty(Property):
 
 
 class MarkingDefinition(_STIXBase, _MarkingsMixin):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
 
     _type = 'marking-definition'
     _properties = OrderedDict([
