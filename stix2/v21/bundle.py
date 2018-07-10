@@ -1,48 +1,21 @@
 from collections import OrderedDict
 
 from ..base import _STIXBase
-from ..core import parse
-from ..utils import _get_dict, get_class_hierarchy_names
-from .properties import IDProperty, ListProperty, Property, TypeProperty
-
-
-class STIXObjectProperty(Property):
-
-    def __init__(self, allow_custom=False, *args, **kwargs):
-        self.allow_custom = allow_custom
-        super(STIXObjectProperty, self).__init__(*args, **kwargs)
-
-    def clean(self, value):
-        # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
-        # a bundle with no further checks.
-        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
-               for x in get_class_hierarchy_names(value)):
-            return value
-        try:
-            dictified = _get_dict(value)
-        except ValueError:
-            raise ValueError("This property may only contain a dictionary or object")
-        if dictified == {}:
-            raise ValueError("This property may only contain a non-empty dictionary or object")
-        if 'type' in dictified and dictified['type'] == 'bundle':
-            raise ValueError('This property may not contain a Bundle object')
-
-        parsed_obj = parse(dictified, allow_custom=self.allow_custom)
-
-        return parsed_obj
+from ..properties import (IDProperty, ListProperty, STIXObjectProperty,
+                          TypeProperty)
 
 
 class Bundle(_STIXBase):
+    # TODO: Add link
     """For more detailed information on this object's properties, see
-    TODO: Update this to a STIX 2.1 link.
-    `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709293>`__.
+    `the STIX 2.1 specification <link here>`__.
     """
 
     _type = 'bundle'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('objects', ListProperty(STIXObjectProperty)),
+        ('objects', ListProperty(STIXObjectProperty(spec_version='2.1'))),
     ])
 
     def __init__(self, *args, **kwargs):
