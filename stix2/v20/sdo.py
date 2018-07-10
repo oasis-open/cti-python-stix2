@@ -2,21 +2,16 @@
 """
 
 from collections import OrderedDict
-import re
+import itertools
 
-from ..base import _STIXBase
-from ..core import _register_type
-from ..markings import _MarkingsMixin
-from ..utils import NOW, TYPE_REGEX
+from ..core import STIXDomainObject
+from ..custom import custom_object_builder
+from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
+                          ListProperty, ObservableProperty, PatternProperty,
+                          ReferenceProperty, StringProperty, TimestampProperty,
+                          TypeProperty)
+from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
-from .observables import ObservableProperty
-from .properties import (BooleanProperty, IDProperty, IntegerProperty,
-                         ListProperty, PatternProperty, ReferenceProperty,
-                         StringProperty, TimestampProperty, TypeProperty)
-
-
-class STIXDomainObject(_STIXBase, _MarkingsMixin):
-    pass
 
 
 class AttackPattern(STIXDomainObject):
@@ -327,6 +322,8 @@ def CustomObject(type='x-custom-type', properties=None):
     """Custom STIX Object type decorator.
 
     Example:
+        >>> from stix2.v20 import CustomObject
+        >>> from stix2.properties import IntegerProperty, StringProperty
         >>> @CustomObject('x-type-name', [
         ...     ('property1', StringProperty(required=True)),
         ...     ('property2', IntegerProperty()),
@@ -338,6 +335,8 @@ def CustomObject(type='x-custom-type', properties=None):
     type. Don't call ``super().__init__()`` though - doing so will cause an error.
 
     Example:
+        >>> from stix2.v20 import CustomObject
+        >>> from stix2.properties import IntegerProperty, StringProperty
         >>> @CustomObject('x-type-name', [
         ...     ('property1', StringProperty(required=True)),
         ...     ('property2', IntegerProperty()),
@@ -346,56 +345,27 @@ def CustomObject(type='x-custom-type', properties=None):
         ...     def __init__(self, property2=None, **kwargs):
         ...         if property2 and property2 < 10:
         ...             raise ValueError("'property2' is too small.")
+
     """
-
-    def custom_builder(cls):
-
-        class _Custom(cls, STIXDomainObject):
-
-            if not re.match(TYPE_REGEX, type):
-                raise ValueError("Invalid type name '%s': must only contain the "
-                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
-            elif len(type) < 3 or len(type) > 250:
-                raise ValueError("Invalid type name '%s': must be between 3 and 250 characters." % type)
-
-            _type = type
-            _properties = OrderedDict([
-                ('type', TypeProperty(_type)),
-                ('id', IDProperty(_type)),
+    def wrapper(cls):
+        _properties = list(itertools.chain.from_iterable([
+            [
+                ('type', TypeProperty(type)),
+                ('id', IDProperty(type)),
                 ('created_by_ref', ReferenceProperty(type='identity')),
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-            ])
-
-            if not properties or not isinstance(properties, list):
-                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
-            _properties.update([x for x in properties if not x[0].startswith('x_')])
-
-            # This is to follow the general properties structure.
-            _properties.update([
+                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond'))
+            ],
+            [x for x in properties if not x[0].startswith('x_')],
+            [
                 ('revoked', BooleanProperty(default=lambda: False)),
                 ('labels', ListProperty(StringProperty)),
                 ('external_references', ListProperty(ExternalReference)),
                 ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
                 ('granular_markings', ListProperty(GranularMarking)),
-            ])
+            ],
+            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0])
+        ]))
+        return custom_object_builder(cls, type, _properties, '2.0')
 
-            # Put all custom properties at the bottom, sorted alphabetically.
-            _properties.update(sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]))
-
-            def __init__(self, **kwargs):
-                _STIXBase.__init__(self, **kwargs)
-                try:
-                    cls.__init__(self, **kwargs)
-                except (AttributeError, TypeError) as e:
-                    # Don't accidentally catch errors raised in a custom __init__()
-                    if ("has no attribute '__init__'" in str(e) or
-                            str(e) == "object.__init__() takes no parameters"):
-                        return
-                    raise e
-
-        _register_type(_Custom, version='2.0')
-        return _Custom
-
-    return custom_builder
+    return wrapper
