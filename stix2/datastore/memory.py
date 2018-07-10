@@ -33,7 +33,7 @@ def _add(store, stix_data=None):
         stix_data (list OR dict OR STIX object): STIX objects to be added
 
     """
-    if isinstance(stix_data, collections.abc.Mapping):
+    if isinstance(stix_data, collections.Mapping):
         if stix_data['type'] == 'bundle':
             # adding a json bundle - so just grab STIX objects
             for stix_obj in stix_data.get('objects', []):
