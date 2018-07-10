@@ -36,18 +36,18 @@ from . import Vulnerability as _Vulnerability
 from . import (AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,  # noqa: F401
                Bundle, CustomExtension, CustomMarking, CustomObservable,
                Directory, DomainName, EmailAddress, EmailMessage,
-               EmailMIMEComponent, Environment, ExtensionsProperty,
-               ExternalReference, File, FileSystemSource, Filter,
-               GranularMarking, HTTPRequestExt, ICMPExt, IPv4Address,
-               IPv6Address, KillChainPhase, MACAddress, MarkingDefinition,
-               MemoryStore, Mutex, NetworkTraffic, NTFSExt, parse_observable,
-               PDFExt, Process, RasterImageExt, Relationship, Sighting,
-               SocketExt, Software, StatementMarking, TAXIICollectionSource,
-               TCPExt, TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, TLPMarking,
-               UNIXAccountExt, URL, UserAccount, WindowsPEBinaryExt,
-               WindowsPEOptionalHeaderType, WindowsPESection,
-               WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
-               WindowsServiceExt, X509Certificate, X509V3ExtenstionsType)
+               EmailMIMEComponent, Environment, ExternalReference, File,
+               FileSystemSource, Filter, GranularMarking, HTTPRequestExt,
+               ICMPExt, IPv4Address, IPv6Address, KillChainPhase, MACAddress,
+               MarkingDefinition, MemoryStore, Mutex, NetworkTraffic, NTFSExt,
+               parse_observable, PDFExt, Process, RasterImageExt, Relationship,
+               Sighting, SocketExt, Software, StatementMarking,
+               TAXIICollectionSource, TCPExt, TLP_AMBER, TLP_GREEN, TLP_RED,
+               TLP_WHITE, TLPMarking, UNIXAccountExt, URL, UserAccount,
+               WindowsPEBinaryExt, WindowsPEOptionalHeaderType,
+               WindowsPESection, WindowsProcessExt, WindowsRegistryKey,
+               WindowsRegistryValueType, WindowsServiceExt, X509Certificate,
+               X509V3ExtenstionsType)
 from .datastore.filters import FilterSet
 
 # Use an implicit MemoryStore
