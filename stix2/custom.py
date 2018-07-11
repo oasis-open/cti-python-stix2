@@ -7,7 +7,7 @@ from .core import (_register_object, _register_marking, _register_observable,
 from .utils import TYPE_REGEX, get_class_hierarchy_names
 
 
-def custom_object_builder(cls, type, properties, version):
+def _custom_object_builder(cls, type, properties, version):
     class _CustomObject(cls, STIXDomainObject):
 
         if not re.match(TYPE_REGEX, type):
@@ -38,7 +38,7 @@ def custom_object_builder(cls, type, properties, version):
     return _CustomObject
 
 
-def custom_marking_builder(cls, type, properties, version):
+def _custom_marking_builder(cls, type, properties, version):
     class _CustomMarking(cls, _STIXBase):
 
         if not properties or not isinstance(properties, list):
@@ -62,7 +62,7 @@ def custom_marking_builder(cls, type, properties, version):
     return _CustomMarking
 
 
-def custom_observable_builder(cls, type, properties, version):
+def _custom_observable_builder(cls, type, properties, version):
     class _CustomObservable(cls, _Observable):
 
         if not re.match(TYPE_REGEX, type):
@@ -102,7 +102,7 @@ def custom_observable_builder(cls, type, properties, version):
     return _CustomObservable
 
 
-def custom_extension_builder(cls, observable, type, properties, version):
+def _custom_extension_builder(cls, observable, type, properties, version):
     if not observable or not issubclass(observable, _Observable):
         raise ValueError("'observable' must be a valid Observable class!")
 

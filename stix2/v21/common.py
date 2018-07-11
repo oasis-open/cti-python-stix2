@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from ..base import _STIXBase
-from ..custom import custom_marking_builder
+from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
 from ..properties import (BooleanProperty, DictionaryProperty, HashesProperty,
                           IDProperty, ListProperty, Property,
@@ -186,7 +186,7 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
     """
     def wrapper(cls):
-        return custom_marking_builder(cls, type, properties, '2.1')
+        return _custom_marking_builder(cls, type, properties, '2.1')
     return wrapper
 
 

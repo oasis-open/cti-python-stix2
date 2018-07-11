@@ -9,7 +9,7 @@ from collections import OrderedDict
 import itertools
 
 from ..base import _Extension, _Observable, _STIXBase
-from ..custom import custom_extension_builder, custom_observable_builder
+from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
                           EmbeddedObjectProperty, EnumProperty,
@@ -820,7 +820,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
             properties,
             [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))]
         ]))
-        return custom_observable_builder(cls, type, _properties, '2.1')
+        return _custom_observable_builder(cls, type, _properties, '2.1')
     return wrapper
 
 
@@ -828,5 +828,5 @@ def CustomExtension(observable=None, type='x-custom-observable-ext', properties=
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return custom_extension_builder(cls, observable, type, properties, '2.1')
+        return _custom_extension_builder(cls, observable, type, properties, '2.1')
     return wrapper

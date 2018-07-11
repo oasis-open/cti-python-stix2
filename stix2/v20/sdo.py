@@ -5,7 +5,7 @@ from collections import OrderedDict
 import itertools
 
 from ..core import STIXDomainObject
-from ..custom import custom_object_builder
+from ..custom import _custom_object_builder
 from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
                           ListProperty, ObservableProperty, PatternProperty,
                           ReferenceProperty, StringProperty, TimestampProperty,
@@ -366,6 +366,6 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0])
         ]))
-        return custom_object_builder(cls, type, _properties, '2.0')
+        return _custom_object_builder(cls, type, _properties, '2.0')
 
     return wrapper

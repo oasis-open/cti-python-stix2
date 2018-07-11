@@ -5,7 +5,7 @@ import itertools
 
 from ..base import _STIXBase
 from ..core import STIXDomainObject
-from ..custom import custom_object_builder
+from ..custom import _custom_object_builder
 from ..properties import (BooleanProperty, DictionaryProperty,
                           EmbeddedObjectProperty, EnumProperty, FloatProperty,
                           IDProperty, IntegerProperty, ListProperty,
@@ -550,6 +550,6 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0])
         ]))
-        return custom_object_builder(cls, type, _properties, '2.1')
+        return _custom_object_builder(cls, type, _properties, '2.1')
 
     return wrapper
