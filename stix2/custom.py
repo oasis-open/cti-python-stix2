@@ -2,8 +2,8 @@ from collections import OrderedDict
 import re
 
 from .base import _Extension, _Observable, _STIXBase
-from .core import (_register_object, _register_marking, _register_observable,
-                   _register_observable_extension, STIXDomainObject)
+from .core import (STIXDomainObject, _register_marking, _register_object,
+                   _register_observable, _register_observable_extension)
 from .utils import TYPE_REGEX, get_class_hierarchy_names
 
 
