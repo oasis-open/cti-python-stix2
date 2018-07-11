@@ -16,7 +16,7 @@ IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
 def test_identity_custom_property():
     with pytest.raises(ValueError) as excinfo:
         stix2.v21.Identity(
-            id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            id="identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
             modified="2015-12-21T19:59:11Z",
             name="John Smith",
@@ -27,7 +27,7 @@ def test_identity_custom_property():
 
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.v21.Identity(
-            id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            id="identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
             modified="2015-12-21T19:59:11Z",
             name="John Smith",
@@ -40,7 +40,7 @@ def test_identity_custom_property():
     assert "Unexpected properties for Identity" in str(excinfo.value)
 
     identity = stix2.v21.Identity(
-        id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+        id="identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
         modified="2015-12-21T19:59:11Z",
         name="John Smith",
@@ -55,7 +55,7 @@ def test_identity_custom_property():
 def test_identity_custom_property_invalid():
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.v21.Identity(
-            id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+            id="identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
             created="2015-12-21T19:59:11Z",
             modified="2015-12-21T19:59:11Z",
             name="John Smith",
@@ -69,7 +69,7 @@ def test_identity_custom_property_invalid():
 
 def test_identity_custom_property_allowed():
     identity = stix2.v21.Identity(
-        id="identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+        id="identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
         created="2015-12-21T19:59:11Z",
         modified="2015-12-21T19:59:11Z",
         name="John Smith",
@@ -84,7 +84,7 @@ def test_identity_custom_property_allowed():
     """{
         "type": "identity",
         "spec_version": "2.1",
-        "id": "identity--311b2d2d-f010-5473-83ec-1edf84858f4c",
+        "id": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
         "created": "2015-12-21T19:59:11Z",
         "modified": "2015-12-21T19:59:11Z",
         "name": "John Smith",
@@ -128,7 +128,7 @@ def test_custom_property_dict_in_bundled_object():
     custom_identity = {
         'type': 'identity',
         'spec_version': '2.1',
-        'id': 'identity--311b2d2d-f010-5473-83ec-1edf84858f4c',
+        'id': 'identity--311b2d2d-f010-4473-83ec-1edf84858f4c',
         'created': '2015-12-21T19:59:11Z',
         'name': 'John Smith',
         'identity_class': 'individual',
@@ -146,7 +146,7 @@ def test_custom_properties_dict_in_bundled_object():
     custom_identity = {
         'type': 'identity',
         'spec_version': '2.1',
-        'id': 'identity--311b2d2d-f010-5473-83ec-1edf84858f4c',
+        'id': 'identity--311b2d2d-f010-4473-83ec-1edf84858f4c',
         'created': '2015-12-21T19:59:11Z',
         'name': 'John Smith',
         'identity_class': 'individual',

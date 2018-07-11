@@ -6,12 +6,12 @@ import stix2
 
 EXPECTED_BUNDLE = """{
     "type": "bundle",
-    "id": "bundle--00000000-0000-0000-0000-000000000007",
+    "id": "bundle--00000000-0000-4000-8000-000000000007",
     "objects": [
         {
             "type": "indicator",
             "spec_version": "2.1",
-            "id": "indicator--00000000-0000-0000-0000-000000000001",
+            "id": "indicator--00000000-0000-4000-8000-000000000001",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
@@ -23,7 +23,7 @@ EXPECTED_BUNDLE = """{
         {
             "type": "malware",
             "spec_version": "2.1",
-            "id": "malware--00000000-0000-0000-0000-000000000003",
+            "id": "malware--00000000-0000-4000-8000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
@@ -35,24 +35,24 @@ EXPECTED_BUNDLE = """{
         {
             "type": "relationship",
             "spec_version": "2.1",
-            "id": "relationship--00000000-0000-0000-0000-000000000005",
+            "id": "relationship--00000000-0000-4000-8000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "relationship_type": "indicates",
-            "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
-            "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210"
+            "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
         }
     ]
 }"""
 
 EXPECTED_BUNDLE_DICT = {
     "type": "bundle",
-    "id": "bundle--00000000-0000-0000-0000-000000000007",
+    "id": "bundle--00000000-0000-4000-8000-000000000007",
     "objects": [
         {
             "type": "indicator",
             "spec_version": "2.1",
-            "id": "indicator--00000000-0000-0000-0000-000000000001",
+            "id": "indicator--00000000-0000-4000-8000-000000000001",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
@@ -64,7 +64,7 @@ EXPECTED_BUNDLE_DICT = {
         {
             "type": "malware",
             "spec_version": "2.1",
-            "id": "malware--00000000-0000-0000-0000-000000000003",
+            "id": "malware--00000000-0000-4000-8000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
@@ -76,12 +76,12 @@ EXPECTED_BUNDLE_DICT = {
         {
             "type": "relationship",
             "spec_version": "2.1",
-            "id": "relationship--00000000-0000-0000-0000-000000000005",
+            "id": "relationship--00000000-0000-4000-8000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "relationship_type": "indicates",
-            "source_ref": "indicator--01234567-89ab-cdef-0123-456789abcdef",
-            "target_ref": "malware--fedcba98-7654-3210-fedc-ba9876543210"
+            "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
         }
     ]
 }

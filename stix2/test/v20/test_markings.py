@@ -194,14 +194,14 @@ def test_registered_custom_marking():
     nm = NewMarking(property1='something', property2=55)
 
     marking_def = stix2.v20.MarkingDefinition(
-        id="marking-definition--00000000-0000-0000-0000-000000000012",
+        id="marking-definition--00000000-0000-4000-8000-000000000012",
         created="2017-01-22T00:00:00.000Z",
         definition_type="x-new-marking-type",
         definition=nm
     )
 
     assert marking_def.type == "marking-definition"
-    assert marking_def.id == "marking-definition--00000000-0000-0000-0000-000000000012"
+    assert marking_def.id == "marking-definition--00000000-0000-4000-8000-000000000012"
     assert marking_def.created == dt.datetime(2017, 1, 22, 0, 0, 0, tzinfo=pytz.utc)
     assert marking_def.definition.property1 == "something"
     assert marking_def.definition.property2 == 55
@@ -229,7 +229,7 @@ def test_not_registered_marking_raises_exception():
         no = NewObject2(property1='something', property2=55)
 
         stix2.v20.MarkingDefinition(
-            id="marking-definition--00000000-0000-0000-0000-000000000012",
+            id="marking-definition--00000000-0000-4000-8000-000000000012",
             created="2017-01-22T00:00:00.000Z",
             definition_type="x-new-marking-type2",
             definition=no

@@ -27,7 +27,7 @@ def uuid4(monkeypatch):
 
         def wrapped():
             data[0] += 1
-            return "00000000-0000-0000-0000-00000000%04x" % data[0]
+            return "00000000-0000-4000-8000-00000000%04x" % data[0]
 
         return wrapped
     monkeypatch.setattr(uuid, "uuid4", wrapper())
@@ -52,7 +52,7 @@ def relationship(uuid4, clock):
 def stix_objs1():
     ind1 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000001",
         "labels": [
             "url-watchlist"
         ],
@@ -65,7 +65,7 @@ def stix_objs1():
     }
     ind2 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000001",
         "labels": [
             "url-watchlist"
         ],
@@ -78,7 +78,7 @@ def stix_objs1():
     }
     ind3 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000001",
         "labels": [
             "url-watchlist"
         ],
@@ -91,7 +91,7 @@ def stix_objs1():
     }
     ind4 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000002",
         "labels": [
             "url-watchlist"
         ],
@@ -104,7 +104,7 @@ def stix_objs1():
     }
     ind5 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000002",
         "labels": [
             "url-watchlist"
         ],
@@ -122,7 +122,7 @@ def stix_objs1():
 def stix_objs2():
     ind6 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000001",
         "labels": [
             "url-watchlist"
         ],
@@ -135,7 +135,7 @@ def stix_objs2():
     }
     ind7 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000002",
         "labels": [
             "url-watchlist"
         ],
@@ -148,7 +148,7 @@ def stix_objs2():
     }
     ind8 = {
         "created": "2017-01-27T13:49:53.935Z",
-        "id": "indicator--d81f86b8-975b-bc0b-775e-810c5ad45a4f",
+        "id": "indicator--00000000-0000-4000-8000-000000000002",
         "labels": [
             "url-watchlist"
         ],

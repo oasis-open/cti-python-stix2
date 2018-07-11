@@ -198,7 +198,7 @@ def test_filesystem_sink_add_stix_object_dict(fs_sink, fs_source):
         "type": "campaign",
         "objective": "German and French Intelligence Services",
         "aliases": ["Purple Robes"],
-        "id": "campaign--111111b6-1112-4fb0-111b-b111107ca70a",
+        "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         "created": "2017-05-31T21:31:53.197755Z"
     }
 
@@ -218,14 +218,14 @@ def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
     # add stix bundle dict
     bund = {
         "type": "bundle",
-        "id": "bundle--112211b6-1112-4fb0-111b-b111107ca70a",
+        "id": "bundle--040ae5ec-2e91-4e94-b075-bc8b368e8ca3",
         "objects": [
             {
                 "name": "Atilla",
                 "type": "campaign",
                 "objective": "Bulgarian, Albanian and Romanian Intelligence Services",
                 "aliases": ["Huns"],
-                "id": "campaign--133111b6-1112-4fb0-111b-b111107ca70a",
+                "id": "campaign--b8f86161-ccae-49de-973a-4ca320c62478",
                 "created": "2017-05-31T21:31:53.197755Z"
             }
         ]
@@ -245,15 +245,15 @@ def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
 
 def test_filesystem_sink_add_json_stix_object(fs_sink, fs_source):
     # add json-encoded stix obj
-    camp4 = '{"type": "campaign", "id":"campaign--144111b6-1112-4fb0-111b-b111107ca70a",'\
+    camp4 = '{"type": "campaign", "id":"campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d",'\
             ' "created":"2017-05-31T21:31:53.197755Z", "name": "Ghengis Khan", "objective": "China and Russian infrastructure"}'
 
     fs_sink.add(camp4)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--144111b6-1112-4fb0-111b-b111107ca70a" + ".json"))
+    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d" + ".json"))
 
-    camp4_r = fs_source.get("campaign--144111b6-1112-4fb0-111b-b111107ca70a")
-    assert camp4_r.id == "campaign--144111b6-1112-4fb0-111b-b111107ca70a"
+    camp4_r = fs_source.get("campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d")
+    assert camp4_r.id == "campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d"
     assert camp4_r.name == "Ghengis Khan"
 
     os.remove(os.path.join(FS_PATH, "campaign", camp4_r.id + ".json"))
@@ -261,15 +261,15 @@ def test_filesystem_sink_add_json_stix_object(fs_sink, fs_source):
 
 def test_filesystem_sink_json_stix_bundle(fs_sink, fs_source):
     # add json-encoded stix bundle
-    bund2 = '{"type": "bundle", "id": "bundle--332211b6-1132-4fb0-111b-b111107ca70a",' \
-            ' "objects": [{"type": "campaign", "spec_version": "2.1", "id": "campaign--155155b6-1112-4fb0-111b-b111107ca70a",' \
+    bund2 = '{"type": "bundle", "id": "bundle--3d267103-8475-4d8f-b321-35ec6eccfa37",' \
+            ' "objects": [{"type": "campaign", "spec_version": "2.1", "id": "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b",' \
             ' "created":"2017-05-31T21:31:53.197755Z", "name": "Spartacus", "objective": "Oppressive regimes of Africa and Middle East"}]}'
     fs_sink.add(bund2)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--155155b6-1112-4fb0-111b-b111107ca70a" + ".json"))
+    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b" + ".json"))
 
-    camp5_r = fs_source.get("campaign--155155b6-1112-4fb0-111b-b111107ca70a")
-    assert camp5_r.id == "campaign--155155b6-1112-4fb0-111b-b111107ca70a"
+    camp5_r = fs_source.get("campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b")
+    assert camp5_r.id == "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b"
     assert camp5_r.name == "Spartacus"
 
     os.remove(os.path.join(FS_PATH, "campaign", camp5_r.id + ".json"))
@@ -287,14 +287,14 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
         "spec_version": "2.1",
         "objective": "Central and Eastern Europe military commands and departments",
         "aliases": ["The Frenchmen"],
-        "id": "campaign--122818b6-1112-4fb0-111b-b111107ca70a",
+        "id": "campaign--122818b6-1112-4fb0-b11b-b111107ca70a",
         "created": "2017-05-31T21:31:53.197755Z"
     }
 
     fs_sink.add([camp6, camp7])
 
     assert os.path.exists(os.path.join(FS_PATH, "campaign", camp6.id + ".json"))
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--122818b6-1112-4fb0-111b-b111107ca70a" + ".json"))
+    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--122818b6-1112-4fb0-b11b-b111107ca70a" + ".json"))
 
     camp6_r = fs_source.get(camp6.id)
     assert camp6_r.id == camp6.id
@@ -402,7 +402,7 @@ def test_filesystem_add_bundle_object(fs_store):
 
 
 def test_filesystem_store_add_invalid_object(fs_store):
-    ind = ('campaign', 'campaign--111111b6-1112-4fb0-111b-b111107ca70a')  # tuple isn't valid
+    ind = ('campaign', 'campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f')   # tuple isn't valid
     with pytest.raises(TypeError) as excinfo:
         fs_store.add(ind)
     assert 'stix_data must be' in str(excinfo.value)

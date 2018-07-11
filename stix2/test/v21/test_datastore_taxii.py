@@ -253,7 +253,7 @@ def test_add_dict_bundle_object(collection):
 def test_get_stix2_object(collection):
     tc_sink = stix2.TAXIICollectionSource(collection)
 
-    objects = tc_sink.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    objects = tc_sink.get("indicator--00000000-0000-4000-8000-000000000001")
 
     assert objects
 
@@ -320,7 +320,7 @@ def test_add_get_remove_filter(collection):
 def test_get_all_versions(collection):
     ds = stix2.TAXIICollectionStore(collection)
 
-    indicators = ds.all_versions('indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f')
+    indicators = ds.all_versions('indicator--00000000-0000-4000-8000-000000000001')
     # There are 3 indicators but 2 share the same 'modified' timestamp
     assert len(indicators) == 2
 
