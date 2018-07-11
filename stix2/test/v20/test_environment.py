@@ -197,7 +197,7 @@ def test_parse_malware():
     env = stix2.Environment()
     data = """{
         "type": "malware",
-        "id": "malware--fedcba98-7654-3210-fedc-ba9876543210",
+        "id": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
         "created": "2017-01-01T12:34:56.000Z",
         "modified": "2017-01-01T12:34:56.000Z",
         "name": "Cryptolocker",

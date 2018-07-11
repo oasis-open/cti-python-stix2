@@ -41,16 +41,16 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
     cds1.add_data_sources([ds1_1, ds1_2])
     cds2.add_data_sources([ds2_1, ds2_2])
 
-    indicators = cds1.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    indicators = cds1.all_versions("indicator--00000000-0000-4000-8000-000000000001")
 
     # In STIX_OBJS2 changed the 'modified' property to a later time...
     assert len(indicators) == 2
 
     cds1.add_data_sources([cds2])
 
-    indicator = cds1.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    indicator = cds1.get("indicator--00000000-0000-4000-8000-000000000001")
 
-    assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
+    assert indicator["id"] == "indicator--00000000-0000-4000-8000-000000000001"
     assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
     assert indicator["type"] == "indicator"
 
@@ -70,15 +70,15 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
     # original time in STIX_OBJS1
     assert len(results) == 3
 
-    indicator = cds1.get("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    indicator = cds1.get("indicator--00000000-0000-4000-8000-000000000001")
 
-    assert indicator["id"] == "indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f"
+    assert indicator["id"] == "indicator--00000000-0000-4000-8000-000000000001"
     assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
     assert indicator["type"] == "indicator"
 
     # There is only one indicator with different ID. Since we use the same data
     # when deduplicated, only two indicators (one with different modified).
-    results = cds1.all_versions("indicator--d81f86b9-975b-bc0b-775e-810c5ad45a4f")
+    results = cds1.all_versions("indicator--00000000-0000-4000-8000-000000000001")
     assert len(results) == 2
 
     # Since we have filters already associated with our CompositeSource providing
