@@ -31,7 +31,9 @@ class Artifact(_Observable):
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.1')),
+        ('encryption_algorithm', StringProperty()),
+        ('decryption_key', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
@@ -182,7 +184,7 @@ class AlternateDataStream(_STIXBase):
 
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.1')),
         ('size', IntegerProperty()),
     ])
 
@@ -269,7 +271,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         ('size_of_heap_commit', IntegerProperty()),
         ('loader_flags_hex', HexProperty()),
         ('number_of_rva_and_sizes', IntegerProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -287,7 +289,7 @@ class WindowsPESection(_STIXBase):
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty()),
         ('entropy', FloatProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.1')),
     ])
 
 
@@ -308,7 +310,7 @@ class WindowsPEBinaryExt(_Extension):
         ('number_of_symbols', IntegerProperty()),
         ('size_of_optional_header', IntegerProperty()),
         ('characteristics_hex', HexProperty()),
-        ('file_header_hashes', HashesProperty()),
+        ('file_header_hashes', HashesProperty(spec_version='2.1')),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
@@ -323,7 +325,7 @@ class File(_Observable):
     _type = 'file'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.1')),
         ('size', IntegerProperty()),
         ('name', StringProperty()),
         ('name_enc', StringProperty()),
@@ -334,9 +336,6 @@ class File(_Observable):
         ('modified', TimestampProperty()),
         ('accessed', TimestampProperty()),
         ('parent_directory_ref', ObjectReferenceProperty(valid_types='directory')),
-        ('is_encrypted', BooleanProperty()),
-        ('encryption_algorithm', StringProperty()),
-        ('decryption_key', StringProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty)),
         ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
@@ -344,7 +343,6 @@ class File(_Observable):
 
     def _check_object_constraints(self):
         super(File, self)._check_object_constraints()
-        self._check_properties_dependency(['is_encrypted'], ['encryption_algorithm', 'decryption_key'])
         self._check_at_least_one_property(['hashes', 'name'])
 
 
@@ -551,7 +549,7 @@ class WindowsServiceExt(_Extension):
 
     _type = 'windows-service-ext'
     _properties = OrderedDict([
-        ('service_name', StringProperty(required=True)),
+        ('service_name', StringProperty()),
         ('descriptions', ListProperty(StringProperty)),
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
@@ -601,7 +599,7 @@ class Process(_Observable):
         ('environment_variables', DictionaryProperty(spec_version='2.1')),
         ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
-        ('binary_ref', ObjectReferenceProperty(valid_types='file')),
+        ('image_ref', ObjectReferenceProperty(valid_types='file')),
         ('parent_ref', ObjectReferenceProperty(valid_types='process')),
         ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
@@ -678,7 +676,8 @@ class UserAccount(_Observable):
     _type = 'user-account'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('user_id', StringProperty(required=True)),
+        ('user_id', StringProperty()),
+        ('credential', StringProperty()),
         ('account_login', StringProperty()),
         ('account_type', StringProperty()),   # open vocab
         ('display_name', StringProperty()),
@@ -688,7 +687,7 @@ class UserAccount(_Observable):
         ('is_disabled', BooleanProperty()),
         ('account_created', TimestampProperty()),
         ('account_expires', TimestampProperty()),
-        ('password_last_changed', TimestampProperty()),
+        ('credential_last_changed', TimestampProperty()),
         ('account_first_login', TimestampProperty()),
         ('account_last_login', TimestampProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
@@ -703,7 +702,7 @@ class WindowsRegistryValueType(_STIXBase):
 
     _type = 'windows-registry-value-type'
     _properties = OrderedDict([
-        ('name', StringProperty(required=True)),
+        ('name', StringProperty()),
         ('data', StringProperty()),
         ('data_type', EnumProperty(allowed=[
             "REG_NONE",
@@ -732,7 +731,7 @@ class WindowsRegistryKey(_Observable):
     _type = 'windows-registry-key'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('key', StringProperty(required=True)),
+        ('key', StringProperty()),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
         # this is not the modified timestamps of the object itself
         ('modified', TimestampProperty()),
@@ -784,7 +783,7 @@ class X509Certificate(_Observable):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('is_self_signed', BooleanProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.1')),
         ('version', StringProperty()),
         ('serial_number', StringProperty()),
         ('signature_algorithm', StringProperty()),

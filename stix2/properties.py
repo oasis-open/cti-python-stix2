@@ -18,8 +18,8 @@ from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 # This uses the regular expression for a RFC 4122, Version 4 UUID. In the
 # 8-4-4-4-12 hexadecimal representation, the first hex digit of the third
-# component must be a 4, and the first hex digit of the fourth component must be
-# 8, 9, a, or b (10xx bit pattern).
+# component must be a 4, and the first hex digit of the fourth component
+# must be 8, 9, a, or b (10xx bit pattern).
 ID_REGEX = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
                       "[0-9a-fA-F]{8}-"
                       "[0-9a-fA-F]{4}-"
@@ -39,14 +39,15 @@ class Property(object):
     ``__init__()``.
 
     Args:
-        required (bool): If ``True``, the property must be provided when creating an
-            object with that property. No default value exists for these properties.
-            (Default: ``False``)
+        required (bool): If ``True``, the property must be provided when
+            creating an object with that property. No default value exists for
+            these properties. (Default: ``False``)
         fixed: This provides a constant default value. Users are free to
-            provide this value explicity when constructing an object (which allows
-            you to copy **all** values from an existing object to a new object), but
-            if the user provides a value other than the ``fixed`` value, it will raise
-            an error. This is semantically equivalent to defining both:
+            provide this value explicity when constructing an object (which
+            allows you to copy **all** values from an existing object to a new
+            object), but if the user provides a value other than the ``fixed``
+            value, it will raise an error. This is semantically equivalent to
+            defining both:
 
             - a ``clean()`` function that checks if the value matches the fixed
               value, and
@@ -57,29 +58,31 @@ class Property(object):
     - ``def clean(self, value) -> any:``
         - Return a value that is valid for this property. If ``value`` is not
           valid for this property, this will attempt to transform it first. If
-          ``value`` is not valid and no such transformation is possible, it should
-          raise a ValueError.
+          ``value`` is not valid and no such transformation is possible, it
+          should raise a ValueError.
     - ``def default(self):``
         - provide a default value for this property.
         - ``default()`` can return the special value ``NOW`` to use the current
-            time. This is useful when several timestamps in the same object need
-            to use the same default value, so calling now() for each property--
-            likely several microseconds apart-- does not work.
+            time. This is useful when several timestamps in the same object
+            need to use the same default value, so calling now() for each
+            property-- likely several microseconds apart-- does not work.
 
-    Subclasses can instead provide a lambda function for ``default`` as a keyword
-    argument. ``clean`` should not be provided as a lambda since lambdas cannot
-    raise their own exceptions.
+    Subclasses can instead provide a lambda function for ``default`` as a
+    keyword argument. ``clean`` should not be provided as a lambda since
+    lambdas cannot raise their own exceptions.
 
-    When instantiating Properties, ``required`` and ``default`` should not be used
-    together. ``default`` implies that the property is required in the specification
-    so this function will be used to supply a value if none is provided.
-    ``required`` means that the user must provide this; it is required in the
-    specification and we can't or don't want to create a default value.
+    When instantiating Properties, ``required`` and ``default`` should not be
+    used together. ``default`` implies that the property is required in the
+    specification so this function will be used to supply a value if none is
+    provided. ``required`` means that the user must provide this; it is
+    required in the specification and we can't or don't want to create a
+    default value.
+
     """
 
     def _default_clean(self, value):
         if value != self._fixed_value:
-            raise ValueError("must equal '{0}'.".format(self._fixed_value))
+            raise ValueError("must equal '{}'.".format(self._fixed_value))
         return value
 
     def __init__(self, required=False, fixed=None, default=None):
@@ -186,7 +189,7 @@ class IDProperty(Property):
 
     def clean(self, value):
         if not value.startswith(self.required_prefix):
-            raise ValueError("must start with '{0}'.".format(self.required_prefix))
+            raise ValueError("must start with '{}'.".format(self.required_prefix))
         if not ID_REGEX.match(value):
             raise ValueError(ERROR_INVALID_ID)
         return value
@@ -219,8 +222,8 @@ class BooleanProperty(Property):
         if isinstance(value, bool):
             return value
 
-        trues = ['true', 't']
-        falses = ['false', 'f']
+        trues = ['true', 't', '1']
+        falses = ['false', 'f', '0']
         try:
             if value.lower() in trues:
                 return True
@@ -302,7 +305,7 @@ class HashesProperty(DictionaryProperty):
             if key in HASHES_REGEX:
                 vocab_key = HASHES_REGEX[key][1]
                 if not re.match(HASHES_REGEX[key][0], v):
-                    raise ValueError("'%s' is not a valid %s hash" % (v, vocab_key))
+                    raise ValueError("'{0}' is not a valid {1} hash".format(v, vocab_key))
                 if k != vocab_key:
                     clean_dict[vocab_key] = clean_dict[k]
                     del clean_dict[k]
@@ -342,7 +345,7 @@ class ReferenceProperty(Property):
         value = str(value)
         if self.type:
             if not value.startswith(self.type):
-                raise ValueError("must start with '{0}'.".format(self.type))
+                raise ValueError("must start with '{}'.".format(self.type))
         if not ID_REGEX.match(value):
             raise ValueError(ERROR_INVALID_ID)
         return value
@@ -378,7 +381,7 @@ class EmbeddedObjectProperty(Property):
         if type(value) is dict:
             value = self.type(**value)
         elif not isinstance(value, self.type):
-            raise ValueError("must be of type %s." % self.type.__name__)
+            raise ValueError("must be of type {}.".format(self.type.__name__))
         return value
 
 
@@ -393,7 +396,7 @@ class EnumProperty(StringProperty):
     def clean(self, value):
         value = super(EnumProperty, self).clean(value)
         if value not in self.allowed:
-            raise ValueError("value '%s' is not valid for this enumeration." % value)
+            raise ValueError("value '{}' is not valid for this enumeration.".format(value))
         return self.string_type(value)
 
 
@@ -483,7 +486,7 @@ class ExtensionsProperty(DictionaryProperty):
                 else:
                     raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         else:
-            raise ValueError("The enclosing type '%s' has no extensions defined" % self.enclosing_type)
+            raise ValueError("The enclosing type '{}' has no extensions defined".format(self.enclosing_type))
         return dictified
 
 
