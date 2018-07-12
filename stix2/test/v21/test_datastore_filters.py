@@ -10,7 +10,7 @@ stix_objs = [
         "description": "\n\nTITLE:\n\tPoison Ivy",
         "id": "malware--fdd60b30-b67c-41e3-b0b9-f01faf20d111",
         "spec_version": "2.1",
-        "labels": [
+        "malware_types": [
             "remote-access-trojan"
         ],
         "modified": "2017-01-27T13:49:53.997Z",
@@ -21,7 +21,7 @@ stix_objs = [
     {
         "created": "2014-05-08T09:00:00.000Z",
         "id": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
-        "labels": [
+        "indicator_types": [
             "file-hash-watchlist"
         ],
         "modified": "2014-05-08T09:00:00.000Z",
@@ -94,7 +94,7 @@ stix_objs = [
 filters = [
     Filter("type", "!=", "relationship"),
     Filter("id", "=", "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463"),
-    Filter("labels", "in", "remote-access-trojan"),
+    Filter("malware_types", "in", "remote-access-trojan"),
     Filter("created", ">", "2015-01-01T01:00:00.000Z"),
     Filter("revoked", "=", True),
     Filter("revoked", "!=", True),

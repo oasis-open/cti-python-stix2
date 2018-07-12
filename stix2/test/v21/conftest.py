@@ -53,7 +53,7 @@ def stix_objs1():
     ind1 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.935Z",
@@ -66,7 +66,7 @@ def stix_objs1():
     ind2 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.935Z",
@@ -79,7 +79,7 @@ def stix_objs1():
     ind3 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.936Z",
@@ -92,7 +92,7 @@ def stix_objs1():
     ind4 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.935Z",
@@ -105,7 +105,7 @@ def stix_objs1():
     ind5 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.935Z",
@@ -123,7 +123,7 @@ def stix_objs2():
     ind6 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-31T13:49:53.935Z",
@@ -136,7 +136,7 @@ def stix_objs2():
     ind7 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.935Z",
@@ -149,7 +149,7 @@ def stix_objs2():
     ind8 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
-        "labels": [
+        "indicator_types": [
             "url-watchlist"
         ],
         "modified": "2017-01-27T13:49:53.935Z",

@@ -1,7 +1,6 @@
 import os
 
 import stix2
-from stix2 import Bundle
 from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
                              ExternalReference, FileSystemSource, Filter,
                              Identity, Indicator, IntrusionSet, Malware,
@@ -34,7 +33,7 @@ def test_workbench_environment():
     save(ind)
 
     resp = get(INDICATOR_ID)
-    assert resp['labels'][0] == 'malicious-activity'
+    assert resp['indicator_types'][0] == 'malicious-activity'
 
     resp = all_versions(INDICATOR_ID)
     assert len(resp) == 1
@@ -152,7 +151,7 @@ def test_workbench_get_all_vulnerabilities():
 
 def test_workbench_add_to_bundle():
     vuln = Vulnerability(**VULNERABILITY_KWARGS)
-    bundle = Bundle(vuln)
+    bundle = stix2.v21.Bundle(vuln)
     assert bundle.objects[0].name == 'Heartbleed'
 
 
@@ -191,8 +190,8 @@ def test_workbench_related():
 
 
 def test_workbench_related_with_filters():
-    malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID,
-                      is_family=False)
+    malware = Malware(malware_types=["ransomware"], name="CryptorBit",
+                      created_by_ref=IDENTITY_ID, is_family=False)
     rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
     save([malware, rel])
 
@@ -271,12 +270,12 @@ def test_default_object_marking_refs():
 
 
 def test_workbench_custom_property_object_in_observable_extension():
-    ntfs = stix2.NTFSExt(
+    ntfs = stix2.v21.NTFSExt(
         allow_custom=True,
         sid=1,
         x_foo='bar',
     )
-    artifact = stix2.File(
+    artifact = stix2.v21.File(
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
@@ -293,7 +292,7 @@ def test_workbench_custom_property_object_in_observable_extension():
 
 
 def test_workbench_custom_property_dict_in_observable_extension():
-    artifact = stix2.File(
+    artifact = stix2.v21.File(
         allow_custom=True,
         name='test',
         extensions={

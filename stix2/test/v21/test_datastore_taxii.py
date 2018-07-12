@@ -110,7 +110,7 @@ def test_add_stix2_object(collection):
 
     # create new STIX threat-actor
     ta = stix2.v21.ThreatActor(name="Teddy Bear",
-                               labels=["nation-state"],
+                               threat_actor_types=["nation-state"],
                                sophistication="innovator",
                                resource_level="government",
                                goals=[
@@ -126,7 +126,7 @@ def test_add_stix2_with_custom_object(collection):
 
     # create new STIX threat-actor
     ta = stix2.v21.ThreatActor(name="Teddy Bear",
-                               labels=["nation-state"],
+                               threat_actor_types=["nation-state"],
                                sophistication="innovator",
                                resource_level="government",
                                goals=[
@@ -144,7 +144,7 @@ def test_add_list_object(collection, indicator):
 
     # create new STIX threat-actor
     ta = stix2.v21.ThreatActor(name="Teddy Bear",
-                               labels=["nation-state"],
+                               threat_actor_types=["nation-state"],
                                sophistication="innovator",
                                resource_level="government",
                                goals=[
@@ -160,7 +160,7 @@ def test_add_stix2_bundle_object(collection):
 
     # create new STIX threat-actor
     ta = stix2.v21.ThreatActor(name="Teddy Bear",
-                               labels=["nation-state"],
+                               threat_actor_types=["nation-state"],
                                sophistication="innovator",
                                resource_level="government",
                                goals=[
@@ -182,15 +182,15 @@ def test_add_str_object(collection):
         "created": "2018-04-23T16:40:50.847Z",
         "modified": "2018-04-23T16:40:50.847Z",
         "name": "Teddy Bear",
+        "threat_actor_types": [
+            "nation-state"
+        ],
         "goals": [
             "compromising environment NGOs",
             "water-hole attacks geared towards energy sector"
         ],
         "sophistication": "innovator",
-        "resource_level": "government",
-        "labels": [
-            "nation-state"
-        ]
+        "resource_level": "government"
     }"""
 
     tc_sink.add(ta)
@@ -212,7 +212,7 @@ def test_add_dict_object(collection):
         ],
         "sophistication": "innovator",
         "resource_level": "government",
-        "labels": [
+        "threat_actor_types": [
             "nation-state"
         ]
     }
@@ -240,7 +240,7 @@ def test_add_dict_bundle_object(collection):
                 ],
                 "sophistication": "innovator",
                 "resource_level": "government",
-                "labels": [
+                "threat_actor_types": [
                     "nation-state"
                 ]
             }
@@ -288,7 +288,7 @@ def test_add_get_remove_filter(collection):
     valid_filters = [
         Filter('type', '=', 'malware'),
         Filter('id', '!=', 'stix object id'),
-        Filter('labels', 'in', ["heartbleed", "malicious-activity"]),
+        Filter('threat_actor_types', 'in', ["heartbleed", "malicious-activity"]),
     ]
 
     assert len(ds.filters) == 0

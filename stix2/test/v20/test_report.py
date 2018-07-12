@@ -58,7 +58,7 @@ def test_report_example_objects_in_object_refs():
         published="2016-01-20T17:00:00Z",
         labels=["campaign"],
         object_refs=[
-            stix2.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
+            stix2.v20.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
             "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
             "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a"
         ],
@@ -79,7 +79,7 @@ def test_report_example_objects_in_object_refs_with_bad_id():
             published="2016-01-20T17:00:00Z",
             labels=["campaign"],
             object_refs=[
-                stix2.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
+                stix2.v20.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
                 "campaign-83422c77-904c-4dc1-aff5-5c38f3a2c55c",   # the "bad" id, missing a "-"
                 "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a"
             ],

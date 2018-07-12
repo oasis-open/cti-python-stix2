@@ -330,14 +330,14 @@ def test_filesystem_store_all_versions(fs_store):
 
 def test_filesystem_store_query(fs_store):
     # query()
-    tools = fs_store.query([stix2.Filter("labels", "in", "tool")])
+    tools = fs_store.query([stix2.Filter("tool_types", "in", "tool")])
     assert len(tools) == 2
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [tool.id for tool in tools]
     assert "tool--03342581-f790-4f03-ba41-e82e67392e23" in [tool.id for tool in tools]
 
 
 def test_filesystem_store_query_single_filter(fs_store):
-    query = stix2.Filter("labels", "in", "tool")
+    query = stix2.Filter("tool_types", "in", "tool")
     tools = fs_store.query(query)
     assert len(tools) == 2
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [tool.id for tool in tools]
@@ -352,7 +352,7 @@ def test_filesystem_store_empty_query(fs_store):
 
 
 def test_filesystem_store_query_multiple_filters(fs_store):
-    fs_store.source.filters.add(stix2.Filter("labels", "in", "tool"))
+    fs_store.source.filters.add(stix2.Filter("tool_types", "in", "tool"))
     tools = fs_store.query(stix2.Filter("id", "=", "tool--242f3da3-4425-4d11-8f5c-b842886da966"))
     assert len(tools) == 1
     assert tools[0].id == "tool--242f3da3-4425-4d11-8f5c-b842886da966"

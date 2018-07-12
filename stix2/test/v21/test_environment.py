@@ -135,7 +135,7 @@ def test_environment_functions():
 def test_environment_source_and_sink():
     ind = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     env = stix2.Environment(source=stix2.MemorySource([ind]), sink=stix2.MemorySink([ind]))
-    assert env.get(INDICATOR_ID).labels[0] == 'malicious-activity'
+    assert env.get(INDICATOR_ID).indicator_types[0] == 'malicious-activity'
 
 
 def test_environment_datastore_and_sink():
@@ -195,7 +195,7 @@ def test_parse_malware():
         "created": "2017-01-01T12:34:56.000Z",
         "modified": "2017-01-01T12:34:56.000Z",
         "name": "Cryptolocker",
-        "labels": [
+        "malware_types": [
             "ransomware"
         ],
         "is_family": false
@@ -207,7 +207,7 @@ def test_parse_malware():
     assert mal.id == MALWARE_ID
     assert mal.created == FAKE_TIME
     assert mal.modified == FAKE_TIME
-    assert mal.labels == ['ransomware']
+    assert mal.malware_types == ['ransomware']
     assert mal.name == "Cryptolocker"
 
 

@@ -14,11 +14,11 @@ EXPECTED_BUNDLE = """{
             "id": "indicator--00000000-0000-4000-8000-000000000001",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
-            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-            "valid_from": "2017-01-01T12:34:56Z",
-            "labels": [
+            "indicator_types": [
                 "malicious-activity"
-            ]
+            ],
+            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "valid_from": "2017-01-01T12:34:56Z"
         },
         {
             "type": "malware",
@@ -26,11 +26,11 @@ EXPECTED_BUNDLE = """{
             "id": "malware--00000000-0000-4000-8000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
+            "is_family": true,
             "name": "Cryptolocker",
-            "labels": [
+            "malware_types": [
                 "ransomware"
-            ],
-            "is_family": false
+            ]
         },
         {
             "type": "relationship",
@@ -57,7 +57,7 @@ EXPECTED_BUNDLE_DICT = {
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
             "valid_from": "2017-01-01T12:34:56Z",
-            "labels": [
+            "indicator_types": [
                 "malicious-activity"
             ]
         },
@@ -68,10 +68,10 @@ EXPECTED_BUNDLE_DICT = {
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
-            "labels": [
+            "malware_types": [
                 "ransomware"
             ],
-            "is_family": False
+            "is_family": True
         },
         {
             "type": "relationship",

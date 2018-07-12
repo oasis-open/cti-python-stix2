@@ -569,11 +569,11 @@ IS_MARKED_TEST_DATA = [
                 "marking_ref": MARKING_IDS[1]
             },
             {
-                "selectors": ["labels", "description"],
+                "selectors": ["malware_types", "description"],
                 "marking_ref": MARKING_IDS[2]
             },
             {
-                "selectors": ["labels", "description"],
+                "selectors": ["malware_types", "description"],
                 "marking_ref": MARKING_IDS[3]
             },
         ],
@@ -586,11 +586,11 @@ IS_MARKED_TEST_DATA = [
                 "marking_ref": MARKING_IDS[1]
             },
             {
-                "selectors": ["labels", "description"],
+                "selectors": ["malware_types", "description"],
                 "marking_ref": MARKING_IDS[2]
             },
             {
-                "selectors": ["labels", "description"],
+                "selectors": ["malware_types", "description"],
                 "marking_ref": MARKING_IDS[3]
             },
         ],
@@ -630,7 +630,7 @@ def test_is_marked_invalid_selector(data, selector):
 @pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
 def test_is_marked_mix_selector(data):
     """Test valid selector, one marked and one not marked returns True."""
-    assert markings.is_marked(data, selectors=["description", "labels"])
+    assert markings.is_marked(data, selectors=["description", "malware_types"])
     assert markings.is_marked(data, selectors=["description"])
 
 
@@ -654,10 +654,10 @@ def test_is_marked_valid_selector_and_refs(data):
 def test_is_marked_valid_selector_multiple_refs(data):
     """Test that a valid selector returns True if aall marking_refs match.
         Otherwise False."""
-    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[3]], ["labels"])
-    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[1]], ["labels"]) is False
-    assert markings.is_marked(data, MARKING_IDS[2], ["labels"])
-    assert markings.is_marked(data, ["marking-definition--1234"], ["labels"]) is False
+    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[3]], ["malware_types"])
+    assert markings.is_marked(data, [MARKING_IDS[2], MARKING_IDS[1]], ["malware_types"]) is False
+    assert markings.is_marked(data, MARKING_IDS[2], ["malware_types"])
+    assert markings.is_marked(data, ["marking-definition--1234"], ["malware_types"]) is False
 
 
 @pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
@@ -666,7 +666,7 @@ def test_is_marked_no_marking_refs(data):
         if there is a granular_marking that asserts that field, False
         otherwise."""
     assert markings.is_marked(data, selectors=["type"]) is False
-    assert markings.is_marked(data, selectors=["labels"])
+    assert markings.is_marked(data, selectors=["malware_types"])
 
 
 @pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
@@ -1065,4 +1065,4 @@ def test_clear_marking_bad_selector(data, selector):
 def test_clear_marking_not_present(data):
     """Test clearing markings for a selector that has no associated markings."""
     with pytest.raises(MarkingNotFoundError):
-        markings.clear_markings(data, ["labels"])
+        markings.clear_markings(data, ["malware_types"])

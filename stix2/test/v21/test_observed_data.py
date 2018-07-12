@@ -566,7 +566,7 @@ def test_observed_data_with_process_example():
                 "arguments": [
                   "--new-window"
                 ],
-                "binary_ref": "0"
+                "image_ref": "0"
             }
         })
 
@@ -662,16 +662,15 @@ def test_file_example():
     f = stix2.v21.File(
         name="qwerty.dll",
         hashes={
-            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"},
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+        },
         size=100,
         magic_number_hex="1C",
         mime_type="application/msword",
         created="2016-12-21T19:00:00Z",
         modified="2016-12-24T19:00:00Z",
-        accessed="2016-12-21T20:00:00Z",
-        is_encrypted=True,
-        encryption_algorithm="AES128-CBC",
-        decryption_key="fred")
+        accessed="2016-12-21T20:00:00Z"
+    )
 
     assert f.name == "qwerty.dll"
     assert f.size == 100
@@ -681,9 +680,6 @@ def test_file_example():
     assert f.created == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert f.modified == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
     assert f.accessed == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
-    assert f.is_encrypted
-    assert f.encryption_algorithm == "AES128-CBC"
-    assert f.decryption_key == "fred"   # does the key have a format we can test for?
 
 
 def test_file_example_with_NTFSExt():
@@ -896,19 +892,11 @@ def test_file_example_with_WindowsPEBinaryExt():
 
 
 def test_file_example_encryption_error():
-    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.v21.File(
-            name="qwerty.dll",
-            is_encrypted=False,
-            encryption_algorithm="AES128-CBC")
+    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+        stix2.v21.File(magic_number_hex="010b")
 
     assert excinfo.value.cls == stix2.v21.File
-    assert excinfo.value.dependencies == [("is_encrypted", "encryption_algorithm")]
-    assert "property dependencies" in str(excinfo.value)
-    assert "are not met" in str(excinfo.value)
-
-    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.v21.File(name="qwerty.dll", encryption_algorithm="AES128-CBC")
+    assert "At least one of the (hashes, name)" in str(excinfo.value)
 
 
 def test_ip4_address_example():
@@ -1024,7 +1012,7 @@ def test_process_example():
         name="gedit-bin",
         created="2016-01-20T14:11:25.55Z",
         arguments=["--new-window"],
-        binary_ref="0")
+        image_ref="0")
 
     assert p.name == "gedit-bin"
     assert p.arguments == ["--new-window"]
@@ -1177,7 +1165,7 @@ def test_user_account_example():
         is_privileged=False,
         can_escalate_privs=True,
         account_created="2016-01-20T12:31:12Z",
-        password_last_changed="2016-01-20T14:27:43Z",
+        credential_last_changed="2016-01-20T14:27:43Z",
         account_first_login="2016-01-20T14:26:07Z",
         account_last_login="2016-07-22T16:08:28Z")
 
@@ -1189,7 +1177,7 @@ def test_user_account_example():
     assert not a.is_privileged
     assert a.can_escalate_privs
     assert a.account_created == dt.datetime(2016, 1, 20, 12, 31, 12, tzinfo=pytz.utc)
-    assert a.password_last_changed == dt.datetime(2016, 1, 20, 14, 27, 43, tzinfo=pytz.utc)
+    assert a.credential_last_changed == dt.datetime(2016, 1, 20, 14, 27, 43, tzinfo=pytz.utc)
     assert a.account_first_login == dt.datetime(2016, 1, 20, 14, 26, 7, tzinfo=pytz.utc)
     assert a.account_last_login == dt.datetime(2016, 7, 22, 16, 8, 28, tzinfo=pytz.utc)
 
@@ -1221,10 +1209,12 @@ def test_windows_registry_key_example():
     v = stix2.v21.WindowsRegistryValueType(
         name="Foo",
         data="qwerty",
-        data_type="REG_SZ")
+        data_type="REG_SZ"
+    )
     w = stix2.v21.WindowsRegistryKey(
         key="hkey_local_machine\\system\\bar\\foo",
-        values=[v])
+        values=[v]
+    )
     assert w.key == "hkey_local_machine\\system\\bar\\foo"
     assert w.values[0].name == "Foo"
     assert w.values[0].data == "qwerty"

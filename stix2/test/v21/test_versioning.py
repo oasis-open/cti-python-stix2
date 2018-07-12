@@ -221,17 +221,17 @@ def test_revoke_invalid_cls():
 
 
 def test_remove_custom_stix_property():
-    mal = stix2.Malware(name="ColePowers",
-                        labels=["rootkit"],
-                        is_family=False,
-                        x_custom="armada",
-                        allow_custom=True)
+    mal = stix2.v21.Malware(name="ColePowers",
+                            malware_types=["rootkit"],
+                            is_family=False,
+                            x_custom="armada",
+                            allow_custom=True)
 
     mal_nc = stix2.utils.remove_custom_stix(mal)
 
     assert "x_custom" not in mal_nc
-    assert stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") < stix2.utils.parse_into_datetime(mal_nc["modified"],
-                                                                                                                       precision="millisecond")
+    assert (stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") <
+            stix2.utils.parse_into_datetime(mal_nc["modified"], precision="millisecond"))
 
 
 def test_remove_custom_stix_object():

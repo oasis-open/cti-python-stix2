@@ -15,7 +15,7 @@ from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
 IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.935Z",
@@ -28,7 +28,7 @@ IND1 = {
 IND2 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.935Z",
@@ -41,7 +41,7 @@ IND2 = {
 IND3 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.936Z",
@@ -54,7 +54,7 @@ IND3 = {
 IND4 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.935Z",
@@ -67,7 +67,7 @@ IND4 = {
 IND5 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.935Z",
@@ -80,7 +80,7 @@ IND5 = {
 IND6 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-31T13:49:53.935Z",
@@ -93,7 +93,7 @@ IND6 = {
 IND7 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.935Z",
@@ -106,7 +106,7 @@ IND7 = {
 IND8 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
-    "labels": [
+    "indicator_types": [
         "url-watchlist"
     ],
     "modified": "2017-01-27T13:49:53.935Z",

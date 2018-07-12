@@ -71,7 +71,7 @@ def test_add_markings_combination():
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1]],
         granular_markings=[
             {
-                "selectors": ["labels"],
+                "selectors": ["malware_types"],
                 "marking_ref": MARKING_IDS[2]
             },
             {
@@ -84,7 +84,7 @@ def test_add_markings_combination():
 
     before = markings.add_markings(before, MARKING_IDS[0], None)
     before = markings.add_markings(before, MARKING_IDS[1], None)
-    before = markings.add_markings(before, MARKING_IDS[2], "labels")
+    before = markings.add_markings(before, MARKING_IDS[2], "malware_types")
     before = markings.add_markings(before, MARKING_IDS[3], "name")
 
     for m in before["granular_markings"]:

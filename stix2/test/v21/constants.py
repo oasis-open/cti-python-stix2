@@ -70,7 +70,7 @@ IDENTITY_KWARGS = dict(
 )
 
 INDICATOR_KWARGS = dict(
-    labels=['malicious-activity'],
+    indicator_types=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
 )
 
@@ -79,9 +79,9 @@ INTRUSION_SET_KWARGS = dict(
 )
 
 MALWARE_KWARGS = dict(
-    labels=['ransomware'],
+    malware_types=['ransomware'],
     name="Cryptolocker",
-    is_family=False
+    is_family=True
 )
 
 MALWARE_MORE_KWARGS = dict(
@@ -89,7 +89,7 @@ MALWARE_MORE_KWARGS = dict(
     id=MALWARE_ID,
     created="2016-04-06T20:03:00.000Z",
     modified="2016-04-06T20:03:00.000Z",
-    labels=['ransomware'],
+    malware_types=['ransomware'],
     name="Cryptolocker",
     description="A ransomware related to ...",
     is_family=False
@@ -108,7 +108,7 @@ OBSERVED_DATA_KWARGS = dict(
 )
 
 REPORT_KWARGS = dict(
-    labels=["campaign"],
+    report_types=["campaign"],
     name="Bad Cybercrime",
     published=FAKE_TIME,
     object_refs=[INDICATOR_ID],
@@ -125,12 +125,12 @@ SIGHTING_KWARGS = dict(
 )
 
 THREAT_ACTOR_KWARGS = dict(
-    labels=["crime-syndicate"],
+    threat_actor_types=["crime-syndicate"],
     name="Evil Org",
 )
 
 TOOL_KWARGS = dict(
-    labels=["remote-access"],
+    tool_types=["remote-access"],
     name="VNC",
 )
 
