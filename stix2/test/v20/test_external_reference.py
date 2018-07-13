@@ -21,7 +21,7 @@ def test_external_reference_veris():
         source_name="veris",
         external_id="0001AA7F-C601-424A-B2B8-BE6C9F5164E7",
         hashes={
-            "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b"
+            "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
         },
         url="https://github.com/vz-risk/VCDB/blob/master/data/json/0001AA7F-C601-424A-B2B8-BE6C9F5164E7.json",
     )

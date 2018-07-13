@@ -8,10 +8,12 @@ import stix2
 
 from .constants import CAMPAIGN_ID, NOTE_ID
 
-DESCRIPTION = ('This note indicates the various steps taken by the threat'
-               ' analyst team to investigate this specific campaign. Step'
-               ' 1) Do a scan 2) Review scanned results for identified '
-               'hosts not known by external intel... etc')
+DESCRIPTION = (
+    'This note indicates the various steps taken by the threat'
+    ' analyst team to investigate this specific campaign. Step'
+    ' 1) Do a scan 2) Review scanned results for identified '
+    'hosts not known by external intel... etc'
+)
 
 EXPECTED_NOTE = """{
     "type": "note",
@@ -35,7 +37,8 @@ EXPECTED_NOTE = """{
     ]
 }""" % DESCRIPTION
 
-EXPECTED_OPINION_REPR = "Note(" + " ".join(("""
+EXPECTED_OPINION_REPR = "Note(" + " ".join((
+    """
     type='note',
     spec_version='2.1',
     id='note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061',
@@ -46,7 +49,8 @@ EXPECTED_OPINION_REPR = "Note(" + " ".join(("""
     authors=['John Doe'],
     object_refs=['campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f'],
     external_references=[ExternalReference(source_name='job-tracker', external_id='job-id-1234')]
-""" % DESCRIPTION).split()) + ")"
+""" % DESCRIPTION
+).split()) + ")"
 
 
 def test_note_with_required_properties():
@@ -64,9 +68,9 @@ def test_note_with_required_properties():
         external_references=[
             {
                 'source_name': 'job-tracker',
-                'external_id': 'job-id-1234'
-            }
-        ]
+                'external_id': 'job-id-1234',
+            },
+        ],
     )
 
     assert str(note) == EXPECTED_NOTE
@@ -74,30 +78,32 @@ def test_note_with_required_properties():
     assert rep == EXPECTED_OPINION_REPR
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_NOTE,
-    {
-        "type": "note",
-        "spec_version": "2.1",
-        "id": "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
-        "created": "2016-05-12T08:17:27.000Z",
-        "modified": "2016-05-12T08:17:27.000Z",
-        "summary": "Tracking Team Note#1",
-        "description": DESCRIPTION,
-        "authors": [
-            "John Doe"
-        ],
-        "object_refs": [
-            "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
-        ],
-        "external_references": [
-            {
-                "source_name": "job-tracker",
-                "external_id": "job-id-1234"
-            }
-        ]
-    }
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_NOTE,
+        {
+            "type": "note",
+            "spec_version": "2.1",
+            "id": "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+            "created": "2016-05-12T08:17:27.000Z",
+            "modified": "2016-05-12T08:17:27.000Z",
+            "summary": "Tracking Team Note#1",
+            "description": DESCRIPTION,
+            "authors": [
+                "John Doe",
+            ],
+            "object_refs": [
+                "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+            ],
+            "external_references": [
+                {
+                    "source_name": "job-tracker",
+                    "external_id": "job-id-1234",
+                },
+            ],
+        },
+    ],
+)
 def test_parse_note(data):
     note = stix2.parse(data, version="2.1")
 

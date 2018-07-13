@@ -211,9 +211,11 @@ class ReferenceObjectPathComponent(_ObjectPathComponent):
 class ObjectPath(object):
     def __init__(self, object_type_name, property_path):
         self.object_type_name = object_type_name
-        self.property_path = [x if isinstance(x, _ObjectPathComponent) else
-                              _ObjectPathComponent.create_ObjectPathComponent(x)
-                              for x in property_path]
+        self.property_path = [
+            x if isinstance(x, _ObjectPathComponent) else
+            _ObjectPathComponent.create_ObjectPathComponent(x)
+            for x in property_path
+        ]
 
     def __str__(self):
         return "%s:%s" % (self.object_type_name, ".".join(["%s" % x for x in self.property_path]))

@@ -1,8 +1,9 @@
 from collections import OrderedDict
 
 from ..base import _STIXBase
-from ..properties import (IDProperty, ListProperty, STIXObjectProperty,
-                          TypeProperty)
+from ..properties import (
+    IDProperty, ListProperty, STIXObjectProperty, TypeProperty,
+)
 
 
 class Bundle(_STIXBase):

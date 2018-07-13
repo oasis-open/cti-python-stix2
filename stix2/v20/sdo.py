@@ -6,10 +6,11 @@ import itertools
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
-                          ListProperty, ObservableProperty, PatternProperty,
-                          ReferenceProperty, StringProperty, TimestampProperty,
-                          TypeProperty)
+from ..properties import (
+    BooleanProperty, IDProperty, IntegerProperty, ListProperty,
+    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
+)
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
@@ -354,7 +355,7 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('id', IDProperty(type)),
                 ('created_by_ref', ReferenceProperty(type='identity')),
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond'))
+                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
             ],
             [x for x in properties if not x[0].startswith('x_')],
             [
@@ -364,7 +365,7 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
                 ('granular_markings', ListProperty(GranularMarking)),
             ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0])
+            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
         return _custom_object_builder(cls, type, _properties, '2.0')
 

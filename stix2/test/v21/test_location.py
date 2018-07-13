@@ -55,7 +55,7 @@ def test_location_with_some_required_properties():
         created=now,
         modified=now,
         latitude=48.8566,
-        longitude=2.3522
+        longitude=2.3522,
     )
 
     assert str(loc) == EXPECTED_LOCATION_1
@@ -63,17 +63,19 @@ def test_location_with_some_required_properties():
     assert rep == EXPECTED_LOCATION_1_REPR
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_LOCATION_2,
-    {
-        "type": "location",
-        "spec_version": "2.1",
-        "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
-        "created": "2016-04-06T20:03:00.000Z",
-        "modified": "2016-04-06T20:03:00.000Z",
-        "region": "north-america"
-    }
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_LOCATION_2,
+        {
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "created": "2016-04-06T20:03:00.000Z",
+            "modified": "2016-04-06T20:03:00.000Z",
+            "region": "north-america",
+        },
+    ],
+)
 def test_parse_location(data):
     location = stix2.parse(data, version="2.1")
 

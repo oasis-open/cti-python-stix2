@@ -5,8 +5,9 @@ import pytz
 
 import stix2
 
-from .constants import (FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID,
-                        RELATIONSHIP_KWARGS)
+from .constants import (
+    FAKE_TIME, INDICATOR_ID, MALWARE_ID, RELATIONSHIP_ID, RELATIONSHIP_KWARGS,
+)
 
 EXPECTED_RELATIONSHIP = """{
     "type": "relationship",
@@ -94,7 +95,7 @@ def test_relationship_required_properties_target_ref():
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         stix2.v21.Relationship(
             relationship_type='indicates',
-            source_ref=INDICATOR_ID
+            source_ref=INDICATOR_ID,
         )
 
     assert excinfo.value.cls == stix2.v21.Relationship
@@ -139,19 +140,21 @@ def test_create_relationship_with_positional_args(indicator, malware):
     assert rel.id == 'relationship--00000000-0000-4000-8000-000000000005'
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_RELATIONSHIP,
-    {
-        "created": "2016-04-06T20:06:37Z",
-        "id": "relationship--df7c87eb-75d2-4948-af81-9d49d246f301",
-        "modified": "2016-04-06T20:06:37Z",
-        "relationship_type": "indicates",
-        "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
-        "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
-        "spec_version": "2.1",
-        "type": "relationship"
-    },
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_RELATIONSHIP,
+        {
+            "created": "2016-04-06T20:06:37Z",
+            "id": "relationship--df7c87eb-75d2-4948-af81-9d49d246f301",
+            "modified": "2016-04-06T20:06:37Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+            "spec_version": "2.1",
+            "type": "relationship",
+        },
+    ],
+)
 def test_parse_relationship(data):
     rel = stix2.parse(data, version="2.1")
 

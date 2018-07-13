@@ -180,7 +180,7 @@ def expand_markings(granular_markings):
             [
                 {'marking_ref': marking_ref, 'selectors': [selector]}
                 for selector in selectors
-            ]
+            ],
         )
 
     return expanded

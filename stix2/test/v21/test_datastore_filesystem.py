@@ -5,11 +5,10 @@ import shutil
 import pytest
 
 import stix2
-from stix2.test.v21.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS,
-                                      IDENTITY_ID, IDENTITY_KWARGS,
-                                      INDICATOR_ID, INDICATOR_KWARGS,
-                                      MALWARE_ID, MALWARE_KWARGS,
-                                      RELATIONSHIP_IDS)
+from stix2.test.v21.constants import (
+    CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
+    INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS,
+)
 
 FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
@@ -68,7 +67,7 @@ def bad_stix_files():
     # bad STIX object
     stix_obj = {
         "id": "intrusion-set--test-bad-stix",
-        "spec_version": "2.0"
+        "spec_version": "2.0",
         # no "type" field
     }
 
@@ -175,9 +174,11 @@ def test_filesytem_source_query_multiple(fs_source):
 
 def test_filesystem_sink_add_python_stix_object(fs_sink, fs_source):
     # add python stix object
-    camp1 = stix2.v21.Campaign(name="Hannibal",
-                               objective="Targeting Italian and Spanish Diplomat internet accounts",
-                               aliases=["War Elephant"])
+    camp1 = stix2.v21.Campaign(
+        name="Hannibal",
+        objective="Targeting Italian and Spanish Diplomat internet accounts",
+        aliases=["War Elephant"],
+    )
 
     fs_sink.add(camp1)
 
@@ -199,7 +200,7 @@ def test_filesystem_sink_add_stix_object_dict(fs_sink, fs_source):
         "objective": "German and French Intelligence Services",
         "aliases": ["Purple Robes"],
         "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-        "created": "2017-05-31T21:31:53.197755Z"
+        "created": "2017-05-31T21:31:53.197755Z",
     }
 
     fs_sink.add(camp2)
@@ -226,9 +227,9 @@ def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
                 "objective": "Bulgarian, Albanian and Romanian Intelligence Services",
                 "aliases": ["Huns"],
                 "id": "campaign--b8f86161-ccae-49de-973a-4ca320c62478",
-                "created": "2017-05-31T21:31:53.197755Z"
-            }
-        ]
+                "created": "2017-05-31T21:31:53.197755Z",
+            },
+        ],
     }
 
     fs_sink.add(bund)
@@ -277,9 +278,11 @@ def test_filesystem_sink_json_stix_bundle(fs_sink, fs_source):
 
 def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     # add list of objects
-    camp6 = stix2.v21.Campaign(name="Comanche",
-                               objective="US Midwest manufacturing firms, oil refineries, and businesses",
-                               aliases=["Horse Warrior"])
+    camp6 = stix2.v21.Campaign(
+        name="Comanche",
+        objective="US Midwest manufacturing firms, oil refineries, and businesses",
+        aliases=["Horse Warrior"],
+    )
 
     camp7 = {
         "name": "Napolean",
@@ -288,7 +291,7 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
         "objective": "Central and Eastern Europe military commands and departments",
         "aliases": ["The Frenchmen"],
         "id": "campaign--122818b6-1112-4fb0-b11b-b111107ca70a",
-        "created": "2017-05-31T21:31:53.197755Z"
+        "created": "2017-05-31T21:31:53.197755Z",
     }
 
     fs_sink.add([camp6, camp7])
@@ -365,9 +368,11 @@ def test_filesystem_store_query_dont_include_type_folder(fs_store):
 
 def test_filesystem_store_add(fs_store):
     # add()
-    camp1 = stix2.v21.Campaign(name="Great Heathen Army",
-                               objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
-                               aliases=["Ragnar"])
+    camp1 = stix2.v21.Campaign(
+        name="Great Heathen Army",
+        objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
+        aliases=["Ragnar"],
+    )
     fs_store.add(camp1)
 
     camp1_r = fs_store.get(camp1.id)
@@ -381,9 +386,11 @@ def test_filesystem_store_add(fs_store):
 def test_filesystem_store_add_as_bundle():
     fs_store = stix2.FileSystemStore(FS_PATH, bundlify=True)
 
-    camp1 = stix2.v21.Campaign(name="Great Heathen Army",
-                               objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
-                               aliases=["Ragnar"])
+    camp1 = stix2.v21.Campaign(
+        name="Great Heathen Army",
+        objective="Targeting the government of United Kingdom and insitutions affiliated with the Church Of England",
+        aliases=["Ragnar"],
+    )
     fs_store.add(camp1)
 
     with open(os.path.join(FS_PATH, "campaign", camp1.id + ".json")) as bundle_file:
@@ -412,10 +419,12 @@ def test_filesystem_store_add_invalid_object(fs_store):
 
 
 def test_filesystem_object_with_custom_property(fs_store):
-    camp = stix2.v21.Campaign(name="Scipio Africanus",
-                              objective="Defeat the Carthaginians",
-                              x_empire="Roman",
-                              allow_custom=True)
+    camp = stix2.v21.Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        x_empire="Roman",
+        allow_custom=True,
+    )
 
     fs_store.add(camp)
 
@@ -425,10 +434,12 @@ def test_filesystem_object_with_custom_property(fs_store):
 
 
 def test_filesystem_object_with_custom_property_in_bundle(fs_store):
-    camp = stix2.v21.Campaign(name="Scipio Africanus",
-                              objective="Defeat the Carthaginians",
-                              x_empire="Roman",
-                              allow_custom=True)
+    camp = stix2.v21.Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        x_empire="Roman",
+        allow_custom=True,
+    )
 
     bundle = stix2.v21.Bundle(camp, allow_custom=True)
     fs_store.add(bundle)
@@ -439,9 +450,11 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
 
 
 def test_filesystem_custom_object(fs_store):
-    @stix2.v21.CustomObject('x-new-obj', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ])
+    @stix2.v21.CustomObject(
+        'x-new-obj', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    )
     class NewObj():
         pass
 

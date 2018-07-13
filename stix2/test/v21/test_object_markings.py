@@ -17,26 +17,34 @@ MALWARE_KWARGS.update({
 })
 
 
-@pytest.mark.parametrize("data", [
-    (
-        Malware(**MALWARE_KWARGS),
-        Malware(object_marking_refs=[MARKING_IDS[0]],
-                **MALWARE_KWARGS),
-        MARKING_IDS[0],
-    ),
-    (
-        MALWARE_KWARGS,
-        dict(object_marking_refs=[MARKING_IDS[0]],
-             **MALWARE_KWARGS),
-        MARKING_IDS[0],
-    ),
-    (
-        Malware(**MALWARE_KWARGS),
-        Malware(object_marking_refs=[TLP_AMBER.id],
-                **MALWARE_KWARGS),
-        TLP_AMBER,
-    ),
-])
+@pytest.mark.parametrize(
+    "data", [
+        (
+            Malware(**MALWARE_KWARGS),
+            Malware(
+                object_marking_refs=[MARKING_IDS[0]],
+                **MALWARE_KWARGS
+            ),
+            MARKING_IDS[0],
+        ),
+        (
+            MALWARE_KWARGS,
+            dict(
+                object_marking_refs=[MARKING_IDS[0]],
+                **MALWARE_KWARGS
+            ),
+            MARKING_IDS[0],
+        ),
+        (
+            Malware(**MALWARE_KWARGS),
+            Malware(
+                object_marking_refs=[TLP_AMBER.id],
+                **MALWARE_KWARGS
+            ),
+            TLP_AMBER,
+        ),
+    ],
+)
 def test_add_markings_one_marking(data):
     before = data[0]
     after = data[1]
@@ -72,12 +80,12 @@ def test_add_markings_combination():
         granular_markings=[
             {
                 "selectors": ["malware_types"],
-                "marking_ref": MARKING_IDS[2]
+                "marking_ref": MARKING_IDS[2],
             },
             {
                 "selectors": ["name"],
-                "marking_ref": MARKING_IDS[3]
-            }
+                "marking_ref": MARKING_IDS[3],
+            },
         ],
         **MALWARE_KWARGS
     )
@@ -94,12 +102,14 @@ def test_add_markings_combination():
         assert m in after["object_marking_refs"]
 
 
-@pytest.mark.parametrize("data", [
-    ([""]),
-    (""),
-    ([]),
-    ([MARKING_IDS[0], 456])
-])
+@pytest.mark.parametrize(
+    "data", [
+        ([""]),
+        (""),
+        ([]),
+        ([MARKING_IDS[0], 456]),
+    ],
+)
 def test_add_markings_bad_markings(data):
     before = Malware(
         **MALWARE_KWARGS
@@ -119,62 +129,62 @@ GET_MARKINGS_TEST_DATA = \
             "list value",
             {
                 "g": "nested",
-                "h": 45
-            }
+                "h": 45,
+            },
         ],
         "x": {
             "y": [
                 "hello",
-                88
+                88,
             ],
             "z": {
                 "foo1": "bar",
-                "foo2": 65
-            }
+                "foo2": 65,
+            },
         },
         "object_marking_refs": ["11"],
         "granular_markings": [
             {
                 "marking_ref": "1",
-                "selectors": ["a"]
+                "selectors": ["a"],
             },
             {
                 "marking_ref": "2",
-                "selectors": ["c"]
+                "selectors": ["c"],
             },
             {
                 "marking_ref": "3",
-                "selectors": ["c.[1]"]
+                "selectors": ["c.[1]"],
             },
             {
                 "marking_ref": "4",
-                "selectors": ["c.[2]"]
+                "selectors": ["c.[2]"],
             },
             {
                 "marking_ref": "5",
-                "selectors": ["c.[2].g"]
+                "selectors": ["c.[2].g"],
             },
             {
                 "marking_ref": "6",
-                "selectors": ["x"]
+                "selectors": ["x"],
             },
             {
                 "marking_ref": "7",
-                "selectors": ["x.y"]
+                "selectors": ["x.y"],
             },
             {
                 "marking_ref": "8",
-                "selectors": ["x.y.[1]"]
+                "selectors": ["x.y.[1]"],
             },
             {
                 "marking_ref": "9",
-                "selectors": ["x.z"]
+                "selectors": ["x.z"],
             },
             {
                 "marking_ref": "10",
-                "selectors": ["x.z.foo2"]
+                "selectors": ["x.z.foo2"],
             },
-        ]
+        ],
     }
 
 
@@ -257,18 +267,24 @@ def test_get_markings_object_and_granular_combinations(data):
     assert set(markings.get_markings(data, "x.z.foo2", False, True)) == set(["10"])
 
 
-@pytest.mark.parametrize("data", [
-    (
-        Malware(object_marking_refs=[MARKING_IDS[0]],
-                **MALWARE_KWARGS),
-        Malware(**MALWARE_KWARGS),
-    ),
-    (
-        dict(object_marking_refs=[MARKING_IDS[0]],
-             **MALWARE_KWARGS),
-        MALWARE_KWARGS,
-    ),
-])
+@pytest.mark.parametrize(
+    "data", [
+        (
+            Malware(
+                object_marking_refs=[MARKING_IDS[0]],
+                **MALWARE_KWARGS
+            ),
+            Malware(**MALWARE_KWARGS),
+        ),
+        (
+            dict(
+                object_marking_refs=[MARKING_IDS[0]],
+                **MALWARE_KWARGS
+            ),
+            MALWARE_KWARGS,
+        ),
+    ],
+)
 def test_remove_markings_object_level(data):
     before = data[0]
     after = data[1]
@@ -283,29 +299,43 @@ def test_remove_markings_object_level(data):
     modified == after['modified']
 
 
-@pytest.mark.parametrize("data", [
-    (
-        Malware(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS),
-        Malware(object_marking_refs=[MARKING_IDS[1]],
-                **MALWARE_KWARGS),
-        [MARKING_IDS[0], MARKING_IDS[2]],
-    ),
-    (
-        dict(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-             **MALWARE_KWARGS),
-        dict(object_marking_refs=[MARKING_IDS[1]],
-             **MALWARE_KWARGS),
-        [MARKING_IDS[0], MARKING_IDS[2]],
-    ),
-    (
-        Malware(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], TLP_AMBER.id],
-                **MALWARE_KWARGS),
-        Malware(object_marking_refs=[MARKING_IDS[1]],
-                **MALWARE_KWARGS),
-        [MARKING_IDS[0], TLP_AMBER],
-    ),
-])
+@pytest.mark.parametrize(
+    "data", [
+        (
+            Malware(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+                **MALWARE_KWARGS
+            ),
+            Malware(
+                object_marking_refs=[MARKING_IDS[1]],
+                **MALWARE_KWARGS
+            ),
+            [MARKING_IDS[0], MARKING_IDS[2]],
+        ),
+        (
+            dict(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+                **MALWARE_KWARGS
+            ),
+            dict(
+                object_marking_refs=[MARKING_IDS[1]],
+                **MALWARE_KWARGS
+            ),
+            [MARKING_IDS[0], MARKING_IDS[2]],
+        ),
+        (
+            Malware(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], TLP_AMBER.id],
+                **MALWARE_KWARGS
+            ),
+            Malware(
+                object_marking_refs=[MARKING_IDS[1]],
+                **MALWARE_KWARGS
+            ),
+            [MARKING_IDS[0], TLP_AMBER],
+        ),
+    ],
+)
 def test_remove_markings_multiple(data):
     before = data[0]
     after = data[1]
@@ -325,18 +355,24 @@ def test_remove_markings_bad_markings():
     assert str(excinfo.value) == "Marking ['%s'] was not found in Malware!" % MARKING_IDS[4]
 
 
-@pytest.mark.parametrize("data", [
-    (
-        Malware(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS),
-        Malware(**MALWARE_KWARGS),
-    ),
-    (
-        dict(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-             **MALWARE_KWARGS),
-        MALWARE_KWARGS,
-    ),
-])
+@pytest.mark.parametrize(
+    "data", [
+        (
+            Malware(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+                **MALWARE_KWARGS
+            ),
+            Malware(**MALWARE_KWARGS),
+        ),
+        (
+            dict(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+                **MALWARE_KWARGS
+            ),
+            MALWARE_KWARGS,
+        ),
+    ],
+)
 def test_clear_markings(data):
     before = data[0]
     after = data[1]
@@ -358,62 +394,62 @@ def test_is_marked_object_and_granular_combinations():
                 "list value",
                 {
                     "g": "nested",
-                    "h": 45
-                }
+                    "h": 45,
+                },
             ],
             "x": {
                 "y": [
                     "hello",
-                    88
+                    88,
                 ],
                 "z": {
                     "foo1": "bar",
-                    "foo2": 65
-                }
+                    "foo2": 65,
+                },
             },
             "object_marking_refs": "11",
             "granular_markings": [
                 {
                     "marking_ref": "1",
-                    "selectors": ["a"]
+                    "selectors": ["a"],
                 },
                 {
                     "marking_ref": "2",
-                    "selectors": ["c"]
+                    "selectors": ["c"],
                 },
                 {
                     "marking_ref": "3",
-                    "selectors": ["c.[1]"]
+                    "selectors": ["c.[1]"],
                 },
                 {
                     "marking_ref": "4",
-                    "selectors": ["c.[2]"]
+                    "selectors": ["c.[2]"],
                 },
                 {
                     "marking_ref": "5",
-                    "selectors": ["c.[2].g"]
+                    "selectors": ["c.[2].g"],
                 },
                 {
                     "marking_ref": "6",
-                    "selectors": ["x"]
+                    "selectors": ["x"],
                 },
                 {
                     "marking_ref": "7",
-                    "selectors": ["x.y"]
+                    "selectors": ["x.y"],
                 },
                 {
                     "marking_ref": "8",
-                    "selectors": ["x.y.[1]"]
+                    "selectors": ["x.y.[1]"],
                 },
                 {
                     "marking_ref": "9",
-                    "selectors": ["x.z"]
+                    "selectors": ["x.z"],
                 },
                 {
                     "marking_ref": "10",
-                    "selectors": ["x.z.foo2"]
+                    "selectors": ["x.z.foo2"],
                 },
-            ]
+            ],
         }
 
     assert markings.is_marked(test_sdo, ["1"], "a", False, False)
@@ -490,18 +526,24 @@ def test_is_marked_object_and_granular_combinations():
     assert markings.is_marked(test_sdo, ["2"], None, True, True) is False
 
 
-@pytest.mark.parametrize("data", [
-    (
-        Malware(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS),
-        Malware(**MALWARE_KWARGS),
-    ),
-    (
-        dict(object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-             **MALWARE_KWARGS),
-        MALWARE_KWARGS,
-    ),
-])
+@pytest.mark.parametrize(
+    "data", [
+        (
+            Malware(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+                **MALWARE_KWARGS
+            ),
+            Malware(**MALWARE_KWARGS),
+        ),
+        (
+            dict(
+                object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
+                **MALWARE_KWARGS
+            ),
+            MALWARE_KWARGS,
+        ),
+    ],
+)
 def test_is_marked_no_markings(data):
     marked = data[0]
     nonmarked = data[1]
@@ -531,12 +573,14 @@ def test_set_marking():
         assert x in after["object_marking_refs"]
 
 
-@pytest.mark.parametrize("data", [
-    ([]),
-    ([""]),
-    (""),
-    ([MARKING_IDS[4], 687])
-])
+@pytest.mark.parametrize(
+    "data", [
+        ([]),
+        ([""]),
+        (""),
+        ([MARKING_IDS[4], 687]),
+    ],
+)
 def test_set_marking_bad_input(data):
     before = Malware(
         object_marking_refs=[MARKING_IDS[0]],

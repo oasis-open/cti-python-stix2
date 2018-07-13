@@ -13,8 +13,10 @@ def test_add_remove_composite_datasource():
 
     with pytest.raises(TypeError) as excinfo:
         cds.add_data_sources([ds1, ds2, ds1, ds3])
-    assert str(excinfo.value) == ("DataSource (to be added) is not of type "
-                                  "stix2.DataSource. DataSource type is '<class 'stix2.datastore.memory.MemorySink'>'")
+    assert str(excinfo.value) == (
+        "DataSource (to be added) is not of type "
+        "stix2.DataSource. DataSource type is '<class 'stix2.datastore.memory.MemorySink'>'"
+    )
 
     cds.add_data_sources([ds1, ds2, ds1])
 
@@ -26,10 +28,12 @@ def test_add_remove_composite_datasource():
 
 
 def test_composite_datasource_operations(stix_objs1, stix_objs2):
-    BUNDLE1 = dict(id="bundle--%s" % make_id(),
-                   objects=stix_objs1,
-                   spec_version="2.0",
-                   type="bundle")
+    BUNDLE1 = dict(
+        id="bundle--%s" % make_id(),
+        objects=stix_objs1,
+        spec_version="2.0",
+        type="bundle",
+    )
     cds1 = CompositeDataSource()
     ds1_1 = MemorySource(stix_data=BUNDLE1)
     ds1_2 = MemorySource(stix_data=stix_objs2)
@@ -55,11 +59,11 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
     assert indicator["type"] == "indicator"
 
     query1 = [
-        Filter("type", "=", "indicator")
+        Filter("type", "=", "indicator"),
     ]
 
     query2 = [
-        Filter("valid_from", "=", "2017-01-27T13:49:53.935382Z")
+        Filter("valid_from", "=", "2017-01-27T13:49:53.935382Z"),
     ]
 
     cds1.filters.add(query2)

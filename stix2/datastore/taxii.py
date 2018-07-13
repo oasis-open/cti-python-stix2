@@ -4,8 +4,9 @@ from requests.exceptions import HTTPError
 from stix2 import Bundle, v20
 from stix2.base import _STIXBase
 from stix2.core import parse
-from stix2.datastore import (DataSink, DataSource, DataSourceError,
-                             DataStoreMixin)
+from stix2.datastore import (
+    DataSink, DataSource, DataSourceError, DataStoreMixin,
+)
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.utils import deduplicate
 
@@ -42,7 +43,7 @@ class TAXIICollectionStore(DataStoreMixin):
 
         super(TAXIICollectionStore, self).__init__(
             source=TAXIICollectionSource(collection, allow_custom=allow_custom_source),
-            sink=TAXIICollectionSink(collection, allow_custom=allow_custom_sink)
+            sink=TAXIICollectionSink(collection, allow_custom=allow_custom_sink),
         )
 
 
@@ -65,12 +66,16 @@ class TAXIICollectionSink(DataSink):
             if collection.can_write:
                 self.collection = collection
             else:
-                raise DataSourceError("The TAXII Collection object provided does not have write access"
-                                      " to the underlying linked Collection resource")
+                raise DataSourceError(
+                    "The TAXII Collection object provided does not have write access"
+                    " to the underlying linked Collection resource",
+                )
 
         except (HTTPError, ValidationError) as e:
-            raise DataSourceError("The underlying TAXII Collection resource defined in the supplied TAXII"
-                                  " Collection object provided could not be reached. Receved error:", e)
+            raise DataSourceError(
+                "The underlying TAXII Collection resource defined in the supplied TAXII"
+                " Collection object provided could not be reached. Receved error:", e,
+            )
 
         self.allow_custom = allow_custom
 
@@ -146,12 +151,16 @@ class TAXIICollectionSource(DataSource):
             if collection.can_read:
                 self.collection = collection
             else:
-                raise DataSourceError("The TAXII Collection object provided does not have read access"
-                                      " to the underlying linked Collection resource")
+                raise DataSourceError(
+                    "The TAXII Collection object provided does not have read access"
+                    " to the underlying linked Collection resource",
+                )
 
         except (HTTPError, ValidationError) as e:
-            raise DataSourceError("The underlying TAXII Collection resource defined in the supplied TAXII"
-                                  " Collection object provided could not be reached. Recieved error:", e)
+            raise DataSourceError(
+                "The underlying TAXII Collection resource defined in the supplied TAXII"
+                " Collection object provided could not be reached. Recieved error:", e,
+            )
 
         self.allow_custom = allow_custom
 
@@ -218,7 +227,7 @@ class TAXIICollectionSource(DataSource):
         # make query in TAXII query format since 'id' is TAXII field
         query = [
             Filter('id', '=', stix_id),
-            Filter('version', '=', 'all')
+            Filter('version', '=', 'all'),
         ]
 
         all_data = self.query(query=query, _composite_filters=_composite_filters)
@@ -277,9 +286,11 @@ class TAXIICollectionSource(DataSource):
         except HTTPError as e:
             # if resources not found or access is denied from TAXII server, return empty list
             if e.response.status_code == 404:
-                raise DataSourceError("The requested STIX objects for the TAXII Collection resource defined in"
-                                      " the supplied TAXII Collection object are either not found or access is"
-                                      " denied. Received error: ", e)
+                raise DataSourceError(
+                    "The requested STIX objects for the TAXII Collection resource defined in"
+                    " the supplied TAXII Collection object are either not found or access is"
+                    " denied. Received error: ", e,
+                )
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict, allow_custom=self.allow_custom) for stix_obj_dict in all_data]

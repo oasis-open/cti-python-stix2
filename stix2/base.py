@@ -6,11 +6,12 @@ import datetime as dt
 
 import simplejson as json
 
-from .exceptions import (AtLeastOnePropertyError, CustomContentError,
-                         DependentPropertiesError, ExtraPropertiesError,
-                         ImmutableError, InvalidObjRefError, InvalidValueError,
-                         MissingPropertiesError,
-                         MutuallyExclusivePropertiesError)
+from .exceptions import (
+    AtLeastOnePropertyError, CustomContentError, DependentPropertiesError,
+    ExtraPropertiesError, ImmutableError, InvalidObjRefError,
+    InvalidValueError, MissingPropertiesError,
+    MutuallyExclusivePropertiesError,
+)
 from .markings.utils import validate
 from .utils import NOW, find_property_index, format_datetime, get_timestamp
 from .utils import new_version as _new_version
@@ -206,8 +207,10 @@ class _STIXBase(collections.Mapping):
 
     def __repr__(self):
         props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
-        return '{0}({1})'.format(self.__class__.__name__,
-                                 ', '.join(['{0!s}={1!r}'.format(k, v) for k, v in props]))
+        return '{0}({1})'.format(
+            self.__class__.__name__,
+            ', '.join(['{0!s}={1!r}'.format(k, v) for k, v in props]),
+        )
 
     def __deepcopy__(self, memo):
         # Assume: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.

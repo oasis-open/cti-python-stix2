@@ -3,29 +3,25 @@ import os
 import pytest
 
 import stix2
-from stix2.workbench import (AttackPattern, Campaign, CourseOfAction,
-                             ExternalReference, FileSystemSource, Filter,
-                             Identity, Indicator, IntrusionSet, Malware,
-                             MarkingDefinition, ObservedData, Relationship,
-                             Report, StatementMarking, ThreatActor, Tool,
-                             Vulnerability, add_data_source, all_versions,
-                             attack_patterns, campaigns, courses_of_action,
-                             create, get, identities, indicators,
-                             intrusion_sets, malware, observed_data, query,
-                             reports, save, set_default_created,
-                             set_default_creator, set_default_external_refs,
-                             set_default_object_marking_refs, threat_actors,
-                             tools, vulnerabilities)
+from stix2.workbench import (
+    AttackPattern, Campaign, CourseOfAction, ExternalReference,
+    FileSystemSource, Filter, Identity, Indicator, IntrusionSet, Malware,
+    MarkingDefinition, ObservedData, Relationship, Report, StatementMarking,
+    ThreatActor, Tool, Vulnerability, add_data_source, all_versions,
+    attack_patterns, campaigns, courses_of_action, create, get, identities,
+    indicators, intrusion_sets, malware, observed_data, query, reports, save,
+    set_default_created, set_default_creator, set_default_external_refs,
+    set_default_object_marking_refs, threat_actors, tools, vulnerabilities,
+)
 
-from .constants import (ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID,
-                        CAMPAIGN_KWARGS, COURSE_OF_ACTION_ID,
-                        COURSE_OF_ACTION_KWARGS, IDENTITY_ID, IDENTITY_KWARGS,
-                        INDICATOR_ID, INDICATOR_KWARGS, INTRUSION_SET_ID,
-                        INTRUSION_SET_KWARGS, MALWARE_ID, MALWARE_KWARGS,
-                        OBSERVED_DATA_ID, OBSERVED_DATA_KWARGS, REPORT_ID,
-                        REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS,
-                        TOOL_ID, TOOL_KWARGS, VULNERABILITY_ID,
-                        VULNERABILITY_KWARGS)
+from .constants import (
+    ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID, CAMPAIGN_KWARGS,
+    COURSE_OF_ACTION_ID, COURSE_OF_ACTION_KWARGS, IDENTITY_ID, IDENTITY_KWARGS,
+    INDICATOR_ID, INDICATOR_KWARGS, INTRUSION_SET_ID, INTRUSION_SET_KWARGS,
+    MALWARE_ID, MALWARE_KWARGS, OBSERVED_DATA_ID, OBSERVED_DATA_KWARGS,
+    REPORT_ID, REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID,
+    TOOL_KWARGS, VULNERABILITY_ID, VULNERABILITY_KWARGS,
+)
 
 
 @pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
@@ -240,8 +236,10 @@ def test_additional_filter():
 
 @pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_additional_filters_list():
-    resp = tools([Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),
-                  Filter('name', '=', 'Windows Credential Editor')])
+    resp = tools([
+        Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),
+        Filter('name', '=', 'Windows Credential Editor'),
+    ])
     assert len(resp) == 1
 
 
@@ -264,8 +262,10 @@ def test_default_created_timestamp():
 
 
 def test_default_external_refs():
-    ext_ref = ExternalReference(source_name="ACME Threat Intel",
-                                description="Threat report")
+    ext_ref = ExternalReference(
+        source_name="ACME Threat Intel",
+        description="Threat report",
+    )
     set_default_external_refs(ext_ref)
     campaign = Campaign(**CAMPAIGN_KWARGS)
 
@@ -275,8 +275,10 @@ def test_default_external_refs():
 
 def test_default_object_marking_refs():
     stmt_marking = StatementMarking("Copyright 2016, Example Corp")
-    mark_def = MarkingDefinition(definition_type="statement",
-                                 definition=stmt_marking)
+    mark_def = MarkingDefinition(
+        definition_type="statement",
+        definition=stmt_marking,
+    )
     set_default_object_marking_refs(mark_def)
     campaign = Campaign(**CAMPAIGN_KWARGS)
 
@@ -314,7 +316,7 @@ def test_workbench_custom_property_dict_in_observable_extension():
                 'allow_custom': True,
                 'sid': 1,
                 'x_foo': 'bar',
-            }
+            },
         },
     )
     observed_data = ObservedData(

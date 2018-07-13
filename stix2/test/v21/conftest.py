@@ -4,8 +4,9 @@ import pytest
 
 import stix2
 
-from .constants import (FAKE_TIME, INDICATOR_KWARGS, MALWARE_KWARGS,
-                        RELATIONSHIP_KWARGS)
+from .constants import (
+    FAKE_TIME, INDICATOR_KWARGS, MALWARE_KWARGS, RELATIONSHIP_KWARGS,
+)
 
 
 # Inspired by: http://stackoverflow.com/a/24006251
@@ -54,66 +55,66 @@ def stix_objs1():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     ind2 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     ind3 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.936Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     ind4 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     ind5 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     return [ind1, ind2, ind3, ind4, ind5]
 
@@ -124,40 +125,40 @@ def stix_objs2():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-31T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     ind7 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     ind8 = {
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist"
+            "url-watchlist",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
-        "valid_from": "2017-01-27T13:49:53.935382Z"
+        "valid_from": "2017-01-27T13:49:53.935382Z",
     }
     return [ind6, ind7, ind8]
 

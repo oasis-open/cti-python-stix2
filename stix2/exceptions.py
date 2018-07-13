@@ -30,8 +30,10 @@ class MissingPropertiesError(STIXError, ValueError):
 
     def __str__(self):
         msg = "No values for required properties for {0}: ({1})."
-        return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.properties))
+        return msg.format(
+            self.cls.__name__,
+            ", ".join(x for x in self.properties),
+        )
 
 
 class ExtraPropertiesError(STIXError, TypeError):
@@ -44,8 +46,10 @@ class ExtraPropertiesError(STIXError, TypeError):
 
     def __str__(self):
         msg = "Unexpected properties for {0}: ({1})."
-        return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.properties))
+        return msg.format(
+            self.cls.__name__,
+            ", ".join(x for x in self.properties),
+        )
 
 
 class ImmutableError(STIXError, ValueError):
@@ -110,8 +114,10 @@ class MutuallyExclusivePropertiesError(STIXError, TypeError):
 
     def __str__(self):
         msg = "The ({1}) properties for {0} are mutually exclusive."
-        return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.properties))
+        return msg.format(
+            self.cls.__name__,
+            ", ".join(x for x in self.properties),
+        )
 
 
 class DependentPropertiesError(STIXError, TypeError):
@@ -124,8 +130,10 @@ class DependentPropertiesError(STIXError, TypeError):
 
     def __str__(self):
         msg = "The property dependencies for {0}: ({1}) are not met."
-        return msg.format(self.cls.__name__,
-                          ", ".join(name for x in self.dependencies for name in x))
+        return msg.format(
+            self.cls.__name__,
+            ", ".join(name for x in self.dependencies for name in x),
+        )
 
 
 class AtLeastOnePropertyError(STIXError, TypeError):
@@ -138,8 +146,10 @@ class AtLeastOnePropertyError(STIXError, TypeError):
 
     def __str__(self):
         msg = "At least one of the ({1}) properties for {0} must be populated."
-        return msg.format(self.cls.__name__,
-                          ", ".join(x for x in self.properties))
+        return msg.format(
+            self.cls.__name__,
+            ", ".join(x for x in self.properties),
+        )
 
 
 class RevokeError(STIXError, ValueError):

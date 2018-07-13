@@ -1,12 +1,11 @@
 import pytest
 
-from stix2.confidence.scales import (admiralty_credibility_to_value,
-                                     dni_to_value, none_low_med_high_to_value,
-                                     value_to_admiralty_credibility,
-                                     value_to_dni,
-                                     value_to_none_low_medium_high,
-                                     value_to_wep, value_to_zero_ten,
-                                     wep_to_value, zero_ten_to_value)
+from stix2.confidence.scales import (
+    admiralty_credibility_to_value, dni_to_value, none_low_med_high_to_value,
+    value_to_admiralty_credibility, value_to_dni,
+    value_to_none_low_medium_high, value_to_wep, value_to_zero_ten,
+    wep_to_value, zero_ten_to_value,
+)
 
 CONFIDENCE_ERROR_STR = "STIX Confidence value cannot be determined for %s"
 RANGE_ERROR_STR = "Range of values out of bounds: %s"
@@ -39,22 +38,26 @@ def test_confidence_range_none_low_med_high():
             pytest.fail("Unexpected behavior %s" % val)
 
 
-@pytest.mark.parametrize("scale_value,result", [
-    ("None", 0),
-    ("Low", 15),
-    ("Med", 50),
-    ("High", 85)
-])
+@pytest.mark.parametrize(
+    "scale_value,result", [
+        ("None", 0),
+        ("Low", 15),
+        ("Med", 50),
+        ("High", 85),
+    ],
+)
 def test_confidence_scale_valid_none_low_med_high(scale_value, result):
     val = none_low_med_high_to_value(scale_value)
     assert val == result
 
 
-@pytest.mark.parametrize("scale_value", [
-    "Super",
-    "none",
-    ""
-])
+@pytest.mark.parametrize(
+    "scale_value", [
+        "Super",
+        "none",
+        "",
+    ],
+)
 def test_confidence_scale_invalid_none_low_med_high(scale_value):
     with pytest.raises(ValueError) as excinfo:
         none_low_med_high_to_value(scale_value)
@@ -99,29 +102,33 @@ def test_confidence_range_zero_ten():
             pytest.fail("Unexpected behavior %s" % val)
 
 
-@pytest.mark.parametrize("scale_value,result", [
-    ("0", 0),
-    ("1", 10),
-    ("2", 20),
-    ("3", 30),
-    ("4", 40),
-    ("5", 50),
-    ("6", 60),
-    ("7", 70),
-    ("8", 80),
-    ("9", 90),
-    ("10", 100)
-])
+@pytest.mark.parametrize(
+    "scale_value,result", [
+        ("0", 0),
+        ("1", 10),
+        ("2", 20),
+        ("3", 30),
+        ("4", 40),
+        ("5", 50),
+        ("6", 60),
+        ("7", 70),
+        ("8", 80),
+        ("9", 90),
+        ("10", 100),
+    ],
+)
 def test_confidence_scale_valid_zero_ten(scale_value, result):
     val = zero_ten_to_value(scale_value)
     assert val == result
 
 
-@pytest.mark.parametrize("scale_value", [
-    "11",
-    8,
-    ""
-])
+@pytest.mark.parametrize(
+    "scale_value", [
+        "11",
+        8,
+        "",
+    ],
+)
 def test_confidence_scale_invalid_zero_ten(scale_value):
     with pytest.raises(ValueError) as excinfo:
         zero_ten_to_value(scale_value)
@@ -154,23 +161,27 @@ def test_confidence_range_admiralty_credibility():
             pytest.fail("Unexpected behavior %s" % val)
 
 
-@pytest.mark.parametrize("scale_value,result", [
-    ("5 - Improbable", 10),
-    ("4 - Doubtful", 30),
-    ("3 - Possibly True", 50),
-    ("2 - Probably True", 70),
-    ("1 - Confirmed by other sources", 90)
-])
+@pytest.mark.parametrize(
+    "scale_value,result", [
+        ("5 - Improbable", 10),
+        ("4 - Doubtful", 30),
+        ("3 - Possibly True", 50),
+        ("2 - Probably True", 70),
+        ("1 - Confirmed by other sources", 90),
+    ],
+)
 def test_confidence_scale_valid_admiralty_credibility(scale_value, result):
     val = admiralty_credibility_to_value(scale_value)
     assert val == result
 
 
-@pytest.mark.parametrize("scale_value", [
-    "5 - improbable",
-    "6 - Truth cannot be judged",
-    ""
-])
+@pytest.mark.parametrize(
+    "scale_value", [
+        "5 - improbable",
+        "6 - Truth cannot be judged",
+        "",
+    ],
+)
 def test_confidence_scale_invalid_admiralty_credibility(scale_value):
     with pytest.raises(ValueError) as excinfo:
         admiralty_credibility_to_value(scale_value)
@@ -207,25 +218,29 @@ def test_confidence_range_wep():
             pytest.fail("Unexpected behavior %s" % val)
 
 
-@pytest.mark.parametrize("scale_value,result", [
-    ("Impossible", 0),
-    ("Highly Unlikely/Almost Certainly Not", 10),
-    ("Unlikely/Probably Not", 30),
-    ("Even Chance", 50),
-    ("Likely/Probable", 70),
-    ("Highly likely/Almost Certain", 90),
-    ("Certain", 100)
-])
+@pytest.mark.parametrize(
+    "scale_value,result", [
+        ("Impossible", 0),
+        ("Highly Unlikely/Almost Certainly Not", 10),
+        ("Unlikely/Probably Not", 30),
+        ("Even Chance", 50),
+        ("Likely/Probable", 70),
+        ("Highly likely/Almost Certain", 90),
+        ("Certain", 100),
+    ],
+)
 def test_confidence_scale_valid_wep(scale_value, result):
     val = wep_to_value(scale_value)
     assert val == result
 
 
-@pytest.mark.parametrize("scale_value", [
-    "Unlikely / Probably Not",
-    "Almost certain",
-    ""
-])
+@pytest.mark.parametrize(
+    "scale_value", [
+        "Unlikely / Probably Not",
+        "Almost certain",
+        "",
+    ],
+)
 def test_confidence_scale_invalid_wep(scale_value):
     with pytest.raises(ValueError) as excinfo:
         wep_to_value(scale_value)
@@ -262,25 +277,29 @@ def test_confidence_range_dni():
             pytest.fail("Unexpected behavior %s" % val)
 
 
-@pytest.mark.parametrize("scale_value,result", [
-    ("Almost No Chance / Remote", 5),
-    ("Very Unlikely / Highly Improbable", 15),
-    ("Unlikely / Improbable", 30),
-    ("Roughly Even Change / Roughly Even Odds", 50),
-    ("Likely / Probable", 70),
-    ("Very Likely / Highly Probable", 85),
-    ("Almost Certain / Nearly Certain", 95)
-])
+@pytest.mark.parametrize(
+    "scale_value,result", [
+        ("Almost No Chance / Remote", 5),
+        ("Very Unlikely / Highly Improbable", 15),
+        ("Unlikely / Improbable", 30),
+        ("Roughly Even Change / Roughly Even Odds", 50),
+        ("Likely / Probable", 70),
+        ("Very Likely / Highly Probable", 85),
+        ("Almost Certain / Nearly Certain", 95),
+    ],
+)
 def test_confidence_scale_valid_dni(scale_value, result):
     val = dni_to_value(scale_value)
     assert val == result
 
 
-@pytest.mark.parametrize("scale_value", [
-    "Almost Certain/Nearly Certain",
-    "Almost Certain / nearly Certain",
-    ""
-])
+@pytest.mark.parametrize(
+    "scale_value", [
+        "Almost Certain/Nearly Certain",
+        "Almost Certain / nearly Certain",
+        "",
+    ],
+)
 def test_confidence_scale_invalid_none_dni(scale_value):
     with pytest.raises(ValueError) as excinfo:
         dni_to_value(scale_value)

@@ -27,9 +27,11 @@ class ObjectFactory(object):
             default. Defaults to True.
     """
 
-    def __init__(self, created_by_ref=None, created=None,
-                 external_references=None, object_marking_refs=None,
-                 list_append=True):
+    def __init__(
+        self, created_by_ref=None, created=None,
+        external_references=None, object_marking_refs=None,
+        list_append=True,
+    ):
 
         self._defaults = {}
         if created_by_ref:

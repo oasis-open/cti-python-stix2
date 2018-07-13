@@ -20,12 +20,14 @@ from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 # 8-4-4-4-12 hexadecimal representation, the first hex digit of the third
 # component must be a 4, and the first hex digit of the fourth component
 # must be 8, 9, a, or b (10xx bit pattern).
-ID_REGEX = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
-                      "[0-9a-fA-F]{8}-"
-                      "[0-9a-fA-F]{4}-"
-                      "4[0-9a-fA-F]{3}-"
-                      "[89abAB][0-9a-fA-F]{3}-"
-                      "[0-9a-fA-F]{12}$")
+ID_REGEX = re.compile(
+    "^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
+    "[0-9a-fA-F]{8}-"
+    "[0-9a-fA-F]{4}-"
+    "4[0-9a-fA-F]{3}-"
+    "[89abAB][0-9a-fA-F]{3}-"
+    "[0-9a-fA-F]{12}$",
+)
 
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUIDv4>"
@@ -271,9 +273,11 @@ class DictionaryProperty(Property):
                 if len(k) > 250:
                     raise DictionaryKeyError(k, "longer than 250 characters")
             if not re.match('^[a-zA-Z0-9_-]+$', k):
-                msg = ("contains characters other than lowercase a-z, "
-                       "uppercase A-Z, numerals 0-9, hyphen (-), or "
-                       "underscore (_)")
+                msg = (
+                    "contains characters other than lowercase a-z, "
+                    "uppercase A-Z, numerals 0-9, hyphen (-), or "
+                    "underscore (_)"
+                )
                 raise DictionaryKeyError(k, msg)
         return dictified
 
@@ -435,10 +439,12 @@ class ObservableProperty(Property):
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
         for key, obj in dictified.items():
-            parsed_obj = parse_observable(obj,
-                                          valid_refs,
-                                          allow_custom=self.allow_custom,
-                                          version=self.spec_version)
+            parsed_obj = parse_observable(
+                obj,
+                valid_refs,
+                allow_custom=self.allow_custom,
+                version=self.spec_version,
+            )
             dictified[key] = parsed_obj
 
         return dictified
@@ -509,9 +515,11 @@ class STIXObjectProperty(Property):
             # (spec_version).  So this is a hack, and not technically spec-
             # compliant.
             if 'spec_version' in value and self.spec_version == '2.0':
-                raise ValueError("Spec version 2.0 bundles don't yet support "
-                                 "containing objects of a different spec "
-                                 "version.")
+                raise ValueError(
+                    "Spec version 2.0 bundles don't yet support "
+                    "containing objects of a different spec "
+                    "version.",
+                )
             return value
         try:
             dictified = _get_dict(value)
@@ -523,8 +531,10 @@ class STIXObjectProperty(Property):
             raise ValueError("This property may not contain a Bundle object")
         if 'spec_version' in dictified and self.spec_version == '2.0':
             # See above comment regarding spec_version.
-            raise ValueError("Spec version 2.0 bundles don't yet support "
-                             "containing objects of a different spec version.")
+            raise ValueError(
+                "Spec version 2.0 bundles don't yet support "
+                "containing objects of a different spec version.",
+            )
 
         parsed_obj = parse(dictified, allow_custom=self.allow_custom)
 

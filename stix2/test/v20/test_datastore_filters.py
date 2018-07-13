@@ -10,23 +10,23 @@ stix_objs = [
         "description": "\n\nTITLE:\n\tPoison Ivy",
         "id": "malware--fdd60b30-b67c-41e3-b0b9-f01faf20d111",
         "labels": [
-            "remote-access-trojan"
+            "remote-access-trojan",
         ],
         "modified": "2017-01-27T13:49:53.997Z",
         "name": "Poison Ivy",
-        "type": "malware"
+        "type": "malware",
     },
     {
         "created": "2014-05-08T09:00:00.000Z",
         "id": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
         "labels": [
-            "file-hash-watchlist"
+            "file-hash-watchlist",
         ],
         "modified": "2014-05-08T09:00:00.000Z",
         "name": "File hash for Poison Ivy variant",
         "pattern": "[file:hashes.'SHA-256' = 'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c']",
         "type": "indicator",
-        "valid_from": "2014-05-08T09:00:00.000000Z"
+        "valid_from": "2014-05-08T09:00:00.000000Z",
     },
     {
         "created": "2014-05-08T09:00:00.000Z",
@@ -34,20 +34,20 @@ stix_objs = [
             {
                 "marking_ref": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed",
                 "selectors": [
-                    "relationship_type"
-                ]
-            }
+                    "relationship_type",
+                ],
+            },
         ],
         "id": "relationship--2f9a9aa9-108a-4333-83e2-4fb25add0463",
         "modified": "2014-05-08T09:00:00.000Z",
         "object_marking_refs": [
-            "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         ],
         "relationship_type": "indicates",
         "revoked": True,
         "source_ref": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
         "target_ref": "malware--fdd60b30-b67c-41e3-b0b9-f01faf20d111",
-        "type": "relationship"
+        "type": "relationship",
     },
     {
         "id": "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef",
@@ -60,10 +60,10 @@ stix_objs = [
         "external_references": [
             {
                 "source_name": "cve",
-                "external_id": "CVE-2014-0160"
-            }
+                "external_id": "CVE-2014-0160",
+            },
         ],
-        "labels": ["heartbleed", "has-logo"]
+        "labels": ["heartbleed", "has-logo"],
     },
     {
         "type": "observed-data",
@@ -77,11 +77,11 @@ stix_objs = [
         "objects": {
             "0": {
                 "type": "file",
-                "name": "HAL 9000.exe"
-            }
-        }
+                "name": "HAL 9000.exe",
+            },
+        },
 
-    }
+    },
 ]
 
 
@@ -414,8 +414,10 @@ def test_filters4():
     # Assert invalid Filter cannot be created
     with pytest.raises(ValueError) as excinfo:
         Filter("modified", "?", "2017-01-27T13:49:53.935Z")
-    assert str(excinfo.value) == ("Filter operator '?' not supported "
-                                  "for specified property: 'modified'")
+    assert str(excinfo.value) == (
+        "Filter operator '?' not supported "
+        "for specified property: 'modified'"
+    )
 
 
 def test_filters5(stix_objs2, real_stix_objs2):
@@ -455,7 +457,7 @@ def test_filters7(stix_objs2, real_stix_objs2):
             "0": {
                 "type": "file",
                 "hashes": {
-                    "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+                    "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f",
                 },
                 "extensions": {
                     "pdf-ext": {
@@ -465,14 +467,14 @@ def test_filters7(stix_objs2, real_stix_objs2):
                             "Author": "Adobe Systems Incorporated",
                             "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
                             "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
-                            "CreationDate": "20070412090123-02"
+                            "CreationDate": "20070412090123-02",
                         },
                         "pdfid0": "DFCE52BD827ECF765649852119D",
-                        "pdfid1": "57A1E0F9ED2AE523E313C"
-                    }
-                }
-            }
-        }
+                        "pdfid1": "57A1E0F9ED2AE523E313C",
+                    },
+                },
+            },
+        },
     }
 
     stix_objects = list(stix_objs2) + [obsvd_data_obj]

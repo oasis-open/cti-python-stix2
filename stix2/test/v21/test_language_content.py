@@ -55,13 +55,13 @@ def test_language_content_campaign():
         contents={
             'de': {
                 'name': 'Bank Angriff 1',
-                'description': 'Weitere Informationen über Banküberfall'
+                'description': 'Weitere Informationen über Banküberfall',
             },
             'fr': {
                 'name': 'Attaque Bank 1',
-                'description': 'Plus d\'informations sur la crise bancaire'
-            }
-        }
+                'description': 'Plus d\'informations sur la crise bancaire',
+            },
+        },
     )
 
     camp = stix2.parse(TEST_CAMPAIGN, version='2.1')

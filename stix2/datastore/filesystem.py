@@ -41,7 +41,7 @@ class FileSystemStore(DataStoreMixin):
 
         super(FileSystemStore, self).__init__(
             source=FileSystemSource(stix_dir=stix_dir, allow_custom=allow_custom_source),
-            sink=FileSystemSink(stix_dir=stix_dir, allow_custom=allow_custom_sink, bundlify=bundlify)
+            sink=FileSystemSink(stix_dir=stix_dir, allow_custom=allow_custom_sink, bundlify=bundlify),
         )
 
 
@@ -134,9 +134,11 @@ class FileSystemSink(DataSink):
                 self.add(stix_obj)
 
         else:
-            raise TypeError("stix_data must be a STIX object (or list of), "
-                            "JSON formatted STIX (or list of), "
-                            "or a JSON formatted STIX bundle")
+            raise TypeError(
+                "stix_data must be a STIX object (or list of), "
+                "JSON formatted STIX (or list of), "
+                "or a JSON formatted STIX bundle",
+            )
 
 
 class FileSystemSource(DataSource):

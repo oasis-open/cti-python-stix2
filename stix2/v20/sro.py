@@ -3,9 +3,10 @@
 from collections import OrderedDict
 
 from ..core import STIXRelationshipObject
-from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
-                          ListProperty, ReferenceProperty, StringProperty,
-                          TimestampProperty, TypeProperty)
+from ..properties import (
+    BooleanProperty, IDProperty, IntegerProperty, ListProperty,
+    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+)
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking
 
@@ -34,8 +35,10 @@ class Relationship(STIXRelationshipObject):
     ])
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
-    def __init__(self, source_ref=None, relationship_type=None,
-                 target_ref=None, **kwargs):
+    def __init__(
+        self, source_ref=None, relationship_type=None,
+        target_ref=None, **kwargs
+    ):
         # Allow (source_ref, relationship_type, target_ref) as positional args.
         if source_ref and not kwargs.get('source_ref'):
             kwargs['source_ref'] = source_ref

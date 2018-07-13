@@ -36,7 +36,7 @@ class MockTAXIICollectionEndpoint(Collection):
         objs = full_filter.process_filter(
             self.objects,
             ("id", "type", "version"),
-            []
+            [],
         )
         if objs:
             return stix2.v20.Bundle(objects=objs)
@@ -56,7 +56,7 @@ class MockTAXIICollectionEndpoint(Collection):
         objs = full_filter.process_filter(
             self.objects,
             ("version",),
-            []
+            [],
         )
         if objs:
             return stix2.v20.Bundle(objects=objs)
@@ -68,16 +68,18 @@ class MockTAXIICollectionEndpoint(Collection):
 
 @pytest.fixture
 def collection(stix_objs1):
-    mock = MockTAXIICollectionEndpoint(COLLECTION_URL, **{
-        "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
-        "title": "Writable Collection",
-        "description": "This collection is a dropbox for submitting indicators",
-        "can_read": True,
-        "can_write": True,
-        "media_types": [
-            "application/vnd.oasis.stix+json; version=2.0"
-        ]
-    })
+    mock = MockTAXIICollectionEndpoint(
+        COLLECTION_URL, **{
+            "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
+            "title": "Writable Collection",
+            "description": "This collection is a dropbox for submitting indicators",
+            "can_read": True,
+            "can_write": True,
+            "media_types": [
+                "application/vnd.oasis.stix+json; version=2.0",
+            ],
+        }
+    )
 
     mock.objects.extend(stix_objs1)
     return mock
@@ -85,16 +87,18 @@ def collection(stix_objs1):
 
 @pytest.fixture
 def collection_no_rw_access(stix_objs1):
-    mock = MockTAXIICollectionEndpoint(COLLECTION_URL, **{
-        "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
-        "title": "Not writeable or readable Collection",
-        "description": "This collection is a dropbox for submitting indicators",
-        "can_read": False,
-        "can_write": False,
-        "media_types": [
-            "application/vnd.oasis.stix+json; version=2.0"
-        ]
-    })
+    mock = MockTAXIICollectionEndpoint(
+        COLLECTION_URL, **{
+            "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
+            "title": "Not writeable or readable Collection",
+            "description": "This collection is a dropbox for submitting indicators",
+            "can_read": False,
+            "can_write": False,
+            "media_types": [
+                "application/vnd.oasis.stix+json; version=2.0",
+            ],
+        }
+    )
 
     mock.objects.extend(stix_objs1)
     return mock
@@ -117,7 +121,8 @@ def test_add_stix2_object(collection):
         goals=[
             "compromising environment NGOs",
             "water-hole attacks geared towards energy sector",
-        ])
+        ],
+    )
 
     tc_sink.add(ta)
 
@@ -136,7 +141,8 @@ def test_add_stix2_with_custom_object(collection):
             "water-hole attacks geared towards energy sector",
         ],
         foo="bar",
-        allow_custom=True)
+        allow_custom=True,
+    )
 
     tc_sink.add(ta)
 
@@ -153,7 +159,8 @@ def test_add_list_object(collection, indicator):
         goals=[
             "compromising environment NGOs",
             "water-hole attacks geared towards energy sector",
-        ])
+        ],
+    )
 
     tc_sink.add([ta, indicator])
 
@@ -170,7 +177,8 @@ def test_add_stix2_bundle_object(collection):
         goals=[
             "compromising environment NGOs",
             "water-hole attacks geared towards energy sector",
-        ])
+        ],
+    )
 
     tc_sink.add(stix2.v20.Bundle(objects=[ta]))
 
@@ -210,13 +218,13 @@ def test_add_dict_object(collection):
         "name": "Teddy Bear",
         "goals": [
             "compromising environment NGOs",
-            "water-hole attacks geared towards energy sector"
+            "water-hole attacks geared towards energy sector",
         ],
         "sophistication": "innovator",
         "resource_level": "government",
         "labels": [
-            "nation-state"
-        ]
+            "nation-state",
+        ],
     }
 
     tc_sink.add(ta)
@@ -237,15 +245,15 @@ def test_add_dict_bundle_object(collection):
                 "name": "Teddy Bear",
                 "goals": [
                     "compromising environment NGOs",
-                    "water-hole attacks geared towards energy sector"
+                    "water-hole attacks geared towards energy sector",
                 ],
                 "sophistication": "innovator",
                 "resource_level": "government",
                 "labels": [
-                    "nation-state"
-                ]
-            }
-        ]
+                    "nation-state",
+                ],
+            },
+        ],
     }
 
     tc_sink.add(ta)
@@ -272,7 +280,7 @@ def test_parse_taxii_filters(collection):
         Filter("added_after", "=", "2016-02-01T00:00:01.000Z"),
         Filter("id", "=", "taxii stix object ID"),
         Filter("type", "=", "taxii stix object ID"),
-        Filter("version", "=", "first")
+        Filter("version", "=", "first"),
     ]
 
     ds = stix2.TAXIICollectionSource(collection)

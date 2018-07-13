@@ -39,7 +39,7 @@ def test_sighting_all_required_properties():
         created=now,
         modified=now,
         sighting_of_ref=INDICATOR_ID,
-        where_sighted_refs=["identity--8cc7afd6-5455-4d2b-a736-e614ee631d99"]
+        where_sighted_refs=["identity--8cc7afd6-5455-4d2b-a736-e614ee631d99"],
     )
     assert str(s) == EXPECTED_SIGHTING
 
@@ -54,7 +54,7 @@ def test_sighting_bad_where_sighted_refs():
             created=now,
             modified=now,
             sighting_of_ref=INDICATOR_ID,
-            where_sighted_refs=["malware--8cc7afd6-5455-4d2b-a736-e614ee631d99"]
+            where_sighted_refs=["malware--8cc7afd6-5455-4d2b-a736-e614ee631d99"],
         )
 
     assert excinfo.value.cls == stix2.v20.Sighting
@@ -89,19 +89,21 @@ def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
     assert rel.id == 'sighting--00000000-0000-4000-8000-000000000003'
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_SIGHTING,
-    {
-        "created": "2016-04-06T20:06:37Z",
-        "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",
-        "modified": "2016-04-06T20:06:37Z",
-        "sighting_of_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
-        "type": "sighting",
-        "where_sighted_refs": [
-            "identity--8cc7afd6-5455-4d2b-a736-e614ee631d99"
-        ]
-    },
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_SIGHTING,
+        {
+            "created": "2016-04-06T20:06:37Z",
+            "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",
+            "modified": "2016-04-06T20:06:37Z",
+            "sighting_of_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "type": "sighting",
+            "where_sighted_refs": [
+                "identity--8cc7afd6-5455-4d2b-a736-e614ee631d99",
+            ],
+        },
+    ],
+)
 def test_parse_sighting(data):
     sighting = stix2.parse(data, version="2.0")
 

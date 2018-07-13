@@ -152,20 +152,22 @@ def test_created_modified_time_are_identical_by_default():
     assert ind.created == ind.modified
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_INDICATOR,
-    {
-        "type": "indicator",
-        "id": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
-        "created": "2017-01-01T00:00:01Z",
-        "modified": "2017-01-01T00:00:01Z",
-        "indicator_types": [
-            "malicious-activity"
-        ],
-        "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-        "valid_from": "1970-01-01T00:00:01Z"
-    },
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_INDICATOR,
+        {
+            "type": "indicator",
+            "id": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "created": "2017-01-01T00:00:01Z",
+            "modified": "2017-01-01T00:00:01Z",
+            "indicator_types": [
+                "malicious-activity",
+            ],
+            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "valid_from": "1970-01-01T00:00:01Z",
+        },
+    ],
+)
 def test_parse_indicator(data):
     idctr = stix2.parse(data, version="2.1")
 

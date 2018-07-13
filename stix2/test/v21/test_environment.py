@@ -2,9 +2,11 @@ import pytest
 
 import stix2
 
-from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, FAKE_TIME, IDENTITY_ID,
-                        IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
+from .constants import (
+    CAMPAIGN_ID, CAMPAIGN_KWARGS, FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS,
+    INDICATOR_ID, INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
+    RELATIONSHIP_IDS,
+)
 
 
 @pytest.fixture
@@ -48,8 +50,10 @@ def test_object_factory_created():
 
 
 def test_object_factory_external_reference():
-    ext_ref = stix2.v21.ExternalReference(source_name="ACME Threat Intel",
-                                          description="Threat report")
+    ext_ref = stix2.v21.ExternalReference(
+        source_name="ACME Threat Intel",
+        description="Threat report",
+    )
     factory = stix2.ObjectFactory(external_references=ext_ref)
     ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert ind.external_references[0].source_name == "ACME Threat Intel"
@@ -61,8 +65,10 @@ def test_object_factory_external_reference():
 
 def test_object_factory_obj_markings():
     stmt_marking = stix2.v21.StatementMarking("Copyright 2016, Example Corp")
-    mark_def = stix2.v21.MarkingDefinition(definition_type="statement",
-                                           definition=stmt_marking)
+    mark_def = stix2.v21.MarkingDefinition(
+        definition_type="statement",
+        definition=stmt_marking,
+    )
     factory = stix2.ObjectFactory(object_marking_refs=[mark_def, stix2.v21.TLP_AMBER])
     ind = factory.create(stix2.v21.Indicator, **INDICATOR_KWARGS)
     assert mark_def.id in ind.object_marking_refs
@@ -74,12 +80,18 @@ def test_object_factory_obj_markings():
 
 
 def test_object_factory_list_append():
-    ext_ref = stix2.v21.ExternalReference(source_name="ACME Threat Intel",
-                                          description="Threat report from ACME")
-    ext_ref2 = stix2.v21.ExternalReference(source_name="Yet Another Threat Report",
-                                           description="Threat report from YATR")
-    ext_ref3 = stix2.v21.ExternalReference(source_name="Threat Report #3",
-                                           description="One more threat report")
+    ext_ref = stix2.v21.ExternalReference(
+        source_name="ACME Threat Intel",
+        description="Threat report from ACME",
+    )
+    ext_ref2 = stix2.v21.ExternalReference(
+        source_name="Yet Another Threat Report",
+        description="Threat report from YATR",
+    )
+    ext_ref3 = stix2.v21.ExternalReference(
+        source_name="Threat Report #3",
+        description="One more threat report",
+    )
     factory = stix2.ObjectFactory(external_references=ext_ref)
     ind = factory.create(stix2.v21.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
     assert ind.external_references[1].source_name == "Yet Another Threat Report"
@@ -89,10 +101,14 @@ def test_object_factory_list_append():
 
 
 def test_object_factory_list_replace():
-    ext_ref = stix2.v21.ExternalReference(source_name="ACME Threat Intel",
-                                          description="Threat report from ACME")
-    ext_ref2 = stix2.v21.ExternalReference(source_name="Yet Another Threat Report",
-                                           description="Threat report from YATR")
+    ext_ref = stix2.v21.ExternalReference(
+        source_name="ACME Threat Intel",
+        description="Threat report from ACME",
+    )
+    ext_ref2 = stix2.v21.ExternalReference(
+        source_name="Yet Another Threat Report",
+        description="Threat report from YATR",
+    )
     factory = stix2.ObjectFactory(external_references=ext_ref, list_append=False)
     ind = factory.create(stix2.v21.Indicator, external_references=ext_ref2, **INDICATOR_KWARGS)
     assert len(ind.external_references) == 1
@@ -100,8 +116,10 @@ def test_object_factory_list_replace():
 
 
 def test_environment_functions():
-    env = stix2.Environment(stix2.ObjectFactory(created_by_ref=IDENTITY_ID),
-                            stix2.MemoryStore())
+    env = stix2.Environment(
+        stix2.ObjectFactory(created_by_ref=IDENTITY_ID),
+        stix2.MemoryStore(),
+    )
 
     # Create a STIX object
     ind = env.create(stix2.v21.Indicator, id=INDICATOR_ID, **INDICATOR_KWARGS)
@@ -125,8 +143,10 @@ def test_environment_functions():
     assert len(resp) == 0
 
     # See different results after adding filters to the environment
-    env.add_filters([stix2.Filter('type', '=', 'indicator'),
-                    stix2.Filter('created_by_ref', '=', IDENTITY_ID)])
+    env.add_filters([
+        stix2.Filter('type', '=', 'indicator'),
+        stix2.Filter('created_by_ref', '=', IDENTITY_ID),
+    ])
     env.add_filter(stix2.Filter('labels', '=', 'benign'))  # should be 'malicious-activity'
     resp = env.get(INDICATOR_ID)
     assert resp['labels'][0] == 'benign'  # should be 'malicious-activity'
@@ -140,8 +160,10 @@ def test_environment_source_and_sink():
 
 def test_environment_datastore_and_sink():
     with pytest.raises(ValueError) as excinfo:
-        stix2.Environment(factory=stix2.ObjectFactory(),
-                          store=stix2.MemoryStore(), sink=stix2.MemorySink)
+        stix2.Environment(
+            factory=stix2.ObjectFactory(),
+            store=stix2.MemoryStore(), sink=stix2.MemorySink,
+        )
     assert 'Data store already provided' in str(excinfo.value)
 
 
@@ -265,7 +287,7 @@ def test_relationships_no_id(ds):
     env = stix2.Environment(store=ds)
     mal = {
         "type": "malware",
-        "name": "some variant"
+        "name": "some variant",
     }
     with pytest.raises(ValueError) as excinfo:
         env.relationships(mal)
@@ -329,7 +351,7 @@ def test_related_to_no_id(ds):
     env = stix2.Environment(store=ds)
     mal = {
         "type": "malware",
-        "name": "some variant"
+        "name": "some variant",
     }
     with pytest.raises(ValueError) as excinfo:
         env.related_to(mal)

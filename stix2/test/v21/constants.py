@@ -34,7 +34,7 @@ MARKING_IDS = [
 RELATIONSHIP_IDS = [
     'relationship--06520621-5352-4e6a-b976-e8fa3d437ffd',
     'relationship--181c9c09-43e6-45dd-9374-3bec192f05ef',
-    'relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70'
+    'relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70',
 ]
 
 # *_KWARGS contains all required arguments to create an instance of that STIX object
@@ -81,7 +81,7 @@ INTRUSION_SET_KWARGS = dict(
 MALWARE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
-    is_family=True
+    is_family=True,
 )
 
 MALWARE_MORE_KWARGS = dict(
@@ -92,7 +92,7 @@ MALWARE_MORE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
     description="A ransomware related to ...",
-    is_family=False
+    is_family=False,
 )
 
 OBSERVED_DATA_KWARGS = dict(
@@ -103,8 +103,8 @@ OBSERVED_DATA_KWARGS = dict(
         "0": {
             "type": "windows-registry-key",
             "key": "HKEY_LOCAL_MACHINE\\System\\Foo\\Bar",
-        }
-    }
+        },
+    },
 )
 
 REPORT_KWARGS = dict(

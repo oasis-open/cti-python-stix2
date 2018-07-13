@@ -42,7 +42,7 @@ def test_observed_data_example():
         objects={
             "0": {
                 "name": "foo.exe",
-                "type": "file"
+                "type": "file",
             },
         },
     )
@@ -88,13 +88,13 @@ def test_observed_data_example_with_refs():
         objects={
             "0": {
                 "name": "foo.exe",
-                "type": "file"
+                "type": "file",
             },
             "1": {
                 "type": "directory",
                 "path": "/usr/home",
-                "contains_refs": ["0"]
-            }
+                "contains_refs": ["0"],
+            },
         },
     )
 
@@ -114,13 +114,13 @@ def test_observed_data_example_with_bad_refs():
             objects={
                 "0": {
                     "type": "file",
-                    "name": "foo.exe"
+                    "name": "foo.exe",
                 },
                 "1": {
                     "type": "directory",
                     "path": "/usr/home",
-                    "contains_refs": ["2"]
-                }
+                    "contains_refs": ["2"],
+                },
             },
         )
 
@@ -165,26 +165,28 @@ def test_observed_data_example_with_empty_dictionary():
     assert 'must contain a non-empty dictionary' in excinfo.value.reason
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED,
-    {
-        "type": "observed-data",
-        "spec_version": "2.1",
-        "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        "created": "2016-04-06T19:58:16.000Z",
-        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-        "first_observed": "2015-12-21T19:00:00Z",
-        "last_observed": "2015-12-21T19:00:00Z",
-        "modified": "2016-04-06T19:58:16.000Z",
-        "number_observed": 50,
-        "objects": {
-            "0": {
-                "name": "foo.exe",
-                "type": "file"
-            }
-        }
-    },
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED,
+        {
+            "type": "observed-data",
+            "spec_version": "2.1",
+            "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            "created": "2016-04-06T19:58:16.000Z",
+            "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            "first_observed": "2015-12-21T19:00:00Z",
+            "last_observed": "2015-12-21T19:00:00Z",
+            "modified": "2016-04-06T19:58:16.000Z",
+            "number_observed": 50,
+            "objects": {
+                "0": {
+                    "name": "foo.exe",
+                    "type": "file",
+                },
+            },
+        },
+    ],
+)
 def test_parse_observed_data(data):
     odata = stix2.parse(data, version="2.1")
 
@@ -199,13 +201,14 @@ def test_parse_observed_data(data):
     assert odata.objects["0"].type == "file"
 
 
-@pytest.mark.parametrize("data", [
-    """"0": {
+@pytest.mark.parametrize(
+    "data", [
+        """"0": {
         "type": "artifact",
         "mime_type": "image/jpeg",
         "payload_bin": "VBORw0KGgoAAAANSUhEUgAAADI=="
     }""",
-    """"0": {
+        """"0": {
         "type": "artifact",
         "mime_type": "image/jpeg",
         "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
@@ -213,20 +216,22 @@ def test_parse_observed_data(data):
             "MD5": "6826f9a05da08134006557758bb3afbb"
         }
     }""",
-])
+    ],
+)
 def test_parse_artifact_valid(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
     assert odata.objects["0"].type == "artifact"
 
 
-@pytest.mark.parametrize("data", [
-    """"0": {
+@pytest.mark.parametrize(
+    "data", [
+        """"0": {
         "type": "artifact",
         "mime_type": "image/jpeg",
         "payload_bin": "abcVBORw0KGgoAAAANSUhEUgAAADI=="
     }""",
-    """"0": {
+        """"0": {
         "type": "artifact",
         "mime_type": "image/jpeg",
         "url": "https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
@@ -234,7 +239,8 @@ def test_parse_artifact_valid(data):
             "MD5": "a"
         }
     }""",
-])
+    ],
+)
 def test_parse_artifact_invalid(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     with pytest.raises(ValueError):
@@ -249,14 +255,16 @@ def test_artifact_example_dependency_error():
     assert str(excinfo.value) == "The property dependencies for Artifact: (hashes, url) are not met."
 
 
-@pytest.mark.parametrize("data", [
-    """"0": {
+@pytest.mark.parametrize(
+    "data", [
+        """"0": {
         "type": "autonomous-system",
         "number": 15139,
         "name": "Slime Industries",
         "rir": "ARIN"
     }""",
-])
+    ],
+)
 def test_parse_autonomous_system_valid(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
@@ -266,14 +274,16 @@ def test_parse_autonomous_system_valid(data):
     assert odata.objects["0"].rir == "ARIN"
 
 
-@pytest.mark.parametrize("data", [
-    """{
+@pytest.mark.parametrize(
+    "data", [
+        """{
         "type": "email-addr",
         "value": "john@example.com",
         "display_name": "John Doe",
         "belongs_to_ref": "0"
     }""",
-])
+    ],
+)
 def test_parse_email_address(data):
     odata = stix2.parse_observable(data, {"0": "user-account"}, version='2.1')
     assert odata.type == "email-addr"
@@ -283,8 +293,9 @@ def test_parse_email_address(data):
         stix2.parse_observable(odata_str, {"0": "user-account"}, version='2.1')
 
 
-@pytest.mark.parametrize("data", [
-    """
+@pytest.mark.parametrize(
+    "data", [
+        """
     {
         "type": "email-message",
         "is_multipart": true,
@@ -321,8 +332,9 @@ def test_parse_email_address(data):
           }
         ]
     }
-    """
-])
+    """,
+    ],
+)
 def test_parse_email_message(data):
     valid_refs = {
         "0": "email-message",
@@ -337,8 +349,9 @@ def test_parse_email_message(data):
     assert odata.body_multipart[0].content_disposition == "inline"
 
 
-@pytest.mark.parametrize("data", [
-    """
+@pytest.mark.parametrize(
+    "data", [
+        """
     {
          "type": "email-message",
          "from_ref": "0",
@@ -348,8 +361,9 @@ def test_parse_email_message(data):
          "subject": "Saying Hello",
          "body": "Cats are funny!"
     }
-    """
-])
+    """,
+    ],
+)
 def test_parse_email_message_not_multipart(data):
     valid_refs = {
         "0": "email-addr",
@@ -362,8 +376,9 @@ def test_parse_email_message_not_multipart(data):
     assert excinfo.value.dependencies == [("is_multipart", "body")]
 
 
-@pytest.mark.parametrize("data", [
-    """"0": {
+@pytest.mark.parametrize(
+    "data", [
+        """"0": {
             "type": "file",
             "hashes": {
                 "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
@@ -399,15 +414,17 @@ def test_parse_email_message_not_multipart(data):
                 }
             }
         }""",
-])
+    ],
+)
 def test_parse_file_archive(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
     assert odata.objects["3"].extensions['archive-ext'].version == "5.0"
 
 
-@pytest.mark.parametrize("data", [
-    """
+@pytest.mark.parametrize(
+    "data", [
+        """
     {
         "type": "email-message",
         "is_multipart": true,
@@ -443,8 +460,9 @@ def test_parse_file_archive(data):
           }
         ]
     }
-    """
-])
+    """,
+    ],
+)
 def test_parse_email_message_with_at_least_one_error(data):
     valid_refs = {
         "0": "email-message",
@@ -463,8 +481,9 @@ def test_parse_email_message_with_at_least_one_error(data):
     assert "must be populated" in str(excinfo.value)
 
 
-@pytest.mark.parametrize("data", [
-    """
+@pytest.mark.parametrize(
+    "data", [
+        """
     {
         "type": "network-traffic",
         "src_ref": "0",
@@ -473,11 +492,14 @@ def test_parse_email_message_with_at_least_one_error(data):
           "tcp"
         ]
     }
-    """
-])
+    """,
+    ],
+)
 def test_parse_basic_tcp_traffic(data):
-    odata = stix2.parse_observable(data, {"0": "ipv4-addr", "1": "ipv4-addr"},
-                                   version='2.1')
+    odata = stix2.parse_observable(
+        data, {"0": "ipv4-addr", "1": "ipv4-addr"},
+        version='2.1',
+    )
 
     assert odata.type == "network-traffic"
     assert odata.src_ref == "0"
@@ -485,8 +507,9 @@ def test_parse_basic_tcp_traffic(data):
     assert odata.protocols == ["tcp"]
 
 
-@pytest.mark.parametrize("data", [
-    """
+@pytest.mark.parametrize(
+    "data", [
+        """
     {
         "type": "network-traffic",
         "src_port": 2487,
@@ -501,8 +524,9 @@ def test_parse_basic_tcp_traffic(data):
           "4"
         ]
   }
-    """
-])
+    """,
+    ],
+)
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
         stix2.parse_observable(data, {"4": "network-traffic"}, version='2.1')
@@ -555,7 +579,7 @@ def test_observed_data_with_process_example():
             "0": {
                 "type": "file",
                 "hashes": {
-                    "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+                    "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f",
                 },
             },
             "1": {
@@ -564,11 +588,12 @@ def test_observed_data_with_process_example():
                 "name": "gedit-bin",
                 "created": "2016-01-20T14:11:25.55Z",
                 "arguments": [
-                  "--new-window"
+                  "--new-window",
                 ],
-                "image_ref": "0"
-            }
-        })
+                "image_ref": "0",
+            },
+        },
+    )
 
     assert observed_data.objects["0"].type == "file"
     assert observed_data.objects["0"].hashes["SHA-256"] == "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
@@ -585,8 +610,9 @@ def test_artifact_example():
         mime_type="image/jpeg",
         url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
         hashes={
-            "MD5": "6826f9a05da08134006557758bb3afbb"
-        })
+            "MD5": "6826f9a05da08134006557758bb3afbb",
+        },
+    )
     assert art.mime_type == "image/jpeg"
     assert art.url == "https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg"
     assert art.hashes["MD5"] == "6826f9a05da08134006557758bb3afbb"
@@ -598,9 +624,10 @@ def test_artifact_mutual_exclusion_error():
             mime_type="image/jpeg",
             url="https://upload.wikimedia.org/wikipedia/commons/b/b4/JPEG_example_JPG_RIP_100.jpg",
             hashes={
-                "MD5": "6826f9a05da08134006557758bb3afbb"
+                "MD5": "6826f9a05da08134006557758bb3afbb",
             },
-            payload_bin="VBORw0KGgoAAAANSUhEUgAAADI==")
+            payload_bin="VBORw0KGgoAAAANSUhEUgAAADI==",
+        )
 
     assert excinfo.value.cls == stix2.v21.Artifact
     assert excinfo.value.properties == ["payload_bin", "url"]
@@ -614,7 +641,8 @@ def test_directory_example():
         created="2015-12-21T19:00:00Z",
         modified="2015-12-24T19:00:00Z",
         accessed="2015-12-21T20:00:00Z",
-        contains_refs=["1"])
+        contains_refs=["1"],
+    )
 
     assert dir.path == '/usr/lib'
     assert dir.created == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
@@ -631,7 +659,8 @@ def test_directory_example_ref_error():
             created="2015-12-21T19:00:00Z",
             modified="2015-12-24T19:00:00Z",
             accessed="2015-12-21T20:00:00Z",
-            contains_refs=["1"])
+            contains_refs=["1"],
+        )
 
     assert excinfo.value.cls == stix2.v21.Directory
     assert excinfo.value.prop_name == "contains_refs"
@@ -641,7 +670,8 @@ def test_domain_name_example():
     dn = stix2.v21.DomainName(
         _valid_refs={"1": 'domain-name'},
         value="example.com",
-        resolves_to_refs=["1"])
+        resolves_to_refs=["1"],
+    )
 
     assert dn.value == "example.com"
     assert dn.resolves_to_refs == ["1"]
@@ -652,7 +682,8 @@ def test_domain_name_example_invalid_ref_type():
         stix2.v21.DomainName(
             _valid_refs={"1": "file"},
             value="example.com",
-            resolves_to_refs=["1"])
+            resolves_to_refs=["1"],
+        )
 
     assert excinfo.value.cls == stix2.v21.DomainName
     assert excinfo.value.prop_name == "resolves_to_refs"
@@ -662,14 +693,14 @@ def test_file_example():
     f = stix2.v21.File(
         name="qwerty.dll",
         hashes={
-            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a",
         },
         size=100,
         magic_number_hex="1C",
         mime_type="application/msword",
         created="2016-12-21T19:00:00Z",
         modified="2016-12-24T19:00:00Z",
-        accessed="2016-12-21T20:00:00Z"
+        accessed="2016-12-21T20:00:00Z",
     )
 
     assert f.name == "qwerty.dll"
@@ -690,11 +721,12 @@ def test_file_example_with_NTFSExt():
                 "alternate_data_streams": [
                     {
                         "name": "second.stream",
-                        "size": 25536
-                    }
-                ]
-            }
-        })
+                        "size": 25536,
+                    },
+                ],
+            },
+        },
+    )
 
     assert f.name == "abc.txt"
     assert f.extensions["ntfs-ext"].alternate_data_streams[0].size == 25536
@@ -705,8 +737,9 @@ def test_file_example_with_empty_NTFSExt():
         stix2.v21.File(
             name="abc.txt",
             extensions={
-                "ntfs-ext": {}
-            })
+                "ntfs-ext": {},
+            },
+        )
 
     assert excinfo.value.cls == stix2.NTFSExt
     assert excinfo.value.properties == sorted(list(stix2.NTFSExt._properties.keys()))
@@ -723,12 +756,13 @@ def test_file_example_with_PDFExt():
                     "Author": "Adobe Systems Incorporated",
                     "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
                     "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
-                    "CreationDate": "20070412090123-02"
+                    "CreationDate": "20070412090123-02",
                 },
                 "pdfid0": "DFCE52BD827ECF765649852119D",
-                "pdfid1": "57A1E0F9ED2AE523E313C"
-            }
-        })
+                "pdfid1": "57A1E0F9ED2AE523E313C",
+            },
+        },
+    )
 
     assert f.name == "qwerty.dll"
     assert f.extensions["pdf-ext"].version == "1.7"
@@ -746,11 +780,13 @@ def test_file_example_with_PDFExt_Object():
                     "Author": "Adobe Systems Incorporated",
                     "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
                     "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
-                    "CreationDate": "20070412090123-02"
+                    "CreationDate": "20070412090123-02",
                 },
                 pdfid0="DFCE52BD827ECF765649852119D",
-                pdfid1="57A1E0F9ED2AE523E313C")
-        })
+                pdfid1="57A1E0F9ED2AE523E313C",
+            ),
+        },
+    )
 
     assert f.name == "qwerty.dll"
     assert f.extensions["pdf-ext"].version == "1.7"
@@ -767,10 +803,11 @@ def test_file_example_with_RasterImageExt_Object():
                     "Make": "Nikon",
                     "Model": "D7000",
                     "XResolution": 4928,
-                    "YResolution": 3264
-                }
-            }
-        })
+                    "YResolution": 3264,
+                },
+            },
+        },
+    )
     assert f.name == "qwerty.jpeg"
     assert f.extensions["raster-image-ext"].bits_per_pixel == 123
     assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
@@ -865,28 +902,29 @@ def test_file_example_with_WindowsPEBinaryExt():
                     "size_of_heap_reserve": 100000,
                     "size_of_heap_commit": 4096,
                     "loader_flags_hex": "abdbffde",
-                    "number_of_rva_and_sizes": 3758087646
+                    "number_of_rva_and_sizes": 3758087646,
                 },
                 "sections": [
                     {
                         "name": "CODE",
-                        "entropy": 0.061089
+                        "entropy": 0.061089,
                     },
                     {
                         "name": "DATA",
-                        "entropy": 7.980693
+                        "entropy": 7.980693,
                     },
                     {
                         "name": "NicolasB",
-                        "entropy": 0.607433
+                        "entropy": 0.607433,
                     },
                     {
                         "name": ".idata",
-                        "entropy": 0.607433
-                    }
-                ]
-            }
-        })
+                        "entropy": 0.607433,
+                    },
+                ],
+            },
+        },
+    )
     assert f.name == "qwerty.dll"
     assert f.extensions["windows-pebinary-ext"].sections[2].entropy == 0.607433
 
@@ -903,7 +941,8 @@ def test_ip4_address_example():
     ip4 = stix2.v21.IPv4Address(
         _valid_refs={"4": "mac-addr", "5": "mac-addr"},
         value="198.51.100.3",
-        resolves_to_refs=["4", "5"])
+        resolves_to_refs=["4", "5"],
+    )
 
     assert ip4.value == "198.51.100.3"
     assert ip4.resolves_to_refs == ["4", "5"]
@@ -932,7 +971,8 @@ def test_network_traffic_example():
         _valid_refs={"0": "ipv4-addr", "1": "ipv4-addr"},
         protocols="tcp",
         src_ref="0",
-        dst_ref="1")
+        dst_ref="1",
+    )
     assert nt.protocols == ["tcp"]
     assert nt.src_ref == "0"
     assert nt.dst_ref == "1"
@@ -946,13 +986,15 @@ def test_network_traffic_http_request_example():
         request_header={
             "Accept-Encoding": "gzip,deflate",
             "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
-            "Host": "www.example.com"
-        })
+            "Host": "www.example.com",
+        },
+    )
     nt = stix2.v21.NetworkTraffic(
         _valid_refs={"0": "ipv4-addr"},
         protocols="tcp",
         src_ref="0",
-        extensions={'http-request-ext': h})
+        extensions={'http-request-ext': h},
+    )
     assert nt.extensions['http-request-ext'].request_method == "get"
     assert nt.extensions['http-request-ext'].request_value == "/download.html"
     assert nt.extensions['http-request-ext'].request_version == "http/1.1"
@@ -967,7 +1009,8 @@ def test_network_traffic_icmp_example():
         _valid_refs={"0": "ipv4-addr"},
         protocols="tcp",
         src_ref="0",
-        extensions={'icmp-ext': h})
+        extensions={'icmp-ext': h},
+    )
     assert nt.extensions['icmp-ext'].icmp_type_hex == "08"
     assert nt.extensions['icmp-ext'].icmp_code_hex == "00"
 
@@ -977,12 +1020,14 @@ def test_network_traffic_socket_example():
         is_listening=True,
         address_family="AF_INET",
         protocol_family="PF_INET",
-        socket_type="SOCK_STREAM")
+        socket_type="SOCK_STREAM",
+    )
     nt = stix2.v21.NetworkTraffic(
         _valid_refs={"0": "ipv4-addr"},
         protocols="tcp",
         src_ref="0",
-        extensions={'socket-ext': h})
+        extensions={'socket-ext': h},
+    )
     assert nt.extensions['socket-ext'].is_listening
     assert nt.extensions['socket-ext'].address_family == "AF_INET"
     assert nt.extensions['socket-ext'].protocol_family == "PF_INET"
@@ -995,7 +1040,8 @@ def test_network_traffic_tcp_example():
         _valid_refs={"0": "ipv4-addr"},
         protocols="tcp",
         src_ref="0",
-        extensions={'tcp-ext': h})
+        extensions={'tcp-ext': h},
+    )
     assert nt.extensions['tcp-ext'].src_flags_hex == "00000002"
 
 
@@ -1012,7 +1058,8 @@ def test_process_example():
         name="gedit-bin",
         created="2016-01-20T14:11:25.55Z",
         arguments=["--new-window"],
-        image_ref="0")
+        image_ref="0",
+    )
 
     assert p.name == "gedit-bin"
     assert p.arguments == ["--new-window"]
@@ -1027,15 +1074,17 @@ def test_process_example_empty_error():
     properties_of_process.remove("type")
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
-    msg = msg.format(stix2.v21.Process.__name__,
-                     ", ".join(sorted(properties_of_process)))
+    msg = msg.format(
+        stix2.v21.Process.__name__,
+        ", ".join(sorted(properties_of_process)),
+    )
     assert str(excinfo.value) == msg
 
 
 def test_process_example_empty_with_extensions():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
             stix2.v21.Process(extensions={
-                "windows-process-ext": {}
+                "windows-process-ext": {},
             })
 
     assert excinfo.value.cls == stix2.v21.WindowsProcessExt
@@ -1052,9 +1101,10 @@ def test_process_example_windows_process_ext():
                 "aslr_enabled": True,
                 "dep_enabled": True,
                 "priority": "HIGH_PRIORITY_CLASS",
-                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
-            }
-        })
+                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
+            },
+        },
+    )
     assert proc.extensions["windows-process-ext"].aslr_enabled
     assert proc.extensions["windows-process-ext"].dep_enabled
     assert proc.extensions["windows-process-ext"].priority == "HIGH_PRIORITY_CLASS"
@@ -1067,8 +1117,9 @@ def test_process_example_windows_process_ext_empty():
                 pid=1221,
                 name="gedit-bin",
                 extensions={
-                    "windows-process-ext": {}
-                })
+                    "windows-process-ext": {},
+                },
+            )
 
     assert excinfo.value.cls == stix2.v21.WindowsProcessExt
     properties_of_extension = list(stix2.v21.WindowsProcessExt._properties.keys())
@@ -1090,7 +1141,8 @@ def test_process_example_with_WindowsProcessExt_Object():
             aslr_enabled=True,
             dep_enabled=True,
             priority="HIGH_PRIORITY_CLASS",
-            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309")   # noqa
+            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
+        ),   # noqa
     })
 
     assert p.extensions["windows-process-ext"].dep_enabled
@@ -1104,8 +1156,8 @@ def test_process_example_with_WindowsServiceExt():
             "display_name": "Sirvizio",
             "start_type": "SERVICE_AUTO_START",
             "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING"
-        }
+            "service_status": "SERVICE_RUNNING",
+        },
     })
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
@@ -1119,14 +1171,14 @@ def test_process_example_with_WindowsProcessServiceExt():
             "display_name": "Sirvizio",
             "start_type": "SERVICE_AUTO_START",
             "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING"
+            "service_status": "SERVICE_RUNNING",
         },
         "windows-process-ext": {
             "aslr_enabled": True,
             "dep_enabled": True,
             "priority": "HIGH_PRIORITY_CLASS",
-            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
-        }
+            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
+        },
     })
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
@@ -1140,7 +1192,8 @@ def test_software_example():
         name="Word",
         cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
         version="2002",
-        vendor="Microsoft")
+        vendor="Microsoft",
+    )
 
     assert s.name == "Word"
     assert s.cpe == "cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*"
@@ -1167,7 +1220,8 @@ def test_user_account_example():
         account_created="2016-01-20T12:31:12Z",
         credential_last_changed="2016-01-20T14:27:43Z",
         account_first_login="2016-01-20T14:26:07Z",
-        account_last_login="2016-07-22T16:08:28Z")
+        account_last_login="2016-07-22T16:08:28Z",
+    )
 
     assert a.user_id == "1001"
     assert a.account_login == "jdoe"
@@ -1187,12 +1241,14 @@ def test_user_account_unix_account_ext_example():
         gid=1001,
         groups=["wheel"],
         home_dir="/home/jdoe",
-        shell="/bin/bash")
+        shell="/bin/bash",
+    )
     a = stix2.v21.UserAccount(
         user_id="1001",
         account_login="jdoe",
         account_type="unix",
-        extensions={'unix-account-ext': u})
+        extensions={'unix-account-ext': u},
+    )
     assert a.extensions['unix-account-ext'].gid == 1001
     assert a.extensions['unix-account-ext'].groups == ["wheel"]
     assert a.extensions['unix-account-ext'].home_dir == "/home/jdoe"
@@ -1204,16 +1260,17 @@ def test_windows_registry_key_example():
         stix2.v21.WindowsRegistryValueType(
             name="Foo",
             data="qwerty",
-            data_type="string")
+            data_type="string",
+        )
 
     v = stix2.v21.WindowsRegistryValueType(
         name="Foo",
         data="qwerty",
-        data_type="REG_SZ"
+        data_type="REG_SZ",
     )
     w = stix2.v21.WindowsRegistryKey(
         key="hkey_local_machine\\system\\bar\\foo",
-        values=[v]
+        values=[v],
     )
     assert w.key == "hkey_local_machine\\system\\bar\\foo"
     assert w.values[0].name == "Foo"
@@ -1226,7 +1283,8 @@ def test_x509_certificate_example():
         issuer="C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com",  # noqa
         validity_not_before="2016-03-12T12:00:00Z",
         validity_not_after="2016-08-21T12:00:00Z",
-        subject="C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org")  # noqa
+        subject="C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org",
+    )  # noqa
 
     assert x509.type == "x509-certificate"
     assert x509.issuer == "C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com"  # noqa
@@ -1241,14 +1299,14 @@ def test_new_version_with_related_objects():
         objects={
             'src_ip': {
                 'type': 'ipv4-addr',
-                'value': '127.0.0.1/32'
+                'value': '127.0.0.1/32',
             },
             'domain': {
                 'type': 'domain-name',
                 'value': 'example.com',
-                'resolves_to_refs': ['src_ip']
-            }
-        }
+                'resolves_to_refs': ['src_ip'],
+            },
+        },
     )
     new_version = data.new_version(last_observed="2017-12-12T12:00:00Z")
     assert new_version.last_observed.year == 2017

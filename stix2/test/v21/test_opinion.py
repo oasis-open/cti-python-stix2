@@ -8,11 +8,13 @@ import stix2
 
 from .constants import OPINION_ID
 
-DESCRIPTION = ('This doesn\'t seem like it is feasible. We\'ve seen how '
-               'PandaCat has attacked Spanish infrastructure over the '
-               'last 3 years, so this change in targeting seems too great'
-               ' to be viable. The methods used are more commonly '
-               'associated with the FlameDragonCrew.')
+DESCRIPTION = (
+    'This doesn\'t seem like it is feasible. We\'ve seen how '
+    'PandaCat has attacked Spanish infrastructure over the '
+    'last 3 years, so this change in targeting seems too great'
+    ' to be viable. The methods used are more commonly '
+    'associated with the FlameDragonCrew.'
+)
 
 EXPECTED_OPINION = """{
     "type": "opinion",
@@ -27,7 +29,8 @@ EXPECTED_OPINION = """{
     "opinion": "strongly-disagree"
 }""" % DESCRIPTION
 
-EXPECTED_OPINION_REPR = "Opinion(" + " ".join(("""
+EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
+    """
     type='opinion',
     spec_version='2.1',
     id='opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7',
@@ -35,7 +38,8 @@ EXPECTED_OPINION_REPR = "Opinion(" + " ".join(("""
     modified='2016-05-12T08:17:27.000Z',
     description="%s",
     object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
-    opinion='strongly-disagree'""" % DESCRIPTION).split()) + ")"
+    opinion='strongly-disagree'""" % DESCRIPTION
+).split()) + ")"
 
 
 def test_opinion_with_required_properties():
@@ -48,7 +52,7 @@ def test_opinion_with_required_properties():
         modified=now,
         object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
         opinion='strongly-disagree',
-        description=DESCRIPTION
+        description=DESCRIPTION,
     )
 
     assert str(opi) == EXPECTED_OPINION
@@ -56,21 +60,23 @@ def test_opinion_with_required_properties():
     assert rep == EXPECTED_OPINION_REPR
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_OPINION,
-    {
-        "type": "opinion",
-        "spec_version": "2.1",
-        "id": "opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7",
-        "created": "2016-05-12T08:17:27.000Z",
-        "modified": "2016-05-12T08:17:27.000Z",
-        "description": DESCRIPTION,
-        "object_refs": [
-            "relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471"
-        ],
-        "opinion": "strongly-disagree"
-    }
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_OPINION,
+        {
+            "type": "opinion",
+            "spec_version": "2.1",
+            "id": "opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7",
+            "created": "2016-05-12T08:17:27.000Z",
+            "modified": "2016-05-12T08:17:27.000Z",
+            "description": DESCRIPTION,
+            "object_refs": [
+                "relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471",
+            ],
+            "opinion": "strongly-disagree",
+        },
+    ],
+)
 def test_parse_opinion(data):
     opinion = stix2.parse(data, version="2.1")
 

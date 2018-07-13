@@ -5,9 +5,10 @@ from collections import OrderedDict
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
-from ..properties import (HashesProperty, IDProperty, ListProperty, Property,
-                          ReferenceProperty, SelectorProperty, StringProperty,
-                          TimestampProperty, TypeProperty)
+from ..properties import (
+    HashesProperty, IDProperty, ListProperty, Property, ReferenceProperty,
+    SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
+)
 from ..utils import NOW, _get_dict
 
 
@@ -59,7 +60,7 @@ class TLPMarking(_STIXBase):
     # TODO: don't allow the creation of any other TLPMarkings than the ones below
     _type = 'tlp'
     _properties = OrderedDict([
-        ('tlp', StringProperty(required=True))
+        ('tlp', StringProperty(required=True)),
     ])
 
 
@@ -70,7 +71,7 @@ class StatementMarking(_STIXBase):
 
     _type = 'statement'
     _properties = OrderedDict([
-        ('statement', StringProperty(required=True))
+        ('statement', StringProperty(required=True)),
     ])
 
     def __init__(self, statement=None, **kwargs):
@@ -157,26 +158,26 @@ TLP_WHITE = MarkingDefinition(
     id='marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     created='2017-01-20T00:00:00.000Z',
     definition_type='tlp',
-    definition=TLPMarking(tlp='white')
+    definition=TLPMarking(tlp='white'),
 )
 
 TLP_GREEN = MarkingDefinition(
     id='marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     created='2017-01-20T00:00:00.000Z',
     definition_type='tlp',
-    definition=TLPMarking(tlp='green')
+    definition=TLPMarking(tlp='green'),
 )
 
 TLP_AMBER = MarkingDefinition(
     id='marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     created='2017-01-20T00:00:00.000Z',
     definition_type='tlp',
-    definition=TLPMarking(tlp='amber')
+    definition=TLPMarking(tlp='amber'),
 )
 
 TLP_RED = MarkingDefinition(
     id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     created='2017-01-20T00:00:00.000Z',
     definition_type='tlp',
-    definition=TLPMarking(tlp='red')
+    definition=TLPMarking(tlp='red'),
 )

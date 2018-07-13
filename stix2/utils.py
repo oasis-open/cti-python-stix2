@@ -7,8 +7,9 @@ import json
 from dateutil import parser
 import pytz
 
-from .exceptions import (InvalidValueError, RevokeError,
-                         UnmodifiablePropertyError)
+from .exceptions import (
+    InvalidValueError, RevokeError, UnmodifiablePropertyError,
+)
 
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
@@ -26,8 +27,10 @@ class STIXdatetime(dt.datetime):
         precision = kwargs.pop('precision', None)
         if isinstance(args[0], dt.datetime):  # Allow passing in a datetime object
             dttm = args[0]
-            args = (dttm.year, dttm.month, dttm.day, dttm.hour, dttm.minute,
-                    dttm.second, dttm.microsecond, dttm.tzinfo)
+            args = (
+                dttm.year, dttm.month, dttm.day, dttm.hour, dttm.minute,
+                dttm.second, dttm.microsecond, dttm.tzinfo,
+            )
         # self will be an instance of STIXdatetime, not dt.datetime
         self = dt.datetime.__new__(cls, *args, **kwargs)
         self.precision = precision
@@ -117,8 +120,10 @@ def parse_into_datetime(value, precision=None):
             parsed = parser.parse(value)
         except (TypeError, ValueError):
             # Unknown format
-            raise ValueError("must be a datetime object, date object, or "
-                             "timestamp string in a recognizable format.")
+            raise ValueError(
+                "must be a datetime object, date object, or "
+                "timestamp string in a recognizable format.",
+            )
         if parsed.tzinfo:
             ts = parsed.astimezone(pytz.utc)
         else:
@@ -250,8 +255,10 @@ def new_version(data, **kwargs):
     """
 
     if not isinstance(data, Mapping):
-        raise ValueError("cannot create new version of object of this type! "
-                         "Try a dictionary or instance of an SDO or SRO class.")
+        raise ValueError(
+            "cannot create new version of object of this type! "
+            "Try a dictionary or instance of an SDO or SRO class.",
+        )
 
     unchangable_properties = []
     if data.get('revoked'):
@@ -276,10 +283,12 @@ def new_version(data, **kwargs):
         old_modified_property = parse_into_datetime(data.get('modified'), precision='millisecond')
         new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
         if new_modified_property <= old_modified_property:
-            raise InvalidValueError(cls, 'modified',
-                                    "The new modified datetime cannot be before than or equal to the current modified datetime."
-                                    "It cannot be equal, as according to STIX 2 specification, objects that are different "
-                                    "but have the same id and modified timestamp do not have defined consumer behavior.")
+            raise InvalidValueError(
+                cls, 'modified',
+                "The new modified datetime cannot be before than or equal to the current modified datetime."
+                "It cannot be equal, as according to STIX 2 specification, objects that are different "
+                "but have the same id and modified timestamp do not have defined consumer behavior.",
+            )
     new_obj_inner.update(kwargs)
     # Exclude properties with a value of 'None' in case data is not an instance of a _STIXBase subclass
     return cls(**{k: v for k, v in new_obj_inner.items() if v is not None})
@@ -292,8 +301,10 @@ def revoke(data):
         A new version of the object with ``revoked`` set to ``True``.
     """
     if not isinstance(data, Mapping):
-        raise ValueError("cannot revoke object of this type! Try a dictionary "
-                         "or instance of an SDO or SRO class.")
+        raise ValueError(
+            "cannot revoke object of this type! Try a dictionary "
+            "or instance of an SDO or SRO class.",
+        )
 
     if data.get('revoked'):
         raise RevokeError("revoke")

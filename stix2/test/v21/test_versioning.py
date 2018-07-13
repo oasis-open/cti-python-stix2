@@ -39,15 +39,15 @@ def test_making_new_version_with_embedded_object():
     campaign_v1 = stix2.v21.Campaign(
         external_references=[{
             "source_name": "capec",
-            "external_id": "CAPEC-163"
+            "external_id": "CAPEC-163",
         }],
         **CAMPAIGN_MORE_KWARGS
     )
 
     campaign_v2 = campaign_v1.new_version(external_references=[{
             "source_name": "capec",
-            "external_id": "CAPEC-164"
-        }])
+            "external_id": "CAPEC-164",
+    }])
 
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.spec_version == campaign_v2.spec_version
@@ -92,15 +92,19 @@ def test_versioning_error_bad_modified_value():
 
     assert excinfo.value.cls == stix2.v21.Campaign
     assert excinfo.value.prop_name == "modified"
-    assert excinfo.value.reason == ("The new modified datetime cannot be before than or equal to the current modified datetime."
-                                    "It cannot be equal, as according to STIX 2 specification, objects that are different "
-                                    "but have the same id and modified timestamp do not have defined consumer behavior.")
+    assert excinfo.value.reason == (
+        "The new modified datetime cannot be before than or equal to the current modified datetime."
+        "It cannot be equal, as according to STIX 2 specification, objects that are different "
+        "but have the same id and modified timestamp do not have defined consumer behavior."
+    )
 
     msg = "Invalid value for {0} '{1}': {2}"
-    msg = msg.format(stix2.v21.Campaign.__name__, "modified",
-                     "The new modified datetime cannot be before than or equal to the current modified datetime."
-                     "It cannot be equal, as according to STIX 2 specification, objects that are different "
-                     "but have the same id and modified timestamp do not have defined consumer behavior.")
+    msg = msg.format(
+        stix2.v21.Campaign.__name__, "modified",
+        "The new modified datetime cannot be before than or equal to the current modified datetime."
+        "It cannot be equal, as according to STIX 2 specification, objects that are different "
+        "but have the same id and modified timestamp do not have defined consumer behavior.",
+    )
     assert str(excinfo.value) == msg
 
 
@@ -221,11 +225,13 @@ def test_revoke_invalid_cls():
 
 
 def test_remove_custom_stix_property():
-    mal = stix2.v21.Malware(name="ColePowers",
-                            malware_types=["rootkit"],
-                            is_family=False,
-                            x_custom="armada",
-                            allow_custom=True)
+    mal = stix2.v21.Malware(
+        name="ColePowers",
+        malware_types=["rootkit"],
+        is_family=False,
+        x_custom="armada",
+        allow_custom=True,
+    )
 
     mal_nc = stix2.utils.remove_custom_stix(mal)
 
@@ -235,10 +241,12 @@ def test_remove_custom_stix_property():
 
 
 def test_remove_custom_stix_object():
-    @stix2.v21.CustomObject("x-animal", [
-        ("species", stix2.properties.StringProperty(required=True)),
-        ("animal_class", stix2.properties.StringProperty()),
-    ])
+    @stix2.v21.CustomObject(
+        "x-animal", [
+            ("species", stix2.properties.StringProperty(required=True)),
+            ("animal_class", stix2.properties.StringProperty()),
+        ],
+    )
     class Animal(object):
         pass
 

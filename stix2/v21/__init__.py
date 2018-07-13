@@ -2,26 +2,27 @@
 # flake8: noqa
 
 from .bundle import Bundle
-from .common import (TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
-                     ExternalReference, GranularMarking, KillChainPhase,
-                     LanguageContent, MarkingDefinition, StatementMarking,
-                     TLPMarking)
-from .observables import (URL, AlternateDataStream, ArchiveExt, Artifact,
-                          AutonomousSystem, CustomExtension, CustomObservable,
-                          Directory, DomainName, EmailAddress, EmailMessage,
-                          EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
-                          IPv4Address, IPv6Address, MACAddress, Mutex,
-                          NetworkTraffic, NTFSExt, PDFExt, Process,
-                          RasterImageExt, SocketExt, Software, TCPExt,
-                          UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
-                          WindowsPEOptionalHeaderType, WindowsPESection,
-                          WindowsProcessExt, WindowsRegistryKey,
-                          WindowsRegistryValueType, WindowsServiceExt,
-                          X509Certificate, X509V3ExtenstionsType)
-from .sdo import (AttackPattern, Campaign, CourseOfAction, CustomObject,
-                  Identity, Indicator, IntrusionSet, Location, Malware, Note,
-                  ObservedData, Opinion, Report, ThreatActor, Tool,
-                  Vulnerability)
+from .common import (
+    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
+    GranularMarking, KillChainPhase, LanguageContent, MarkingDefinition,
+    StatementMarking, TLPMarking,
+)
+from .observables import (
+    URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
+    CustomExtension, CustomObservable, Directory, DomainName, EmailAddress,
+    EmailMessage, EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
+    IPv4Address, IPv6Address, MACAddress, Mutex, NetworkTraffic, NTFSExt,
+    PDFExt, Process, RasterImageExt, SocketExt, Software, TCPExt,
+    UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
+    WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
+    WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
+    X509Certificate, X509V3ExtenstionsType,
+)
+from .sdo import (
+    AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
+    IntrusionSet, Location, Malware, Note, ObservedData, Opinion, Report,
+    ThreatActor, Tool, Vulnerability,
+)
 from .sro import Relationship, Sighting
 
 OBJ_MAP = {
@@ -74,7 +75,7 @@ EXT_MAP = {
         'ntfs-ext': NTFSExt,
         'pdf-ext': PDFExt,
         'raster-image-ext': RasterImageExt,
-        'windows-pebinary-ext': WindowsPEBinaryExt
+        'windows-pebinary-ext': WindowsPEBinaryExt,
     },
     'network-traffic': {
         'http-request-ext': HTTPRequestExt,

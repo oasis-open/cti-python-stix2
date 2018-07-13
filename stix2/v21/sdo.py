@@ -6,12 +6,12 @@ import itertools
 from ..base import _STIXBase
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..properties import (BooleanProperty, DictionaryProperty,
-                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                          IDProperty, IntegerProperty, ListProperty,
-                          ObservableProperty, PatternProperty,
-                          ReferenceProperty, StringProperty, TimestampProperty,
-                          TypeProperty)
+from ..properties import (
+    BooleanProperty, DictionaryProperty, EmbeddedObjectProperty, EnumProperty,
+    FloatProperty, IDProperty, IntegerProperty, ListProperty,
+    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
+)
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
@@ -233,7 +233,7 @@ class AnalysisType(_STIXBase):
         ('end_time', TimestampProperty()),
         ('analysis_tools', ObservableProperty(spec_version='2.1')),
         ('analysis_environment', DictionaryProperty(spec_version='2.1')),
-        ('results', DictionaryProperty(spec_version='2.1', required=True))
+        ('results', DictionaryProperty(spec_version='2.1', required=True)),
     ])
 
 
@@ -246,7 +246,7 @@ class AVResultsType(_STIXBase):
         ('submitted', TimestampProperty()),
         ('scanned', TimestampProperty()),
         ('result', StringProperty()),
-        ('details', StringProperty())
+        ('details', StringProperty()),
     ])
 
 
@@ -285,7 +285,7 @@ class Malware(STIXDomainObject):
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
-        ('granular_markings', ListProperty(GranularMarking))
+        ('granular_markings', ListProperty(GranularMarking)),
     ])
 
 
@@ -368,13 +368,17 @@ class Opinion(STIXDomainObject):
         ('description', StringProperty()),
         ('authors', ListProperty(StringProperty)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
-        ('opinion', EnumProperty(allowed=[
-            'strongly-disagree',
-            'disagree',
-            'neutral',
-            'agree',
-            'strongly-agree'
-        ], required=True)),
+        (
+            'opinion', EnumProperty(
+                allowed=[
+                    'strongly-disagree',
+                    'disagree',
+                    'neutral',
+                    'agree',
+                    'strongly-agree',
+                ], required=True,
+            ),
+        ),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -553,7 +557,7 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
                 ('granular_markings', ListProperty(GranularMarking)),
             ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0])
+            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
         return _custom_object_builder(cls, type, _properties, '2.1')
 

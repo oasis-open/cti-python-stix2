@@ -254,8 +254,10 @@ def _register_observable_extension(observable, new_extension, version=None):
     try:
         observable_type = observable._type
     except AttributeError:
-        raise ValueError("Unknown observable type. Custom observables must be "
-                         "created with the @CustomObservable decorator.")
+        raise ValueError(
+            "Unknown observable type. Custom observables must be "
+            "created with the @CustomObservable decorator.",
+        )
 
     OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
     EXT_MAP = STIX2_OBJ_MAPS[v]['observable-extensions']
@@ -264,9 +266,11 @@ def _register_observable_extension(observable, new_extension, version=None):
         EXT_MAP[observable_type][new_extension._type] = new_extension
     except KeyError:
         if observable_type not in OBJ_MAP_OBSERVABLE:
-            raise ValueError("Unknown observable type '%s'. Custom observables "
-                             "must be created with the @CustomObservable decorator."
-                             % observable_type)
+            raise ValueError(
+                "Unknown observable type '%s'. Custom observables "
+                "must be created with the @CustomObservable decorator."
+                % observable_type,
+            )
         else:
             EXT_MAP[observable_type] = {new_extension._type: new_extension}
 

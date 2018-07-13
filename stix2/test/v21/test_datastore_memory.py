@@ -5,116 +5,118 @@ import pytest
 
 from stix2 import Filter, MemorySource, MemoryStore, properties
 from stix2.datastore import make_id
-from stix2.v21 import (Bundle, Campaign, CustomObject, Identity, Indicator,
-                       Malware, Relationship)
+from stix2.v21 import (
+    Bundle, Campaign, CustomObject, Identity, Indicator, Malware, Relationship,
+)
 
-from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
-                        IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-                        MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
+from .constants import (
+    CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
+    INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS,
+)
 
 IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND2 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND3 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.936Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND4 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND5 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND6 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-31T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND7 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 IND8 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "indicator_types": [
-        "url-watchlist"
+        "url-watchlist",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
     "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
     "spec_version": "2.1",
     "type": "indicator",
-    "valid_from": "2017-01-27T13:49:53.935382Z"
+    "valid_from": "2017-01-27T13:49:53.935382Z",
 }
 
 STIX_OBJS2 = [IND6, IND7, IND8]
@@ -169,10 +171,12 @@ def test_memory_source_get_nonexistant_object(mem_source):
 
 def test_memory_store_all_versions(mem_store):
     # Add bundle of items to sink
-    mem_store.add(dict(id="bundle--%s" % make_id(),
-                  objects=STIX_OBJS2,
-                  spec_version="2.0",
-                  type="bundle"))
+    mem_store.add(dict(
+        id="bundle--%s" % make_id(),
+        objects=STIX_OBJS2,
+        spec_version="2.0",
+        type="bundle",
+    ))
 
     resp = mem_store.all_versions("indicator--00000000-0000-4000-8000-000000000001")
     assert len(resp) == 1  # MemoryStore can only store 1 version of each object
@@ -235,10 +239,12 @@ def test_memory_store_add_invalid_object(mem_store):
 
 
 def test_memory_store_object_with_custom_property(mem_store):
-    camp = Campaign(name="Scipio Africanus",
-                    objective="Defeat the Carthaginians",
-                    x_empire="Roman",
-                    allow_custom=True)
+    camp = Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        x_empire="Roman",
+        allow_custom=True,
+    )
 
     mem_store.add(camp)
 
@@ -248,10 +254,12 @@ def test_memory_store_object_with_custom_property(mem_store):
 
 
 def test_memory_store_object_with_custom_property_in_bundle(mem_store):
-    camp = Campaign(name="Scipio Africanus",
-                    objective="Defeat the Carthaginians",
-                    x_empire="Roman",
-                    allow_custom=True)
+    camp = Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        x_empire="Roman",
+        allow_custom=True,
+    )
 
     bundle = Bundle(camp, allow_custom=True)
     mem_store.add(bundle)
@@ -262,9 +270,11 @@ def test_memory_store_object_with_custom_property_in_bundle(mem_store):
 
 
 def test_memory_store_custom_object(mem_store):
-    @CustomObject('x-new-obj', [
-        ('property1', properties.StringProperty(required=True)),
-    ])
+    @CustomObject(
+        'x-new-obj', [
+            ('property1', properties.StringProperty(required=True)),
+        ],
+    )
     class NewObj():
         pass
 

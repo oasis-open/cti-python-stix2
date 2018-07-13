@@ -1,7 +1,8 @@
 import pytest
 
-from stix2.datastore import (CompositeDataSource, DataSink, DataSource,
-                             DataStoreMixin)
+from stix2.datastore import (
+    CompositeDataSource, DataSink, DataSource, DataStoreMixin,
+)
 from stix2.datastore.filters import Filter
 from stix2.test.v21.constants import CAMPAIGN_MORE_KWARGS
 
@@ -46,15 +47,19 @@ def test_datastore_creator_of_raises():
 
 def test_datastore_relationships_raises():
     with pytest.raises(AttributeError) as excinfo:
-        DataStoreMixin().relationships(obj="indicator--00000000-0000-4000-8000-000000000001",
-                                       target_only=True)
+        DataStoreMixin().relationships(
+            obj="indicator--00000000-0000-4000-8000-000000000001",
+            target_only=True,
+        )
     assert "DataStoreMixin has no data source to query" == str(excinfo.value)
 
 
 def test_datastore_related_to_raises():
     with pytest.raises(AttributeError) as excinfo:
-        DataStoreMixin().related_to(obj="indicator--00000000-0000-4000-8000-000000000001",
-                                    target_only=True)
+        DataStoreMixin().related_to(
+            obj="indicator--00000000-0000-4000-8000-000000000001",
+            target_only=True,
+        )
     assert "DataStoreMixin has no data source to query" == str(excinfo.value)
 
 
@@ -84,15 +89,19 @@ def test_composite_datastore_query_raises_error():
 
 def test_composite_datastore_relationships_raises_error():
     with pytest.raises(AttributeError) as excinfo:
-        CompositeDataSource().relationships(obj="indicator--00000000-0000-4000-8000-000000000001",
-                                            target_only=True)
+        CompositeDataSource().relationships(
+            obj="indicator--00000000-0000-4000-8000-000000000001",
+            target_only=True,
+        )
     assert "CompositeDataSource has no data sources" == str(excinfo.value)
 
 
 def test_composite_datastore_related_to_raises_error():
     with pytest.raises(AttributeError) as excinfo:
-        CompositeDataSource().related_to(obj="indicator--00000000-0000-4000-8000-000000000001",
-                                         target_only=True)
+        CompositeDataSource().related_to(
+            obj="indicator--00000000-0000-4000-8000-000000000001",
+            target_only=True,
+        )
     assert "CompositeDataSource has no data sources" == str(excinfo.value)
 
 

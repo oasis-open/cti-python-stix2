@@ -31,7 +31,7 @@ def test_attack_pattern_example():
         name="Spear Phishing",
         external_references=[{
             "source_name": "capec",
-            "external_id": "CAPEC-163"
+            "external_id": "CAPEC-163",
         }],
         description="...",
     )
@@ -39,23 +39,25 @@ def test_attack_pattern_example():
     assert str(ap) == EXPECTED
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED,
-    {
-        "type": "attack-pattern",
-        "id": "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
-        "created": "2016-05-12T08:17:27.000Z",
-        "modified": "2016-05-12T08:17:27.000Z",
-        "description": "...",
-        "external_references": [
-            {
-                "external_id": "CAPEC-163",
-                "source_name": "capec"
-            }
-        ],
-        "name": "Spear Phishing",
-    },
-])
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED,
+        {
+            "type": "attack-pattern",
+            "id": "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+            "created": "2016-05-12T08:17:27.000Z",
+            "modified": "2016-05-12T08:17:27.000Z",
+            "description": "...",
+            "external_references": [
+                {
+                    "external_id": "CAPEC-163",
+                    "source_name": "capec",
+                },
+            ],
+            "name": "Spear Phishing",
+        },
+    ],
+)
 def test_parse_attack_pattern(data):
     ap = stix2.parse(data, version="2.0")
 
@@ -76,7 +78,7 @@ def test_attack_pattern_invalid_labels():
             created="2016-05-12T08:17:27Z",
             modified="2016-05-12T08:17:27Z",
             name="Spear Phishing",
-            labels=1
+            labels=1,
         )
 
 # TODO: Add other examples

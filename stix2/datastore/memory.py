@@ -81,7 +81,7 @@ class MemoryStore(DataStoreMixin):
 
         super(MemoryStore, self).__init__(
             source=MemorySource(stix_data=self._data, allow_custom=allow_custom, _store=True),
-            sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, _store=True)
+            sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, _store=True),
         )
 
     def save_to_file(self, *args, **kwargs):

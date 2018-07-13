@@ -79,7 +79,7 @@ def test_marking_def_example_with_statement_positional_argument():
         id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
-        definition=stix2.v20.StatementMarking(statement="Copyright 2016, Example Corp")
+        definition=stix2.v20.StatementMarking(statement="Copyright 2016, Example Corp"),
     )
 
     assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
@@ -91,7 +91,7 @@ def test_marking_def_example_with_kwargs_statement():
         id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
-        definition=stix2.v20.StatementMarking(**kwargs)
+        definition=stix2.v20.StatementMarking(**kwargs),
     )
 
     assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
@@ -103,7 +103,7 @@ def test_marking_def_invalid_type():
             id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
             created="2017-01-20T00:00:00.000Z",
             definition_type="my-definition-type",
-            definition=stix2.v20.StatementMarking("Copyright 2016, Example Corp")
+            definition=stix2.v20.StatementMarking("Copyright 2016, Example Corp"),
         )
 
 
@@ -115,7 +115,7 @@ def test_campaign_with_markings_example():
         modified="2016-04-06T20:03:00Z",
         name="Green Group Attacks Against Finance",
         description="Campaign by Green Group against a series of targets in the financial services sector.",
-        object_marking_refs=TLP_WHITE
+        object_marking_refs=TLP_WHITE,
     )
     assert str(campaign) == EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING
 
@@ -123,7 +123,7 @@ def test_campaign_with_markings_example():
 def test_granular_example():
     granular_marking = stix2.v20.GranularMarking(
         marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-        selectors=["abc", "abc.[23]", "abc.def", "abc.[2].efg"]
+        selectors=["abc", "abc.[23]", "abc.def", "abc.[2].efg"],
     )
 
     assert str(granular_marking) == EXPECTED_GRANULAR_MARKING
@@ -133,7 +133,7 @@ def test_granular_example_with_bad_selector():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v20.GranularMarking(
             marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-            selectors=["abc[0]"]   # missing "."
+            selectors=["abc[0]"],   # missing "."
         )
 
     assert excinfo.value.cls == stix2.v20.GranularMarking
@@ -153,23 +153,27 @@ def test_campaign_with_granular_markings_example():
         granular_markings=[
             stix2.v20.GranularMarking(
                 marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-                selectors=["description"])
-            ])
+                selectors=["description"],
+            ),
+        ],
+    )
     assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS
 
 
-@pytest.mark.parametrize("data", [
-    EXPECTED_TLP_MARKING_DEFINITION,
-    {
-        "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-        "type": "marking-definition",
-        "created": "2017-01-20T00:00:00Z",
-        "definition": {
-            "tlp": "white"
+@pytest.mark.parametrize(
+    "data", [
+        EXPECTED_TLP_MARKING_DEFINITION,
+        {
+            "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            "type": "marking-definition",
+            "created": "2017-01-20T00:00:00Z",
+            "definition": {
+                "tlp": "white",
+            },
+            "definition_type": "tlp",
         },
-        "definition_type": "tlp",
-    },
-])
+    ],
+)
 def test_parse_marking_definition(data):
     gm = stix2.parse(data, version="2.0")
 
@@ -180,10 +184,12 @@ def test_parse_marking_definition(data):
     assert gm.definition_type == "tlp"
 
 
-@stix2.v20.CustomMarking('x-new-marking-type', [
-    ('property1', stix2.properties.StringProperty(required=True)),
-    ('property2', stix2.properties.IntegerProperty()),
-])
+@stix2.v20.CustomMarking(
+    'x-new-marking-type', [
+        ('property1', stix2.properties.StringProperty(required=True)),
+        ('property2', stix2.properties.IntegerProperty()),
+    ],
+)
 class NewMarking(object):
     def __init__(self, property2=None, **kwargs):
         if "property3" in kwargs and not isinstance(kwargs.get("property3"), int):
@@ -197,7 +203,7 @@ def test_registered_custom_marking():
         id="marking-definition--00000000-0000-4000-8000-000000000012",
         created="2017-01-22T00:00:00.000Z",
         definition_type="x-new-marking-type",
-        definition=nm
+        definition=nm,
     )
 
     assert marking_def.type == "marking-definition"
@@ -218,10 +224,12 @@ def test_registered_custom_marking_raises_exception():
 def test_not_registered_marking_raises_exception():
     with pytest.raises(ValueError) as excinfo:
         # Used custom object on purpose to demonstrate a not-registered marking
-        @stix2.v20.CustomObject('x-new-marking-type2', [
-            ('property1', stix2.properties.StringProperty(required=True)),
-            ('property2', stix2.properties.IntegerProperty()),
-        ])
+        @stix2.v20.CustomObject(
+            'x-new-marking-type2', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+                ('property2', stix2.properties.IntegerProperty()),
+            ],
+        )
         class NewObject2(object):
             def __init__(self, property2=None, **kwargs):
                 return
@@ -232,7 +240,7 @@ def test_not_registered_marking_raises_exception():
             id="marking-definition--00000000-0000-4000-8000-000000000012",
             created="2017-01-22T00:00:00.000Z",
             definition_type="x-new-marking-type2",
-            definition=no
+            definition=no,
         )
 
     assert str(excinfo.value) == "definition_type must be a valid marking type"
