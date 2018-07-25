@@ -228,23 +228,29 @@ class Location(STIXDomainObject):
 
     def _check_object_constraints(self):
         super(Location, self)._check_object_constraints()
-        if self.get('precision'):
+        if self.get('precision') is not None:
             self._check_properties_dependency(['longitude', 'latitude'], ['precision'])
             if self.precision < 0.0:
-                msg = ("{0.id} 'precision' must be a positive value. Received "
-                       "{0.precision}")
+                msg = (
+                    "{0.id} 'precision' must be a positive value. Received "
+                    "{0.precision}"
+                )
                 raise ValueError(msg.format(self))
 
         self._check_properties_dependency(['latitude'], ['longitude'])
 
         if self.get('latitude') is not None and fabs(self.latitude) > 90.0:
-            msg = ("{0.id} 'latitude' must be between -90 and 90. Received "
-                   "{0.latitude}")
+            msg = (
+                "{0.id} 'latitude' must be between -90 and 90. Received "
+                "{0.latitude}"
+            )
             raise ValueError(msg.format(self))
 
         if self.get('longitude') is not None and fabs(self.longitude) > 180.0:
-            msg = ("{0.id} 'longitude' must be between -180 and 180. Received "
-                   "{0.longitude}")
+            msg = (
+                "{0.id} 'longitude' must be between -180 and 180. Received "
+                "{0.longitude}"
+            )
             raise ValueError(msg.format(self))
 
 
