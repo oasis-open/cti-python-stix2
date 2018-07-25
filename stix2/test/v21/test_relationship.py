@@ -118,17 +118,34 @@ def test_invalid_kwarg_to_relationship():
     assert str(excinfo.value) == "Unexpected properties for Relationship: (my_custom_property)."
 
 
-def test_create_relationship_from_objects_rather_than_ids(indicator, malware):
+def test_create_relationship_from_objects_rather_than_ids1(indicator, malware):
     rel = stix2.v21.Relationship(
         relationship_type="indicates",
         source_ref=indicator,
         target_ref=malware,
+        stop_time="2018-04-06T20:06:37Z",
     )
 
     assert rel.relationship_type == 'indicates'
     assert rel.source_ref == 'indicator--00000000-0000-4000-8000-000000000001'
     assert rel.target_ref == 'malware--00000000-0000-4000-8000-000000000003'
     assert rel.id == 'relationship--00000000-0000-4000-8000-000000000005'
+    assert rel.stop_time == '2018-04-06T20:06:37Z'
+
+
+def test_create_relationship_from_objects_rather_than_ids2(indicator, malware):
+    rel = stix2.v21.Relationship(
+        relationship_type="indicates",
+        source_ref=indicator,
+        target_ref=malware,
+        start_time="2018-04-06T20:06:37Z",
+    )
+
+    assert rel.relationship_type == 'indicates'
+    assert rel.source_ref == 'indicator--00000000-0000-4000-8000-000000000001'
+    assert rel.target_ref == 'malware--00000000-0000-4000-8000-000000000003'
+    assert rel.id == 'relationship--00000000-0000-4000-8000-000000000005'
+    assert rel.start_time == '2018-04-06T20:06:37Z'
 
 
 def test_create_relationship_with_positional_args(indicator, malware):
@@ -166,3 +183,26 @@ def test_parse_relationship(data):
     assert rel.relationship_type == "indicates"
     assert rel.source_ref == "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
     assert rel.target_ref == "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
+
+
+@pytest.mark.parametrize(
+    "data", [
+        {
+            "created": "2016-04-06T20:06:37Z",
+            "id": "relationship--df7c87eb-75d2-4948-af81-9d49d246f301",
+            "modified": "2016-04-06T20:06:37Z",
+            "relationship_type": "indicates",
+            "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+            "start_time": "2018-04-06T20:06:37Z",
+            "stop_time": "2016-04-06T20:06:37Z",
+            "spec_version": "2.1",
+            "type": "relationship",
+        },
+    ],
+)
+def test_parse_relationship_with_wrong_start_and_stop_time(data):
+    with pytest.raises(ValueError) as excinfo:
+        stix2.parse(data)
+
+    assert str(excinfo.value) == "{id} 'stop_time' must be later than 'start_time'".format(**data)

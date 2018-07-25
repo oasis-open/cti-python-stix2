@@ -29,6 +29,8 @@ class Relationship(STIXRelationshipObject):
         ('description', StringProperty()),
         ('source_ref', ReferenceProperty(required=True)),
         ('target_ref', ReferenceProperty(required=True)),
+        ('start_time', TimestampProperty()),
+        ('stop_time', TimestampProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -52,6 +54,12 @@ class Relationship(STIXRelationshipObject):
             kwargs['target_ref'] = target_ref
 
         super(Relationship, self).__init__(**kwargs)
+
+    def _check_object_constraints(self):
+        super(Relationship, self)._check_object_constraints()
+        if self.get('start_time') and self.get('stop_time') and (self.start_time > self.stop_time):
+            msg = "{0.id} 'stop_time' must be later than 'start_time'"
+            raise ValueError(msg.format(self))
 
 
 class Sighting(STIXRelationshipObject):
