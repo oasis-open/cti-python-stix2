@@ -34,8 +34,6 @@ def test_confidence_range_none_low_med_high():
             assert value_to_none_low_medium_high(val) == "Med"
         elif _between(100, val, 70):
             assert value_to_none_low_medium_high(val) == "High"
-        else:
-            pytest.fail("Unexpected behavior %s" % val)
 
 
 @pytest.mark.parametrize(
@@ -98,8 +96,6 @@ def test_confidence_range_zero_ten():
             assert value_to_zero_ten(val) == "9"
         elif _between(100, val, 95):
             assert value_to_zero_ten(val) == "10"
-        else:
-            pytest.fail("Unexpected behavior %s" % val)
 
 
 @pytest.mark.parametrize(
@@ -157,8 +153,6 @@ def test_confidence_range_admiralty_credibility():
             assert value_to_admiralty_credibility(val) == "2 - Probably True"
         elif _between(100, val, 80):
             assert value_to_admiralty_credibility(val) == "1 - Confirmed by other sources"
-        else:
-            pytest.fail("Unexpected behavior %s" % val)
 
 
 @pytest.mark.parametrize(
@@ -214,8 +208,6 @@ def test_confidence_range_wep():
             assert value_to_wep(val) == "Highly likely/Almost Certain"
         elif val == 100:
             assert value_to_wep(val) == "Certain"
-        else:
-            pytest.fail("Unexpected behavior %s" % val)
 
 
 @pytest.mark.parametrize(
@@ -273,8 +265,6 @@ def test_confidence_range_dni():
             assert value_to_dni(val) == "Very Likely / Highly Probable"
         elif _between(100, val, 90):
             assert value_to_dni(val) == "Almost Certain / Nearly Certain"
-        else:
-            pytest.fail("Unexpected behavior %s" % val)
 
 
 @pytest.mark.parametrize(

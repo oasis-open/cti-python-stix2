@@ -311,11 +311,7 @@ def test_dictionary_property_valid(d):
 )
 def test_dictionary_no_longer_raises(d):
     dict_prop = DictionaryProperty(spec_version='2.1')
-
-    try:
-        dict_prop.clean(d[0])
-    except DictionaryKeyError:
-        pytest.fail("Unexpected DictionaryKeyError...")
+    dict_prop.clean(d[0])
 
 
 @pytest.mark.parametrize(
