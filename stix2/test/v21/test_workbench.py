@@ -188,7 +188,7 @@ def test_workbench_related():
 def test_workbench_related_with_filters():
     malware = Malware(
         malware_types=["ransomware"], name="CryptorBit",
-        created_by_ref=IDENTITY_ID, is_family=False,
+        created_by_ref=IDENTITY_ID,
     )
     rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
     save([malware, rel])

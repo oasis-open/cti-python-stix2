@@ -123,14 +123,14 @@ def test_create_relationship_from_objects_rather_than_ids1(indicator, malware):
         relationship_type="indicates",
         source_ref=indicator,
         target_ref=malware,
-        stop_time="2018-04-06T20:06:37Z",
+        stop_time="2016-04-06T20:03:48Z",
     )
 
     assert rel.relationship_type == 'indicates'
     assert rel.source_ref == 'indicator--00000000-0000-4000-8000-000000000001'
     assert rel.target_ref == 'malware--00000000-0000-4000-8000-000000000003'
     assert rel.id == 'relationship--00000000-0000-4000-8000-000000000005'
-    assert rel.stop_time == '2018-04-06T20:06:37Z'
+    assert rel.stop_time == dt.datetime(2016, 4, 6, 20, 3, 48, tzinfo=pytz.utc)
 
 
 def test_create_relationship_from_objects_rather_than_ids2(indicator, malware):
@@ -138,14 +138,14 @@ def test_create_relationship_from_objects_rather_than_ids2(indicator, malware):
         relationship_type="indicates",
         source_ref=indicator,
         target_ref=malware,
-        start_time="2018-04-06T20:06:37Z",
+        start_time="2016-04-06T20:03:48Z",
     )
 
     assert rel.relationship_type == 'indicates'
     assert rel.source_ref == 'indicator--00000000-0000-4000-8000-000000000001'
     assert rel.target_ref == 'malware--00000000-0000-4000-8000-000000000003'
     assert rel.id == 'relationship--00000000-0000-4000-8000-000000000005'
-    assert rel.start_time == '2018-04-06T20:06:37Z'
+    assert rel.start_time == dt.datetime(2016, 4, 6, 20, 3, 48, tzinfo=pytz.utc)
 
 
 def test_create_relationship_with_positional_args(indicator, malware):

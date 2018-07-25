@@ -16,7 +16,6 @@ stix_objs = [
         "modified": "2017-01-27T13:49:53.997Z",
         "name": "Poison Ivy",
         "type": "malware",
-        "is_family": False,
     },
     {
         "created": "2014-05-08T09:00:00.000Z",

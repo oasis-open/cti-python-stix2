@@ -26,7 +26,6 @@ EXPECTED_BUNDLE = """{
             "id": "malware--00000000-0000-4000-8000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
-            "is_family": true,
             "name": "Cryptolocker",
             "malware_types": [
                 "ransomware"
@@ -71,7 +70,6 @@ EXPECTED_BUNDLE_DICT = {
             "malware_types": [
                 "ransomware",
             ],
-            "is_family": True,
         },
         {
             "type": "relationship",

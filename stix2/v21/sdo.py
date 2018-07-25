@@ -1,17 +1,15 @@
 """STIX 2.1 Domain Objects"""
 
 from collections import OrderedDict
-from math import fabs
 import itertools
+from math import fabs
 
-from ..base import _STIXBase
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
 from ..properties import (
-    BooleanProperty, DictionaryProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, IDProperty, IntegerProperty, ListProperty,
-    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
+    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
+    StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
@@ -254,30 +252,6 @@ class Location(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class AnalysisType(_STIXBase):
-
-    _properties = OrderedDict([
-        ('start_time', TimestampProperty()),
-        ('end_time', TimestampProperty()),
-        ('analysis_tools', ObservableProperty(spec_version='2.1')),
-        ('analysis_environment', DictionaryProperty(spec_version='2.1')),
-        ('results', DictionaryProperty(spec_version='2.1', required=True)),
-    ])
-
-
-class AVResultsType(_STIXBase):
-
-    _properties = OrderedDict([
-        ('product', StringProperty()),
-        ('engine_version', StringProperty()),
-        ('definition_version', StringProperty()),
-        ('submitted', TimestampProperty()),
-        ('scanned', TimestampProperty()),
-        ('result', StringProperty()),
-        ('details', StringProperty()),
-    ])
-
-
 class Malware(STIXDomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
@@ -292,21 +266,10 @@ class Malware(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('is_family', BooleanProperty(required=True)),
         ('name', StringProperty(required=True)),
         ('malware_types', ListProperty(StringProperty, required=True)),
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('first_seen', TimestampProperty()),
-        ('last_seen', TimestampProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
-        ('architecture_execution_envs', ListProperty(StringProperty)),
-        ('implementation_languages', ListProperty(StringProperty)),
-        ('samples', ObservableProperty(spec_version='2.1')),
-        ('static_analysis_results', ListProperty(EmbeddedObjectProperty(AnalysisType))),
-        ('dynamic_analysis_results', ListProperty(EmbeddedObjectProperty(AnalysisType))),
-        ('av_results', ListProperty(EmbeddedObjectProperty(AVResultsType))),
-        ('capabilities', ListProperty(StringProperty)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),

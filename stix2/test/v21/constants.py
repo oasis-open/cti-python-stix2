@@ -81,7 +81,6 @@ INTRUSION_SET_KWARGS = dict(
 MALWARE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
-    is_family=True,
 )
 
 MALWARE_MORE_KWARGS = dict(
@@ -92,7 +91,6 @@ MALWARE_MORE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
     description="A ransomware related to ...",
-    is_family=False,
 )
 
 OBSERVED_DATA_KWARGS = dict(

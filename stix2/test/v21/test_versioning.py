@@ -228,7 +228,6 @@ def test_remove_custom_stix_property():
     mal = stix2.v21.Malware(
         name="ColePowers",
         malware_types=["rootkit"],
-        is_family=False,
         x_custom="armada",
         allow_custom=True,
     )
