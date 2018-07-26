@@ -125,7 +125,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
     object.
 
     Args:
-        data: The STIX 2 string to be parsed.
+        data (str, dict, file-like object): The STIX2 content to be parsed.
         _valid_refs: A list of object references valid for the scope of the
             object being parsed. Use empty list if no valid refs are present.
         allow_custom (bool): Whether to allow custom properties or not.
@@ -147,8 +147,6 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
     if version:
         # If the version argument was passed, override other approaches.
         v = 'v' + version.replace('.', '')
-    elif 'spec_version' in obj:
-        v = 'v' + obj['spec_version'].replace('.', '')
     else:
         # Use default version (latest) if no version was provided.
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
