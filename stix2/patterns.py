@@ -19,7 +19,7 @@ class _Constant(object):
 
 class StringConstant(_Constant):
     """Pattern string constant
-    
+
     Args:
         value (str): string value
     """
@@ -40,7 +40,7 @@ class TimestampConstant(_Constant):
         try:
             self.value = parse_into_datetime(value)
         except Exception:
-            raise ValueError("must be a datetime object or timestamp string.")
+            raise ValueError("Must be a datetime object or timestamp string.")
 
     def __str__(self):
         return "t%s" % repr(self.value)
@@ -77,10 +77,10 @@ class BooleanConstant(_Constant):
     """Pattern boolean constant
 
     Args:
-       value (str OR int): 
+       value (str OR int):
            (str) 'true', 't' for True; 'false', 'f' for False
            (int) 1 for True; 0 for False
-    """ 
+    """
     def __init__(self, value):
         if isinstance(value, bool):
             self.value = value
@@ -168,7 +168,7 @@ class HexConstant(_Constant):
 
     Args:
         value (str): hexadecimal value
-    """ 
+    """
     def __init__(self, value):
         if not re.match('^([a-fA-F0-9]{2})+$', value):
             raise ValueError("must contain an even number of hexadecimal characters")
@@ -235,7 +235,7 @@ class _ObjectPathComponent(object):
 class BasicObjectPathComponent(_ObjectPathComponent):
     """Basic object path component (for an observation or expression)
 
-    By "Basic", implies that the object path component is not a 
+    By "Basic", implies that the object path component is not a
     list, object reference or futher referenced property, i.e. terminal
     component
 
@@ -254,10 +254,10 @@ class BasicObjectPathComponent(_ObjectPathComponent):
 
 class ListObjectPathComponent(_ObjectPathComponent):
     """List object path component (for an observation or expression)
-    
+
     Args:
         property_name (str): list object property name
-        index (int): index of the list property's value that is specified 
+        index (int): index of the list property's value that is specified
     """
     def __init__(self, property_name, index):
         self.property_name = property_name
@@ -285,8 +285,8 @@ class ObjectPath(object):
 
     Args:
         object_type_name (str): name of object type for corresponding object path component
-        property_path (_ObjectPathComponent OR str): object path 
-    """ 
+        property_path (_ObjectPathComponent OR str): object path
+    """
     def __init__(self, object_type_name, property_path):
         self.object_type_name = object_type_name
         self.property_path = [x if isinstance(x, _ObjectPathComponent) else
@@ -316,15 +316,15 @@ class _PatternExpression(object):
 
     def to_pattern(self):
         """return a properly formatted string of the pattern expression"""
-        return "[{}]".format(self.__str__()) 
-    
+        return "[{}]".format(self.__str__())
+
 
 class _ComparisonExpression(_PatternExpression):
     """Pattern Comparison Expression
 
     Args:
         operator (str): operator of comparison expression
-        lhs (ObjectPath OR str): object path of left-hand-side component of expression 
+        lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
         negated (bool): comparison expression negated. Default: False
     """
@@ -393,7 +393,7 @@ class GreaterThanEqualComparisonExpression(_ComparisonExpression):
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
-        negated (bool): comparison expression negated. Default: False 
+        negated (bool): comparison expression negated. Default: False
     """
     def __init__(self, lhs, rhs, negated=False):
         super(GreaterThanEqualComparisonExpression, self).__init__(">=", lhs, rhs, negated)
@@ -418,7 +418,7 @@ class InComparisonExpression(_ComparisonExpression):
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
-        negated (bool): comparison expression negated. Default: False  
+        negated (bool): comparison expression negated. Default: False
     """
     def __init__(self, lhs, rhs, negated=False):
         super(InComparisonExpression, self).__init__("IN", lhs, rhs, negated)
@@ -430,9 +430,9 @@ class LikeComparisonExpression(_ComparisonExpression):
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
-        negated (bool): comparison expression negated. Default: False  
+        negated (bool): comparison expression negated. Default: False
     """
- 
+
     def __init__(self, lhs, rhs, negated=False):
         super(LikeComparisonExpression, self).__init__("LIKE", lhs, rhs, negated)
 
@@ -443,9 +443,9 @@ class MatchesComparisonExpression(_ComparisonExpression):
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
-        negated (bool): comparison expression negated. Default: False  
+        negated (bool): comparison expression negated. Default: False
     """
- 
+
     def __init__(self, lhs, rhs, negated=False):
         super(MatchesComparisonExpression, self).__init__("MATCHES", lhs, rhs, negated)
 
@@ -456,9 +456,9 @@ class IsSubsetComparisonExpression(_ComparisonExpression):
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
-        negated (bool): comparison expression negated. Default: False  
+        negated (bool): comparison expression negated. Default: False
     """
- 
+
     def __init__(self, lhs, rhs, negated=False):
         super(IsSubsetComparisonExpression, self).__init__("ISSUBSET", lhs, rhs, negated)
 
@@ -469,9 +469,9 @@ class IsSupersetComparisonExpression(_ComparisonExpression):
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
-        negated (bool): comparison expression negated. Default: False  
+        negated (bool): comparison expression negated. Default: False
     """
- 
+
     def __init__(self, lhs, rhs, negated=False):
         super(IsSupersetComparisonExpression, self).__init__("ISSUPERSET", lhs, rhs, negated)
 
@@ -480,11 +480,11 @@ class _BooleanExpression(_PatternExpression):
     """Boolean Pattern Expression
 
     Args:
-        operator (str): boolean operator 
-        operands (list): boolean operands 
+        operator (str): boolean operator
+        operands (list): boolean operands
     """
     def __init__(self, operator, operands):
-        self.operator = operator 
+        self.operator = operator
         self.operands = []
         for arg in operands:
             if not hasattr(self, "root_type"):
@@ -564,7 +564,7 @@ class AndObservationExpression(_CompoundObservationExpression):
     Args:
         operands (str): compound observation operands
     """
- 
+
     def __init__(self, operands):
         super(AndObservationExpression, self).__init__("AND", operands)
 
@@ -574,7 +574,7 @@ class OrObservationExpression(_CompoundObservationExpression):
 
     Args:
         operands (str): compound observation operands
-    """ 
+    """
     def __init__(self, operands):
         super(OrObservationExpression, self).__init__("OR", operands)
 
@@ -584,7 +584,7 @@ class FollowedByObservationExpression(_CompoundObservationExpression):
 
     Args:
         operands (str): compound observation operands
-    """ 
+    """
     def __init__(self, operands):
         super(FollowedByObservationExpression, self).__init__("FOLLOWEDBY", operands)
 
@@ -619,7 +619,7 @@ class RepeatQualifier(_ExpressionQualifier):
 
     Args:
         times_to_repeat (int): times the qualifiers is repeated
-    """ 
+    """
     def __init__(self, times_to_repeat):
         if isinstance(times_to_repeat, IntegerConstant):
             self.times_to_repeat = times_to_repeat
@@ -656,7 +656,7 @@ class StartStopQualifier(_ExpressionQualifier):
     Args:
         start_time (TimestampConstant OR datetime.date): start timestamp for qualifier
         stop_time (TimestampConstant OR datetime.date): stop timestamp for qualifier
-    """ 
+    """
     def __init__(self, start_time, stop_time):
         if isinstance(start_time, TimestampConstant):
             self.start_time = start_time
@@ -680,7 +680,7 @@ class QualifiedObservationExpression(_PatternExpression):
 
     Args:
         observation_expression (PatternExpression OR _CompoundObservationExpression OR ): pattern expression
-        qualifier (_ExpressionQualifier): pattern expression qualifier 
+        qualifier (_ExpressionQualifier): pattern expression qualifier
     """
     def __init__(self, observation_expression, qualifier):
         self.observation_expression = observation_expression
