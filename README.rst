@@ -170,9 +170,6 @@ repositories/maintainers-guide#additionalMaintainers>`__.
 
 **Current Maintainers of this TC Open Repository**
 
--  `Greg Back <mailto:gback@mitre.org>`__; GitHub ID:
-   https://github.com/gtback/; WWW: `MITRE
-   Corporation <http://www.mitre.org/>`__
 -  `Chris Lenk <mailto:clenk@mitre.org>`__; GitHub ID:
    https://github.com/clenk/; WWW: `MITRE
    Corporation <http://www.mitre.org/>`__
