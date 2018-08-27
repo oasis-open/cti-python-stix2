@@ -51,7 +51,6 @@ class IntegerConstant(_Constant):
 
     Args:
         value (int): integer value
-
     """
     def __init__(self, value):
         try:
@@ -133,10 +132,10 @@ class HashConstant(StringConstant):
 
     Args:
         value (str): hash value
-        type (str): hash algorithm name
-            supported hash algorithms: "MD5", "MD6", RIPEMD160", "SHA1",
-            "SHA224", "SHA256", "SHA384", "SHA512", "SHA3224", "SHA3256",
-            "SHA3384", "SHA3512", "SSDEEP", "WHIRLPOOL"
+        type (str): hash algorithm name. Supported hash algorithms:
+            "MD5", "MD6", RIPEMD160", "SHA1", "SHA224", "SHA256",
+            "SHA384", "SHA512", "SHA3224", "SHA3256", "SHA3384",
+            "SHA3512", "SSDEEP", "WHIRLPOOL"
     """
     def __init__(self, value, type):
         key = type.upper().replace('-', '')
@@ -197,7 +196,7 @@ def make_constant(value):
     at determining root value type and corresponding conversion
 
     Args:
-        value (): value to convert to Pattern constant
+        value: value to convert to Pattern constant
     """
     if isinstance(value, _Constant):
         return value
@@ -234,7 +233,7 @@ class _ObjectPathComponent(object):
 
 
 class BasicObjectPathComponent(_ObjectPathComponent):
-    """Basic object path component (for a observation or expression)
+    """Basic object path component (for an observation or expression)
 
     By "Basic", implies that the object path component is not a 
     list, object reference or futher referenced property, i.e. terminal
@@ -242,7 +241,7 @@ class BasicObjectPathComponent(_ObjectPathComponent):
 
     Args:
         property_name (str): object property name
-        is_key (): is dictionary key, default: False
+        is_key (bool): is dictionary key, default: False
     """
     def __init__(self, property_name, is_key=False):
         self.property_name = property_name
@@ -256,10 +255,9 @@ class BasicObjectPathComponent(_ObjectPathComponent):
 class ListObjectPathComponent(_ObjectPathComponent):
     """List object path component (for an observation or expression)
     
-
     Args:
-        property_name (): list object property name
-        index (): index of the list property's value that is specified 
+        property_name (str): list object property name
+        index (int): index of the list property's value that is specified 
     """
     def __init__(self, property_name, index):
         self.property_name = property_name
@@ -287,7 +285,7 @@ class ObjectPath(object):
 
     Args:
         object_type_name (str): name of object type for corresponding object path component
-        property_path (_ObjectPathComponent OR str): Object path 
+        property_path (_ObjectPathComponent OR str): object path 
     """ 
     def __init__(self, object_type_name, property_path):
         self.object_type_name = object_type_name
@@ -315,8 +313,11 @@ class ObjectPath(object):
 
 
 class _PatternExpression(object):
-    pass
 
+    def to_pattern(self):
+        """return a properly formatted string of the pattern expression"""
+        return "[{}]".format(self.__str__()) 
+    
 
 class _ComparisonExpression(_PatternExpression):
     """Pattern Comparison Expression
@@ -424,7 +425,7 @@ class InComparisonExpression(_ComparisonExpression):
 
 
 class LikeComparisonExpression(_ComparisonExpression):
-    """'in' Comparison Expression
+    """'like' Comparison Expression
 
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
@@ -437,7 +438,7 @@ class LikeComparisonExpression(_ComparisonExpression):
 
 
 class MatchesComparisonExpression(_ComparisonExpression):
-    """Matches Comparison Expression
+    """'Matches' Comparison Expression
 
     Args:
         lhs (ObjectPath OR str): object path of left-hand-side component of expression
@@ -476,7 +477,7 @@ class IsSupersetComparisonExpression(_ComparisonExpression):
 
 
 class _BooleanExpression(_PatternExpression):
-    """Pattern Boolean Expression
+    """Boolean Pattern Expression
 
     Args:
         operator (str): boolean operator 
@@ -502,7 +503,7 @@ class _BooleanExpression(_PatternExpression):
 
 
 class AndBooleanExpression(_BooleanExpression):
-    """Pattern 'AND' Boolean Expression
+    """'AND' Boolean Pattern Expression
 
     Args:
         operands (list): AND operands
@@ -512,7 +513,7 @@ class AndBooleanExpression(_BooleanExpression):
 
 
 class OrBooleanExpression(_BooleanExpression):
-    """Pattern 'OR' Boolean Expression
+    """'OR' Boolean Pattern Expression
 
     Args:
         operands (list): OR operands
@@ -551,9 +552,14 @@ class _CompoundObservationExpression(_PatternExpression):
             sub_exprs.append("%s" % o)
         return (" " + self.operator + " ").join(sub_exprs)
 
+    def to_pattern(self):
+        return "{0} {1} {2}".format(self.operands[0].to_pattern(),
+                                    self.operator,
+                                    self.operands[1].to_pattern())
+
 
 class AndObservationExpression(_CompoundObservationExpression):
-    """Pattern 'AND' Compound Observation Expression
+    """'AND' Compound Observation Pattern Expression
 
     Args:
         operands (str): compound observation operands
@@ -582,6 +588,9 @@ class FollowedByObservationExpression(_CompoundObservationExpression):
     def __init__(self, operands):
         super(FollowedByObservationExpression, self).__init__("FOLLOWEDBY", operands)
 
+    def to_pattern(self):
+        return "[{}] {} [{}]".format(self.operands[0], "FOLLOWEDBY", self.operands[1])
+
 
 class ParentheticalExpression(_PatternExpression):
     """Pattern Parenthetical Observation Expression
@@ -596,6 +605,9 @@ class ParentheticalExpression(_PatternExpression):
 
     def __str__(self):
         return "(%s)" % self.expression
+
+    def to_pattern(self):
+        return "({})".format(self.expression.to_pattern())
 
 
 class _ExpressionQualifier(_PatternExpression):
@@ -676,3 +688,6 @@ class QualifiedObservationExpression(_PatternExpression):
 
     def __str__(self):
         return "%s %s" % (self.observation_expression, self.qualifier)
+
+    def to_pattern(self):
+        return "{} {}".format(self.observation_expression.to_pattern(), self.qualifier)
