@@ -313,10 +313,7 @@ class ObjectPath(object):
 
 
 class _PatternExpression(object):
-
-    def to_pattern(self):
-        """return a properly formatted string of the pattern expression"""
-        return "[{}]".format(self.__str__())
+    pass
 
 
 class _ComparisonExpression(_PatternExpression):
@@ -445,7 +442,6 @@ class MatchesComparisonExpression(_ComparisonExpression):
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
         negated (bool): comparison expression negated. Default: False
     """
-
     def __init__(self, lhs, rhs, negated=False):
         super(MatchesComparisonExpression, self).__init__("MATCHES", lhs, rhs, negated)
 
@@ -458,7 +454,6 @@ class IsSubsetComparisonExpression(_ComparisonExpression):
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
         negated (bool): comparison expression negated. Default: False
     """
-
     def __init__(self, lhs, rhs, negated=False):
         super(IsSubsetComparisonExpression, self).__init__("ISSUBSET", lhs, rhs, negated)
 
@@ -471,7 +466,6 @@ class IsSupersetComparisonExpression(_ComparisonExpression):
         rhs (ObjectPath OR str): object path of right-hand-side component of expression
         negated (bool): comparison expression negated. Default: False
     """
-
     def __init__(self, lhs, rhs, negated=False):
         super(IsSupersetComparisonExpression, self).__init__("ISSUPERSET", lhs, rhs, negated)
 
@@ -498,12 +492,13 @@ class _BooleanExpression(_PatternExpression):
     def __str__(self):
         sub_exprs = []
         for o in self.operands:
-            sub_exprs.append("%s" % o)
+            sub_exprs.append(str(o))
         return (" " + self.operator + " ").join(sub_exprs)
 
 
 class AndBooleanExpression(_BooleanExpression):
-    """'AND' Boolean Pattern Expression
+    """'AND' Boolean Pattern Expression. Only use if both operands are of
+    the same root object.
 
     Args:
         operands (list): AND operands
@@ -513,7 +508,7 @@ class AndBooleanExpression(_BooleanExpression):
 
 
 class OrBooleanExpression(_BooleanExpression):
-    """'OR' Boolean Pattern Expression
+    """'OR' Boolean Pattern Expression. Only use if both operands are of the same root object
 
     Args:
         operands (list): OR operands
@@ -552,11 +547,6 @@ class _CompoundObservationExpression(_PatternExpression):
             sub_exprs.append("%s" % o)
         return (" " + self.operator + " ").join(sub_exprs)
 
-    def to_pattern(self):
-        return "{0} {1} {2}".format(self.operands[0].to_pattern(),
-                                    self.operator,
-                                    self.operands[1].to_pattern())
-
 
 class AndObservationExpression(_CompoundObservationExpression):
     """'AND' Compound Observation Pattern Expression
@@ -564,7 +554,6 @@ class AndObservationExpression(_CompoundObservationExpression):
     Args:
         operands (str): compound observation operands
     """
-
     def __init__(self, operands):
         super(AndObservationExpression, self).__init__("AND", operands)
 
@@ -588,9 +577,6 @@ class FollowedByObservationExpression(_CompoundObservationExpression):
     def __init__(self, operands):
         super(FollowedByObservationExpression, self).__init__("FOLLOWEDBY", operands)
 
-    def to_pattern(self):
-        return "[{}] {} [{}]".format(self.operands[0], "FOLLOWEDBY", self.operands[1])
-
 
 class ParentheticalExpression(_PatternExpression):
     """Pattern Parenthetical Observation Expression
@@ -605,9 +591,6 @@ class ParentheticalExpression(_PatternExpression):
 
     def __str__(self):
         return "(%s)" % self.expression
-
-    def to_pattern(self):
-        return "({})".format(self.expression.to_pattern())
 
 
 class _ExpressionQualifier(_PatternExpression):
@@ -688,6 +671,3 @@ class QualifiedObservationExpression(_PatternExpression):
 
     def __str__(self):
         return "%s %s" % (self.observation_expression, self.qualifier)
-
-    def to_pattern(self):
-        return "{} {}".format(self.observation_expression.to_pattern(), self.qualifier)
