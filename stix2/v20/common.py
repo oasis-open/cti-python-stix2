@@ -2,7 +2,7 @@
 
 from collections import OrderedDict
 
-from ..base import _STIXBase
+from ..base import _cls_init, _STIXBase
 from ..markings import _MarkingsMixin
 from ..properties import (HashesProperty, IDProperty, ListProperty, Property,
                           ReferenceProperty, SelectorProperty, StringProperty,
@@ -169,14 +169,7 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
-                try:
-                    cls.__init__(self, **kwargs)
-                except (AttributeError, TypeError) as e:
-                    # Don't accidentally catch errors raised in a custom __init__()
-                    if ("has no attribute '__init__'" in str(e) or
-                            str(e) == "object.__init__() takes no parameters"):
-                        return
-                    raise e
+                _cls_init(cls, self, kwargs)
 
         _register_marking(_Custom)
         return _Custom

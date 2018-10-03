@@ -6,7 +6,7 @@ import re
 
 import stix2
 
-from ..base import _STIXBase
+from ..base import _cls_init, _STIXBase
 from ..markings import _MarkingsMixin
 from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
                           ListProperty, PatternProperty, ReferenceProperty,
@@ -400,14 +400,7 @@ def CustomObject(type='x-custom-type', properties=None):
 
             def __init__(self, **kwargs):
                 _STIXBase.__init__(self, **kwargs)
-                try:
-                    cls.__init__(self, **kwargs)
-                except (AttributeError, TypeError) as e:
-                    # Don't accidentally catch errors raised in a custom __init__()
-                    if ("has no attribute '__init__'" in str(e) or
-                            str(e) == "object.__init__() takes no parameters"):
-                        return
-                    raise e
+                _cls_init(cls, self, kwargs)
 
         stix2._register_type(_Custom, version="2.0")
         return _Custom
