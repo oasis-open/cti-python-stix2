@@ -7,11 +7,11 @@ from stix2 import (Bundle, Campaign, CustomObject, Filter, Identity, Indicator,
                    Malware, MemorySource, MemoryStore, Relationship,
                    properties)
 from stix2.datastore import make_id
+from stix2.utils import parse_into_datetime
 
 from .constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
                         IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
                         MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS)
-from stix2.utils import parse_into_datetime
 
 IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
