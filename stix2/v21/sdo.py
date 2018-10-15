@@ -2,7 +2,6 @@
 
 from collections import OrderedDict
 import itertools
-from math import fabs
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
@@ -71,6 +70,16 @@ class Campaign(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal 'first_seen'"
+            raise ValueError(msg.format(self))
+
 
 class CourseOfAction(STIXDomainObject):
     # TODO: Add link
@@ -114,6 +123,7 @@ class Identity(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
+        ('roles', ListProperty(StringProperty)),
         ('identity_class', StringProperty(required=True)),
         ('sectors', ListProperty(StringProperty)),
         ('contact_information', StringProperty()),
@@ -142,8 +152,8 @@ class Indicator(STIXDomainObject):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty()),
-        ('indicator_types', ListProperty(StringProperty, required=True)),
         ('description', StringProperty()),
+        ('indicator_types', ListProperty(StringProperty, required=True)),
         ('pattern', PatternProperty(required=True)),
         ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
@@ -156,6 +166,16 @@ class Indicator(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        valid_from = self.get('valid_from')
+        valid_until = self.get('valid_until')
+
+        if valid_from and valid_until and valid_until <= valid_from:
+            msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
+            raise ValueError(msg.format(self))
 
 
 class IntrusionSet(STIXDomainObject):
@@ -190,6 +210,16 @@ class IntrusionSet(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
+            raise ValueError(msg.format(self))
+
 
 class Location(STIXDomainObject):
     # TODO: Add link
@@ -206,9 +236,9 @@ class Location(STIXDomainObject):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('description', StringProperty()),
-        ('latitude', FloatProperty()),
-        ('longitude', FloatProperty()),
-        ('precision', FloatProperty()),
+        ('latitude', FloatProperty(min=-90.0, max=90.0)),
+        ('longitude', FloatProperty(min=-180.0, max=180.0)),
+        ('precision', FloatProperty(min=0.0)),
         ('region', StringProperty()),
         ('country', StringProperty()),
         ('administrative_area', StringProperty()),
@@ -225,31 +255,13 @@ class Location(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(Location, self)._check_object_constraints()
+        super(self.__class__, self)._check_object_constraints()
+
         if self.get('precision') is not None:
             self._check_properties_dependency(['longitude', 'latitude'], ['precision'])
-            if self.precision < 0.0:
-                msg = (
-                    "{0.id} 'precision' must be a positive value. Received "
-                    "{0.precision}"
-                )
-                raise ValueError(msg.format(self))
 
         self._check_properties_dependency(['latitude'], ['longitude'])
-
-        if self.get('latitude') is not None and fabs(self.latitude) > 90.0:
-            msg = (
-                "{0.id} 'latitude' must be between -90 and 90. Received "
-                "{0.latitude}"
-            )
-            raise ValueError(msg.format(self))
-
-        if self.get('longitude') is not None and fabs(self.longitude) > 180.0:
-            msg = (
-                "{0.id} 'longitude' must be between -180 and 180. Received "
-                "{0.longitude}"
-            )
-            raise ValueError(msg.format(self))
+        self._check_properties_dependency(['longitude'], ['latitude'])
 
 
 class Malware(STIXDomainObject):
@@ -267,8 +279,8 @@ class Malware(STIXDomainObject):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
-        ('malware_types', ListProperty(StringProperty, required=True)),
         ('description', StringProperty()),
+        ('malware_types', ListProperty(StringProperty, required=True)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -294,8 +306,8 @@ class Note(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('summary', StringProperty()),
-        ('description', StringProperty(required=True)),
+        ('abstract', StringProperty()),
+        ('content', StringProperty(required=True)),
         ('authors', ListProperty(StringProperty)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -324,7 +336,7 @@ class ObservedData(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
-        ('number_observed', IntegerProperty(required=True)),
+        ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
         ('objects', ObservableProperty(spec_version='2.1', required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -341,6 +353,20 @@ class ObservedData(STIXDomainObject):
 
         super(ObservedData, self).__init__(*args, **kwargs)
 
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        if self.get('number_observed', 1) == 1:
+            self._check_properties_dependency(['first_observed'], ['last_observed'])
+            self._check_properties_dependency(['last_observed'], ['first_observed'])
+
+        first_observed = self.get('first_observed')
+        last_observed = self.get('last_observed')
+
+        if first_observed and last_observed and last_observed < first_observed:
+            msg = "{0.id} 'last_observed' must be greater than or equal to 'first_observed'"
+            raise ValueError(msg.format(self))
+
 
 class Opinion(STIXDomainObject):
     # TODO: Add link
@@ -356,7 +382,7 @@ class Opinion(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('description', StringProperty()),
+        ('explanation', StringProperty()),
         ('authors', ListProperty(StringProperty)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
         (
@@ -395,8 +421,8 @@ class Report(STIXDomainObject):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
-        ('report_types', ListProperty(StringProperty, required=True)),
         ('description', StringProperty()),
+        ('report_types', ListProperty(StringProperty, required=True)),
         ('published', TimestampProperty(required=True)),
         ('object_refs', ListProperty(ReferenceProperty, required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -424,8 +450,8 @@ class ThreatActor(STIXDomainObject):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
-        ('threat_actor_types', ListProperty(StringProperty, required=True)),
         ('description', StringProperty()),
+        ('threat_actor_types', ListProperty(StringProperty, required=True)),
         ('aliases', ListProperty(StringProperty)),
         ('roles', ListProperty(StringProperty)),
         ('goals', ListProperty(StringProperty)),
@@ -459,8 +485,8 @@ class Tool(STIXDomainObject):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
-        ('tool_types', ListProperty(StringProperty, required=True)),
         ('description', StringProperty()),
+        ('tool_types', ListProperty(StringProperty, required=True)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),

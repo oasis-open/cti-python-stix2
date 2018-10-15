@@ -171,7 +171,6 @@ class ArchiveExt(_Extension):
     _type = 'archive-ext'
     _properties = OrderedDict([
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types='file'), required=True)),
-        ('version', StringProperty()),
         ('comment', StringProperty()),
     ])
 
@@ -229,7 +228,6 @@ class RasterImageExt(_Extension):
         ('image_height', IntegerProperty()),
         ('image_width', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
-        ('image_compression_algorithm', StringProperty()),
         ('exif_tags', DictionaryProperty(spec_version='2.1')),
     ])
 
@@ -244,9 +242,9 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         ('magic_hex', HexProperty()),
         ('major_linker_version', IntegerProperty()),
         ('minor_linker_version', IntegerProperty()),
-        ('size_of_code', IntegerProperty()),
-        ('size_of_initialized_data', IntegerProperty()),
-        ('size_of_uninitialized_data', IntegerProperty()),
+        ('size_of_code', IntegerProperty(min=0)),
+        ('size_of_initialized_data', IntegerProperty(min=0)),
+        ('size_of_uninitialized_data', IntegerProperty(min=0)),
         ('address_of_entry_point', IntegerProperty()),
         ('base_of_code', IntegerProperty()),
         ('base_of_data', IntegerProperty()),
@@ -260,13 +258,13 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         ('major_subsystem_version', IntegerProperty()),
         ('minor_subsystem_version', IntegerProperty()),
         ('win32_version_value_hex', HexProperty()),
-        ('size_of_image', IntegerProperty()),
-        ('size_of_headers', IntegerProperty()),
+        ('size_of_image', IntegerProperty(min=0)),
+        ('size_of_headers', IntegerProperty(min=0)),
         ('checksum_hex', HexProperty()),
         ('subsystem_hex', HexProperty()),
         ('dll_characteristics_hex', HexProperty()),
-        ('size_of_stack_reserve', IntegerProperty()),
-        ('size_of_stack_commit', IntegerProperty()),
+        ('size_of_stack_reserve', IntegerProperty(min=0)),
+        ('size_of_stack_commit', IntegerProperty(min=0)),
         ('size_of_heap_reserve', IntegerProperty()),
         ('size_of_heap_commit', IntegerProperty()),
         ('loader_flags_hex', HexProperty()),
@@ -287,7 +285,7 @@ class WindowsPESection(_STIXBase):
 
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
-        ('size', IntegerProperty()),
+        ('size', IntegerProperty(min=0)),
         ('entropy', FloatProperty()),
         ('hashes', HashesProperty(spec_version='2.1')),
     ])
@@ -304,11 +302,11 @@ class WindowsPEBinaryExt(_Extension):
         ('pe_type', StringProperty(required=True)),  # open_vocab
         ('imphash', StringProperty()),
         ('machine_hex', HexProperty()),
-        ('number_of_sections', IntegerProperty()),
+        ('number_of_sections', IntegerProperty(min=0)),
         ('time_date_stamp', TimestampProperty(precision='second')),
         ('pointer_to_symbol_table_hex', HexProperty()),
-        ('number_of_symbols', IntegerProperty()),
-        ('size_of_optional_header', IntegerProperty()),
+        ('number_of_symbols', IntegerProperty(min=0)),
+        ('size_of_optional_header', IntegerProperty(min=0)),
         ('characteristics_hex', HexProperty()),
         ('file_header_hashes', HashesProperty(spec_version='2.1')),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
@@ -326,7 +324,7 @@ class File(_Observable):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('hashes', HashesProperty(spec_version='2.1')),
-        ('size', IntegerProperty()),
+        ('size', IntegerProperty(min=0)),
         ('name', StringProperty()),
         ('name_enc', StringProperty()),
         ('magic_number_hex', HexProperty()),
@@ -480,7 +478,7 @@ class SocketExt(_Extension):
                 "SOCK_SEQPACKET",
             ]),
         ),
-        ('socket_descriptor', IntegerProperty()),
+        ('socket_descriptor', IntegerProperty(min=0)),
         ('socket_handle', IntegerProperty()),
     ])
 
@@ -512,13 +510,13 @@ class NetworkTraffic(_Observable):
         ('is_active', BooleanProperty()),
         ('src_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
         ('dst_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
-        ('src_port', IntegerProperty()),
-        ('dst_port', IntegerProperty()),
+        ('src_port', IntegerProperty(min=0, max=65535)),
+        ('dst_port', IntegerProperty(min=0, max=65535)),
         ('protocols', ListProperty(StringProperty, required=True)),
-        ('src_byte_count', IntegerProperty()),
-        ('dst_byte_count', IntegerProperty()),
-        ('src_packets', IntegerProperty()),
-        ('dst_packets', IntegerProperty()),
+        ('src_byte_count', IntegerProperty(min=0)),
+        ('dst_byte_count', IntegerProperty(min=0)),
+        ('src_packets', IntegerProperty(min=0)),
+        ('dst_packets', IntegerProperty(min=0)),
         ('ipfix', DictionaryProperty(spec_version='2.1')),
         ('src_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
@@ -530,6 +528,22 @@ class NetworkTraffic(_Observable):
     def _check_object_constraints(self):
         super(NetworkTraffic, self)._check_object_constraints()
         self._check_at_least_one_property(['src_ref', 'dst_ref'])
+
+        start = self.get('start')
+        end = self.get('end')
+        is_active = self.get('is_active')
+
+        if end and is_active is not False:
+            msg = "{0.id} 'is_active' must be False if 'end' is present"
+            raise ValueError(msg.format(self))
+
+        if end and is_active is True:
+            msg = "{0.id} if 'is_active' is True, 'end' must not be included"
+            raise ValueError(msg.format(self))
+
+        if start and end and end <= start:
+            msg = "{0.id} 'end' must be greater than 'start'"
+            raise ValueError(msg.format(self))
 
 
 class WindowsProcessExt(_Extension):
@@ -546,6 +560,14 @@ class WindowsProcessExt(_Extension):
         ('owner_sid', StringProperty()),
         ('window_title', StringProperty()),
         ('startup_info', DictionaryProperty(spec_version='2.1')),
+        (
+            'integrity_level', EnumProperty(allowed=[
+                "low",
+                "medium",
+                "high",
+                "system",
+            ])
+        )
     ])
 
 
@@ -604,11 +626,9 @@ class Process(_Observable):
         ('type', TypeProperty(_type)),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
-        ('name', StringProperty()),
         # this is not the created timestamps of the object itself
         ('created', TimestampProperty()),
         ('cwd', StringProperty()),
-        ('arguments', ListProperty(StringProperty)),
         ('command_line', StringProperty()),
         ('environment_variables', DictionaryProperty(spec_version='2.1')),
         ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),

@@ -7,8 +7,8 @@ from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
 from ..properties import (
     BooleanProperty, DictionaryProperty, HashesProperty, IDProperty,
-    ListProperty, Property, ReferenceProperty, SelectorProperty,
-    StringProperty, TimestampProperty, TypeProperty,
+    IntegerProperty, ListProperty, Property, ReferenceProperty,
+    SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW, _get_dict
 
@@ -82,6 +82,7 @@ class LanguageContent(_STIXBase):
         ('contents', DictionaryProperty(spec_version='2.1', required=True)),
         ('revoked', BooleanProperty()),
         ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),

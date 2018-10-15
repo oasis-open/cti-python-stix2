@@ -56,8 +56,12 @@ class Relationship(STIXRelationshipObject):
         super(Relationship, self).__init__(**kwargs)
 
     def _check_object_constraints(self):
-        super(Relationship, self)._check_object_constraints()
-        if self.get('start_time') and self.get('stop_time') and (self.start_time > self.stop_time):
+        super(self.__class__, self)._check_object_constraints()
+
+        start_time = self.get('start_time')
+        stop_time = self.get('stop_time')
+
+        if start_time and stop_time and stop_time <= start_time:
             msg = "{0.id} 'stop_time' must be later than 'start_time'"
             raise ValueError(msg.format(self))
 
@@ -78,7 +82,7 @@ class Sighting(STIXRelationshipObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
-        ('count', IntegerProperty()),
+        ('count', IntegerProperty(min=0, max=999999999)),
         ('sighting_of_ref', ReferenceProperty(required=True)),
         ('observed_data_refs', ListProperty(ReferenceProperty(type='observed-data'))),
         ('where_sighted_refs', ListProperty(ReferenceProperty(type='identity'))),
@@ -99,3 +103,13 @@ class Sighting(STIXRelationshipObject):
             kwargs['sighting_of_ref'] = sighting_of_ref
 
         super(Sighting, self).__init__(**kwargs)
+
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen <= first_seen:
+            msg = "{0.id} 'last_seen' must be later than 'first_seen'"
+            raise ValueError(msg.format(self))

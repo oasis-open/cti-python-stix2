@@ -143,7 +143,7 @@ class ListProperty(Property):
 
             if type(self.contained) is EmbeddedObjectProperty:
                 obj_type = self.contained.type
-            elif type(self.contained).__name__ is 'STIXObjectProperty':
+            elif type(self.contained).__name__ is "STIXObjectProperty":
                 # ^ this way of checking doesn't require a circular import
                 # valid is already an instance of a python-stix2 class; no need
                 # to turn it into a dictionary and then pass it to the class
@@ -202,20 +202,50 @@ class IDProperty(Property):
 
 class IntegerProperty(Property):
 
+    def __init__(self, min=None, max=None, **kwargs):
+        self.min = min
+        self.max = max
+        super(IntegerProperty, self).__init__(**kwargs)
+
     def clean(self, value):
         try:
-            return int(value)
+            value = int(value)
         except Exception:
             raise ValueError("must be an integer.")
+
+        if self.min is not None and value < self.min:
+            msg = "minimum value is {}. received {}".format(self.min, value)
+            raise ValueError(msg)
+
+        if self.max is not None and value > self.max:
+            msg = "maximum value is {}. received {}".format(self.max, value)
+            raise ValueError(msg)
+
+        return value
 
 
 class FloatProperty(Property):
 
+    def __init__(self, min=None, max=None, **kwargs):
+        self.min = min
+        self.max = max
+        super(FloatProperty, self).__init__(**kwargs)
+
     def clean(self, value):
         try:
-            return float(value)
+            value = float(value)
         except Exception:
             raise ValueError("must be a float.")
+
+        if self.min is not None and value < self.min:
+            msg = "minimum value is {}. received {}".format(self.min, value)
+            raise ValueError(msg)
+
+        if self.max is not None and value > self.max:
+            msg = "maximum value is {}. received {}".format(self.max, value)
+            raise ValueError(msg)
+
+        return value
 
 
 class BooleanProperty(Property):
@@ -272,7 +302,7 @@ class DictionaryProperty(Property):
             elif self.spec_version == '2.1':
                 if len(k) > 250:
                     raise DictionaryKeyError(k, "longer than 250 characters")
-            if not re.match('^[a-zA-Z0-9_-]+$', k):
+            if not re.match("^[a-zA-Z0-9_-]+$", k):
                 msg = (
                     "contains characters other than lowercase a-z, "
                     "uppercase A-Z, numerals 0-9, hyphen (-), or "
@@ -329,7 +359,7 @@ class BinaryProperty(Property):
 class HexProperty(Property):
 
     def clean(self, value):
-        if not re.match('^([a-fA-F0-9]{2})+$', value):
+        if not re.match("^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
         return value
 
