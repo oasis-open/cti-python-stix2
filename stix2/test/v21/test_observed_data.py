@@ -409,8 +409,7 @@ def test_parse_email_message_not_multipart(data):
                         "0",
                         "1",
                         "2"
-                    ],
-                    "version": "5.0"
+                    ]
                 }
             }
         }""",
@@ -419,7 +418,8 @@ def test_parse_email_message_not_multipart(data):
 def test_parse_file_archive(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
-    assert odata.objects["3"].extensions['archive-ext'].version == "5.0"
+    assert all(x in odata.objects["3"].extensions['archive-ext'].contains_refs
+               for x in ["0", "1", "2"])
 
 
 @pytest.mark.parametrize(
@@ -553,11 +553,8 @@ EXPECTED_PROCESS_OD = """{
         "1": {
             "type": "process",
             "pid": 1221,
-            "name": "gedit-bin",
             "created": "2016-01-20T14:11:25.55Z",
-            "arguments" :[
-              "--new-window"
-            ],
+            "command_line": "./gedit-bin --new-window",
             "binary_ref": "0"
           }
     },
@@ -585,11 +582,8 @@ def test_observed_data_with_process_example():
             "1": {
                 "type": "process",
                 "pid": 1221,
-                "name": "gedit-bin",
                 "created": "2016-01-20T14:11:25.55Z",
-                "arguments": [
-                  "--new-window",
-                ],
+                "command_line": "./gedit-bin --new-window",
                 "image_ref": "0",
             },
         },
@@ -599,8 +593,7 @@ def test_observed_data_with_process_example():
     assert observed_data.objects["0"].hashes["SHA-256"] == "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
     assert observed_data.objects["1"].type == "process"
     assert observed_data.objects["1"].pid == 1221
-    assert observed_data.objects["1"].name == "gedit-bin"
-    assert observed_data.objects["1"].arguments[0] == "--new-window"
+    assert observed_data.objects["1"].command_line == "./gedit-bin --new-window"
 
 
 #  creating cyber observables directly
@@ -834,7 +827,6 @@ RASTER_IMAGE_EXT = """{
         "image_height": 768,
         "image_width": 1024,
         "bits_per_pixel": 72,
-        "image_compression_algorithm": "JPEG",
         "exif_tags": {
           "Make": "Nikon",
           "Model": "D7000",
@@ -1055,14 +1047,12 @@ def test_process_example():
     p = stix2.v21.Process(
         _valid_refs={"0": "file"},
         pid=1221,
-        name="gedit-bin",
         created="2016-01-20T14:11:25.55Z",
-        arguments=["--new-window"],
+        command_line="./gedit-bin --new-window",
         image_ref="0",
     )
 
-    assert p.name == "gedit-bin"
-    assert p.arguments == ["--new-window"]
+    assert p.command_line == "./gedit-bin --new-window"
 
 
 def test_process_example_empty_error():
@@ -1095,7 +1085,6 @@ def test_process_example_empty_with_extensions():
 def test_process_example_windows_process_ext():
     proc = stix2.v21.Process(
         pid=314,
-        name="foobar.exe",
         extensions={
             "windows-process-ext": {
                 "aslr_enabled": True,
@@ -1115,7 +1104,6 @@ def test_process_example_windows_process_ext_empty():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
             stix2.v21.Process(
                 pid=1221,
-                name="gedit-bin",
                 extensions={
                     "windows-process-ext": {},
                 },

@@ -115,7 +115,7 @@ def test_location_bad_latitude(data):
     with pytest.raises(ValueError) as excinfo:
         stix2.parse(data)
 
-    assert str(excinfo.value) == "{id} 'latitude' must be between -90 and 90. Received {latitude}".format(**data)
+    assert "Invalid value for Location 'latitude'" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
@@ -144,7 +144,7 @@ def test_location_bad_longitude(data):
     with pytest.raises(ValueError) as excinfo:
         stix2.parse(data)
 
-    assert str(excinfo.value) == "{id} 'longitude' must be between -180 and 180. Received {longitude}".format(**data)
+    assert "Invalid value for Location 'longitude'" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
@@ -194,4 +194,72 @@ def test_location_negative_precision(data):
     with pytest.raises(ValueError) as excinfo:
         stix2.parse(data)
 
-    assert str(excinfo.value) == "{id} 'precision' must be a positive value. Received {precision}".format(**data)
+    assert "Invalid value for Location 'precision'" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "data,msg", [
+        (
+            {
+                "type": "location",
+                "spec_version": "2.1",
+                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "created": "2016-04-06T20:03:00.000Z",
+                "modified": "2016-04-06T20:03:00.000Z",
+                "latitude": 18.468842,
+                "precision": 5.0,
+            },
+            "(longitude, precision) are not met."
+        ),
+        (
+            {
+                "type": "location",
+                "spec_version": "2.1",
+                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "created": "2016-04-06T20:03:00.000Z",
+                "modified": "2016-04-06T20:03:00.000Z",
+                "longitude": 160.7,
+                "precision": 5.0,
+            },
+            "(latitude, precision) are not met."
+        ),
+    ],
+)
+def test_location_precision_dependency_missing(data, msg):
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.parse(data)
+
+    assert msg in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "data,msg", [
+        (
+            {
+                "type": "location",
+                "spec_version": "2.1",
+                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "created": "2016-04-06T20:03:00.000Z",
+                "modified": "2016-04-06T20:03:00.000Z",
+                "latitude": 18.468842,
+            },
+            "(longitude, latitude) are not met."
+        ),
+        (
+            {
+                "type": "location",
+                "spec_version": "2.1",
+                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "created": "2016-04-06T20:03:00.000Z",
+                "modified": "2016-04-06T20:03:00.000Z",
+                "longitude": 160.7,
+            },
+            "(latitude, longitude) are not met."
+        ),
+    ],
+)
+def test_location_precision_dependency_missing(data, msg):
+    with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
+        stix2.parse(data)
+
+    assert msg in str(excinfo.value)

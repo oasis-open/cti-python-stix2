@@ -174,7 +174,6 @@ def test_memory_store_all_versions(mem_store):
     mem_store.add(dict(
         id="bundle--%s" % make_id(),
         objects=STIX_OBJS2,
-        spec_version="2.0",
         type="bundle",
     ))
 

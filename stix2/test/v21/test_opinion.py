@@ -8,7 +8,7 @@ import stix2
 
 from .constants import OPINION_ID
 
-DESCRIPTION = (
+EXPLANATION = (
     'This doesn\'t seem like it is feasible. We\'ve seen how '
     'PandaCat has attacked Spanish infrastructure over the '
     'last 3 years, so this change in targeting seems too great'
@@ -22,12 +22,12 @@ EXPECTED_OPINION = """{
     "id": "opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7",
     "created": "2016-05-12T08:17:27.000Z",
     "modified": "2016-05-12T08:17:27.000Z",
-    "description": "%s",
+    "explanation": "%s",
     "object_refs": [
         "relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471"
     ],
     "opinion": "strongly-disagree"
-}""" % DESCRIPTION
+}""" % EXPLANATION
 
 EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
     """
@@ -36,9 +36,9 @@ EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
     id='opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7',
     created='2016-05-12T08:17:27.000Z',
     modified='2016-05-12T08:17:27.000Z',
-    description="%s",
+    explanation="%s",
     object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
-    opinion='strongly-disagree'""" % DESCRIPTION
+    opinion='strongly-disagree'""" % EXPLANATION
 ).split()) + ")"
 
 
@@ -52,7 +52,7 @@ def test_opinion_with_required_properties():
         modified=now,
         object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
         opinion='strongly-disagree',
-        description=DESCRIPTION,
+        explanation=EXPLANATION,
     )
 
     assert str(opi) == EXPECTED_OPINION
@@ -69,7 +69,7 @@ def test_opinion_with_required_properties():
             "id": "opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7",
             "created": "2016-05-12T08:17:27.000Z",
             "modified": "2016-05-12T08:17:27.000Z",
-            "description": DESCRIPTION,
+            "explanation": EXPLANATION,
             "object_refs": [
                 "relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471",
             ],
@@ -87,6 +87,6 @@ def test_parse_opinion(data):
     assert opinion.modified == dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
     assert opinion.opinion == 'strongly-disagree'
     assert opinion.object_refs[0] == 'relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'
-    assert opinion.description == DESCRIPTION
+    assert opinion.explanation == EXPLANATION
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(opinion))
     assert rep == EXPECTED_OPINION_REPR

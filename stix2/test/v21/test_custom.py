@@ -172,7 +172,7 @@ def test_custom_property_in_observed_data():
         allow_custom=True,
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
-        number_observed=0,
+        number_observed=1,
         objects={"0": artifact},
     )
 
@@ -194,7 +194,7 @@ def test_custom_property_object_in_observable_extension():
         allow_custom=True,
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
-        number_observed=0,
+        number_observed=1,
         objects={"0": artifact},
     )
 
@@ -229,7 +229,7 @@ def test_custom_property_dict_in_observable_extension():
         allow_custom=True,
         first_observed="2015-12-21T19:00:00Z",
         last_observed="2015-12-21T19:00:00Z",
-        number_observed=0,
+        number_observed=1,
         objects={"0": artifact},
     )
 

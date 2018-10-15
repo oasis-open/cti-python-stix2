@@ -15,10 +15,10 @@ EXPECTED = """{
     "created": "2015-12-21T19:59:11.000Z",
     "modified": "2015-12-21T19:59:11.000Z",
     "name": "The Black Vine Cyberespionage Group",
+    "description": "A simple report with an indicator and campaign",
     "report_types": [
         "campaign"
     ],
-    "description": "A simple report with an indicator and campaign",
     "published": "2016-01-20T17:00:00Z",
     "object_refs": [
         "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",

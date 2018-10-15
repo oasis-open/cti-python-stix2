@@ -15,10 +15,10 @@ EXPECTED = """{
     "created": "2016-04-06T20:03:48.000Z",
     "modified": "2016-04-06T20:03:48.000Z",
     "name": "Evil Org",
+    "description": "The Evil Org threat actor group",
     "threat_actor_types": [
         "crime-syndicate"
-    ],
-    "description": "The Evil Org threat actor group"
+    ]
 }"""
 
 
