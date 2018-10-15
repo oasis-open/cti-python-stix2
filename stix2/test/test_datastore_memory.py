@@ -3,6 +3,7 @@ import pytest
 from stix2.datastore import CompositeDataSource, make_id
 from stix2.datastore.filters import Filter
 from stix2.datastore.memory import MemorySink, MemorySource
+from stix2.utils import parse_into_datetime
 
 
 def test_add_remove_composite_datasource():
@@ -44,14 +45,14 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
     indicators = cds1.all_versions("indicator--00000000-0000-4000-8000-000000000001")
 
     # In STIX_OBJS2 changed the 'modified' property to a later time...
-    assert len(indicators) == 2
+    assert len(indicators) == 3
 
     cds1.add_data_sources([cds2])
 
     indicator = cds1.get("indicator--00000000-0000-4000-8000-000000000001")
 
     assert indicator["id"] == "indicator--00000000-0000-4000-8000-000000000001"
-    assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
+    assert indicator["modified"] == parse_into_datetime("2017-01-31T13:49:53.935Z")
     assert indicator["type"] == "indicator"
 
     query1 = [
@@ -68,20 +69,18 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
 
     # STIX_OBJS2 has indicator with later time, one with different id, one with
     # original time in STIX_OBJS1
-    assert len(results) == 3
+    assert len(results) == 4
 
     indicator = cds1.get("indicator--00000000-0000-4000-8000-000000000001")
 
     assert indicator["id"] == "indicator--00000000-0000-4000-8000-000000000001"
-    assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
+    assert indicator["modified"] == parse_into_datetime("2017-01-31T13:49:53.935Z")
     assert indicator["type"] == "indicator"
 
-    # There is only one indicator with different ID. Since we use the same data
-    # when deduplicated, only two indicators (one with different modified).
     results = cds1.all_versions("indicator--00000000-0000-4000-8000-000000000001")
-    assert len(results) == 2
+    assert len(results) == 3
 
     # Since we have filters already associated with our CompositeSource providing
     # nothing returns the same as cds1.query(query1) (the associated query is query2)
     results = cds1.query([])
-    assert len(results) == 3
+    assert len(results) == 4
