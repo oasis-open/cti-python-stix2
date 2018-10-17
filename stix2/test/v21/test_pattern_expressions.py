@@ -374,7 +374,7 @@ def test_invalid_integer_constant():
 def test_invalid_timestamp_constant():
     with pytest.raises(ValueError) as excinfo:
         stix2.TimestampConstant('foo')
-    assert 'must be a datetime object or timestamp string' in str(excinfo)
+    assert 'Must be a datetime object or timestamp string' in str(excinfo)
 
 
 def test_invalid_float_constant():

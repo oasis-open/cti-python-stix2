@@ -21,7 +21,7 @@ from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 # component must be a 4, and the first hex digit of the fourth component
 # must be 8, 9, a, or b (10xx bit pattern).
 ID_REGEX = re.compile(
-    "^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
+    r"^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
     "[0-9a-fA-F]{8}-"
     "[0-9a-fA-F]{4}-"
     "4[0-9a-fA-F]{3}-"
@@ -302,7 +302,7 @@ class DictionaryProperty(Property):
             elif self.spec_version == '2.1':
                 if len(k) > 250:
                     raise DictionaryKeyError(k, "longer than 250 characters")
-            if not re.match("^[a-zA-Z0-9_-]+$", k):
+            if not re.match(r"^[a-zA-Z0-9_-]+$", k):
                 msg = (
                     "contains characters other than lowercase a-z, "
                     "uppercase A-Z, numerals 0-9, hyphen (-), or "
@@ -313,20 +313,20 @@ class DictionaryProperty(Property):
 
 
 HASHES_REGEX = {
-    "MD5": ("^[a-fA-F0-9]{32}$", "MD5"),
-    "MD6": ("^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
-    "RIPEMD160": ("^[a-fA-F0-9]{40}$", "RIPEMD-160"),
-    "SHA1": ("^[a-fA-F0-9]{40}$", "SHA-1"),
-    "SHA224": ("^[a-fA-F0-9]{56}$", "SHA-224"),
-    "SHA256": ("^[a-fA-F0-9]{64}$", "SHA-256"),
-    "SHA384": ("^[a-fA-F0-9]{96}$", "SHA-384"),
-    "SHA512": ("^[a-fA-F0-9]{128}$", "SHA-512"),
-    "SHA3224": ("^[a-fA-F0-9]{56}$", "SHA3-224"),
-    "SHA3256": ("^[a-fA-F0-9]{64}$", "SHA3-256"),
-    "SHA3384": ("^[a-fA-F0-9]{96}$", "SHA3-384"),
-    "SHA3512": ("^[a-fA-F0-9]{128}$", "SHA3-512"),
-    "SSDEEP": ("^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
-    "WHIRLPOOL": ("^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+    "MD5": (r"^[a-fA-F0-9]{32}$", "MD5"),
+    "MD6": (r"^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
+    "RIPEMD160": (r"^[a-fA-F0-9]{40}$", "RIPEMD-160"),
+    "SHA1": (r"^[a-fA-F0-9]{40}$", "SHA-1"),
+    "SHA224": (r"^[a-fA-F0-9]{56}$", "SHA-224"),
+    "SHA256": (r"^[a-fA-F0-9]{64}$", "SHA-256"),
+    "SHA384": (r"^[a-fA-F0-9]{96}$", "SHA-384"),
+    "SHA512": (r"^[a-fA-F0-9]{128}$", "SHA-512"),
+    "SHA3224": (r"^[a-fA-F0-9]{56}$", "SHA3-224"),
+    "SHA3256": (r"^[a-fA-F0-9]{64}$", "SHA3-256"),
+    "SHA3384": (r"^[a-fA-F0-9]{96}$", "SHA3-384"),
+    "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
+    "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
+    "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
 }
 
 
@@ -359,7 +359,7 @@ class BinaryProperty(Property):
 class HexProperty(Property):
 
     def clean(self, value):
-        if not re.match("^([a-fA-F0-9]{2})+$", value):
+        if not re.match(r"^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
         return value
 
@@ -385,7 +385,7 @@ class ReferenceProperty(Property):
         return value
 
 
-SELECTOR_REGEX = re.compile("^[a-z0-9_-]{3,250}(\\.(\\[\\d+\\]|[a-z0-9_-]{1,250}))*$")
+SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
 
 
 class SelectorProperty(Property):

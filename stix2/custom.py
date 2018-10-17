@@ -1,7 +1,7 @@
 from collections import OrderedDict
 import re
 
-from .base import _Extension, _Observable, _STIXBase
+from .base import _cls_init, _Extension, _Observable, _STIXBase
 from .core import (
     STIXDomainObject, _register_marking, _register_object,
     _register_observable, _register_observable_extension,
@@ -30,16 +30,7 @@ def _custom_object_builder(cls, type, properties, version):
 
         def __init__(self, **kwargs):
             _STIXBase.__init__(self, **kwargs)
-            try:
-                cls.__init__(self, **kwargs)
-            except (AttributeError, TypeError) as e:
-                # Don't accidentally catch errors raised in a custom __init__()
-                if (
-                    "has no attribute '__init__'" in str(e) or
-                    str(e) == "object.__init__() takes no parameters"
-                ):
-                    return
-                raise e
+            _cls_init(cls, self, kwargs)
 
     _register_object(_CustomObject, version=version)
     return _CustomObject
@@ -56,16 +47,7 @@ def _custom_marking_builder(cls, type, properties, version):
 
         def __init__(self, **kwargs):
             _STIXBase.__init__(self, **kwargs)
-            try:
-                cls.__init__(self, **kwargs)
-            except (AttributeError, TypeError) as e:
-                # Don't accidentally catch errors raised in a custom __init__()
-                if (
-                    "has no attribute '__init__'" in str(e) or
-                    str(e) == "object.__init__() takes no parameters"
-                ):
-                    return
-                raise e
+            _cls_init(cls, self, kwargs)
 
     _register_marking(_CustomMarking, version=version)
     return _CustomMarking
@@ -104,16 +86,7 @@ def _custom_observable_builder(cls, type, properties, version):
 
         def __init__(self, **kwargs):
             _Observable.__init__(self, **kwargs)
-            try:
-                cls.__init__(self, **kwargs)
-            except (AttributeError, TypeError) as e:
-                # Don't accidentally catch errors raised in a custom __init__()
-                if (
-                    "has no attribute '__init__'" in str(e) or
-                    str(e) == "object.__init__() takes no parameters"
-                ):
-                    return
-                raise e
+            _cls_init(cls, self, kwargs)
 
     _register_observable(_CustomObservable, version=version)
     return _CustomObservable
@@ -141,16 +114,7 @@ def _custom_extension_builder(cls, observable, type, properties, version):
 
         def __init__(self, **kwargs):
             _Extension.__init__(self, **kwargs)
-            try:
-                cls.__init__(self, **kwargs)
-            except (AttributeError, TypeError) as e:
-                # Don't accidentally catch errors raised in a custom __init__()
-                if (
-                    "has no attribute '__init__'" in str(e) or
-                    str(e) == "object.__init__() takes no parameters"
-                ):
-                    return
-                raise e
+            _cls_init(cls, self, kwargs)
 
     _register_observable_extension(observable, _CustomExtension, version=version)
     return _CustomExtension

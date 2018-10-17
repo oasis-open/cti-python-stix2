@@ -170,7 +170,7 @@ class HexConstant(_Constant):
         value (str): hexadecimal value
     """
     def __init__(self, value):
-        if not re.match('^([a-fA-F0-9]{2})+$', value):
+        if not re.match(r'^([a-fA-F0-9]{2})+$', value):
             raise ValueError("must contain an even number of hexadecimal characters")
         self.value = value
 

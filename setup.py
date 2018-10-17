@@ -17,15 +17,16 @@ def get_version():
         raise AttributeError("Package does not have a __version__")
 
 
-with open('README.rst') as f:
-    long_description = f.read()
+def get_long_description():
+    with open('README.rst') as f:
+        return f.read()
 
 
 setup(
     name='stix2',
     version=get_version(),
     description='Produce and consume STIX 2 JSON content',
-    long_description=long_description,
+    long_description=get_long_description(),
     url='https://github.com/oasis-open/cti-python-stix2',
     author='OASIS Cyber Threat Intelligence Technical Committee',
     author_email='cti-users@lists.oasis-open.org',
