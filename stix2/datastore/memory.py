@@ -1,15 +1,5 @@
 """
 Python STIX 2.0 Memory Source/Sink
-
-TODO:
-    Use deduplicate() calls only when memory corpus is dirty (been added to)
-    can save a lot of time for successive queries
-
-Note:
-    Not worrying about STIX versioning. The in memory STIX data at anytime
-    will only hold one version of a STIX object. As such, when save() is called,
-    the single versions of all the STIX objects are what is written to file.
-
 """
 
 import itertools
