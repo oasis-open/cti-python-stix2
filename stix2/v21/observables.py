@@ -566,8 +566,8 @@ class WindowsProcessExt(_Extension):
                 "medium",
                 "high",
                 "system",
-            ])
-        )
+            ]),
+        ),
     ])
 
 

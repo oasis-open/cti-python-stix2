@@ -209,7 +209,7 @@ def test_location_negative_precision(data):
                 "latitude": 18.468842,
                 "precision": 5.0,
             },
-            "(longitude, precision) are not met."
+            "(longitude, precision) are not met.",
         ),
         (
             {
@@ -221,11 +221,11 @@ def test_location_negative_precision(data):
                 "longitude": 160.7,
                 "precision": 5.0,
             },
-            "(latitude, precision) are not met."
+            "(latitude, precision) are not met.",
         ),
     ],
 )
-def test_location_precision_dependency_missing(data, msg):
+def test_location_latitude_dependency_missing(data, msg):
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
         stix2.parse(data)
 
@@ -243,7 +243,7 @@ def test_location_precision_dependency_missing(data, msg):
                 "modified": "2016-04-06T20:03:00.000Z",
                 "latitude": 18.468842,
             },
-            "(longitude, latitude) are not met."
+            "(longitude, latitude) are not met.",
         ),
         (
             {
@@ -254,11 +254,11 @@ def test_location_precision_dependency_missing(data, msg):
                 "modified": "2016-04-06T20:03:00.000Z",
                 "longitude": 160.7,
             },
-            "(latitude, longitude) are not met."
+            "(latitude, longitude) are not met.",
         ),
     ],
 )
-def test_location_precision_dependency_missing(data, msg):
+def test_location_lat_or_lon_dependency_missing(data, msg):
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
         stix2.parse(data)
 
