@@ -203,7 +203,7 @@ class ObservedData(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
-        ('number_observed', IntegerProperty(required=True)),
+        ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
         ('objects', ObservableProperty(required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
