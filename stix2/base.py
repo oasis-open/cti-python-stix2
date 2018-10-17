@@ -334,3 +334,8 @@ class _Extension(_STIXBase):
     def _check_object_constraints(self):
         super(_Extension, self)._check_object_constraints()
         self._check_at_least_one_property()
+
+
+def _cls_init(cls, obj, kwargs):
+    if getattr(cls, '__init__', object.__init__) is not object.__init__:
+        cls.__init__(obj, **kwargs)

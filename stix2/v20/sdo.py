@@ -368,5 +368,4 @@ def CustomObject(type='x-custom-type', properties=None):
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
         return _custom_object_builder(cls, type, _properties, '2.0')
-
     return wrapper
