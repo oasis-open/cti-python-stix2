@@ -41,13 +41,35 @@ def _add(store, stix_data=None, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        if stix_obj.id in store._data:
-            obj_family = store._data[stix_obj.id]
-        else:
-            obj_family = _ObjectFamily()
-            store._data[stix_obj.id] = obj_family
+        # Map ID directly to the object, if it is a marking.  Otherwise,
+        # map to a family, so we can track multiple versions.
+        if _is_marking(stix_obj):
+            store._data[stix_obj.id] = stix_obj
 
-        obj_family.add(stix_obj)
+        else:
+            if stix_obj.id in store._data:
+                obj_family = store._data[stix_obj.id]
+            else:
+                obj_family = _ObjectFamily()
+                store._data[stix_obj.id] = obj_family
+
+            obj_family.add(stix_obj)
+
+
+def _is_marking(obj_or_id):
+    """Determines whether the given object or object ID is/is for a marking
+    definition.
+
+    :param obj_or_id: A STIX object or object ID as a string.
+    :return: True if a marking definition, False otherwise.
+    """
+
+    if isinstance(obj_or_id, _STIXBase):
+        id_ = obj_or_id.id
+    else:
+        id_ = obj_or_id
+
+    return id_.startswith("marking-definition--")
 
 
 class _ObjectFamily(object):
@@ -174,8 +196,9 @@ class MemorySink(DataSink):
         file_path = os.path.abspath(file_path)
 
         all_objs = itertools.chain.from_iterable(
-            obj_family.all_versions.values()
-            for obj_family in self._data.values()
+            value.all_versions.values() if isinstance(value, _ObjectFamily)
+            else [value]
+            for value in self._data.values()
         )
 
         if not os.path.exists(os.path.dirname(file_path)):
@@ -234,9 +257,13 @@ class MemorySource(DataSource):
 
         """
         stix_obj = None
-        object_family = self._data.get(stix_id)
-        if object_family:
-            stix_obj = object_family.latest_version
+
+        if _is_marking(stix_id):
+            stix_obj = self._data.get(stix_id)
+        else:
+            object_family = self._data.get(stix_id)
+            if object_family:
+                stix_obj = object_family.latest_version
 
         if stix_obj:
             all_filters = list(
@@ -269,9 +296,17 @@ class MemorySource(DataSource):
 
         """
         results = []
-        object_family = self._data.get(stix_id)
+        stix_objs_to_filter = None
+        if _is_marking(stix_id):
+            stix_obj = self._data.get(stix_id)
+            if stix_obj:
+                stix_objs_to_filter = [stix_obj]
+        else:
+            object_family = self._data.get(stix_id)
+            if object_family:
+                stix_objs_to_filter = object_family.all_versions.values()
 
-        if object_family:
+        if stix_objs_to_filter:
             all_filters = list(
                 itertools.chain(
                     _composite_filters or [],
@@ -280,8 +315,7 @@ class MemorySource(DataSource):
             )
 
             results.extend(
-                apply_common_filters(object_family.all_versions.values(),
-                                     all_filters)
+                apply_common_filters(stix_objs_to_filter, all_filters)
             )
 
         return results
@@ -314,8 +348,9 @@ class MemorySource(DataSource):
             query.add(_composite_filters)
 
         all_objs = itertools.chain.from_iterable(
-            obj_family.all_versions.values()
-            for obj_family in self._data.values()
+            value.all_versions.values() if isinstance(value, _ObjectFamily)
+            else [value]
+            for value in self._data.values()
         )
 
         # Apply STIX common property filters.
