@@ -123,8 +123,11 @@ def apply_common_filters(stix_objs, query):
     Supports only STIX 2.0 common property properties.
 
     Args:
-        stix_objs (list): list of STIX objects to apply the query to
-        query (set): set of filters (combined form complete query)
+        stix_objs (iterable): iterable of STIX objects to apply the query to
+        query (non-iterator iterable): iterable of filters.  Can't be an
+            iterator (e.g. generator iterators won't work), since this is
+            used in an inner loop of a nested loop.  So we require the ability
+            to traverse the filters repeatedly.
 
     Yields:
         STIX objects that successfully evaluate against the query.
