@@ -250,10 +250,7 @@ class MemorySource(DataSource):
                 CompositeDataSource, not user supplied
 
         Returns:
-            (dict OR STIX object): STIX object that has the supplied
-                ID. As the MemoryStore(i.e. MemorySink) adds STIX objects to memory
-                as they are supplied (either as python dictionary or STIX object), it
-                is returned in the same form as it as added
+            (STIX object): STIX object that has the supplied ID.
 
         """
         stix_obj = None
@@ -289,10 +286,7 @@ class MemorySource(DataSource):
                 CompositeDataSource, not user supplied
 
         Returns:
-            (list): list of STIX objects that has the supplied ID. As the
-                MemoryStore(i.e. MemorySink) adds STIX objects to memory as they
-                are supplied (either as python dictionary or STIX object), it
-                is returned in the same form as it as added
+            (list): list of STIX objects that have the supplied ID.
 
         """
         results = []
@@ -333,10 +327,7 @@ class MemorySource(DataSource):
                 CompositeDataSource, not user supplied
 
         Returns:
-            (list): list of STIX objects that matches the supplied
-                query. As the MemoryStore(i.e. MemorySink) adds STIX objects to memory
-                as they are supplied (either as python dictionary or STIX object), it
-                is returned in the same form as it was added.
+            (list): list of STIX objects that match the supplied query.
 
         """
         query = FilterSet(query)
