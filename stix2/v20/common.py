@@ -1,6 +1,7 @@
 """STIX 2 Common Data Types and Properties."""
 
 from collections import OrderedDict
+import copy
 
 from ..base import _cls_init, _STIXBase
 from ..markings import _MarkingsMixin
@@ -123,6 +124,13 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
                 marking_type = OBJ_MAP_MARKING[kwargs['definition_type']]
             except KeyError:
                 raise ValueError("definition_type must be a valid marking type")
+
+            if marking_type == TLPMarking:
+                # TLP instances in the spec have millisecond precision unlike other markings
+                self._properties = copy.deepcopy(self._properties)
+                self._properties.update([
+                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                ])
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])
