@@ -1,12 +1,17 @@
+import errno
 import json
 import os
 import shutil
+import stat
 
 import pytest
 
 from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
                    FileSystemSource, FileSystemStore, Filter, Identity,
-                   Indicator, Malware, Relationship, properties)
+                   Indicator, Malware, Relationship, parse, properties)
+from stix2.datastore.filesystem import (AuthSet, _find_search_optimizations,
+                                        _get_matching_dir_entries,
+                                        _timestamp2filename)
 from stix2.test.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
                                   IDENTITY_KWARGS, INDICATOR_ID,
                                   INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
@@ -97,7 +102,20 @@ def rel_fs_store():
     yield fs
 
     for o in stix_objs:
-        os.remove(os.path.join(FS_PATH, o.type, o.id + '.json'))
+        filepath = os.path.join(FS_PATH, o.type, o.id,
+                                _timestamp2filename(o.modified) + '.json')
+
+        # Some test-scoped fixtures (e.g. fs_store) delete all campaigns, so by
+        # the time this module-scoped fixture tears itself down, it may find
+        # its campaigns already gone, which causes not-found errors.
+        try:
+            os.remove(filepath)
+        except OSError as e:
+            # 3 is the ERROR_PATH_NOT_FOUND windows error code.  Which has an
+            # errno symbolic value, but not the windows meaning...
+            if e.errno in (errno.ENOENT, 3):
+                continue
+            raise e
 
 
 def test_filesystem_source_nonexistent_folder():
@@ -182,14 +200,16 @@ def test_filesystem_sink_add_python_stix_object(fs_sink, fs_source):
 
     fs_sink.add(camp1)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", camp1.id + ".json"))
+    filepath = os.path.join(FS_PATH, "campaign", camp1.id,
+                            _timestamp2filename(camp1.modified) + ".json")
+    assert os.path.exists(filepath)
 
     camp1_r = fs_source.get(camp1.id)
     assert camp1_r.id == camp1.id
     assert camp1_r.name == "Hannibal"
     assert "War Elephant" in camp1_r.aliases
 
-    os.remove(os.path.join(FS_PATH, "campaign", camp1_r.id + ".json"))
+    os.remove(filepath)
 
 
 def test_filesystem_sink_add_stix_object_dict(fs_sink, fs_source):
@@ -200,19 +220,30 @@ def test_filesystem_sink_add_stix_object_dict(fs_sink, fs_source):
         "objective": "German and French Intelligence Services",
         "aliases": ["Purple Robes"],
         "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-        "created": "2017-05-31T21:31:53.197755Z"
+        "created": "2017-05-31T21:31:53.197755Z",
+        "modified": "2017-05-31T21:31:53.197755Z"
     }
 
     fs_sink.add(camp2)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", camp2["id"] + ".json"))
+    # Need to get the exact "modified" timestamp which would have been
+    # in effect at the time the object was saved to the sink, which determines
+    # the filename it would have been saved as.  It may not be exactly the same
+    # as what's in the dict, since the parsing process can enforce a precision
+    # constraint (e.g. truncate to milliseconds), which results in a slightly
+    # different name.
+    camp2obj = parse(camp2)
+    filepath = os.path.join(FS_PATH, "campaign", camp2obj["id"],
+                            _timestamp2filename(camp2obj["modified"]) + ".json")
+
+    assert os.path.exists(filepath)
 
     camp2_r = fs_source.get(camp2["id"])
     assert camp2_r.id == camp2["id"]
     assert camp2_r.name == camp2["name"]
     assert "Purple Robes" in camp2_r.aliases
 
-    os.remove(os.path.join(FS_PATH, "campaign", camp2_r.id + ".json"))
+    os.remove(filepath)
 
 
 def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
@@ -228,53 +259,74 @@ def test_filesystem_sink_add_stix_bundle_dict(fs_sink, fs_source):
                 "objective": "Bulgarian, Albanian and Romanian Intelligence Services",
                 "aliases": ["Huns"],
                 "id": "campaign--b8f86161-ccae-49de-973a-4ca320c62478",
-                "created": "2017-05-31T21:31:53.197755Z"
+                "created": "2017-05-31T21:31:53.197755Z",
+                "modified": "2017-05-31T21:31:53.197755Z"
             }
         ]
     }
 
     fs_sink.add(bund)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", bund["objects"][0]["id"] + ".json"))
+    camp_obj = parse(bund["objects"][0])
+    filepath = os.path.join(FS_PATH, "campaign", camp_obj["id"],
+                            _timestamp2filename(camp_obj["modified"]) + ".json")
+
+    assert os.path.exists(filepath)
 
     camp3_r = fs_source.get(bund["objects"][0]["id"])
     assert camp3_r.id == bund["objects"][0]["id"]
     assert camp3_r.name == bund["objects"][0]["name"]
     assert "Huns" in camp3_r.aliases
 
-    os.remove(os.path.join(FS_PATH, "campaign", camp3_r.id + ".json"))
+    os.remove(filepath)
 
 
 def test_filesystem_sink_add_json_stix_object(fs_sink, fs_source):
     # add json-encoded stix obj
     camp4 = '{"type": "campaign", "id":"campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d",'\
-            ' "created":"2017-05-31T21:31:53.197755Z", "name": "Ghengis Khan", "objective": "China and Russian infrastructure"}'
+            ' "created":"2017-05-31T21:31:53.197755Z",'\
+            ' "modified":"2017-05-31T21:31:53.197755Z",'\
+            ' "name": "Ghengis Khan", "objective": "China and Russian infrastructure"}'
 
     fs_sink.add(camp4)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d" + ".json"))
+    camp4obj = parse(camp4)
+    filepath = os.path.join(FS_PATH, "campaign",
+                            "campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d",
+                            _timestamp2filename(camp4obj["modified"]) + ".json")
+
+    assert os.path.exists(filepath)
 
     camp4_r = fs_source.get("campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d")
     assert camp4_r.id == "campaign--6a6ca372-ba07-42cc-81ef-9840fc1f963d"
     assert camp4_r.name == "Ghengis Khan"
 
-    os.remove(os.path.join(FS_PATH, "campaign", camp4_r.id + ".json"))
+    os.remove(filepath)
 
 
 def test_filesystem_sink_json_stix_bundle(fs_sink, fs_source):
     # add json-encoded stix bundle
     bund2 = '{"type": "bundle", "id": "bundle--3d267103-8475-4d8f-b321-35ec6eccfa37",' \
             ' "spec_version": "2.0", "objects": [{"type": "campaign", "id": "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b",' \
-            ' "created":"2017-05-31T21:31:53.197755Z", "name": "Spartacus", "objective": "Oppressive regimes of Africa and Middle East"}]}'
+            ' "created":"2017-05-31T21:31:53.197755Z",'\
+            ' "modified":"2017-05-31T21:31:53.197755Z",'\
+            ' "name": "Spartacus", "objective": "Oppressive regimes of Africa and Middle East"}]}'
     fs_sink.add(bund2)
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b" + ".json"))
+    bund2obj = parse(bund2)
+    camp_obj = bund2obj["objects"][0]
+
+    filepath = os.path.join(FS_PATH, "campaign",
+                            "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b",
+                            _timestamp2filename(camp_obj["modified"]) + ".json")
+
+    assert os.path.exists(filepath)
 
     camp5_r = fs_source.get("campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b")
     assert camp5_r.id == "campaign--2c03b8bf-82ee-433e-9918-ca2cb6e9534b"
     assert camp5_r.name == "Spartacus"
 
-    os.remove(os.path.join(FS_PATH, "campaign", camp5_r.id + ".json"))
+    os.remove(filepath)
 
 
 def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
@@ -289,13 +341,23 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
         "objective": "Central and Eastern Europe military commands and departments",
         "aliases": ["The Frenchmen"],
         "id": "campaign--122818b6-1112-4fb0-b11b-b111107ca70a",
-        "created": "2017-05-31T21:31:53.197755Z"
+        "created": "2017-05-31T21:31:53.197755Z",
+        "modified": "2017-05-31T21:31:53.197755Z"
     }
 
     fs_sink.add([camp6, camp7])
 
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", camp6.id + ".json"))
-    assert os.path.exists(os.path.join(FS_PATH, "campaign", "campaign--122818b6-1112-4fb0-b11b-b111107ca70a" + ".json"))
+    camp7obj = parse(camp7)
+
+    camp6filepath = os.path.join(FS_PATH, "campaign", camp6.id,
+                                 _timestamp2filename(camp6["modified"]) +
+                                 ".json")
+    camp7filepath = os.path.join(
+        FS_PATH, "campaign", "campaign--122818b6-1112-4fb0-b11b-b111107ca70a",
+        _timestamp2filename(camp7obj["modified"]) + ".json")
+
+    assert os.path.exists(camp6filepath)
+    assert os.path.exists(camp7filepath)
 
     camp6_r = fs_source.get(camp6.id)
     assert camp6_r.id == camp6.id
@@ -306,8 +368,8 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     assert "The Frenchmen" in camp7_r.aliases
 
     # remove all added objects
-    os.remove(os.path.join(FS_PATH, "campaign", camp6_r.id + ".json"))
-    os.remove(os.path.join(FS_PATH, "campaign", camp7_r.id + ".json"))
+    os.remove(camp6filepath)
+    os.remove(camp7filepath)
 
 
 def test_filesystem_store_get_stored_as_bundle(fs_store):
@@ -375,8 +437,11 @@ def test_filesystem_store_add(fs_store):
     assert camp1_r.id == camp1.id
     assert camp1_r.name == camp1.name
 
+    filepath = os.path.join(FS_PATH, "campaign", camp1_r.id,
+                            _timestamp2filename(camp1_r.modified) + ".json")
+
     # remove
-    os.remove(os.path.join(FS_PATH, "campaign", camp1_r.id + ".json"))
+    os.remove(filepath)
 
 
 def test_filesystem_store_add_as_bundle():
@@ -387,7 +452,10 @@ def test_filesystem_store_add_as_bundle():
                      aliases=["Ragnar"])
     fs_store.add(camp1)
 
-    with open(os.path.join(FS_PATH, "campaign", camp1.id + ".json")) as bundle_file:
+    filepath = os.path.join(FS_PATH, "campaign", camp1.id,
+                            _timestamp2filename(camp1.modified) + ".json")
+
+    with open(filepath) as bundle_file:
         assert '"type": "bundle"' in bundle_file.read()
 
     camp1_r = fs_store.get(camp1.id)
@@ -527,3 +595,334 @@ def test_related_to_by_target(rel_fs_store):
     assert len(resp) == 2
     assert any(x['id'] == CAMPAIGN_ID for x in resp)
     assert any(x['id'] == INDICATOR_ID for x in resp)
+
+
+def test_auth_set_white1():
+    auth_set = AuthSet({"A"}, set())
+
+    assert auth_set.auth_type == AuthSet.WHITE
+    assert auth_set.values == {"A"}
+
+
+def test_auth_set_white2():
+    auth_set = AuthSet(set(), set())
+
+    assert auth_set.auth_type == AuthSet.WHITE
+    assert len(auth_set.values) == 0
+
+
+def test_auth_set_white3():
+    auth_set = AuthSet({"A", "B"}, {"B", "C"})
+
+    assert auth_set.auth_type == AuthSet.WHITE
+    assert auth_set.values == {"A"}
+
+
+def test_auth_set_black1():
+    auth_set = AuthSet(None, {"B", "C"})
+
+    assert auth_set.auth_type == AuthSet.BLACK
+    assert auth_set.values == {"B", "C"}
+
+
+def test_optimize_types1():
+    filters = [
+        Filter("type", "=", "foo")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"foo"}
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types2():
+    filters = [
+        Filter("type", "=", "foo"),
+        Filter("type", "=", "bar")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert len(auth_types.values) == 0
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types3():
+    filters = [
+        Filter("type", "in", ["A", "B", "C"]),
+        Filter("type", "in", ["B", "C", "D"])
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"B", "C"}
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types4():
+    filters = [
+        Filter("type", "in", ["A", "B", "C"]),
+        Filter("type", "in", ["D", "E", "F"])
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert len(auth_types.values) == 0
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types5():
+    filters = [
+        Filter("type", "in", ["foo", "bar"]),
+        Filter("type", "!=", "bar")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"foo"}
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types6():
+    filters = [
+        Filter("type", "!=", "foo"),
+        Filter("type", "!=", "bar")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.BLACK
+    assert auth_types.values == {"foo", "bar"}
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types7():
+    filters = [
+        Filter("type", "=", "foo"),
+        Filter("type", "!=", "foo")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert len(auth_types.values) == 0
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types8():
+    filters = []
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.BLACK
+    assert len(auth_types.values) == 0
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types_ids1():
+    filters = [
+        Filter("type", "in", ["foo", "bar"]),
+        Filter("id", "=", "foo--00000000-0000-0000-0000-000000000000")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"foo"}
+    assert auth_ids.auth_type == AuthSet.WHITE
+    assert auth_ids.values == {"foo--00000000-0000-0000-0000-000000000000"}
+
+
+def test_optimize_types_ids2():
+    filters = [
+        Filter("type", "=", "foo"),
+        Filter("id", "=", "bar--00000000-0000-0000-0000-000000000000")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert len(auth_types.values) == 0
+    assert auth_ids.auth_type == AuthSet.WHITE
+    assert len(auth_ids.values) == 0
+
+
+def test_optimize_types_ids3():
+    filters = [
+        Filter("type", "in", ["foo", "bar"]),
+        Filter("id", "!=", "bar--00000000-0000-0000-0000-000000000000")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"foo", "bar"}
+    assert auth_ids.auth_type == AuthSet.BLACK
+    assert auth_ids.values == {"bar--00000000-0000-0000-0000-000000000000"}
+
+
+def test_optimize_types_ids4():
+    filters = [
+        Filter("type", "in", ["A", "B", "C"]),
+        Filter("id", "in", [
+            "B--00000000-0000-0000-0000-000000000000",
+            "C--00000000-0000-0000-0000-000000000000",
+            "D--00000000-0000-0000-0000-000000000000",
+        ])
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"B", "C"}
+    assert auth_ids.auth_type == AuthSet.WHITE
+    assert auth_ids.values == {
+        "B--00000000-0000-0000-0000-000000000000",
+        "C--00000000-0000-0000-0000-000000000000"
+    }
+
+
+def test_optimize_types_ids5():
+    filters = [
+        Filter("type", "in", ["A", "B", "C"]),
+        Filter("type", "!=", "C"),
+        Filter("id", "in", [
+            "B--00000000-0000-0000-0000-000000000000",
+            "C--00000000-0000-0000-0000-000000000000",
+            "D--00000000-0000-0000-0000-000000000000"
+        ]),
+        Filter("id", "!=", "D--00000000-0000-0000-0000-000000000000")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"B"}
+    assert auth_ids.auth_type == AuthSet.WHITE
+    assert auth_ids.values == {"B--00000000-0000-0000-0000-000000000000"}
+
+
+def test_optimize_types_ids6():
+    filters = [
+        Filter("id", "=", "A--00000000-0000-0000-0000-000000000000")
+    ]
+
+    auth_types, auth_ids = _find_search_optimizations(filters)
+
+    assert auth_types.auth_type == AuthSet.WHITE
+    assert auth_types.values == {"A"}
+    assert auth_ids.auth_type == AuthSet.WHITE
+    assert auth_ids.values == {"A--00000000-0000-0000-0000-000000000000"}
+
+
+def test_search_auth_set_white1():
+    auth_set = AuthSet(
+        {"attack-pattern", "doesntexist"},
+        set()
+    )
+
+    results = _get_matching_dir_entries(FS_PATH, auth_set, stat.S_ISDIR)
+    assert results == ["attack-pattern"]
+
+    results = _get_matching_dir_entries(FS_PATH, auth_set, stat.S_ISREG)
+    assert len(results) == 0
+
+
+def test_search_auth_set_white2():
+    auth_set = AuthSet(
+        {
+            "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38",
+            "malware--92ec0cbd-2c30-44a2-b270-73f4ec949841"
+
+        },
+        {
+            "malware--92ec0cbd-2c30-44a2-b270-73f4ec949841",
+            "malware--96b08451-b27a-4ff6-893f-790e26393a8e",
+            "doesntexist"
+        }
+    )
+
+    results = _get_matching_dir_entries(
+        os.path.join(FS_PATH, "malware"),
+        auth_set, stat.S_ISDIR
+    )
+
+    assert results == ["malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"]
+
+
+def test_search_auth_set_white3():
+    auth_set = AuthSet({"20170531213258226477", "doesntexist"}, set())
+
+    results = _get_matching_dir_entries(
+        os.path.join(FS_PATH, "malware",
+                     "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"),
+        auth_set, stat.S_ISREG, ".json"
+    )
+
+    assert results == ["20170531213258226477.json"]
+
+
+def test_search_auth_set_black1():
+    auth_set = AuthSet(
+        None,
+        {"tool--242f3da3-4425-4d11-8f5c-b842886da966", "doesntexist"}
+    )
+
+    results = _get_matching_dir_entries(
+        os.path.join(FS_PATH, "tool"),
+        auth_set, stat.S_ISDIR
+    )
+
+    assert set(results) == {
+        "tool--03342581-f790-4f03-ba41-e82e67392e23"
+    }
+
+
+def test_search_auth_set_white_empty():
+    auth_set = AuthSet(
+        set(),
+        set()
+    )
+
+    results = _get_matching_dir_entries(FS_PATH, auth_set, stat.S_ISDIR)
+
+    assert len(results) == 0
+
+
+def test_search_auth_set_black_empty(rel_fs_store):
+    # Ensure rel_fs_store fixture has run so that the type directories are
+    # predictable (it adds "campaign").
+    auth_set = AuthSet(
+        None,
+        set()
+    )
+
+    results = _get_matching_dir_entries(FS_PATH, auth_set, stat.S_ISDIR)
+
+    # Should get all dirs
+    assert set(results) == {
+        "attack-pattern",
+        "campaign",
+        "course-of-action",
+        "identity",
+        "indicator",
+        "intrusion-set",
+        "malware",
+        "marking-definition",
+        "relationship",
+        "tool"
+    }
