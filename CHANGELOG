@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+1.0.3 - 2018-10-31
+
+* #187 Pickle proof objects
+* #181 Improvements to error handling for datastores
+* #184, #192 Fix "pretty" JSON serialization problems
+* #195 Fix wrong property name for raster-image-ext
+* #201 UUIDv4 enforcement on identifiers
+* #203 New filter option "contains" for datastores
+* #207 Add documentation on patterning
+* #213 Python 3.7 support
+* #214 Support for multiple object versions in MemoryStore
+
 1.0.2 - 2018-05-18
 
 * Fixes bugs when using allow_custom (#176, #179).
