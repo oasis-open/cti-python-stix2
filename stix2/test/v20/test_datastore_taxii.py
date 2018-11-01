@@ -18,7 +18,7 @@ class MockTAXIICollectionEndpoint(Collection):
 
     def __init__(self, url, collection_info):
         super(MockTAXIICollectionEndpoint, self).__init__(
-            url, collection_info=collection_info
+            url, collection_info=collection_info,
         )
         self.objects = []
 
@@ -80,7 +80,7 @@ def collection(stix_objs1):
             "media_types": [
                 "application/vnd.oasis.stix+json; version=2.0",
             ],
-        }
+        },
     )
 
     mock.objects.extend(stix_objs1)
@@ -99,7 +99,7 @@ def collection_no_rw_access(stix_objs1):
             "media_types": [
                 "application/vnd.oasis.stix+json; version=2.0",
             ],
-        }
+        },
     )
 
     mock.objects.extend(stix_objs1)

@@ -12,7 +12,7 @@ EXPECTED_TLP_MARKING_DEFINITION = """{
     "type": "marking-definition",
     "spec_version": "2.1",
     "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
-    "created": "2017-01-20T00:00:00Z",
+    "created": "2017-01-20T00:00:00.000Z",
     "definition_type": "tlp",
     "definition": {
         "tlp": "white"

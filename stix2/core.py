@@ -29,10 +29,9 @@ def parse(data, allow_custom=False, version=None):
         allow_custom (bool): Whether to allow custom properties as well unknown
             custom objects. Note that unknown custom objects cannot be parsed
             into STIX objects, and will be returned as is. Default: False.
-        version (str): Only used for bundles.  If the spec_version property is
-            missing, it is ambiguous what spec should be used to parse the
-            bundle.  In this case, this version parameter gives the spec
-            version to use.
+        version (str): If present, it forces the parser to use the version
+            provided. Otherwise, the library will make the best effort based
+            on checking the "spec_version" property.
 
     Returns:
         An instantiated Python STIX object.
@@ -59,30 +58,29 @@ def parse(data, allow_custom=False, version=None):
 def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     """convert dictionary to full python-stix2 object
 
-        Args:
-            stix_dict (dict): a python dictionary of a STIX object
-                that (presumably) is semantically correct to be parsed
-                into a full python-stix2 obj
-            allow_custom (bool): Whether to allow custom properties as well
-                unknown custom objects. Note that unknown custom objects cannot
-                be parsed into STIX objects, and will be returned as is.
-                Default: False.
-            version: Only used for bundles.  If the spec_version property is
-                missing, it is ambiguous what spec should be used to parse the
-                bundle.  In this case, this version parameter gives the spec
-                version to use.
+    Args:
+        stix_dict (dict): a python dictionary of a STIX object
+            that (presumably) is semantically correct to be parsed
+            into a full python-stix2 obj
+        allow_custom (bool): Whether to allow custom properties as well
+            unknown custom objects. Note that unknown custom objects cannot
+            be parsed into STIX objects, and will be returned as is.
+            Default: False.
+        version (str): If present, it forces the parser to use the version
+            provided. Otherwise, the library will make the best effort based
+            on checking the "spec_version" property.
 
-        Returns:
-            An instantiated Python STIX object
+    Returns:
+        An instantiated Python STIX object
 
-        Warnings:
-            'allow_custom=True' will allow for the return of any supplied STIX
-            dict(s) that cannot be found to map to any known STIX object types
-            (both STIX2 domain objects or defined custom STIX2 objects); NO
-            validation is done. This is done to allow the processing of
-            possibly unknown custom STIX objects (example scenario: I need to
-            query a third-party TAXII endpoint that could provide custom STIX
-            objects that I don't know about ahead of time)
+    Warnings:
+        'allow_custom=True' will allow for the return of any supplied STIX
+        dict(s) that cannot be found to map to any known STIX object types
+        (both STIX2 domain objects or defined custom STIX2 objects); NO
+        validation is done. This is done to allow the processing of
+        possibly unknown custom STIX objects (example scenario: I need to
+        query a third-party TAXII endpoint that could provide custom STIX
+        objects that I don't know about ahead of time)
 
     """
     if 'type' not in stix_dict:
@@ -130,11 +128,12 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
             object being parsed. Use empty list if no valid refs are present.
         allow_custom (bool): Whether to allow custom properties or not.
             Default: False.
-        version (str): If the spec version is missing, the latest supported
-            stix2 version will be used to parse the observable object.
+        version (str): If present, it forces the parser to use the version
+            provided. Otherwise, the library will use the latest version.
 
     Returns:
         An instantiated Python STIX Cyber Observable object.
+
     """
     obj = _get_dict(data)
     # get deep copy since we are going modify the dict and might
@@ -187,6 +186,7 @@ def _register_object(new_type, version=None):
         new_type (class): A class to register in the Object map.
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
+
     """
     if version:
         v = 'v' + version.replace('.', '')
@@ -205,6 +205,7 @@ def _register_marking(new_marking, version=None):
         new_marking (class): A class to register in the Marking map.
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
+
     """
     if version:
         v = 'v' + version.replace('.', '')
@@ -223,6 +224,7 @@ def _register_observable(new_observable, version=None):
         new_observable (class): A class to register in the Observables map.
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
+
     """
     if version:
         v = 'v' + version.replace('.', '')
@@ -243,6 +245,7 @@ def _register_observable_extension(observable, new_extension, version=None):
             Extensions map.
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
+
     """
     if version:
         v = 'v' + version.replace('.', '')

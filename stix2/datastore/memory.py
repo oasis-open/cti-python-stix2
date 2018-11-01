@@ -21,7 +21,11 @@ def _add(store, stix_data, allow_custom=True, version=None):
     Recursive function, breaks down STIX Bundles and lists.
 
     Args:
+        store: A MemoryStore, MemorySink or MemorySource object.
         stix_data (list OR dict OR STIX object): STIX objects to be added
+        allow_custom (bool): Whether to allow custom properties as well unknown
+            custom objects. Note that unknown custom objects cannot be parsed
+            into STIX objects, and will be returned as is. Default: False.
         version (str): Which STIX2 version to lock the parser to. (e.g. "2.0",
             "2.1"). If None, the library makes the best effort to figure
             out the spec representation of the object.
@@ -93,8 +97,10 @@ class _ObjectFamily(object):
             self.latest_version = obj
 
     def __str__(self):
-        return "<<{}; latest={}>>".format(self.all_versions,
-                                          self.latest_version.modified)
+        return "<<{}; latest={}>>".format(
+            self.all_versions,
+            self.latest_version.modified,
+        )
 
     def __repr__(self):
         return str(self)
@@ -278,8 +284,8 @@ class MemorySource(DataSource):
             all_filters = list(
                 itertools.chain(
                     _composite_filters or [],
-                    self.filters
-                )
+                    self.filters,
+                ),
             )
 
             stix_obj = next(apply_common_filters([stix_obj], all_filters), None)
@@ -317,12 +323,12 @@ class MemorySource(DataSource):
             all_filters = list(
                 itertools.chain(
                     _composite_filters or [],
-                    self.filters
-                )
+                    self.filters,
+                ),
             )
 
             results.extend(
-                apply_common_filters(stix_objs_to_filter, all_filters)
+                apply_common_filters(stix_objs_to_filter, all_filters),
             )
 
         return results
