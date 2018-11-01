@@ -1,7 +1,7 @@
 import pytest
 
 import stix2
-from stix2 import DEFAULT_VERSION, core, exceptions
+from stix2 import core, exceptions
 
 BUNDLE = {
     "type": "bundle",
@@ -52,29 +52,29 @@ def test_dict_to_stix2_bundle_with_version():
     assert str(excinfo.value) == msg
 
 
-def test_parse_observable_with_default_version():
+def test_parse_observable_with_version():
     observable = {"type": "file", "name": "foo.exe"}
-    obs_obj = core.parse_observable(observable)
+    obs_obj = core.parse_observable(observable, version='2.1')
+    v = 'v21'
 
-    assert 'v' + DEFAULT_VERSION.replace('.', '') in str(obs_obj.__class__)
+    assert v in str(obs_obj.__class__)
 
 
 def test_register_object_with_version():
     bundle = core.dict_to_stix2(BUNDLE, version='2.1')
     core._register_object(bundle.objects[0].__class__)
-
-    v = 'v' + DEFAULT_VERSION.replace('.', '')
+    v = 'v21'
 
     assert bundle.objects[0].type in core.STIX2_OBJ_MAPS[v]['objects']
-    assert 'v' + DEFAULT_VERSION.replace('.', '') in str(bundle.objects[0].__class__)
+    assert v in str(bundle.objects[0].__class__)
 
 
-def test_register_marking_with_default_version():
-    core._register_marking(stix2.TLP_WHITE.__class__)
-    v = 'v' + DEFAULT_VERSION.replace('.', '')
+def test_register_marking_with_version():
+    core._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
+    v = 'v21'
 
-    assert stix2.TLP_WHITE.type in core.STIX2_OBJ_MAPS[v]['markings']
-    assert 'v' + DEFAULT_VERSION.replace('.', '') in str(stix2.TLP_WHITE.__class__)
+    assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(stix2.v21.TLP_WHITE.__class__)
 
 
 def test_register_observable_with_default_version():
@@ -109,10 +109,10 @@ def test_register_observable_with_default_version():
         },
     )
     core._register_observable(observed_data.objects['0'].__class__)
-    v = 'v' + DEFAULT_VERSION.replace('.', '')
+    v = 'v21'
 
     assert observed_data.objects['0'].type in core.STIX2_OBJ_MAPS[v]['observables']
-    assert 'v' + DEFAULT_VERSION.replace('.', '') in str(observed_data.objects['0'].__class__)
+    assert v in str(observed_data.objects['0'].__class__)
 
 
 def test_register_observable_extension_with_default_version():
@@ -147,10 +147,10 @@ def test_register_observable_extension_with_default_version():
         },
     )
     core._register_observable_extension(observed_data.objects['0'], observed_data.objects['0'].extensions['ntfs-ext'].__class__)
-    v = 'v' + DEFAULT_VERSION.replace('.', '')
+    v = 'v21'
 
     assert observed_data.objects['0'].type in core.STIX2_OBJ_MAPS[v]['observables']
-    assert 'v' + DEFAULT_VERSION.replace('.', '') in str(observed_data.objects['0'].__class__)
+    assert v in str(observed_data.objects['0'].__class__)
 
     assert observed_data.objects['0'].extensions['ntfs-ext']._type in core.STIX2_OBJ_MAPS[v]['observable-extensions']['file']
-    assert 'v' + DEFAULT_VERSION.replace('.', '') in str(observed_data.objects['0'].extensions['ntfs-ext'].__class__)
+    assert v in str(observed_data.objects['0'].extensions['ntfs-ext'].__class__)

@@ -35,7 +35,7 @@
 # flake8: noqa
 
 from .core import _collect_stix2_mappings, parse, parse_observable
-from .v21 import *  # This import will always be the latest STIX 2.X version
+from .v20 import *  # This import will always be the latest STIX 2.X version
 from .datastore import CompositeDataSource
 from .datastore.filesystem import (
     FileSystemSink, FileSystemSource,
@@ -78,4 +78,4 @@ from .version import __version__
 
 _collect_stix2_mappings()
 
-DEFAULT_VERSION = '2.1'  # Default version will always be the latest STIX 2.X version
+DEFAULT_VERSION = '2.0'  # Default version will always be the latest STIX 2.X version

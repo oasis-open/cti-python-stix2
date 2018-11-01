@@ -1,7 +1,5 @@
 import os
 
-import pytest
-
 import stix2
 from stix2.workbench import (
     AttackPattern, Campaign, CourseOfAction, ExternalReference,
@@ -24,7 +22,6 @@ from .constants import (
 )
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_environment():
 
     # Create a STIX object
@@ -79,7 +76,6 @@ def test_workbench_get_all_identities():
     assert resp[0].id == IDENTITY_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_get_all_indicators():
     resp = indicators()
     assert len(resp) == 1
@@ -95,7 +91,6 @@ def test_workbench_get_all_intrusion_sets():
     assert resp[0].id == INTRUSION_SET_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_get_all_malware():
     mal = Malware(id=MALWARE_ID, **MALWARE_KWARGS)
     save(mal)
@@ -114,7 +109,6 @@ def test_workbench_get_all_observed_data():
     assert resp[0].id == OBSERVED_DATA_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_get_all_reports():
     rep = Report(id=REPORT_ID, **REPORT_KWARGS)
     save(rep)
@@ -124,7 +118,6 @@ def test_workbench_get_all_reports():
     assert resp[0].id == REPORT_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_get_all_threat_actors():
     thr = ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
     save(thr)
@@ -134,7 +127,6 @@ def test_workbench_get_all_threat_actors():
     assert resp[0].id == THREAT_ACTOR_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_get_all_tools():
     tool = Tool(id=TOOL_ID, **TOOL_KWARGS)
     save(tool)
@@ -153,14 +145,12 @@ def test_workbench_get_all_vulnerabilities():
     assert resp[0].id == VULNERABILITY_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_add_to_bundle():
     vuln = Vulnerability(**VULNERABILITY_KWARGS)
     bundle = stix2.v20.Bundle(vuln)
     assert bundle.objects[0].name == 'Heartbleed'
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_relationships():
     rel = Relationship(INDICATOR_ID, 'indicates', MALWARE_ID)
     save(rel)
@@ -180,7 +170,6 @@ def test_workbench_created_by():
     assert creator.id == IDENTITY_ID
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_related():
     rel1 = Relationship(MALWARE_ID, 'targets', IDENTITY_ID)
     rel2 = Relationship(CAMPAIGN_ID, 'uses', MALWARE_ID)
@@ -196,7 +185,6 @@ def test_workbench_related():
     assert len(resp) == 1
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_workbench_related_with_filters():
     malware = Malware(labels=["ransomware"], name="CryptorBit", created_by_ref=IDENTITY_ID)
     rel = Relationship(malware.id, 'variant-of', MALWARE_ID)
@@ -214,7 +202,6 @@ def test_workbench_related_with_filters():
     assert len(resp) == 1
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_add_data_source():
     fs_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
     fs = FileSystemSource(fs_path)
@@ -228,13 +215,11 @@ def test_add_data_source():
     assert 'tool--242f3da3-4425-4d11-8f5c-b842886da966' in resp_ids
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_additional_filter():
     resp = tools(Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'))
     assert len(resp) == 2
 
 
-@pytest.mark.skip(reason='The workbench is not working correctly for 2.0')
 def test_additional_filters_list():
     resp = tools([
         Filter('created_by_ref', '=', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5'),

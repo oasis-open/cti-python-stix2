@@ -63,12 +63,15 @@ For more in-depth documentation, please see `https://stix2.readthedocs.io/ <http
 STIX 2.X Technical Specification Support
 ----------------------------------------
 
-This version of python-stix2 supports STIX 2.1 by default. Although, the
-`stix2` Python library is built to support multiple versions of the STIX
+This version of python-stix2 brings initial support to STIX 2.1 currently at the
+CSD level. The intention is to help debug components of the library and also
+check for problems that should be fixed in the specification.
+
+The `stix2` Python library is built to support multiple versions of the STIX
 Technical Specification. With every major release of stix2 the ``import stix2``
 statement will automatically load the SDO/SROs equivalent to the most recent
-supported 2.X Technical Specification. Please see the library documentation
-for more details.
+supported 2.X Committee Specification. Please see the library documentation for
+more details.
 
 Governance
 ----------

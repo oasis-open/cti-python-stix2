@@ -734,7 +734,7 @@ def test_file_example_with_empty_NTFSExt():
             },
         )
 
-    assert excinfo.value.cls == stix2.NTFSExt
+    assert excinfo.value.cls == stix2.v21.NTFSExt
     assert excinfo.value.properties == sorted(list(stix2.NTFSExt._properties.keys()))
 
 

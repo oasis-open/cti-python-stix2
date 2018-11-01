@@ -97,6 +97,11 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         # bundles without spec_version are ambiguous.
         if version:
             v = 'v' + version.replace('.', '')
+        elif 'spec_version' in stix_dict:
+            v = 'v' + stix_dict['spec_version'].replace('.', '')
+        elif any('spec_version' in x for x in stix_dict['objects']):
+            # Only on 2.1 we are allowed multiple version of SDOs/SROs.
+            v = 'v21'
         else:
             v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
     else:
