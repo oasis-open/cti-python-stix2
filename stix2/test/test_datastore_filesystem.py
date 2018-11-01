@@ -1,6 +1,8 @@
+import datetime
 import errno
 import json
 import os
+import pytz
 import shutil
 import stat
 
@@ -926,3 +928,26 @@ def test_search_auth_set_black_empty(rel_fs_store):
         "relationship",
         "tool"
     }
+
+
+def test_timestamp2filename_naive():
+    dt = datetime.datetime(
+        2010, 6, 15,
+        8, 30, 10, 1234
+    )
+
+    filename = _timestamp2filename(dt)
+    assert filename == "20100615083010001234"
+
+
+def test_timestamp2filename_tz():
+    # one hour west of UTC (i.e. an hour earlier)
+    tz = pytz.FixedOffset(-60)
+    dt = datetime.datetime(
+        2010, 6, 15,
+        7, 30, 10, 1234,
+        tz
+    )
+
+    filename = _timestamp2filename(dt)
+    assert filename == "20100615083010001234"
