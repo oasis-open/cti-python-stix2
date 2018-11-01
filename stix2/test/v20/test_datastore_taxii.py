@@ -16,8 +16,10 @@ COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c
 class MockTAXIICollectionEndpoint(Collection):
     """Mock for taxii2_client.TAXIIClient"""
 
-    def __init__(self, url, **kwargs):
-        super(MockTAXIICollectionEndpoint, self).__init__(url, **kwargs)
+    def __init__(self, url, collection_info):
+        super(MockTAXIICollectionEndpoint, self).__init__(
+            url, collection_info=collection_info
+        )
         self.objects = []
 
     def add_objects(self, bundle):
@@ -69,7 +71,7 @@ class MockTAXIICollectionEndpoint(Collection):
 @pytest.fixture
 def collection(stix_objs1):
     mock = MockTAXIICollectionEndpoint(
-        COLLECTION_URL, **{
+        COLLECTION_URL, {
             "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
             "title": "Writable Collection",
             "description": "This collection is a dropbox for submitting indicators",
@@ -88,7 +90,7 @@ def collection(stix_objs1):
 @pytest.fixture
 def collection_no_rw_access(stix_objs1):
     mock = MockTAXIICollectionEndpoint(
-        COLLECTION_URL, **{
+        COLLECTION_URL, {
             "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
             "title": "Not writeable or readable Collection",
             "description": "This collection is a dropbox for submitting indicators",

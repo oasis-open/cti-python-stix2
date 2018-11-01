@@ -4,7 +4,7 @@ import io
 import json
 import os
 
-from stix2 import Bundle, v20
+from stix2 import v20, v21
 from stix2.core import parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
@@ -86,7 +86,7 @@ class FileSystemSink(DataSink):
                 # Assuming future specs will allow multiple SDO/SROs
                 # versions in a single bundle we won't need to check this
                 # and just use the latest supported Bundle version.
-                stix_obj = Bundle(stix_obj, allow_custom=self.allow_custom)
+                stix_obj = v21.Bundle(stix_obj, allow_custom=self.allow_custom)
             else:
                 stix_obj = v20.Bundle(stix_obj, allow_custom=self.allow_custom)
 

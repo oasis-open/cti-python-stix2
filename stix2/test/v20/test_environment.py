@@ -131,7 +131,7 @@ def test_environment_functions():
 
     # Get both versions of the object
     resp = env.all_versions(INDICATOR_ID)
-    assert len(resp) == 1  # should be 2, but MemoryStore only keeps 1 version of objects
+    assert len(resp) == 2
 
     # Get just the most recent version of the object
     resp = env.get(INDICATOR_ID)

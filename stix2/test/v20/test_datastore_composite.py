@@ -2,7 +2,9 @@ import pytest
 
 from stix2.datastore import CompositeDataSource, make_id
 from stix2.datastore.filters import Filter
-from stix2.datastore.memory import MemorySink, MemorySource
+from stix2.datastore.memory import MemorySink, MemorySource, MemoryStore
+from stix2.utils import parse_into_datetime
+from stix2.v20.common import TLP_GREEN
 
 
 def test_add_remove_composite_datasource():
@@ -48,14 +50,14 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
     indicators = cds1.all_versions("indicator--00000000-0000-4000-8000-000000000001")
 
     # In STIX_OBJS2 changed the 'modified' property to a later time...
-    assert len(indicators) == 2
+    assert len(indicators) == 3
 
     cds1.add_data_sources([cds2])
 
     indicator = cds1.get("indicator--00000000-0000-4000-8000-000000000001")
 
     assert indicator["id"] == "indicator--00000000-0000-4000-8000-000000000001"
-    assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
+    assert indicator["modified"] == parse_into_datetime("2017-01-31T13:49:53.935Z")
     assert indicator["type"] == "indicator"
 
     query1 = [
@@ -72,20 +74,80 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
 
     # STIX_OBJS2 has indicator with later time, one with different id, one with
     # original time in STIX_OBJS1
-    assert len(results) == 3
+    assert len(results) == 4
 
     indicator = cds1.get("indicator--00000000-0000-4000-8000-000000000001")
 
     assert indicator["id"] == "indicator--00000000-0000-4000-8000-000000000001"
-    assert indicator["modified"] == "2017-01-31T13:49:53.935Z"
+    assert indicator["modified"] == parse_into_datetime("2017-01-31T13:49:53.935Z")
     assert indicator["type"] == "indicator"
 
-    # There is only one indicator with different ID. Since we use the same data
-    # when deduplicated, only two indicators (one with different modified).
     results = cds1.all_versions("indicator--00000000-0000-4000-8000-000000000001")
-    assert len(results) == 2
+    assert len(results) == 3
 
     # Since we have filters already associated with our CompositeSource providing
     # nothing returns the same as cds1.query(query1) (the associated query is query2)
     results = cds1.query([])
-    assert len(results) == 3
+    assert len(results) == 4
+
+
+def test_source_markings():
+    msrc = MemorySource(TLP_GREEN)
+
+    assert msrc.get(TLP_GREEN.id) == TLP_GREEN
+    assert msrc.all_versions(TLP_GREEN.id) == [TLP_GREEN]
+    assert msrc.query(Filter("id", "=", TLP_GREEN.id)) == [TLP_GREEN]
+
+
+def test_sink_markings():
+    # just make sure there is no crash
+    msink = MemorySink(TLP_GREEN)
+    msink.add(TLP_GREEN)
+
+
+def test_store_markings():
+    mstore = MemoryStore(TLP_GREEN)
+
+    assert mstore.get(TLP_GREEN.id) == TLP_GREEN
+    assert mstore.all_versions(TLP_GREEN.id) == [TLP_GREEN]
+    assert mstore.query(Filter("id", "=", TLP_GREEN.id)) == [TLP_GREEN]
+
+
+def test_source_mixed(indicator):
+    msrc = MemorySource([TLP_GREEN, indicator])
+
+    assert msrc.get(TLP_GREEN.id) == TLP_GREEN
+    assert msrc.all_versions(TLP_GREEN.id) == [TLP_GREEN]
+    assert msrc.query(Filter("id", "=", TLP_GREEN.id)) == [TLP_GREEN]
+
+    assert msrc.get(indicator.id) == indicator
+    assert msrc.all_versions(indicator.id) == [indicator]
+    assert msrc.query(Filter("id", "=", indicator.id)) == [indicator]
+
+    all_objs = msrc.query()
+    assert TLP_GREEN in all_objs
+    assert indicator in all_objs
+    assert len(all_objs) == 2
+
+
+def test_sink_mixed(indicator):
+    # just make sure there is no crash
+    msink = MemorySink([TLP_GREEN, indicator])
+    msink.add([TLP_GREEN, indicator])
+
+
+def test_store_mixed(indicator):
+    mstore = MemoryStore([TLP_GREEN, indicator])
+
+    assert mstore.get(TLP_GREEN.id) == TLP_GREEN
+    assert mstore.all_versions(TLP_GREEN.id) == [TLP_GREEN]
+    assert mstore.query(Filter("id", "=", TLP_GREEN.id)) == [TLP_GREEN]
+
+    assert mstore.get(indicator.id) == indicator
+    assert mstore.all_versions(indicator.id) == [indicator]
+    assert mstore.query(Filter("id", "=", indicator.id)) == [indicator]
+
+    all_objs = mstore.query()
+    assert TLP_GREEN in all_objs
+    assert indicator in all_objs
+    assert len(all_objs) == 2

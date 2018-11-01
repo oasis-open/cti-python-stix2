@@ -1,29 +1,20 @@
 """
 Python STIX 2.0 Memory Source/Sink
-
-TODO:
-    Use deduplicate() calls only when memory corpus is dirty (been added to)
-    can save a lot of time for successive queries
-
-Note:
-    Not worrying about STIX versioning. The in memory STIX data at anytime
-    will only hold one version of a STIX object. As such, when save() is called,
-    the single versions of all the STIX objects are what is written to file.
-
 """
 
-import collections
 import io
+import itertools
 import json
 import os
 
-from stix2 import Bundle, v20
+from stix2 import v20, v21
+from stix2.base import _STIXBase
 from stix2.core import parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
-from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
+from stix2.datastore.filters import FilterSet, apply_common_filters
 
 
-def _add(store, stix_data=None):
+def _add(store, stix_data, allow_custom=True, version=None):
     """Add STIX objects to MemoryStore/Sink.
 
     Adds STIX objects to an in-memory dictionary for fast lookup.
@@ -31,25 +22,82 @@ def _add(store, stix_data=None):
 
     Args:
         stix_data (list OR dict OR STIX object): STIX objects to be added
+        version (str): Which STIX2 version to lock the parser to. (e.g. "2.0",
+            "2.1"). If None, the library makes the best effort to figure
+            out the spec representation of the object.
 
     """
-    if isinstance(stix_data, collections.Mapping):
-        if stix_data['type'] == 'bundle':
-            # adding a json bundle - so just grab STIX objects
-            for stix_obj in stix_data.get('objects', []):
-                _add(store, stix_obj)
-        else:
-            # adding a json STIX object
-            store._data[stix_data['id']] = stix_data
-
-    elif isinstance(stix_data, list):
+    if isinstance(stix_data, list):
         # STIX objects are in a list- recurse on each object
         for stix_obj in stix_data:
-            _add(store, stix_obj)
+            _add(store, stix_obj, allow_custom, version)
+
+    elif stix_data["type"] == "bundle":
+        # adding a json bundle - so just grab STIX objects
+        for stix_obj in stix_data.get("objects", []):
+            _add(store, stix_obj, allow_custom, version)
 
     else:
-        raise TypeError("stix_data expected to be a python-stix2 object (or list of), JSON formatted STIX (or list of),"
-                        " or a JSON formatted STIX bundle. stix_data was of type: " + str(type(stix_data)))
+        # Adding a single non-bundle object
+        if isinstance(stix_data, _STIXBase):
+            stix_obj = stix_data
+        else:
+            stix_obj = parse(stix_data, allow_custom, version)
+
+        # Map ID directly to the object, if it is a marking.  Otherwise,
+        # map to a family, so we can track multiple versions.
+        if _is_marking(stix_obj):
+            store._data[stix_obj.id] = stix_obj
+
+        else:
+            if stix_obj.id in store._data:
+                obj_family = store._data[stix_obj.id]
+            else:
+                obj_family = _ObjectFamily()
+                store._data[stix_obj.id] = obj_family
+
+            obj_family.add(stix_obj)
+
+
+def _is_marking(obj_or_id):
+    """Determines whether the given object or object ID is/is for a marking
+    definition.
+
+    :param obj_or_id: A STIX object or object ID as a string.
+    :return: True if a marking definition, False otherwise.
+    """
+
+    if isinstance(obj_or_id, _STIXBase):
+        id_ = obj_or_id.id
+    else:
+        id_ = obj_or_id
+
+    return id_.startswith("marking-definition--")
+
+
+class _ObjectFamily(object):
+    """
+    An internal implementation detail of memory sources/sinks/stores.
+    Represents a "family" of STIX objects: all objects with a particular
+    ID.  (I.e. all versions.)  The latest version is also tracked so that it
+    can be obtained quickly.
+    """
+    def __init__(self):
+        self.all_versions = {}
+        self.latest_version = None
+
+    def add(self, obj):
+        self.all_versions[obj.modified] = obj
+        if self.latest_version is None or \
+                obj.modified > self.latest_version.modified:
+            self.latest_version = obj
+
+    def __str__(self):
+        return "<<{}; latest={}>>".format(self.all_versions,
+                                          self.latest_version.modified)
+
+    def __repr__(self):
+        return str(self)
 
 
 class MemoryStore(DataStoreMixin):
@@ -77,7 +125,7 @@ class MemoryStore(DataStoreMixin):
         self._data = {}
 
         if stix_data:
-            _add(self, stix_data)
+            _add(self, stix_data, allow_custom)
 
         super(MemoryStore, self).__init__(
             source=MemorySource(stix_data=self._data, allow_custom=allow_custom, _store=True),
@@ -132,24 +180,30 @@ class MemorySink(DataSink):
     """
     def __init__(self, stix_data=None, allow_custom=True, _store=False):
         super(MemorySink, self).__init__()
-        self._data = {}
         self.allow_custom = allow_custom
 
         if _store:
             self._data = stix_data
-        elif stix_data:
-            _add(self, stix_data)
+        else:
+            self._data = {}
+            if stix_data:
+                _add(self, stix_data, allow_custom)
 
     def add(self, stix_data):
-        _add(self, stix_data)
+        _add(self, stix_data, self.allow_custom)
     add.__doc__ = _add.__doc__
 
     def save_to_file(self, path, encoding='utf-8'):
         path = os.path.abspath(path)
-        all_objs = list(self._data.values())
+
+        all_objs = list(itertools.chain.from_iterable(
+            value.all_versions.values() if isinstance(value, _ObjectFamily)
+            else [value]
+            for value in self._data.values()
+        ))
 
         if any('spec_version' in x for x in all_objs):
-            bundle = Bundle(all_objs, allow_custom=self.allow_custom)
+            bundle = v21.Bundle(all_objs, allow_custom=self.allow_custom)
         else:
             bundle = v20.Bundle(all_objs, allow_custom=self.allow_custom)
 
@@ -190,13 +244,14 @@ class MemorySource(DataSource):
     """
     def __init__(self, stix_data=None, allow_custom=True, _store=False):
         super(MemorySource, self).__init__()
-        self._data = {}
         self.allow_custom = allow_custom
 
         if _store:
             self._data = stix_data
-        elif stix_data:
-            _add(self, stix_data)
+        else:
+            self._data = {}
+            if stix_data:
+                _add(self, stix_data, allow_custom)
 
     def get(self, stix_id, _composite_filters=None):
         """Retrieve STIX object from in-memory dict via STIX ID.
@@ -207,32 +262,29 @@ class MemorySource(DataSource):
                 CompositeDataSource, not user supplied
 
         Returns:
-            (dict OR STIX object): STIX object that has the supplied
-                ID. As the MemoryStore(i.e. MemorySink) adds STIX objects to memory
-                as they are supplied (either as python dictionary or STIX object), it
-                is returned in the same form as it as added
+            (STIX object): STIX object that has the supplied ID.
 
         """
-        if _composite_filters is None:
-            # if get call is only based on 'id', no need to search, just retrieve from dict
-            try:
-                stix_obj = self._data[stix_id]
-            except KeyError:
-                stix_obj = None
-            return stix_obj
+        stix_obj = None
 
-        # if there are filters from the composite level, process full query
-        query = [Filter('id', '=', stix_id)]
-
-        all_data = self.query(query=query, _composite_filters=_composite_filters)
-
-        if all_data:
-            # reduce to most recent version
-            stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
-
-            return stix_obj
+        if _is_marking(stix_id):
+            stix_obj = self._data.get(stix_id)
         else:
-            return None
+            object_family = self._data.get(stix_id)
+            if object_family:
+                stix_obj = object_family.latest_version
+
+        if stix_obj:
+            all_filters = list(
+                itertools.chain(
+                    _composite_filters or [],
+                    self.filters
+                )
+            )
+
+            stix_obj = next(apply_common_filters([stix_obj], all_filters), None)
+
+        return stix_obj
 
     def all_versions(self, stix_id, _composite_filters=None):
         """Retrieve STIX objects from in-memory dict via STIX ID, all versions
@@ -247,14 +299,33 @@ class MemorySource(DataSource):
                 the parent CompositeDataSource, not user supplied
 
         Returns:
-            (list): list of STIX objects that has the supplied ID. As the
-                MemoryStore(i.e. MemorySink) adds STIX objects to memory as they
-                are supplied (either as python dictionary or STIX object), it
-                is returned in the same form as it as added
+            (list): list of STIX objects that have the supplied ID.
 
         """
+        results = []
+        stix_objs_to_filter = None
+        if _is_marking(stix_id):
+            stix_obj = self._data.get(stix_id)
+            if stix_obj:
+                stix_objs_to_filter = [stix_obj]
+        else:
+            object_family = self._data.get(stix_id)
+            if object_family:
+                stix_objs_to_filter = object_family.all_versions.values()
 
-        return [self.get(stix_id=stix_id, _composite_filters=_composite_filters)]
+        if stix_objs_to_filter:
+            all_filters = list(
+                itertools.chain(
+                    _composite_filters or [],
+                    self.filters
+                )
+            )
+
+            results.extend(
+                apply_common_filters(stix_objs_to_filter, all_filters)
+            )
+
+        return results
 
     def query(self, query=None, _composite_filters=None):
         """Search and retrieve STIX objects based on the complete query.
@@ -269,10 +340,7 @@ class MemorySource(DataSource):
                 the CompositeDataSource, not user supplied
 
         Returns:
-            (list): list of STIX objects that matches the supplied
-                query. As the MemoryStore(i.e. MemorySink) adds STIX objects
-                to memory as they are supplied (either as python dictionary or
-                STIX object), it is returned in the same form as it as added.
+            (list): list of STIX objects that match the supplied query.
 
         """
         query = FilterSet(query)
@@ -283,17 +351,20 @@ class MemorySource(DataSource):
         if _composite_filters:
             query.add(_composite_filters)
 
+        all_objs = itertools.chain.from_iterable(
+            value.all_versions.values() if isinstance(value, _ObjectFamily)
+            else [value]
+            for value in self._data.values()
+        )
+
         # Apply STIX common property filters.
-        all_data = list(apply_common_filters(self._data.values(), query))
+        all_data = list(apply_common_filters(all_objs, query))
 
         return all_data
 
     def load_from_file(self, file_path):
-        stix_data = json.load(open(os.path.abspath(file_path), 'r'))
+        with open(os.path.abspath(file_path), "r") as f:
+            stix_data = json.load(f)
 
-        if stix_data['type'] == 'bundle':
-            for stix_obj in stix_data['objects']:
-                _add(self, stix_data=parse(stix_obj, allow_custom=self.allow_custom))
-        else:
-            _add(self, stix_data=parse(stix_data, allow_custom=self.allow_custom))
+        _add(self, stix_data, self.allow_custom)
     load_from_file.__doc__ = MemoryStore.load_from_file.__doc__

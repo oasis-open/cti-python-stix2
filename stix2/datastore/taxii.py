@@ -1,7 +1,7 @@
 """Python STIX 2.x TAXIICollectionStore"""
 from requests.exceptions import HTTPError
 
-from stix2 import Bundle, v20
+from stix2 import v20, v21
 from stix2.base import _STIXBase
 from stix2.core import parse
 from stix2.datastore import (
@@ -95,7 +95,7 @@ class TAXIICollectionSink(DataSink):
                 bundle = stix_data.serialize(encoding='utf-8', ensure_ascii=False)
             elif 'spec_version' in stix_data:
                 # If the spec_version is present, use new Bundle object...
-                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
+                bundle = v21.Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
             else:
                 bundle = v20.Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
 
@@ -105,7 +105,7 @@ class TAXIICollectionSink(DataSink):
                 bundle = parse(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
             elif 'spec_version' in stix_data:
                 # If the spec_version is present, use new Bundle object...
-                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
+                bundle = v21.Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
             else:
                 bundle = v20.Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
 
@@ -122,7 +122,7 @@ class TAXIICollectionSink(DataSink):
                 bundle = stix_data.serialize(encoding='utf-8', ensure_ascii=False)
             elif 'spec_version' in stix_data:
                 # If the spec_version is present, use new Bundle object...
-                bundle = Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
+                bundle = v21.Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
             else:
                 bundle = v20.Bundle(stix_data, allow_custom=self.allow_custom).serialize(encoding='utf-8', ensure_ascii=False)
 

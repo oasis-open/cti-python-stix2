@@ -8,6 +8,7 @@ from stix2.datastore import make_id
 from stix2.v20 import (
     Bundle, Campaign, CustomObject, Identity, Indicator, Malware, Relationship,
 )
+from stix2.utils import parse_into_datetime
 
 from .constants import (
     CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
@@ -171,7 +172,7 @@ def test_memory_store_all_versions(mem_store):
     ))
 
     resp = mem_store.all_versions("indicator--00000000-0000-4000-8000-000000000001")
-    assert len(resp) == 1  # MemoryStore can only store 1 version of each object
+    assert len(resp) == 3
 
 
 def test_memory_store_query(mem_store):
@@ -183,25 +184,27 @@ def test_memory_store_query(mem_store):
 def test_memory_store_query_single_filter(mem_store):
     query = Filter('id', '=', 'indicator--00000000-0000-4000-8000-000000000001')
     resp = mem_store.query(query)
-    assert len(resp) == 1
+    assert len(resp) == 2
 
 
 def test_memory_store_query_empty_query(mem_store):
     resp = mem_store.query()
     # sort since returned in random order
-    resp = sorted(resp, key=lambda k: k['id'])
-    assert len(resp) == 2
+    resp = sorted(resp, key=lambda k: (k['id'], k['modified']))
+    assert len(resp) == 3
     assert resp[0]['id'] == 'indicator--00000000-0000-4000-8000-000000000001'
-    assert resp[0]['modified'] == '2017-01-27T13:49:53.936Z'
-    assert resp[1]['id'] == 'indicator--00000000-0000-4000-8000-000000000002'
-    assert resp[1]['modified'] == '2017-01-27T13:49:53.935Z'
+    assert resp[0]['modified'] == parse_into_datetime('2017-01-27T13:49:53.935Z')
+    assert resp[1]['id'] == 'indicator--00000000-0000-4000-8000-000000000001'
+    assert resp[1]['modified'] == parse_into_datetime('2017-01-27T13:49:53.936Z')
+    assert resp[2]['id'] == 'indicator--00000000-0000-4000-8000-000000000002'
+    assert resp[2]['modified'] == parse_into_datetime('2017-01-27T13:49:53.935Z')
 
 
 def test_memory_store_query_multiple_filters(mem_store):
     mem_store.source.filters.add(Filter('type', '=', 'indicator'))
     query = Filter('id', '=', 'indicator--00000000-0000-4000-8000-000000000001')
     resp = mem_store.query(query)
-    assert len(resp) == 1
+    assert len(resp) == 2
 
 
 def test_memory_store_save_load_file(mem_store, fs_mem_store):
@@ -222,12 +225,8 @@ def test_memory_store_save_load_file(mem_store, fs_mem_store):
 
 def test_memory_store_add_invalid_object(mem_store):
     ind = ('indicator', IND1)  # tuple isn't valid
-    with pytest.raises(TypeError) as excinfo:
+    with pytest.raises(TypeError):
         mem_store.add(ind)
-    assert 'stix_data expected to be' in str(excinfo.value)
-    assert 'a python-stix2 object' in str(excinfo.value)
-    assert 'JSON formatted STIX' in str(excinfo.value)
-    assert 'JSON formatted STIX bundle' in str(excinfo.value)
 
 
 def test_memory_store_object_with_custom_property(mem_store):
