@@ -2,11 +2,11 @@ import datetime
 import errno
 import json
 import os
-import pytz
 import shutil
 import stat
 
 import pytest
+import pytz
 
 from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
                    FileSystemSource, FileSystemStore, Filter, Identity,

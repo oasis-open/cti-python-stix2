@@ -6,16 +6,16 @@ Python STIX 2.0 FileSystem Source/Sink
 import errno
 import json
 import os
-import pytz
 import stat
 
+import pytz
 import six
 
 from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
-from stix2.utils import is_marking, get_type_from_id
+from stix2.utils import get_type_from_id, is_marking
 
 
 def _timestamp2filename(timestamp):
