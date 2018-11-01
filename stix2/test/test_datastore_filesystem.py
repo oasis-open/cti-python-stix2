@@ -152,27 +152,32 @@ def test_filesystem_source_bad_stix_file(fs_source, bad_stix_files):
         assert "could either not be parsed to JSON or was not valid STIX JSON" in str(e)
 
 
-def test_filesytem_source_get_object(fs_source):
-    # get object
+def test_filesystem_source_get_object(fs_source):
+    # get (latest) object
     mal = fs_source.get("malware--6b616fc1-1505-48e3-8b2c-0d19337bff38")
     assert mal.id == "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"
     assert mal.name == "Rover"
+    assert mal.modified == datetime.datetime(2018, 11, 1, 23, 24, 48, 457000,
+                                             pytz.utc)
 
 
-def test_filesytem_source_get_nonexistent_object(fs_source):
+def test_filesystem_source_get_nonexistent_object(fs_source):
     ind = fs_source.get("indicator--6b616fc1-1505-48e3-8b2c-0d19337bff38")
     assert ind is None
 
 
-def test_filesytem_source_all_versions(fs_source):
-    # all versions - (currently not a true all versions call as FileSystem cant have multiple versions)
-    id_ = fs_source.get("identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5")
-    assert id_.id == "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5"
-    assert id_.name == "The MITRE Corporation"
-    assert id_.type == "identity"
+def test_filesystem_source_all_versions(fs_source):
+    ids = fs_source.all_versions(
+        "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5"
+    )
+    assert len(ids) == 2
+    assert all(id_.id == "identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5"
+               for id_ in ids)
+    assert all(id_.name == "The MITRE Corporation" for id_ in ids)
+    assert all(id_.type == "identity" for id_ in ids)
 
 
-def test_filesytem_source_query_single(fs_source):
+def test_filesystem_source_query_single(fs_source):
     # query2
     is_2 = fs_source.query([Filter("external_references.external_id", '=', "T1027")])
     assert len(is_2) == 1
@@ -387,8 +392,9 @@ def test_filesystem_store_get_stored_as_object(fs_store):
 
 
 def test_filesystem_store_all_versions(fs_store):
-    # all versions() - (note at this time, all_versions() is still not applicable to FileSystem, as only one version is ever stored)
-    rel = fs_store.all_versions("relationship--70dc6b5c-c524-429e-a6ab-0dd40f0482c1")[0]
+    rels = fs_store.all_versions("relationship--70dc6b5c-c524-429e-a6ab-0dd40f0482c1")
+    assert len(rels) == 1
+    rel = rels[0]
     assert rel.id == "relationship--70dc6b5c-c524-429e-a6ab-0dd40f0482c1"
     assert rel.type == "relationship"
 
@@ -411,7 +417,7 @@ def test_filesystem_store_query_single_filter(fs_store):
 
 def test_filesystem_store_empty_query(fs_store):
     results = fs_store.query()  # returns all
-    assert len(results) == 26
+    assert len(results) == 29
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj.id for obj in results]
     assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj.id for obj in results]
 
@@ -425,7 +431,7 @@ def test_filesystem_store_query_multiple_filters(fs_store):
 
 def test_filesystem_store_query_dont_include_type_folder(fs_store):
     results = fs_store.query(Filter("type", "!=", "tool"))
-    assert len(results) == 24
+    assert len(results) == 27
 
 
 def test_filesystem_store_add(fs_store):
