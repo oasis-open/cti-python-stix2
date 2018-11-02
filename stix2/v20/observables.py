@@ -73,26 +73,23 @@ class ExtensionsProperty(DictionaryProperty):
         if dictified == {}:
             raise ValueError("The extensions property must contain a non-empty dictionary")
 
-        if self.enclosing_type in EXT_MAP:
-            specific_type_map = EXT_MAP[self.enclosing_type]
-            for key, subvalue in dictified.items():
-                if key in specific_type_map:
-                    cls = specific_type_map[key]
-                    if type(subvalue) is dict:
-                        if self.allow_custom:
-                            subvalue['allow_custom'] = True
-                            dictified[key] = cls(**subvalue)
-                        else:
-                            dictified[key] = cls(**subvalue)
-                    elif type(subvalue) is cls:
-                        # If already an instance of an _Extension class, assume it's valid
-                        dictified[key] = subvalue
+        specific_type_map = EXT_MAP.get(self.enclosing_type, {})
+        for key, subvalue in dictified.items():
+            if key in specific_type_map:
+                cls = specific_type_map[key]
+                if type(subvalue) is dict:
+                    if self.allow_custom:
+                        subvalue['allow_custom'] = True
+                        dictified[key] = cls(**subvalue)
                     else:
-                        raise ValueError("Cannot determine extension type.")
+                        dictified[key] = cls(**subvalue)
+                elif type(subvalue) is cls:
+                    # If already an instance of an _Extension class, assume it's valid
+                    dictified[key] = subvalue
                 else:
-                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
-        else:
-            raise ValueError("The enclosing type '%s' has no extensions defined" % self.enclosing_type)
+                    raise ValueError("Cannot determine extension type.")
+            else:
+                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         return dictified
 
 
