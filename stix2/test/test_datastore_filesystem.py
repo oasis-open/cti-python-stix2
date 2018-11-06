@@ -10,7 +10,8 @@ import pytz
 
 from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
                    FileSystemSource, FileSystemStore, Filter, Identity,
-                   Indicator, Malware, Relationship, parse, properties)
+                   Indicator, Malware, MarkingDefinition, Relationship,
+                   TLPMarking, parse, properties)
 from stix2.datastore.filesystem import (AuthSet, _find_search_optimizations,
                                         _get_matching_dir_entries,
                                         _timestamp2filename)
@@ -379,6 +380,22 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     os.remove(camp7filepath)
 
 
+def test_filesystem_sink_marking(fs_sink):
+    marking = MarkingDefinition(
+        definition_type="tlp",
+        definition=TLPMarking(tlp="green")
+    )
+
+    fs_sink.add(marking)
+    marking_filepath = os.path.join(
+        FS_PATH, "marking-definition", marking["id"] + ".json"
+    )
+
+    assert os.path.exists(marking_filepath)
+
+    os.remove(marking_filepath)
+
+
 def test_filesystem_store_get_stored_as_bundle(fs_store):
     coa = fs_store.get("course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f")
     assert coa.id == "course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f"
@@ -486,6 +503,26 @@ def test_filesystem_store_add_invalid_object(fs_store):
     assert 'a STIX object' in str(excinfo.value)
     assert 'JSON formatted STIX' in str(excinfo.value)
     assert 'JSON formatted STIX bundle' in str(excinfo.value)
+
+
+def test_filesystem_store_add_marking(fs_store):
+    marking = MarkingDefinition(
+        definition_type="tlp",
+        definition=TLPMarking(tlp="green")
+    )
+
+    fs_store.add(marking)
+    marking_filepath = os.path.join(
+        FS_PATH, "marking-definition", marking["id"] + ".json"
+    )
+
+    assert os.path.exists(marking_filepath)
+
+    marking_r = fs_store.get(marking["id"])
+    assert marking_r["id"] == marking["id"]
+    assert marking_r["definition"]["tlp"] == "green"
+
+    os.remove(marking_filepath)
 
 
 def test_filesystem_object_with_custom_property(fs_store):
