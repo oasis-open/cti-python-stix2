@@ -529,7 +529,12 @@ class FileSystemSource(DataSource):
         all_data = self.all_versions(stix_id, version=version, _composite_filters=_composite_filters)
 
         if all_data:
-            stix_obj = sorted(all_data, key=lambda k: k['modified'])[-1]
+            if is_marking(stix_id):
+                # Markings are unversioned; there shouldn't be more than one
+                # result.
+                stix_obj = all_data[0]
+            else:
+                stix_obj = sorted(all_data, key=lambda k: k['modified'])[-1]
         else:
             stix_obj = None
 
