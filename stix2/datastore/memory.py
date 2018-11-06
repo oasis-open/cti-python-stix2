@@ -10,6 +10,7 @@ from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import FilterSet, apply_common_filters
+from stix2.utils import is_marking
 
 
 def _add(store, stix_data=None, allow_custom=True, version=None):
@@ -43,7 +44,7 @@ def _add(store, stix_data=None, allow_custom=True, version=None):
 
         # Map ID directly to the object, if it is a marking.  Otherwise,
         # map to a family, so we can track multiple versions.
-        if _is_marking(stix_obj):
+        if is_marking(stix_obj):
             store._data[stix_obj.id] = stix_obj
 
         else:
@@ -54,22 +55,6 @@ def _add(store, stix_data=None, allow_custom=True, version=None):
                 store._data[stix_obj.id] = obj_family
 
             obj_family.add(stix_obj)
-
-
-def _is_marking(obj_or_id):
-    """Determines whether the given object or object ID is/is for a marking
-    definition.
-
-    :param obj_or_id: A STIX object or object ID as a string.
-    :return: True if a marking definition, False otherwise.
-    """
-
-    if isinstance(obj_or_id, _STIXBase):
-        id_ = obj_or_id.id
-    else:
-        id_ = obj_or_id
-
-    return id_.startswith("marking-definition--")
 
 
 class _ObjectFamily(object):
@@ -255,7 +240,7 @@ class MemorySource(DataSource):
         """
         stix_obj = None
 
-        if _is_marking(stix_id):
+        if is_marking(stix_id):
             stix_obj = self._data.get(stix_id)
         else:
             object_family = self._data.get(stix_id)
@@ -291,7 +276,7 @@ class MemorySource(DataSource):
         """
         results = []
         stix_objs_to_filter = None
-        if _is_marking(stix_id):
+        if is_marking(stix_id):
             stix_obj = self._data.get(stix_id)
             if stix_obj:
                 stix_objs_to_filter = [stix_obj]
