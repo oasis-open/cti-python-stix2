@@ -44,14 +44,14 @@ def _add(store, stix_data=None, allow_custom=True, version=None):
         # Map ID directly to the object, if it is a marking.  Otherwise,
         # map to a family, so we can track multiple versions.
         if _is_marking(stix_obj):
-            store._data[stix_obj.id] = stix_obj
+            store._data[stix_obj["id"]] = stix_obj
 
         else:
             if stix_obj.id in store._data:
-                obj_family = store._data[stix_obj.id]
+                obj_family = store._data[stix_obj["id"]]
             else:
                 obj_family = _ObjectFamily()
-                store._data[stix_obj.id] = obj_family
+                store._data[stix_obj["id"]] = obj_family
 
             obj_family.add(stix_obj)
 
@@ -64,8 +64,8 @@ def _is_marking(obj_or_id):
     :return: True if a marking definition, False otherwise.
     """
 
-    if isinstance(obj_or_id, _STIXBase):
-        id_ = obj_or_id.id
+    if isinstance(obj_or_id, (_STIXBase, dict)):
+        id_ = obj_or_id["id"]
     else:
         id_ = obj_or_id
 
