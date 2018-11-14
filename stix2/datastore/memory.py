@@ -192,7 +192,7 @@ class MemorySink(DataSink):
         _add(self, stix_data, self.allow_custom, version)
     add.__doc__ = _add.__doc__
 
-    def save_to_file(self, file_path, encoding="utf-8"):
+    def save_to_file(self, file_path):
         file_path = os.path.abspath(file_path)
 
         all_objs = itertools.chain.from_iterable(
