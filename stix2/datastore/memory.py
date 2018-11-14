@@ -47,7 +47,7 @@ def _add(store, stix_data=None, allow_custom=True, version=None):
             store._data[stix_obj["id"]] = stix_obj
 
         else:
-            if stix_obj.id in store._data:
+            if stix_obj["id"] in store._data:
                 obj_family = store._data[stix_obj["id"]]
             else:
                 obj_family = _ObjectFamily()
@@ -84,14 +84,14 @@ class _ObjectFamily(object):
         self.latest_version = None
 
     def add(self, obj):
-        self.all_versions[obj.modified] = obj
+        self.all_versions[obj["modified"]] = obj
         if self.latest_version is None or \
-                obj.modified > self.latest_version.modified:
+                obj["modified"] > self.latest_version["modified"]:
             self.latest_version = obj
 
     def __str__(self):
         return "<<{}; latest={}>>".format(self.all_versions,
-                                          self.latest_version.modified)
+                                          self.latest_version["modified"])
 
     def __repr__(self):
         return str(self)
@@ -192,7 +192,7 @@ class MemorySink(DataSink):
         _add(self, stix_data, self.allow_custom, version)
     add.__doc__ = _add.__doc__
 
-    def save_to_file(self, file_path):
+    def save_to_file(self, file_path, encoding="utf-8"):
         file_path = os.path.abspath(file_path)
 
         all_objs = itertools.chain.from_iterable(
