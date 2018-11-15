@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.0.4 - 2018-11-15
+
+* #225 MemorySource fix to support custom objects
+* #212 More consistency in Observable extensions behavior/error messages
+
 1.0.3 - 2018-10-31
 
 * #187 Pickle proof objects
