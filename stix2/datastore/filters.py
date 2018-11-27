@@ -5,6 +5,8 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 
 import collections
 from datetime import datetime
+import six
+import stix2.utils
 
 from stix2.utils import format_datetime
 
@@ -12,7 +14,7 @@ from stix2.utils import format_datetime
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
+FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple, datetime]
 try:
     FILTER_VALUE_TYPES.append(unicode)
 except NameError:
@@ -69,10 +71,6 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
         if isinstance(value, list):
             value = tuple(value)
 
-        if isinstance(value, datetime):
-            # if value is a datetime obj, convert to str
-            value = format_datetime(value)
-
         _check_filter_components(prop, op, value)
 
         self = super(Filter, cls).__new__(cls, prop, op, value)
@@ -88,31 +86,33 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
             True if property matches the filter,
             False otherwise.
         """
-        if isinstance(stix_obj_property, datetime):
-            # if a datetime obj, convert to str format before comparison
-            # NOTE: this check seems like it should be done upstream
-            # but will put here for now
-            stix_obj_property = format_datetime(stix_obj_property)
+        # If filtering on a timestamp property and the filter value is a string,
+        # try to convert the filter value to a datetime instance.
+        if isinstance(stix_obj_property, datetime) and \
+                isinstance(self.value, six.string_types):
+            filter_value = stix2.utils.parse_into_datetime(stix_obj_property)
+        else:
+            filter_value = self.value
 
         if self.op == "=":
-            return stix_obj_property == self.value
+            return stix_obj_property == filter_value
         elif self.op == "!=":
-            return stix_obj_property != self.value
+            return stix_obj_property != filter_value
         elif self.op == "in":
-            return stix_obj_property in self.value
+            return stix_obj_property in filter_value
         elif self.op == "contains":
-            if isinstance(self.value, dict):
-                return self.value in stix_obj_property.values()
+            if isinstance(filter_value, dict):
+                return filter_value in stix_obj_property.values()
             else:
-                return self.value in stix_obj_property
+                return filter_value in stix_obj_property
         elif self.op == ">":
-            return stix_obj_property > self.value
+            return stix_obj_property > filter_value
         elif self.op == "<":
-            return stix_obj_property < self.value
+            return stix_obj_property < filter_value
         elif self.op == ">=":
-            return stix_obj_property >= self.value
+            return stix_obj_property >= filter_value
         elif self.op == "<=":
-            return stix_obj_property <= self.value
+            return stix_obj_property <= filter_value
         else:
             raise ValueError("Filter operator: {0} not supported for specified property: {1}".format(self.op, self.property))
 

@@ -267,34 +267,38 @@ def _get_matching_dir_entries(parent_dir, auth_set, st_mode_test=None, ext=""):
     return results
 
 
-def _check_object_from_file(query, filepath):
+def _check_object_from_file(query, filepath, allow_custom, version):
     """
     Read a STIX object from the given file, and check it against the given
     filters.
 
     :param query: Iterable of filters
     :param filepath: Path to file to read
-    :return: The STIX object, as a dict, if the object passes the filters.  If
+    :param allow_custom: Whether to allow custom properties as well unknown
+        custom objects.
+    :param version: Which STIX2 version to use. (e.g. "2.0", "2.1"). If None,
+        use latest version.
+    :return: The (parsed) STIX object, if the object passes the filters.  If
         not, None is returned.
-    :raises TypeError: If the file had invalid content
+    :raises TypeError: If the file had invalid JSON
     :raises IOError: If there are problems opening/reading the file
+    :raises stix2.exceptions.STIXError: If there were problems creating a STIX
+        object from the JSON
     """
     try:
         with open(filepath, "r") as f:
-            stix_obj = json.load(f)
+            stix_json = json.load(f)
 
-        if stix_obj["type"] == "bundle":
-            stix_obj = stix_obj["objects"][0]
-
-        # naive STIX type checking
-        stix_obj["type"]
-        stix_obj["id"]
-
-    except (ValueError, KeyError):  # likely not a JSON file
+    except ValueError:  # not a JSON file
         raise TypeError(
             "STIX JSON object at '{0}' could either not be parsed "
             "to JSON or was not valid STIX JSON".format(
                 filepath))
+
+    stix_obj = parse(stix_json, allow_custom, version)
+
+    if stix_obj["type"] == "bundle":
+        stix_obj = stix_obj["objects"][0]
 
     # check against other filters, add if match
     result = next(apply_common_filters([stix_obj], query), None)
@@ -302,7 +306,7 @@ def _check_object_from_file(query, filepath):
     return result
 
 
-def _search_versioned(query, type_path, auth_ids):
+def _search_versioned(query, type_path, auth_ids, allow_custom, version):
     """
     Searches the given directory, which contains data for STIX objects of a
     particular versioned type (i.e. not markings), and return any which match
@@ -311,8 +315,13 @@ def _search_versioned(query, type_path, auth_ids):
     :param query: The query to match against
     :param type_path: The directory with type-specific STIX object files
     :param auth_ids: Search optimization based on object ID
+    :param allow_custom: Whether to allow custom properties as well unknown
+        custom objects.
+    :param version: Which STIX2 version to use. (e.g. "2.0", "2.1"). If None,
+        use latest version.
     :return: A list of all matching objects
-    :raises TypeError: If any objects had invalid content
+    :raises TypeError, stix2.exceptions.STIXError: If any objects had invalid
+        content
     :raises IOError, OSError: If there were any problems opening/reading files
     """
     results = []
@@ -330,7 +339,8 @@ def _search_versioned(query, type_path, auth_ids):
             version_path = os.path.join(id_path, version_file)
 
             try:
-                stix_obj = _check_object_from_file(query, version_path)
+                stix_obj = _check_object_from_file(query, version_path,
+                                                   allow_custom, version)
                 if stix_obj:
                     results.append(stix_obj)
             except IOError as e:
@@ -346,7 +356,8 @@ def _search_versioned(query, type_path, auth_ids):
         id_path = os.path.join(type_path, id_file)
 
         try:
-            stix_obj = _check_object_from_file(query, id_path)
+            stix_obj = _check_object_from_file(query, id_path, allow_custom,
+                                               version)
             if stix_obj:
                 results.append(stix_obj)
         except IOError as e:
@@ -357,7 +368,7 @@ def _search_versioned(query, type_path, auth_ids):
     return results
 
 
-def _search_markings(query, markings_path, auth_ids):
+def _search_markings(query, markings_path, auth_ids, allow_custom, version):
     """
     Searches the given directory, which contains markings data, and return any
     which match the query.
@@ -365,8 +376,13 @@ def _search_markings(query, markings_path, auth_ids):
     :param query: The query to match against
     :param markings_path: The directory with STIX markings files
     :param auth_ids: Search optimization based on object ID
+    :param allow_custom: Whether to allow custom properties as well unknown
+        custom objects.
+    :param version: Which STIX2 version to use. (e.g. "2.0", "2.1"). If None,
+        use latest version.
     :return: A list of all matching objects
-    :raises TypeError: If any objects had invalid content
+    :raises TypeError, stix2.exceptions.STIXError: If any objects had invalid
+        content
     :raises IOError, OSError: If there were any problems opening/reading files
     """
     results = []
@@ -376,7 +392,8 @@ def _search_markings(query, markings_path, auth_ids):
         id_path = os.path.join(markings_path, id_file)
 
         try:
-            stix_obj = _check_object_from_file(query, id_path)
+            stix_obj = _check_object_from_file(query, id_path, allow_custom,
+                                               version)
             if stix_obj:
                 results.append(stix_obj)
         except IOError as e:
@@ -627,17 +644,12 @@ class FileSystemSource(DataSource):
             type_path = os.path.join(self._stix_dir, type_dir)
 
             if type_dir == "marking-definition":
-                type_results = _search_markings(query, type_path, auth_ids)
+                type_results = _search_markings(query, type_path, auth_ids,
+                                                self.allow_custom, version)
             else:
-                type_results = _search_versioned(query, type_path, auth_ids)
+                type_results = _search_versioned(query, type_path, auth_ids,
+                                                 self.allow_custom, version)
 
             all_data.extend(type_results)
 
-        # parse python STIX objects from the STIX object dicts
-        stix_objs = [
-            parse(stix_obj_dict, allow_custom=self.allow_custom,
-                  version=version)
-            for stix_obj_dict in all_data
-        ]
-
-        return stix_objs
+        return all_data

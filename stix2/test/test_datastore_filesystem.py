@@ -15,6 +15,7 @@ from stix2 import (Bundle, Campaign, CustomObject, FileSystemSink,
 from stix2.datastore.filesystem import (AuthSet, _find_search_optimizations,
                                         _get_matching_dir_entries,
                                         _timestamp2filename)
+from stix2.exceptions import STIXError
 from stix2.test.constants import (CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID,
                                   IDENTITY_KWARGS, INDICATOR_ID,
                                   INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
@@ -148,9 +149,8 @@ def test_filesystem_source_bad_stix_file(fs_source, bad_stix_files):
     # this tests handling of bad STIX json object
     try:
         fs_source.get("intrusion-set--test-non-stix")
-    except TypeError as e:
-        assert "intrusion-set--test-non-stix" in str(e)
-        assert "could either not be parsed to JSON or was not valid STIX JSON" in str(e)
+    except STIXError as e:
+        assert "Can't parse object with no 'type' property" in str(e)
 
 
 def test_filesystem_source_get_object(fs_source):
