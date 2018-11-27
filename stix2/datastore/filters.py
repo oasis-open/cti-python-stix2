@@ -14,12 +14,8 @@ import stix2.utils
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple, datetime]
-try:
-    FILTER_VALUE_TYPES.append(unicode)
-except NameError:
-    # Python 3 doesn't need to worry about unicode
-    pass
+FILTER_VALUE_TYPES = (bool, dict, float, int, list, tuple, six.string_types,
+                      datetime)
 
 
 def _check_filter_components(prop, op, value):
@@ -38,7 +34,7 @@ def _check_filter_components(prop, op, value):
         # check filter operator is supported
         raise ValueError("Filter operator '%s' not supported for specified property: '%s'" % (op, prop))
 
-    if type(value) not in FILTER_VALUE_TYPES:
+    if not isinstance(value, FILTER_VALUE_TYPES):
         # check filter value type is supported
         raise TypeError("Filter value of '%s' is not supported. The type must be a Python immutable type or dictionary" % type(value))
 
@@ -90,7 +86,7 @@ class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
         # try to convert the filter value to a datetime instance.
         if isinstance(stix_obj_property, datetime) and \
                 isinstance(self.value, six.string_types):
-            filter_value = stix2.utils.parse_into_datetime(stix_obj_property)
+            filter_value = stix2.utils.parse_into_datetime(self.value)
         else:
             filter_value = self.value
 
