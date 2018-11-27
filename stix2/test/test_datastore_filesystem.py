@@ -118,7 +118,7 @@ def rel_fs_store():
             # errno symbolic value, but not the windows meaning...
             if e.errno in (errno.ENOENT, 3):
                 continue
-            raise e
+            raise
 
 
 def test_filesystem_source_nonexistent_folder():
@@ -158,7 +158,7 @@ def test_filesystem_source_get_object(fs_source):
     mal = fs_source.get("malware--6b616fc1-1505-48e3-8b2c-0d19337bff38")
     assert mal.id == "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"
     assert mal.name == "Rover"
-    assert mal.modified == datetime.datetime(2018, 11, 1, 23, 24, 48, 457000,
+    assert mal.modified == datetime.datetime(2018, 11, 16, 22, 54, 20, 390000,
                                              pytz.utc)
 
 
@@ -198,6 +198,24 @@ def test_filesytem_source_query_multiple(fs_source):
     is_1 = [is_ for is_ in intrusion_sets if is_.id == "intrusion-set--f3bdec95-3d62-42d9-a840-29630f6cdc1a"][0]
     assert "DragonOK" in is_1.aliases
     assert len(is_1.external_references) == 4
+
+
+def test_filesystem_source_backward_compatible(fs_source):
+    # this specific object is outside an "ID" directory; make sure we can get
+    # it.
+    modified = datetime.datetime(2018, 11, 16, 22, 54, 20, 390000, pytz.utc)
+    results = fs_source.query([
+        Filter("type", "=", "malware"),
+        Filter("id", "=", "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"),
+        Filter("modified", "=", modified)
+    ])
+
+    assert len(results) == 1
+    result = results[0]
+    assert result.type == "malware"
+    assert result.id == "malware--6b616fc1-1505-48e3-8b2c-0d19337bff38"
+    assert result.modified == modified
+    assert result.labels == ["version four"]
 
 
 def test_filesystem_sink_add_python_stix_object(fs_sink, fs_source):
@@ -434,7 +452,7 @@ def test_filesystem_store_query_single_filter(fs_store):
 
 def test_filesystem_store_empty_query(fs_store):
     results = fs_store.query()  # returns all
-    assert len(results) == 29
+    assert len(results) == 30
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj.id for obj in results]
     assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj.id for obj in results]
 
@@ -448,7 +466,7 @@ def test_filesystem_store_query_multiple_filters(fs_store):
 
 def test_filesystem_store_query_dont_include_type_folder(fs_store):
     results = fs_store.query(Filter("type", "!=", "tool"))
-    assert len(results) == 27
+    assert len(results) == 28
 
 
 def test_filesystem_store_add(fs_store):
