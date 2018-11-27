@@ -5,10 +5,10 @@ Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
 
 import collections
 from datetime import datetime
-import six
-import stix2.utils
 
-from stix2.utils import format_datetime
+import six
+
+import stix2.utils
 
 """Supported filter operations"""
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
