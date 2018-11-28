@@ -1,5 +1,4 @@
-"""STIX 2 error classes.
-"""
+"""STIX2 Error Classes."""
 
 
 class STIXError(Exception):

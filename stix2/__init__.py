@@ -3,6 +3,7 @@
 .. autosummary::
    :toctree: api
 
+   confidence
    core
    datastore
    environment
@@ -10,26 +11,19 @@
    markings
    patterns
    properties
-   sources
    utils
-   patterns
-   properties
-   utils
-   workbench
+   v20.bundle
    v20.common
    v20.observables
    v20.sdo
    v20.sro
+   v21.bundle
    v21.common
    v21.observables
    v21.sdo
    v21.sro
+   workbench
 
-   The .v21 import can't be relocated, or we get circular import problems.
-   The 'isort:skip' line comment didn't work to skip only that one problematic
-   import.  The only thing that did was telling it to skip the whole file.
-
-   isort:skip_file
 """
 
 # flake8: noqa

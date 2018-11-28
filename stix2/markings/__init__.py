@@ -9,7 +9,6 @@ Note:
     Definitions. The corresponding methods on those classes are identical to
     these functions except that the `obj` parameter is omitted.
 
-
 .. autosummary::
    :toctree: markings
 

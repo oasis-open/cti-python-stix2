@@ -1,4 +1,5 @@
-"""Utility functions and classes for the stix2 library."""
+"""Utility functions and classes for the STIX2 library."""
+
 from collections import Mapping
 import copy
 import datetime as dt

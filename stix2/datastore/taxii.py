@@ -1,4 +1,5 @@
-"""Python STIX 2.x TAXIICollectionStore"""
+"""Python STIX2 TAXIICollection Source/Sink"""
+
 from requests.exceptions import HTTPError
 
 from stix2 import v20, v21

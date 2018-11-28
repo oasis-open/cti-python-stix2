@@ -1,5 +1,4 @@
-"""STIX 2.0 Domain Objects.
-"""
+"""STIX 2.0 Domain Objects."""
 
 from collections import OrderedDict
 import itertools

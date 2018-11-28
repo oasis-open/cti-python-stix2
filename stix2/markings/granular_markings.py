@@ -1,5 +1,4 @@
-"""Functions for working with STIX 2.0 granular markings.
-"""
+"""Functions for working with STIX2 granular markings."""
 
 from stix2 import exceptions
 from stix2.markings import utils

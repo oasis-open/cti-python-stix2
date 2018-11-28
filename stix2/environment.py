@@ -1,5 +1,4 @@
-"""Python STIX 2.0 Environment API.
-"""
+"""Python STIX2 Environment API."""
 
 import copy
 
@@ -177,9 +176,9 @@ class Environment(DataStoreMixin):
                 up.
 
         Returns:
-            The STIX object's creator, or
-            None, if the object contains no `created_by_ref` property or the
-                object's creator cannot be found.
+            str: The STIX object's creator, or None, if the object contains no
+                `created_by_ref` property or the object's creator cannot be
+                found.
 
         """
         creator_id = obj.get('created_by_ref', '')

@@ -1,5 +1,4 @@
-"""Functions for working with STIX 2.0 object markings.
-"""
+"""Functions for working with STIX2 object markings."""
 
 from stix2 import exceptions
 from stix2.markings import utils

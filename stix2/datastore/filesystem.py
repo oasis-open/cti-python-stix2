@@ -1,4 +1,4 @@
-"""Python STIX 2.0 FileSystem Source/Sink"""
+"""Python STIX2 FileSystem Source/Sink"""
 
 import io
 import json

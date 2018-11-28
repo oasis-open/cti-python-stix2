@@ -1,3 +1,5 @@
+"""STIX2 Core Objects and Methods."""
+
 import copy
 import importlib
 import pkgutil

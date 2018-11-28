@@ -1,5 +1,4 @@
-"""Utility functions for STIX 2.0 data markings.
-"""
+"""Utility functions for STIX2 data markings."""
 
 import collections
 

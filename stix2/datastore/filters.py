@@ -1,4 +1,4 @@
-"""Filters for Python STIX 2.0 DataSources, DataSinks, DataStores"""
+"""Filters for Python STIX2 DataSources, DataSinks, DataStores"""
 
 import collections
 from datetime import datetime

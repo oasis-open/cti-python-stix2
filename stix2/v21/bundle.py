@@ -1,3 +1,5 @@
+"""STIX 2.1 Bundle Representation."""
+
 from collections import OrderedDict
 
 from ..base import _STIXBase

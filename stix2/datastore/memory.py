@@ -1,6 +1,4 @@
-"""
-Python STIX 2.0 Memory Source/Sink
-"""
+"""Python STIX2 Memory Source/Sink"""
 
 import io
 import itertools

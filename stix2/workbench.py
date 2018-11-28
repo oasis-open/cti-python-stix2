@@ -1,4 +1,4 @@
-"""Functions and class wrappers for interacting with STIX data at a high level.
+"""Functions and class wrappers for interacting with STIX2 data at a high level.
 
 .. autofunction:: create
 .. autofunction:: set_default_creator

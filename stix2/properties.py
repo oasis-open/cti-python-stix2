@@ -1,5 +1,5 @@
-"""Classes for representing properties of STIX Objects and Cyber Observables.
-"""
+"""Classes for representing properties of STIX Objects and Cyber Observables."""
+
 import base64
 import binascii
 import collections

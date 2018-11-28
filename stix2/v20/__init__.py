@@ -1,3 +1,4 @@
+"""STIX 2.0 API Objects."""
 
 # flake8: noqa
 
