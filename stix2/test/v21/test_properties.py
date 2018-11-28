@@ -461,7 +461,7 @@ def test_extension_property_invalid_type():
                 },
             },
         )
-    assert 'no extensions defined' in str(excinfo.value)
+    assert "Can't parse unknown extension" in str(excinfo.value)
 
 
 def test_extension_at_least_one_property_constraint():

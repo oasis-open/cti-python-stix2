@@ -131,6 +131,10 @@ select additional or substitute Maintainers, per `consensus agreements
 -  `Chris Lenk <mailto:clenk@mitre.org>`__; GitHub ID:
    https://github.com/clenk/; WWW: `MITRE Corporation <http://www.mitre.org/>`__
 
+-  `Emmanuelle Vargas-Gonzalez <mailto:emmanuelle@mitre.org>`__; GitHub ID:
+   https://github.com/emmanvg/; WWW: `MITRE
+   Corporation <https://www.mitre.org/>`__
+
 About OASIS TC Open Repositories
 --------------------------------
 

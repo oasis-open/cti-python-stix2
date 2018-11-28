@@ -92,8 +92,8 @@ class _ObjectFamily(object):
 
     def add(self, obj):
         self.all_versions[obj["modified"]] = obj
-        if self.latest_version is None or \
-                obj["modified"] > self.latest_version["modified"]:
+        if (self.latest_version is None or
+                obj["modified"] > self.latest_version["modified"]):
             self.latest_version = obj
 
     def __str__(self):

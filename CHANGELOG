@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-1.1.0 - 2018-11-01
+1.1.0 - 2018-11-28
 
 - Most (if not all) STIX 2.1 SDOs/SROs and core objects have been implemented according to the latest CSD/WD document
 - There is an implementation for the conversion scales
@@ -9,6 +9,11 @@ CHANGELOG
 - #80, #197 Most (if not all) tests created for v20 are also implemented for v21
 - #189 Added extra checks for the pre-commit tool
 - #202 It is now possible to pass a Bundle into add() method in Memory datastores
+
+1.0.4 - 2018-11-15
+
+* #225 MemorySource fix to support custom objects
+* #212 More consistency in Observable extensions behavior/error messages
 
 1.0.3 - 2018-10-31
 

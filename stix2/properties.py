@@ -503,26 +503,23 @@ class ExtensionsProperty(DictionaryProperty):
 
         v = 'v' + self.spec_version.replace('.', '')
 
-        if self.enclosing_type in STIX2_OBJ_MAPS[v]['observable-extensions']:
-            specific_type_map = STIX2_OBJ_MAPS[v]['observable-extensions'][self.enclosing_type]
-            for key, subvalue in dictified.items():
-                if key in specific_type_map:
-                    cls = specific_type_map[key]
-                    if type(subvalue) is dict:
-                        if self.allow_custom:
-                            subvalue['allow_custom'] = True
-                            dictified[key] = cls(**subvalue)
-                        else:
-                            dictified[key] = cls(**subvalue)
-                    elif type(subvalue) is cls:
-                        # If already an instance of an _Extension class, assume it's valid
-                        dictified[key] = subvalue
+        specific_type_map = STIX2_OBJ_MAPS[v]['observable-extensions'].get(self.enclosing_type, {})
+        for key, subvalue in dictified.items():
+            if key in specific_type_map:
+                cls = specific_type_map[key]
+                if type(subvalue) is dict:
+                    if self.allow_custom:
+                        subvalue['allow_custom'] = True
+                        dictified[key] = cls(**subvalue)
                     else:
-                        raise ValueError("Cannot determine extension type.")
+                        dictified[key] = cls(**subvalue)
+                elif type(subvalue) is cls:
+                    # If already an instance of an _Extension class, assume it's valid
+                    dictified[key] = subvalue
                 else:
-                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
-        else:
-            raise ValueError("The enclosing type '{}' has no extensions defined".format(self.enclosing_type))
+                    raise ValueError("Cannot determine extension type.")
+            else:
+                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         return dictified
 
 

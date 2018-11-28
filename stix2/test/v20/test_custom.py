@@ -884,9 +884,10 @@ def test_parse_observable_with_custom_extension():
     assert parsed.extensions['x-new-ext'].property2 == 12
 
 
-def test_parse_observable_with_unregistered_custom_extension():
-    input_str = """{
-        "type": "domain-name",
+@pytest.mark.parametrize("data", [
+    # URL is not in EXT_MAP
+    """{
+        "type": "url",
         "value": "example.com",
         "extensions": {
             "x-foobar-ext": {
@@ -894,13 +895,25 @@ def test_parse_observable_with_unregistered_custom_extension():
                 "property2": 12
             }
         }
-    }"""
-
+    }""",
+    # File is in EXT_MAP
+    """{
+        "type": "file",
+        "name": "foo.txt",
+        "extensions": {
+            "x-foobar-ext": {
+                "property1": "foo",
+                "property2": 12
+            }
+        }
+    }""",
+])
+def test_parse_observable_with_unregistered_custom_extension(data):
     with pytest.raises(ValueError) as excinfo:
-        stix2.parse_observable(input_str, version='2.0')
+        stix2.parse_observable(data, version='2.0')
     assert "Can't parse unknown extension type" in str(excinfo.value)
 
-    parsed_ob = stix2.parse_observable(input_str, allow_custom=True, version='2.0')
+    parsed_ob = stix2.parse_observable(data, allow_custom=True, version='2.0')
     assert parsed_ob['extensions']['x-foobar-ext']['property1'] == 'foo'
     assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.base._STIXBase)
 
