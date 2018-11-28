@@ -28,6 +28,7 @@
 
 # flake8: noqa
 
+from .confidence import scales
 from .core import _collect_stix2_mappings, parse, parse_observable
 from .datastore import CompositeDataSource
 from .datastore.filesystem import (
