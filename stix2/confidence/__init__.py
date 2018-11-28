@@ -1,3 +1,9 @@
 """
-Functions to operate with STIX 2 Confidence scales.
+Functions to operate with STIX2 Confidence scales.
+
+.. autosummary::
+   :toctree: confidence
+
+   scales
+|
 """

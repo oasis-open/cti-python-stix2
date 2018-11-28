@@ -10,23 +10,30 @@ def none_low_med_high_to_value(scale_value):
     High scale to its confidence integer representation.
 
     The scale for this confidence representation is the following:
-    ====================    =====================
-    None/ Low/ Med/ High    STIX Confidence Value
-    ====================    =====================
-    Not Specified           Not Specified
-    None                    0
-    Low                     15
-    Med                     50
-    High                    85
-    ====================    =====================
+
+    .. list-table:: None, Low, Med, High to STIX Confidence
+        :header-rows: 1
+
+        * - None/ Low/ Med/ High
+          - STIX Confidence Value
+        * - Not Specified
+          - Not Specified
+        * - None
+          - 0
+        * - Low
+          - 15
+        * - Med
+          - 50
+        * - High
+          - 85
 
     Args:
-        scale_value: A string value from the scale. Accepted strings are
+        scale_value (str): A string value from the scale. Accepted strings are
             "None", "Low", "Med" and "High". Argument is case sensitive.
 
     Returns:
-        int: The numerical representation corresponding to values in the None /
-            Low / Med / High scale.
+        int: The numerical representation corresponding to values in the
+            None / Low / Med / High scale.
 
     Raises:
         ValueError: If `scale_value` is not within the accepted strings.
@@ -49,17 +56,23 @@ def value_to_none_low_medium_high(confidence_value):
     High scale string representation.
 
     The scale for this confidence representation is the following:
-    =============== ====================
-    Range of Values None/ Low/ Med/ High
-    =============== ====================
-    0               None
-    1-29            Low
-    30-69           Med
-    70-100          High
-    =============== ====================
+
+    .. list-table:: STIX Confidence to None, Low, Med, High
+        :header-rows: 1
+
+        * - Range of Values
+          - None/ Low/ Med/ High
+        * - 0
+          - None
+        * - 1-29
+          - Low
+        * - 30-69
+          - Med
+        * - 70-100
+          - High
 
     Args:
-        confidence_value: An integer value between 0 and 100.
+        confidence_value (int): An integer value between 0 and 100.
 
     Returns:
         str: A string corresponding to the None / Low / Med / High scale.
@@ -86,24 +99,37 @@ def zero_ten_to_value(scale_value):
     confidence integer representation.
 
     The scale for this confidence representation is the following:
-    ====================    =====================
-    0-10 Scale              STIX Confidence Value
-    ====================    =====================
-    0                       0
-    1                       10
-    2                       20
-    3                       30
-    4                       40
-    5                       50
-    6                       60
-    7                       70
-    8                       80
-    9                       90
-    10                      100
-    ====================    =====================
+
+    .. list-table:: 0-10 to STIX Confidence
+        :header-rows: 1
+
+        * - 0-10 Scale
+          - STIX Confidence Value
+        * - 0
+          - 0
+        * - 1
+          - 10
+        * - 2
+          - 20
+        * - 3
+          - 30
+        * - 4
+          - 40
+        * - 5
+          - 50
+        * - 6
+          - 60
+        * - 7
+          - 70
+        * - 8
+          - 80
+        * - 9
+          - 90
+        * - 10
+          - 100
 
     Args:
-        scale_value: A string value from the scale. Accepted strings are "0"
+        scale_value (str): A string value from the scale. Accepted strings are "0"
             through "10" inclusive.
 
     Returns:
@@ -146,24 +172,37 @@ def value_to_zero_ten(confidence_value):
     representation.
 
     The scale for this confidence representation is the following:
-    =============== ==========
-    Range of Values 0-10 Scale
-    =============== ==========
-    0-4             0
-    5-14            1
-    15-24           2
-    25-34           3
-    35-44           4
-    45-54           5
-    55-64           6
-    65-74           7
-    75-84           8
-    85-94           9
-    95-100          10
-    =============== ==========
+
+    .. list-table:: STIX Confidence to 0-10
+        :header-rows: 1
+
+        * - Range of Values
+          - 0-10 Scale
+        * - 0-4
+          - 0
+        * - 5-14
+          - 1
+        * - 15-24
+          - 2
+        * - 25-34
+          - 3
+        * - 35-44
+          - 4
+        * - 45-54
+          - 5
+        * - 55-64
+          - 6
+        * - 65-74
+          - 7
+        * - 75-84
+          - 8
+        * - 95-94
+          - 9
+        * - 95-100
+          - 10
 
     Args:
-        confidence_value: An integer value between 0 and 100.
+        confidence_value (int): An integer value between 0 and 100.
 
     Returns:
         str: A string corresponding to the 0-10 scale.
@@ -204,19 +243,27 @@ def admiralty_credibility_to_value(scale_value):
     scale to its confidence integer representation.
 
     The scale for this confidence representation is the following:
-    ==============================  =====================
-    Admiralty Credibility           STIX Confidence Value
-    ==============================  =====================
-    6 - Truth cannot be judged      (Not present)
-    5 - Improbable                  10
-    4 - Doubtful                    30
-    3 - Possibly True               50
-    2 - Probably True               70
-    1 - Confirmed by other sources  90
-    ==============================  =====================
+
+    .. list-table:: Admiralty Credibility Scale to STIX Confidence
+        :header-rows: 1
+
+        * - Admiralty Credibility
+          - STIX Confidence Value
+        * - 6 - Truth cannot be judged
+          - (Not present)
+        * - 5 - Improbable
+          - 10
+        * - 4 - Doubtful
+          - 30
+        * - 3 - Possibly True
+          - 50
+        * - 2 - Probably True
+          - 70
+        * - 1 - Confirmed by other sources
+          - 90
 
     Args:
-        scale_value: A string value from the scale. Accepted strings are
+        scale_value (str): A string value from the scale. Accepted strings are
             "6 - Truth cannot be judged", "5 - Improbable", "4 - Doubtful",
             "3 - Possibly True", "2 - Probably True" and
             "1 - Confirmed by other sources". Argument is case sensitive.
@@ -251,19 +298,27 @@ def value_to_admiralty_credibility(confidence_value):
     scale string representation.
 
     The scale for this confidence representation is the following:
-    =============== ==============================
-    Range of Values Admiralty Credibility
-    =============== ==============================
-    N/A             6 - Truth cannot be judged
-    0-19            5 - Improbable
-    20-39           4 - Doubtful
-    40-59           3 - Possibly True
-    60-79           2 - Probably True
-    80-100          1 - Confirmed by other sources
-    =============== ==============================
+
+    .. list-table:: STIX Confidence to Admiralty Credibility Scale
+        :header-rows: 1
+
+        * - Range of Values
+          - Admiralty Credibility
+        * - N/A
+          - 6 - Truth cannot be judged
+        * - 0-19
+          - 5 - Improbable
+        * - 20-39
+          - 4 - Doubtful
+        * - 40-59
+          - 3 - Possibly True
+        * - 60-79
+          - 2 - Probably True
+        * - 80-100
+          - 1 - Confirmed by other sources
 
     Args:
-        confidence_value: An integer value between 0 and 100.
+        confidence_value (int): An integer value between 0 and 100.
 
     Returns:
         str: A string corresponding to the Admiralty Credibility scale.
@@ -292,20 +347,29 @@ def wep_to_value(scale_value):
     confidence integer representation.
 
     The scale for this confidence representation is the following:
-    ====================================    =====================
-    WEP                                     STIX Confidence Value
-    ====================================    =====================
-    Impossible                              0
-    Highly Unlikely/Almost Certainly Not    10
-    Unlikely/Probably Not                   20
-    Even Chance                             50
-    Likely/Probable                         70
-    Highly likely/Almost Certain            90
-    Certain                                 100
-    ====================================    =====================
+
+    .. list-table:: WEP to STIX Confidence
+        :header-rows: 1
+
+        * - WEP
+          - STIX Confidence Value
+        * - Impossible
+          - 0
+        * - Highly Unlikely/Almost Certainly Not
+          - 10
+        * - Unlikely/Probably Not
+          - 20
+        * - Even Chance
+          - 50
+        * - Likely/Probable
+          - 70
+        * - Highly likely/Almost Certain
+          - 90
+        * - Certain
+          - 100
 
     Args:
-        scale_value: A string value from the scale. Accepted strings are
+        scale_value (str): A string value from the scale. Accepted strings are
             "Impossible", "Highly Unlikely/Almost Certainly Not",
             "Unlikely/Probably Not", "Even Chance", "Likely/Probable",
             "Highly likely/Almost Certain" and "Certain". Argument is case
@@ -343,20 +407,29 @@ def value_to_wep(confidence_value):
     representation.
 
     The scale for this confidence representation is the following:
-    =============== ====================================
-    Range of Values WEP
-    =============== ====================================
-    0               Impossible
-    1-19            Highly Unlikely/Almost Certainly Not
-    20-39           Unlikely/Probably Not
-    40-59           Even Chance
-    60-79           Likely/Probable
-    80-99           Highly likely/Almost Certain
-    100             Certain
-    =============== ====================================
+
+    .. list-table:: STIX Confidence to WEP
+        :header-rows: 1
+
+        * - Range of Values
+          - WEP
+        * - 0
+          - Impossible
+        * - 1-19
+          - Highly Unlikely/Almost Certainly Not
+        * - 20-39
+          - Unlikely/Probably Not
+        * - 40-59
+          - Even Chance
+        * - 60-79
+          - Likely/Probable
+        * - 80-99
+          - Highly likely/Almost Certain
+        * - 100
+          - Certain
 
     Args:
-        confidence_value: An integer value between 0 and 100.
+        confidence_value (int): An integer value between 0 and 100.
 
     Returns:
         str: A string corresponding to the WEP scale.
@@ -389,20 +462,29 @@ def dni_to_value(scale_value):
     confidence integer representation.
 
     The scale for this confidence representation is the following:
-    ======================================= =====================
-    DNI Scale                               STIX Confidence Value
-    ======================================= =====================
-    Almost No Chance / Remote               5
-    Very Unlikely / Highly Improbable       15
-    Unlikely / Improbable                   30
-    Roughly Even Chance / Roughly Even Odds 50
-    Likely / Probable                       70
-    Very Likely / Highly Probable           85
-    Almost Certain / Nearly Certain         95
-    ======================================= =====================
+
+    .. list-table:: DNI Scale to STIX Confidence
+        :header-rows: 1
+
+        * - DNI Scale
+          - STIX Confidence Value
+        * - Almost No Chance / Remote
+          - 5
+        * - Very Unlikely / Highly Improbable
+          - 15
+        * - Unlikely / Improbable
+          - 30
+        * - Roughly Even Chance / Roughly Even Odds
+          - 50
+        * - Likely / Probable
+          - 70
+        * - Very Likely / Highly Probable
+          - 85
+        * - Almost Certain / Nearly Certain
+          - 95
 
     Args:
-        scale_value: A string value from the scale. Accepted strings are
+        scale_value (str): A string value from the scale. Accepted strings are
             "Almost No Chance / Remote", "Very Unlikely / Highly Improbable",
             "Unlikely / Improbable", "Roughly Even Chance / Roughly Even Odds",
             "Likely / Probable", "Very Likely / Highly Probable" and
@@ -440,20 +522,29 @@ def value_to_dni(confidence_value):
     representation.
 
     The scale for this confidence representation is the following:
-    =============== =======================================
-    Range of Values DNI Scale
-    =============== =======================================
-    0-9             Almost No Chance / Remote
-    10-19           Very Unlikely / Highly Improbable
-    20-39           Unlikely / Improbable
-    40-59           Roughly Even Chance / Roughly Even Odds
-    60-79           Likely / Probable
-    80-89           Very Likely / Highly Probable
-    90-100          Almost Certain / Nearly Certain
-    =============== =======================================
+
+    .. list-table:: STIX Confidence to DNI Scale
+        :header-rows: 1
+
+        * - Range of Values
+          - DNI Scale
+        * - 0-9
+          - Almost No Chance / Remote
+        * - 10-19
+          - Very Unlikely / Highly Improbable
+        * - 20-39
+          - Unlikely / Improbable
+        * - 40-59
+          - Roughly Even Chance / Roughly Even Odds
+        * - 60-79
+          - Likely / Probable
+        * - 80-89
+          - Very Likely / Highly Probable
+        * - 90-100
+          - Almost Certain / Nearly Certain
 
     Args:
-        confidence_value: An integer value between 0 and 100.
+        confidence_value (int): An integer value between 0 and 100.
 
     Returns:
         str: A string corresponding to the DNI scale.
