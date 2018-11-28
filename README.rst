@@ -1,4 +1,4 @@
-|Build_Status| |Coverage| |Version|
+|Build_Status| |Coverage| |Version| |Downloads_Badge|
 
 cti-python-stix2
 ================
@@ -153,7 +153,13 @@ to repository-cla@oasis-open.org.
 
 .. |Build_Status| image:: https://travis-ci.org/oasis-open/cti-python-stix2.svg?branch=master
    :target: https://travis-ci.org/oasis-open/cti-python-stix2
+   :alt: Build Status
 .. |Coverage| image:: https://codecov.io/gh/oasis-open/cti-python-stix2/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/oasis-open/cti-python-stix2
+   :alt: Coverage
 .. |Version| image:: https://img.shields.io/pypi/v/stix2.svg?maxAge=3600
    :target: https://pypi.python.org/pypi/stix2/
+   :alt: Version
+.. |Downloads_Badge| image:: https://img.shields.io/pypi/dm/stix2.svg?maxAge=3600
+   :target: https://pypi.python.org/pypi/stix2/
+   :alt: Downloads
