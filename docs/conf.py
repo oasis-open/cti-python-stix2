@@ -6,6 +6,7 @@ from six import class_types
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
+from stix2.version import __version__
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -34,8 +35,8 @@ project = 'stix2'
 copyright = '2017, OASIS Open'
 author = 'OASIS Open'
 
-version = '1.1.0'
-release = '1.1.0'
+version = __version__
+release = __version__
 
 language = None
 exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
