@@ -395,7 +395,7 @@ def dni_to_value(scale_value):
     Almost No Chance / Remote               5
     Very Unlikely / Highly Improbable       15
     Unlikely / Improbable                   30
-    Roughly Even Change / Roughly Even Odds 50
+    Roughly Even Chance / Roughly Even Odds 50
     Likely / Probable                       70
     Very Likely / Highly Probable           85
     Almost Certain / Nearly Certain         95
@@ -404,7 +404,7 @@ def dni_to_value(scale_value):
     Args:
         scale_value: A string value from the scale. Accepted strings are
             "Almost No Chance / Remote", "Very Unlikely / Highly Improbable",
-            "Unlikely / Improbable", "Roughly Even Change / Roughly Even Odds",
+            "Unlikely / Improbable", "Roughly Even Chance / Roughly Even Odds",
             "Likely / Probable", "Very Likely / Highly Probable" and
             "Almost Certain / Nearly Certain". Argument is case sensitive.
 
@@ -422,7 +422,7 @@ def dni_to_value(scale_value):
         return 15
     elif scale_value == 'Unlikely / Improbable':
         return 30
-    elif scale_value == 'Roughly Even Change / Roughly Even Odds':
+    elif scale_value == 'Roughly Even Chance / Roughly Even Odds':
         return 50
     elif scale_value == 'Likely / Probable':
         return 70
@@ -446,7 +446,7 @@ def value_to_dni(confidence_value):
     0-9             Almost No Chance / Remote
     10-19           Very Unlikely / Highly Improbable
     20-39           Unlikely / Improbable
-    40-59           Roughly Even Change / Roughly Even Odds
+    40-59           Roughly Even Chance / Roughly Even Odds
     60-79           Likely / Probable
     80-89           Very Likely / Highly Probable
     90-100          Almost Certain / Nearly Certain
@@ -469,7 +469,7 @@ def value_to_dni(confidence_value):
     elif 39 >= confidence_value >= 20:
         return 'Unlikely / Improbable'
     elif 59 >= confidence_value >= 40:
-        return 'Roughly Even Change / Roughly Even Odds'
+        return 'Roughly Even Chance / Roughly Even Odds'
     elif 79 >= confidence_value >= 60:
         return 'Likely / Probable'
     elif 89 >= confidence_value >= 80:
