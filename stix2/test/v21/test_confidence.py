@@ -258,7 +258,7 @@ def test_confidence_range_dni():
         elif _between(39, val, 20):
             assert value_to_dni(val) == "Unlikely / Improbable"
         elif _between(59, val, 40):
-            assert value_to_dni(val) == "Roughly Even Change / Roughly Even Odds"
+            assert value_to_dni(val) == "Roughly Even Chance / Roughly Even Odds"
         elif _between(79, val, 60):
             assert value_to_dni(val) == "Likely / Probable"
         elif _between(89, val, 80):
@@ -272,7 +272,7 @@ def test_confidence_range_dni():
         ("Almost No Chance / Remote", 5),
         ("Very Unlikely / Highly Improbable", 15),
         ("Unlikely / Improbable", 30),
-        ("Roughly Even Change / Roughly Even Odds", 50),
+        ("Roughly Even Chance / Roughly Even Odds", 50),
         ("Likely / Probable", 70),
         ("Very Likely / Highly Probable", 85),
         ("Almost Certain / Nearly Certain", 95),
