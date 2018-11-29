@@ -211,16 +211,20 @@ class MemorySink(DataSink):
         else:
             bundle = v20.Bundle(all_objs, allow_custom=self.allow_custom)
 
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
+        if path.endswith(".json"):
+            if not os.path.exists(os.path.dirname(path)):
+                os.makedirs(os.path.dirname(path))
+        else:
+            if not os.path.exists(path):
+                os.makedirs(path)
 
-        # if the user only provided a directory, use the bundle id for filename
-        if os.path.isdir(path):
+            # if the user only provided a directory, use the bundle id for filename
             path = os.path.join(path, bundle["id"] + ".json")
 
         with io.open(path, "w", encoding=encoding) as f:
             bundle = bundle.serialize(pretty=True, encoding=encoding, ensure_ascii=False)
             f.write(bundle)
+
         return path
     save_to_file.__doc__ = MemoryStore.save_to_file.__doc__
 
