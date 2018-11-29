@@ -27,11 +27,11 @@ setup(
     version=get_version(),
     description='Produce and consume STIX 2 JSON content',
     long_description=get_long_description(),
-    url='https://github.com/oasis-open/cti-python-stix2',
+    url='https://oasis-open.github.io/cti-documentation/',
     author='OASIS Cyber Threat Intelligence Technical Committee',
     author_email='cti-users@lists.oasis-open.org',
-    maintainer='Greg Back',
-    maintainer_email='gback@mitre.org',
+    maintainer='Chris Lenk, Emmanuelle Vargas-Gonzalez',
+    maintainer_email='clenk@mitre.org, emmanuelle@mitre.org',
     license='BSD',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -56,6 +56,11 @@ setup(
         'six',
         'stix2-patterns',
     ],
+    project_urls={
+        'Documentation': 'https://stix2.readthedocs.io/',
+        'Source Code': 'https://github.com/oasis-open/cti-python-stix2/',
+        'Bug Tracker': 'https://github.com/oasis-open/cti-python-stix2/issues/',
+    },
     extras_require={
         'taxii': ['taxii2-client'],
     },
