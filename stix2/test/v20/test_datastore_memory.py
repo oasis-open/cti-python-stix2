@@ -141,32 +141,26 @@ def rel_mem_store():
 
 @pytest.fixture
 def fs_mem_store(request, mem_store):
-    filename = 'memory_test/mem_store.json'
-    saved_location = mem_store.save_to_file(filename)
-
-    assert os.path.abspath(filename) == saved_location  # The store used the filename provided
+    filename = mem_store.save_to_file('memory_test/mem_store.json')
 
     def fin():
         # teardown, executed regardless of exception
-        shutil.rmtree(os.path.dirname(saved_location))
+        shutil.rmtree(os.path.dirname(filename))
     request.addfinalizer(fin)
 
-    return saved_location
+    return filename
 
 
 @pytest.fixture
 def fs_mem_store_no_name(request, mem_store):
-    filename = 'memory_test/'
-    saved_location = mem_store.save_to_file(filename)
-
-    assert filename != saved_location  # The store figured out a filename
+    filename = mem_store.save_to_file('memory_test/')
 
     def fin():
         # teardown, executed regardless of exception
-        shutil.rmtree(os.path.dirname(saved_location))
+        shutil.rmtree(os.path.dirname(filename))
     request.addfinalizer(fin)
 
-    return saved_location
+    return filename
 
 
 def test_memory_source_get(mem_source):
@@ -224,7 +218,7 @@ def test_memory_store_query_multiple_filters(mem_store):
     assert len(resp) == 2
 
 
-def test_memory_store_save_load_file(mem_store, fs_mem_store):
+def test_memory_store_save_load_file(fs_mem_store):
     filename = fs_mem_store  # the fixture fs_mem_store yields filename where the memory store was written to
 
     # STIX2 contents of mem_store have already been written to file
@@ -240,7 +234,7 @@ def test_memory_store_save_load_file(mem_store, fs_mem_store):
     assert mem_store2.get("indicator--00000000-0000-4000-8000-000000000001")
 
 
-def test_memory_store_save_load_file_no_name_provided(mem_store, fs_mem_store_no_name):
+def test_memory_store_save_load_file_no_name_provided(fs_mem_store_no_name):
     filename = fs_mem_store_no_name  # the fixture fs_mem_store yields filename where the memory store was written to
 
     # STIX2 contents of mem_store have already been written to file
