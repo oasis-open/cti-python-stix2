@@ -293,12 +293,13 @@ def _collect_stix2_mappings():
         prefix = str(top_level_module.__name__) + '.'
 
         for module_loader, name, is_pkg in pkgutil.walk_packages(path=path, prefix=prefix):
+            ver = name.split('.')[1]
             if re.match(r'^stix2\.v2[0-9]$', name) and is_pkg:
                 mod = importlib.import_module(name, str(top_level_module.__name__))
-                STIX2_OBJ_MAPS[name.split('.')[1]] = {}
-                STIX2_OBJ_MAPS[name.split('.')[1]]['objects'] = mod.OBJ_MAP
-                STIX2_OBJ_MAPS[name.split('.')[1]]['observables'] = mod.OBJ_MAP_OBSERVABLE
-                STIX2_OBJ_MAPS[name.split('.')[1]]['observable-extensions'] = mod.EXT_MAP
+                STIX2_OBJ_MAPS[ver] = {}
+                STIX2_OBJ_MAPS[ver]['objects'] = mod.OBJ_MAP
+                STIX2_OBJ_MAPS[ver]['observables'] = mod.OBJ_MAP_OBSERVABLE
+                STIX2_OBJ_MAPS[ver]['observable-extensions'] = mod.EXT_MAP
             elif re.match(r'^stix2\.v2[0-9]\.common$', name) and is_pkg is False:
                 mod = importlib.import_module(name, str(top_level_module.__name__))
-                STIX2_OBJ_MAPS[name.split('.')[1]]['markings'] = mod.OBJ_MAP_MARKING
+                STIX2_OBJ_MAPS[ver]['markings'] = mod.OBJ_MAP_MARKING

@@ -98,7 +98,7 @@ class TLPMarking(_STIXBase):
 
     _type = 'tlp'
     _properties = OrderedDict([
-        ('tlp', Property(required=True)),
+        ('tlp', StringProperty(required=True)),
     ])
 
 
