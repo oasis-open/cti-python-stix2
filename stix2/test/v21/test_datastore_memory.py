@@ -10,7 +10,7 @@ from stix2.v21 import (
     Bundle, Campaign, CustomObject, Identity, Indicator, Malware, Relationship,
 )
 
-from .constants import (
+from stix2.test.v21.constants import (
     CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
     INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS,
 )
@@ -150,14 +150,31 @@ def rel_mem_store():
 @pytest.fixture
 def fs_mem_store(request, mem_store):
     filename = 'memory_test/mem_store.json'
-    mem_store.save_to_file(filename)
+    saved_location = mem_store.save_to_file(filename)
+
+    assert os.path.abspath(filename) == saved_location
 
     def fin():
-        # teardown, excecuted regardless of exception
+        # teardown, executed regardless of exception
         shutil.rmtree(os.path.dirname(filename))
     request.addfinalizer(fin)
 
-    return filename
+    return saved_location
+
+
+@pytest.fixture
+def fs_mem_store_no_name(request, mem_store):
+    filename = 'memory_test/'
+    saved_location = mem_store.save_to_file(filename)
+
+    assert filename != saved_location  # The stored figured out a filename
+
+    def fin():
+        # teardown, executed regardless of exception
+        shutil.rmtree(os.path.dirname(filename))
+    request.addfinalizer(fin)
+
+    return saved_location
 
 
 def test_memory_source_get(mem_source):
@@ -230,6 +247,22 @@ def test_memory_store_save_load_file(mem_store, fs_mem_store):
     assert mem_store2.get("indicator--00000000-0000-4000-8000-000000000001")
 
 
+def test_memory_store_save_load_file_no_name_provided(mem_store, fs_mem_store_no_name):
+    filename = fs_mem_store_no_name  # the fixture fs_mem_store yields filename where the memory store was written to
+
+    # STIX2 contents of mem_store have already been written to file
+    # (this is done in fixture 'fs_mem_store'), so can already read-in here
+    contents = open(os.path.abspath(filename)).read()
+
+    assert '"id": "indicator--00000000-0000-4000-8000-000000000001",' in contents
+    assert '"id": "indicator--00000000-0000-4000-8000-000000000001",' in contents
+
+    mem_store2 = MemoryStore()
+    mem_store2.load_from_file(filename)
+    assert mem_store2.get("indicator--00000000-0000-4000-8000-000000000001")
+    assert mem_store2.get("indicator--00000000-0000-4000-8000-000000000001")
+
+
 def test_memory_store_add_invalid_object(mem_store):
     ind = ('indicator', IND1)  # tuple isn't valid
     with pytest.raises(TypeError):
@@ -249,6 +282,47 @@ def test_memory_store_object_with_custom_property(mem_store):
     camp_r = mem_store.get(camp.id)
     assert camp_r.id == camp.id
     assert camp_r.x_empire == camp.x_empire
+
+
+def test_memory_store_object_creator_of_present(mem_store):
+    camp = Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        created_by_ref="identity--e4196283-7420-4277-a7a3-d57f61ef1389",
+        x_empire="Roman",
+        allow_custom=True,
+    )
+
+    iden = Identity(
+        id="identity--e4196283-7420-4277-a7a3-d57f61ef1389",
+        name="Foo Corp.",
+        identity_class="corporation"
+    )
+
+    mem_store.add(camp)
+    mem_store.add(iden)
+
+    camp_r = mem_store.get(camp.id)
+    assert camp_r.id == camp.id
+    assert camp_r.x_empire == camp.x_empire
+    assert mem_store.creator_of(camp_r) == iden
+
+
+def test_memory_store_object_creator_of_missing(mem_store):
+    camp = Campaign(
+        name="Scipio Africanus",
+        objective="Defeat the Carthaginians",
+        created_by_ref="identity--e4196283-7420-4277-a7a3-d57f61ef1389",
+        x_empire="Roman",
+        allow_custom=True,
+    )
+
+    mem_store.add(camp)
+
+    camp_r = mem_store.get(camp.id)
+    assert camp_r.id == camp.id
+    assert camp_r.x_empire == camp.x_empire
+    assert mem_store.creator_of(camp) is None
 
 
 def test_memory_store_object_with_custom_property_in_bundle(mem_store):
@@ -354,3 +428,12 @@ def test_related_to_by_target(rel_mem_store):
     assert len(resp) == 2
     assert any(x['id'] == CAMPAIGN_ID for x in resp)
     assert any(x['id'] == INDICATOR_ID for x in resp)
+
+
+def test_object_family_internal_components(mem_source):
+    # Testing internal components.
+    str_representation = str(mem_source._data['indicator--00000000-0000-4000-8000-000000000001'])
+    repr_representation = repr(mem_source._data['indicator--00000000-0000-4000-8000-000000000001'])
+
+    assert "latest=2017-01-27 13:49:53.936000+00:00>>" in str_representation
+    assert "latest=2017-01-27 13:49:53.936000+00:00>>" in repr_representation

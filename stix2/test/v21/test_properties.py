@@ -11,6 +11,7 @@ from stix2.properties import (
     Property, ReferenceProperty, StringProperty, TimestampProperty,
     TypeProperty,
 )
+from stix2.v21.common import MarkingProperty
 
 from . import constants
 
@@ -167,6 +168,34 @@ def test_id_property_default():
 def test_integer_property_valid(value):
     int_prop = IntegerProperty()
     assert int_prop.clean(value) is not None
+
+
+@pytest.mark.parametrize(
+    "value", [
+        -1,
+        -100,
+        -50 * 6,
+    ],
+)
+def test_integer_property_invalid_min_with_constraints(value):
+    int_prop = IntegerProperty(min=0, max=180)
+    with pytest.raises(ValueError) as excinfo:
+        int_prop.clean(value)
+    assert "minimum value is" in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "value", [
+        181,
+        200,
+        50 * 6,
+    ],
+)
+def test_integer_property_invalid_max_with_constraints(value):
+    int_prop = IntegerProperty(min=0, max=180)
+    with pytest.raises(ValueError) as excinfo:
+        int_prop.clean(value)
+    assert "maximum value is" in str(excinfo.value)
 
 
 @pytest.mark.parametrize(
@@ -467,3 +496,12 @@ def test_extension_property_invalid_type():
 def test_extension_at_least_one_property_constraint():
     with pytest.raises(AtLeastOnePropertyError):
         stix2.v21.TCPExt()
+
+
+def test_marking_property_error():
+    mark_prop = MarkingProperty()
+
+    with pytest.raises(ValueError) as excinfo:
+        mark_prop.clean('my-marking')
+
+    assert str(excinfo.value) == "must be a Statement, TLP Marking or a registered marking."
