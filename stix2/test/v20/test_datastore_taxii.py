@@ -40,7 +40,7 @@ class MockTAXIICollectionEndpoint(Collection):
             [],
         )
         if objs:
-            return stix2.v21.Bundle(objects=objs)
+            return stix2.v20.Bundle(objects=objs)
         else:
             resp = Response()
             resp.status_code = 404
@@ -63,7 +63,7 @@ class MockTAXIICollectionEndpoint(Collection):
         else:
             filtered_objects = []
         if filtered_objects:
-            return stix2.v21.Bundle(objects=filtered_objects)
+            return stix2.v20.Bundle(objects=filtered_objects)
         else:
             resp = Response()
             resp.status_code = 404
