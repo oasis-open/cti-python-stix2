@@ -10,7 +10,7 @@ from stix2.v21 import (
     Bundle, Campaign, CustomObject, Identity, Indicator, Malware, Relationship,
 )
 
-from stix2.test.v21.constants import (
+from .constants import (
     CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
     INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS,
 )
@@ -296,7 +296,7 @@ def test_memory_store_object_creator_of_present(mem_store):
     iden = Identity(
         id="identity--e4196283-7420-4277-a7a3-d57f61ef1389",
         name="Foo Corp.",
-        identity_class="corporation"
+        identity_class="corporation",
     )
 
     mem_store.add(camp)

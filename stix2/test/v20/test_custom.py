@@ -884,9 +884,10 @@ def test_parse_observable_with_custom_extension():
     assert parsed.extensions['x-new-ext'].property2 == 12
 
 
-@pytest.mark.parametrize("data", [
-    # URL is not in EXT_MAP
-    """{
+@pytest.mark.parametrize(
+    "data", [
+        # URL is not in EXT_MAP
+        """{
         "type": "url",
         "value": "example.com",
         "extensions": {
@@ -896,8 +897,8 @@ def test_parse_observable_with_custom_extension():
             }
         }
     }""",
-    # File is in EXT_MAP
-    """{
+        # File is in EXT_MAP
+        """{
         "type": "file",
         "name": "foo.txt",
         "extensions": {
@@ -907,7 +908,8 @@ def test_parse_observable_with_custom_extension():
             }
         }
     }""",
-])
+    ],
+)
 def test_parse_observable_with_unregistered_custom_extension(data):
     with pytest.raises(ValueError) as excinfo:
         stix2.parse_observable(data, version='2.0')
