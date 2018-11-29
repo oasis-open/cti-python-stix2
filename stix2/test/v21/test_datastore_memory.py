@@ -156,7 +156,7 @@ def fs_mem_store(request, mem_store):
 
     def fin():
         # teardown, executed regardless of exception
-        shutil.rmtree(os.path.dirname(filename))
+        shutil.rmtree(os.path.dirname(saved_location))
     request.addfinalizer(fin)
 
     return saved_location
@@ -171,7 +171,7 @@ def fs_mem_store_no_name(request, mem_store):
 
     def fin():
         # teardown, executed regardless of exception
-        shutil.rmtree(os.path.dirname(filename))
+        shutil.rmtree(os.path.dirname(saved_location))
     request.addfinalizer(fin)
 
     return saved_location
