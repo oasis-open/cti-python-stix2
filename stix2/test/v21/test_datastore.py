@@ -4,6 +4,7 @@ from stix2.datastore import (
     CompositeDataSource, DataSink, DataSource, DataStoreMixin,
 )
 from stix2.datastore.filters import Filter
+
 from .constants import CAMPAIGN_MORE_KWARGS
 
 

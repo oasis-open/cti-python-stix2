@@ -5,6 +5,7 @@ import shutil
 import pytest
 
 import stix2
+
 from .constants import (
     CAMPAIGN_ID, CAMPAIGN_KWARGS, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID,
     INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS,
