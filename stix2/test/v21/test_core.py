@@ -60,6 +60,15 @@ def test_parse_observable_with_version():
     assert v in str(obs_obj.__class__)
 
 
+@pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
+def test_parse_observable_with_no_version():
+    observable = {"type": "file", "name": "foo.exe"}
+    obs_obj = core.parse_observable(observable)
+    v = 'v21'
+
+    assert v in str(obs_obj.__class__)
+
+
 def test_register_object_with_version():
     bundle = core.dict_to_stix2(BUNDLE, version='2.1')
     core._register_object(bundle.objects[0].__class__)
@@ -71,6 +80,16 @@ def test_register_object_with_version():
 
 def test_register_marking_with_version():
     core._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
+    v = 'v21'
+
+    assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(stix2.v21.TLP_WHITE.__class__)
+
+
+@pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
+def test_register_marking_with_no_version():
+    # Uses default version (2.0 in this case)
+    core._register_marking(stix2.v21.TLP_WHITE.__class__)
     v = 'v21'
 
     assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']

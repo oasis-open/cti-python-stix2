@@ -200,3 +200,37 @@ def test_stix_object_property():
 
     identity = stix2.v20.Identity(name="test", identity_class="individual")
     assert prop.clean(identity) is identity
+
+
+def test_bundle_with_different_spec_objects():
+    # This is a 2.0 case only...
+
+    data = [
+        {
+            "spec_version": "2.1",
+            "type": "indicator",
+            "id": "indicator--00000000-0000-4000-8000-000000000001",
+            "created": "2017-01-01T12:34:56.000Z",
+            "modified": "2017-01-01T12:34:56.000Z",
+            "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "valid_from": "2017-01-01T12:34:56Z",
+            "labels": [
+                "malicious-activity",
+            ],
+        },
+        {
+            "type": "malware",
+            "id": "malware--00000000-0000-4000-8000-000000000003",
+            "created": "2017-01-01T12:34:56.000Z",
+            "modified": "2017-01-01T12:34:56.000Z",
+            "name": "Cryptolocker",
+            "labels": [
+                "ransomware",
+            ],
+        },
+    ]
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.v20.Bundle(objects=data)
+
+    assert "Spec version 2.0 bundles don't yet support containing objects of a different spec version." in str(excinfo.value)
