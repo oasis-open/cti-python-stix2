@@ -8,8 +8,8 @@ from stix2.properties import (
     ERROR_INVALID_ID, BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
-    Property, ReferenceProperty, StringProperty, TimestampProperty,
-    TypeProperty,
+    Property, ReferenceProperty, STIXObjectProperty, StringProperty,
+    TimestampProperty, TypeProperty,
 )
 from stix2.v20.common import MarkingProperty
 
@@ -496,3 +496,14 @@ def test_marking_property_error():
         mark_prop.clean('my-marking')
 
     assert str(excinfo.value) == "must be a Statement, TLP Marking or a registered marking."
+
+
+def test_stix_property_not_compliant_spec():
+    # This is a 2.0 test only...
+    indicator = stix2.v20.Indicator(spec_version="2.0", allow_custom=True, **constants.INDICATOR_KWARGS)
+    stix_prop = STIXObjectProperty(spec_version="2.0")
+
+    with pytest.raises(ValueError) as excinfo:
+        stix_prop.clean(indicator)
+
+    assert "Spec version 2.0 bundles don't yet support containing objects of a different spec version." in str(excinfo.value)

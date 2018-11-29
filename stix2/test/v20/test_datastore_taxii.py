@@ -32,36 +32,38 @@ class MockTAXIICollectionEndpoint(Collection):
     def get_objects(self, **filter_kwargs):
         self._verify_can_read()
         query_params = _filter_kwargs_to_query_params(filter_kwargs)
-        if not isinstance(query_params, dict):
-            query_params = json.loads(query_params, encoding='utf-8')
-        full_filter = BasicFilter(query_params or {})
+        assert isinstance(query_params, dict)
+        full_filter = BasicFilter(query_params)
         objs = full_filter.process_filter(
             self.objects,
             ("id", "type", "version"),
             [],
         )
         if objs:
-            return stix2.v20.Bundle(objects=objs)
+            return stix2.v21.Bundle(objects=objs)
         else:
             resp = Response()
             resp.status_code = 404
             resp.raise_for_status()
 
-    def get_object(self, id, version=None, accept=''):
+    def get_object(self, id, **filter_kwargs):
         self._verify_can_read()
-        query_params = None
-        if version:
-            query_params = _filter_kwargs_to_query_params({"version": version})
-        if query_params:
-            query_params = json.loads(query_params, encoding='utf-8')
-        full_filter = BasicFilter(query_params or {})
-        objs = full_filter.process_filter(
-            self.objects,
-            ("version",),
-            [],
-        )
-        if objs:
-            return stix2.v20.Bundle(objects=objs)
+        query_params = _filter_kwargs_to_query_params(filter_kwargs)
+        assert isinstance(query_params, dict)
+        full_filter = BasicFilter(query_params)
+
+        # In this endpoint we must first filter objects by id beforehand.
+        objects = [x for x in self.objects if x["id"] == id]
+        if objects:
+            filtered_objects = full_filter.process_filter(
+                objects,
+                ("version",),
+                [],
+            )
+        else:
+            filtered_objects = []
+        if filtered_objects:
+            return stix2.v21.Bundle(objects=filtered_objects)
         else:
             resp = Response()
             resp.status_code = 404
@@ -165,6 +167,20 @@ def test_add_list_object(collection, indicator):
     )
 
     tc_sink.add([ta, indicator])
+
+
+def test_get_object_found(collection):
+    tc_source = stix2.TAXIICollectionSource(collection)
+    result = tc_source.query([
+        stix2.Filter("id", "=", "indicator--00000000-0000-4000-8000-000000000001"),
+    ])
+    assert result
+
+
+def test_get_object_not_found(collection):
+    tc_source = stix2.TAXIICollectionSource(collection)
+    result = tc_source.get("indicator--00000000-0000-4000-8000-000000000005")
+    assert result is None
 
 
 def test_add_stix2_bundle_object(collection):
