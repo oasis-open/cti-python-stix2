@@ -309,7 +309,7 @@ class DataSource(with_metaclass(ABCMeta)):
         """
 
     def creator_of(self, obj):
-        """Retrieve the Identity refered to by the object's `created_by_ref`.
+        """Retrieve the Identity referred to by the object's `created_by_ref`.
 
         Args:
             obj: The STIX object whose `created_by_ref` property will be looked

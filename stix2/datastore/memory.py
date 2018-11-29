@@ -221,6 +221,7 @@ class MemorySink(DataSink):
         with io.open(path, "w", encoding=encoding) as f:
             bundle = bundle.serialize(pretty=True, encoding=encoding, ensure_ascii=False)
             f.write(bundle)
+        return path
     save_to_file.__doc__ = MemoryStore.save_to_file.__doc__
 
 
