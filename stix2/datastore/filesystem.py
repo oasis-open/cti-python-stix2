@@ -102,7 +102,7 @@ class FileSystemSink(DataSink):
                 in a STIX object (or list of), dict (or list of), or a STIX 2.0
                 json encoded string.
 
-        Notes:
+        Note:
             ``stix_data`` can be a Bundle object, but each object in it will be
             saved separately; you will be able to retrieve any of the objects
             the Bundle contained, but not the Bundle itself.

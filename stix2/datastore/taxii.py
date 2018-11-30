@@ -304,7 +304,7 @@ class TAXIICollectionSource(DataSource):
         Does not put in TAXII spec format as the TAXII2Client (that we use)
         does this for us.
 
-        Notes:
+        Note:
             Currently, the TAXII2Client can handle TAXII filters where the
             filter value is list, as both a comma-seperated string or python
             list.
