@@ -3,13 +3,405 @@ Python STIX 2.0 FileSystem Source/Sink
 
 """
 
+import errno
 import json
 import os
+import stat
 
+import pytz
+import six
+
+from stix2.base import _STIXBase
 from stix2.core import Bundle, parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
-from stix2.utils import deduplicate, get_class_hierarchy_names
+from stix2.utils import get_type_from_id, is_marking
+
+
+def _timestamp2filename(timestamp):
+    """
+    Encapsulates a way to create unique filenames based on an object's
+    "modified" property value.  This should not include an extension.
+
+    :param timestamp: A timestamp, as a datetime.datetime object.
+    """
+    # Different times will only produce different file names if all timestamps
+    # are in the same time zone!  So if timestamp is timezone-aware convert
+    # to UTC just to be safe.  If naive, just use as-is.
+    if timestamp.tzinfo is not None:
+        timestamp = timestamp.astimezone(pytz.utc)
+
+    return timestamp.strftime("%Y%m%d%H%M%S%f")
+
+
+class AuthSet(object):
+    """
+    Represents either a whitelist or blacklist of values, where/what we
+    must/must not search to find objects which match a query.  (Maybe "AuthSet"
+    isn't the right name, but determining authorization is a typical context in
+    which black/white lists are used.)
+
+    The set may be empty.  For a whitelist, this means you mustn't search
+    anywhere, which means the query was impossible to match, so you can skip
+    searching altogether.  For a blacklist, this means nothing is excluded
+    and you must search everywhere.
+    """
+
+    BLACK = 0
+    WHITE = 1
+
+    def __init__(self, allowed, prohibited):
+        """
+        Initialize this AuthSet from the given sets of allowed and/or
+        prohibited values.  The type of set (black or white) is determined
+        from the allowed and/or prohibited values given.
+
+        :param allowed: A set of allowed values (or None if no allow filters
+            were found in the query)
+        :param prohibited: A set of prohibited values (not None)
+        """
+        if allowed is None:
+            self.__values = prohibited
+            self.__type = AuthSet.BLACK
+
+        else:
+            # There was at least one allow filter, so create a whitelist.  But
+            # any matching prohibited values create a combination of conditions
+            # which can never match.  So exclude those.
+            self.__values = allowed - prohibited
+            self.__type = AuthSet.WHITE
+
+    @property
+    def values(self):
+        """
+        Get the values in this white/blacklist, as a set.
+        """
+        return self.__values
+
+    @property
+    def auth_type(self):
+        """
+        Get the type of set: AuthSet.WHITE or AuthSet.BLACK.
+        """
+        return self.__type
+
+    def __repr__(self):
+        return "{}list: {}".format(
+            "white" if self.auth_type == AuthSet.WHITE else "black",
+            self.values
+        )
+
+
+# A fixed, reusable AuthSet which accepts anything.  It came in handy.
+_AUTHSET_ANY = AuthSet(None, set())
+
+
+def _update_allow(allow_set, value):
+    """
+    Updates the given set of "allow" values.  The first time an update to the
+    set occurs, the value(s) are added.  Thereafter, since all filters are
+    implicitly AND'd, the given values are intersected with the existing allow
+    set, which may remove values.  At the end, it may even wind up empty.
+
+    :param allow_set: The allow set, or None
+    :param value: The value(s) to add (single value, or iterable of values)
+    :return: The updated allow set (not None)
+    """
+    adding_seq = hasattr(value, "__iter__") and \
+        not isinstance(value, six.string_types)
+
+    if allow_set is None:
+        allow_set = set()
+        if adding_seq:
+            allow_set.update(value)
+        else:
+            allow_set.add(value)
+
+    else:
+        # strangely, the "&=" operator requires a set on the RHS
+        # whereas the method allows any iterable.
+        if adding_seq:
+            allow_set.intersection_update(value)
+        else:
+            allow_set.intersection_update({value})
+
+    return allow_set
+
+
+def _find_search_optimizations(filters):
+    """
+    Searches through all the filters, and creates white/blacklists of types and
+    IDs, which can be used to optimize the filesystem search.
+
+    :param filters: An iterable of filter objects representing a query
+    :return: A 2-tuple of AuthSet objects: the first is for object types, and
+        the second is for object IDs.
+    """
+
+    # The basic approach to this is to determine what is allowed and
+    # prohibited, independently, and then combine them to create the final
+    # white/blacklists.
+
+    allowed_types = allowed_ids = None
+    prohibited_types = set()
+    prohibited_ids = set()
+
+    for filter_ in filters:
+        if filter_.property == "type":
+            if filter_.op in ("=", "in"):
+                allowed_types = _update_allow(allowed_types, filter_.value)
+            elif filter_.op == "!=":
+                prohibited_types.add(filter_.value)
+
+        elif filter_.property == "id":
+            if filter_.op == "=":
+                # An "allow" ID filter implies a type filter too, since IDs
+                # contain types within them.
+                allowed_ids = _update_allow(allowed_ids, filter_.value)
+                allowed_types = _update_allow(allowed_types,
+                                              get_type_from_id(filter_.value))
+            elif filter_.op == "!=":
+                prohibited_ids.add(filter_.value)
+            elif filter_.op == "in":
+                allowed_ids = _update_allow(allowed_ids, filter_.value)
+                allowed_types = _update_allow(allowed_types, (
+                    get_type_from_id(id_) for id_ in filter_.value
+                ))
+
+    opt_types = AuthSet(allowed_types, prohibited_types)
+    opt_ids = AuthSet(allowed_ids, prohibited_ids)
+
+    # If we have both type and ID whitelists, perform a type-based intersection
+    # on them, to further optimize.  (Some of the cross-property constraints
+    # occur above; this is essentially a second pass which operates on the
+    # final whitelists, which among other things, incorporates any of the
+    # prohibitions found above.)
+    if opt_types.auth_type == AuthSet.WHITE and \
+            opt_ids.auth_type == AuthSet.WHITE:
+
+        opt_types.values.intersection_update(
+            get_type_from_id(id_) for id_ in opt_ids.values
+        )
+
+        opt_ids.values.intersection_update(
+            id_ for id_ in opt_ids.values
+            if get_type_from_id(id_) in opt_types.values
+        )
+
+    return opt_types, opt_ids
+
+
+def _get_matching_dir_entries(parent_dir, auth_set, st_mode_test=None, ext=""):
+    """
+    Search a directory (non-recursively), and find entries which match the
+    given criteria.
+
+    :param parent_dir: The directory to search
+    :param auth_set: an AuthSet instance, which represents a black/whitelist
+        filter on filenames
+    :param st_mode_test: A callable allowing filtering based on the type of
+        directory entry.  E.g. just get directories, or just get files.  It
+        will be passed the st_mode field of a stat() structure and should
+        return True to include the file, or False to exclude it.  Easy thing to
+        do is pass one of the stat module functions, e.g. stat.S_ISREG.  If
+        None, don't filter based on entry type.
+    :param ext: Determines how names from auth_set match up to directory
+        entries, and allows filtering by extension.  The extension is added
+        to auth_set values to obtain directory entries; it is removed from
+        directory entries to obtain auth_set values.  In this way, auth_set
+        may be treated as having only "basenames" of the entries.  Only entries
+        having the given extension will be included in the results.  If not
+        empty, the extension MUST include a leading ".".  The default is the
+        empty string, which will result in direct comparisons, and no
+        extension-based filtering.
+    :return: A list of directory entries matching the criteria.  These will not
+        have any path info included; they will just be bare names.
+    :raises OSError: If there are errors accessing directory contents or
+        stat()'ing files
+    """
+
+    results = []
+    if auth_set.auth_type == AuthSet.WHITE:
+        for value in auth_set.values:
+            filename = value + ext
+            try:
+                if st_mode_test:
+                    s = os.stat(os.path.join(parent_dir, filename))
+                    type_pass = st_mode_test(s.st_mode)
+                else:
+                    type_pass = True
+
+                if type_pass:
+                    results.append(filename)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+                # else, file-not-found is ok, just skip
+
+    else:  # auth_set is a blacklist
+        for entry in os.listdir(parent_dir):
+            if ext:
+                auth_name, this_ext = os.path.splitext(entry)
+                if this_ext != ext:
+                    continue
+            else:
+                auth_name = entry
+
+            if auth_name in auth_set.values:
+                continue
+
+            try:
+                if st_mode_test:
+                    s = os.stat(os.path.join(parent_dir, entry))
+                    type_pass = st_mode_test(s.st_mode)
+                else:
+                    type_pass = True
+
+                if type_pass:
+                    results.append(entry)
+            except OSError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+                # else, file-not-found is ok, just skip
+
+    return results
+
+
+def _check_object_from_file(query, filepath, allow_custom, version):
+    """
+    Read a STIX object from the given file, and check it against the given
+    filters.
+
+    :param query: Iterable of filters
+    :param filepath: Path to file to read
+    :param allow_custom: Whether to allow custom properties as well unknown
+        custom objects.
+    :param version: Which STIX2 version to use. (e.g. "2.0", "2.1"). If None,
+        use latest version.
+    :return: The (parsed) STIX object, if the object passes the filters.  If
+        not, None is returned.
+    :raises TypeError: If the file had invalid JSON
+    :raises IOError: If there are problems opening/reading the file
+    :raises stix2.exceptions.STIXError: If there were problems creating a STIX
+        object from the JSON
+    """
+    try:
+        with open(filepath, "r") as f:
+            stix_json = json.load(f)
+
+    except ValueError:  # not a JSON file
+        raise TypeError(
+            "STIX JSON object at '{0}' could either not be parsed "
+            "to JSON or was not valid STIX JSON".format(
+                filepath))
+
+    stix_obj = parse(stix_json, allow_custom, version)
+
+    if stix_obj["type"] == "bundle":
+        stix_obj = stix_obj["objects"][0]
+
+    # check against other filters, add if match
+    result = next(apply_common_filters([stix_obj], query), None)
+
+    return result
+
+
+def _search_versioned(query, type_path, auth_ids, allow_custom, version):
+    """
+    Searches the given directory, which contains data for STIX objects of a
+    particular versioned type (i.e. not markings), and return any which match
+    the query.
+
+    :param query: The query to match against
+    :param type_path: The directory with type-specific STIX object files
+    :param auth_ids: Search optimization based on object ID
+    :param allow_custom: Whether to allow custom properties as well unknown
+        custom objects.
+    :param version: Which STIX2 version to use. (e.g. "2.0", "2.1"). If None,
+        use latest version.
+    :return: A list of all matching objects
+    :raises TypeError, stix2.exceptions.STIXError: If any objects had invalid
+        content
+    :raises IOError, OSError: If there were any problems opening/reading files
+    """
+    results = []
+    id_dirs = _get_matching_dir_entries(type_path, auth_ids,
+                                        stat.S_ISDIR)
+    for id_dir in id_dirs:
+        id_path = os.path.join(type_path, id_dir)
+
+        # This leverages a more sophisticated function to do a simple thing:
+        # get all the JSON files from a directory.  I guess it does give us
+        # file type checking, ensuring we only get regular files.
+        version_files = _get_matching_dir_entries(id_path, _AUTHSET_ANY,
+                                                  stat.S_ISREG, ".json")
+        for version_file in version_files:
+            version_path = os.path.join(id_path, version_file)
+
+            try:
+                stix_obj = _check_object_from_file(query, version_path,
+                                                   allow_custom, version)
+                if stix_obj:
+                    results.append(stix_obj)
+            except IOError as e:
+                if e.errno != errno.ENOENT:
+                    raise
+                # else, file-not-found is ok, just skip
+
+    # For backward-compatibility, also search for plain files named after
+    # object IDs, in the type directory.
+    id_files = _get_matching_dir_entries(type_path, auth_ids, stat.S_ISREG,
+                                         ".json")
+    for id_file in id_files:
+        id_path = os.path.join(type_path, id_file)
+
+        try:
+            stix_obj = _check_object_from_file(query, id_path, allow_custom,
+                                               version)
+            if stix_obj:
+                results.append(stix_obj)
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            # else, file-not-found is ok, just skip
+
+    return results
+
+
+def _search_markings(query, markings_path, auth_ids, allow_custom, version):
+    """
+    Searches the given directory, which contains markings data, and return any
+    which match the query.
+
+    :param query: The query to match against
+    :param markings_path: The directory with STIX markings files
+    :param auth_ids: Search optimization based on object ID
+    :param allow_custom: Whether to allow custom properties as well unknown
+        custom objects.
+    :param version: Which STIX2 version to use. (e.g. "2.0", "2.1"). If None,
+        use latest version.
+    :return: A list of all matching objects
+    :raises TypeError, stix2.exceptions.STIXError: If any objects had invalid
+        content
+    :raises IOError, OSError: If there were any problems opening/reading files
+    """
+    results = []
+    id_files = _get_matching_dir_entries(markings_path, auth_ids, stat.S_ISREG,
+                                         ".json")
+    for id_file in id_files:
+        id_path = os.path.join(markings_path, id_file)
+
+        try:
+            stix_obj = _check_object_from_file(query, id_path, allow_custom,
+                                               version)
+            if stix_obj:
+                results.append(stix_obj)
+        except IOError as e:
+            if e.errno != errno.ENOENT:
+                raise
+            # else, file-not-found is ok, just skip
+
+    return results
 
 
 class FileSystemStore(DataStoreMixin):
@@ -77,15 +469,23 @@ class FileSystemSink(DataSink):
     def _check_path_and_write(self, stix_obj):
         """Write the given STIX object to a file in the STIX file directory.
         """
-        path = os.path.join(self._stix_dir, stix_obj["type"], stix_obj["id"] + ".json")
+        type_dir = os.path.join(self._stix_dir, stix_obj["type"])
+        if is_marking(stix_obj):
+            filename = stix_obj["id"]
+            obj_dir = type_dir
+        else:
+            filename = _timestamp2filename(stix_obj["modified"])
+            obj_dir = os.path.join(type_dir, stix_obj["id"])
 
-        if not os.path.exists(os.path.dirname(path)):
-            os.makedirs(os.path.dirname(path))
+        file_path = os.path.join(obj_dir, filename + ".json")
+
+        if not os.path.exists(obj_dir):
+            os.makedirs(obj_dir)
 
         if self.bundlify:
             stix_obj = Bundle(stix_obj, allow_custom=self.allow_custom)
 
-        with open(path, "w") as f:
+        with open(file_path, "w") as f:
             f.write(str(stix_obj))
 
     def add(self, stix_data=None, version=None):
@@ -104,25 +504,18 @@ class FileSystemSink(DataSink):
             the Bundle contained, but not the Bundle itself.
 
         """
-        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
-               for x in get_class_hierarchy_names(stix_data)):
+        if isinstance(stix_data, Bundle):
+            # recursively add individual STIX objects
+            for stix_obj in stix_data.get("objects", []):
+                self.add(stix_obj, version=version)
+
+        elif isinstance(stix_data, _STIXBase):
             # adding python STIX object
             self._check_path_and_write(stix_data)
 
         elif isinstance(stix_data, (str, dict)):
             stix_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
-            if stix_data["type"] == "bundle":
-                # extract STIX objects
-                for stix_obj in stix_data.get("objects", []):
-                    self.add(stix_obj, version=version)
-            else:
-                # adding json-formatted STIX
-                self._check_path_and_write(stix_data,)
-
-        elif isinstance(stix_data, Bundle):
-            # recursively add individual STIX objects
-            for stix_obj in stix_data.get("objects", []):
-                self.add(stix_obj, version=version)
+            self.add(stix_data, version=version)
 
         elif isinstance(stix_data, list):
             # recursively add individual STIX objects
@@ -176,12 +569,15 @@ class FileSystemSource(DataSource):
                 a python STIX object and then returned
 
         """
-        query = [Filter("id", "=", stix_id)]
-
-        all_data = self.query(query=query, version=version, _composite_filters=_composite_filters)
+        all_data = self.all_versions(stix_id, version=version, _composite_filters=_composite_filters)
 
         if all_data:
-            stix_obj = sorted(all_data, key=lambda k: k['modified'])[0]
+            if is_marking(stix_id):
+                # Markings are unversioned; there shouldn't be more than one
+                # result.
+                stix_obj = all_data[0]
+            else:
+                stix_obj = sorted(all_data, key=lambda k: k['modified'])[-1]
         else:
             stix_obj = None
 
@@ -206,7 +602,8 @@ class FileSystemSource(DataSource):
                 a python STIX objects and then returned
 
         """
-        return [self.get(stix_id=stix_id, version=version, _composite_filters=_composite_filters)]
+        query = [Filter("id", "=", stix_id)]
+        return self.query(query, version=version, _composite_filters=_composite_filters)
 
     def query(self, query=None, version=None, _composite_filters=None):
         """Search and retrieve STIX objects based on the complete query.
@@ -239,105 +636,20 @@ class FileSystemSource(DataSource):
         if _composite_filters:
             query.add(_composite_filters)
 
-        # extract any filters that are for "type" or "id" , as we can then do
-        # filtering before reading in the STIX objects. A STIX 'type' filter
-        # can reduce the query to a single sub-directory. A STIX 'id' filter
-        # allows for the fast checking of the file names versus loading it.
-        file_filters = self._parse_file_filters(query)
+        auth_types, auth_ids = _find_search_optimizations(query)
 
-        # establish which subdirectories can be avoided in query
-        # by decluding as many as possible. A filter with "type" as the property
-        # means that certain STIX object types can be ruled out, and thus
-        # the corresponding subdirectories as well
-        include_paths = []
-        declude_paths = []
-        if "type" in [filter.property for filter in file_filters]:
-            for filter in file_filters:
-                if filter.property == "type":
-                    if filter.op == "=":
-                        include_paths.append(os.path.join(self._stix_dir, filter.value))
-                    elif filter.op == "!=":
-                        declude_paths.append(os.path.join(self._stix_dir, filter.value))
-        else:
-            # have to walk entire STIX directory
-            include_paths.append(self._stix_dir)
+        type_dirs = _get_matching_dir_entries(self._stix_dir, auth_types,
+                                              stat.S_ISDIR)
+        for type_dir in type_dirs:
+            type_path = os.path.join(self._stix_dir, type_dir)
 
-        # if a user specifies a "type" filter like "type = <stix-object_type>",
-        # the filter is reducing the search space to single stix object types
-        # (and thus single directories). This makes such a filter more powerful
-        # than "type != <stix-object_type>" bc the latter is substracting
-        # only one type of stix object type (and thus only one directory),
-        # As such the former type of filters are given preference over the latter;
-        # i.e. if both exist in a query, that latter type will be ignored
-
-        if not include_paths:
-            # user has specified types that are not wanted (i.e. "!=")
-            # so query will look in all STIX directories that are not
-            # the specified type. Compile correct dir paths
-            for dir in os.listdir(self._stix_dir):
-                if os.path.abspath(os.path.join(self._stix_dir, dir)) not in declude_paths:
-                    include_paths.append(os.path.abspath(os.path.join(self._stix_dir, dir)))
-
-        # grab stix object ID as well - if present in filters, as
-        # may forgo the loading of STIX content into memory
-        if "id" in [filter.property for filter in file_filters]:
-            for filter in file_filters:
-                if filter.property == "id" and filter.op == "=":
-                    id_ = filter.value
-                    break
+            if type_dir == "marking-definition":
+                type_results = _search_markings(query, type_path, auth_ids,
+                                                self.allow_custom, version)
             else:
-                id_ = None
-        else:
-            id_ = None
+                type_results = _search_versioned(query, type_path, auth_ids,
+                                                 self.allow_custom, version)
 
-        # now iterate through all STIX objs
-        for path in include_paths:
-            for root, dirs, files in os.walk(path):
-                for file_ in files:
-                    if not file_.endswith(".json"):
-                        # skip non '.json' files as more likely to be random non-STIX files
-                        continue
+            all_data.extend(type_results)
 
-                    if not id_ or id_ == file_.split(".")[0]:
-                        # have to load into memory regardless to evaluate other filters
-                        try:
-                            stix_obj = json.load(open(os.path.join(root, file_)))
-
-                            if stix_obj["type"] == "bundle":
-                                stix_obj = stix_obj["objects"][0]
-
-                            # naive STIX type checking
-                            stix_obj["type"]
-                            stix_obj["id"]
-
-                        except (ValueError, KeyError):  # likely not a JSON file
-                            raise TypeError("STIX JSON object at '{0}' could either not be parsed to "
-                                            "JSON or was not valid STIX JSON".format(os.path.join(root, file_)))
-
-                        # check against other filters, add if match
-                        all_data.extend(apply_common_filters([stix_obj], query))
-
-        all_data = deduplicate(all_data)
-
-        # parse python STIX objects from the STIX object dicts
-        stix_objs = [parse(stix_obj_dict, allow_custom=self.allow_custom, version=version) for stix_obj_dict in all_data]
-
-        return stix_objs
-
-    def _parse_file_filters(self, query):
-        """Extract STIX common filters.
-
-        Possibly speeds up querying STIX objects from the file system.
-
-        Extracts filters that are for the "id" and "type" property of
-        a STIX object. As the file directory is organized by STIX
-        object type with filenames that are equivalent to the STIX
-        object ID, these filters can be used first to reduce the
-        search space of a FileSystemStore (or FileSystemSink).
-
-        """
-        file_filters = []
-        for filter_ in query:
-            if filter_.property == "id" or filter_.property == "type":
-                file_filters.append(filter_)
-        return file_filters
+        return all_data
