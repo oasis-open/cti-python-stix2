@@ -345,8 +345,12 @@ class ReferenceProperty(Property):
         if self.type:
             if not value.startswith(self.type):
                 raise ValueError("must start with '{0}'.".format(self.type))
-        if not ID_REGEX.match(value):
-            raise ValueError(ERROR_INVALID_ID)
+        if hasattr(self, 'interoperability') and self.interoperability:
+            if not ID_REGEX_interoperability.match(value):
+                raise ValueError(ERROR_INVALID_ID)
+        else:
+            if not ID_REGEX.match(value):
+                raise ValueError(ERROR_INVALID_ID)
         return value
 
 
