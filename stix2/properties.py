@@ -25,6 +25,13 @@ ID_REGEX = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
                       "[89abAB][0-9a-fA-F]{3}-"
                       "[0-9a-fA-F]{12}$")
 
+ID_REGEX_interoperability = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
+                                       "[0-9a-fA-F]{8}-"
+                                       "[0-9a-fA-F]{4}-"
+                                       "[0-9a-fA-F]{4}-"
+                                       "[0-9a-fA-F]{4}-"
+                                       "[0-9a-fA-F]{12}$")
+
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUIDv4>"
 )
@@ -185,8 +192,12 @@ class IDProperty(Property):
     def clean(self, value):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{0}'.".format(self.required_prefix))
-        if not ID_REGEX.match(value):
-            raise ValueError(ERROR_INVALID_ID)
+        if hasattr(self, 'interoperability') and self.interoperability:
+            if not ID_REGEX_interoperability.match(value):
+                raise ValueError(ERROR_INVALID_ID)
+        else:
+            if not ID_REGEX.match(value):
+                raise ValueError(ERROR_INVALID_ID)
         return value
 
     def default(self):

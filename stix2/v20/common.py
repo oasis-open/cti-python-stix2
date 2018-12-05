@@ -135,6 +135,7 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])
                 kwargs['definition'] = marking_type(**defn)
+            self._properties['id'].interoperability = kwargs.get('interoperability', False)
 
         super(MarkingDefinition, self).__init__(**kwargs)
 

@@ -14,8 +14,9 @@ from .utils import _get_dict, get_class_hierarchy_names
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, allow_custom=False, *args, **kwargs):
+    def __init__(self, allow_custom=False, interoperability=False, *args, **kwargs):
         self.allow_custom = allow_custom
+        self.interoperability = interoperability
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
 
     def clean(self, value):
@@ -33,11 +34,7 @@ class STIXObjectProperty(Property):
         if 'type' in dictified and dictified['type'] == 'bundle':
             raise ValueError('This property may not contain a Bundle object')
 
-        if self.allow_custom:
-            parsed_obj = parse(dictified, allow_custom=True)
-        else:
-            parsed_obj = parse(dictified)
-        return parsed_obj
+        return parse(dictified,  self.allow_custom, self.interoperability)
 
 
 class Bundle(_STIXBase):
@@ -62,8 +59,13 @@ class Bundle(_STIXBase):
             else:
                 kwargs['objects'] = list(args) + kwargs.get('objects', [])
 
-        self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].contained.allow_custom = kwargs.get('allow_custom', False)
+        allow_custom = kwargs.get('allow_custom', False)
+        self.__allow_custom = allow_custom
+        self._properties['objects'].contained.allow_custom = allow_custom
+        interoperability = kwargs.get('interoperability', False)
+        self.__interoperability = interoperability
+        self._properties['id'].interoperability = interoperability
+        self._properties['objects'].contained.interoperability = interoperability
 
         super(Bundle, self).__init__(**kwargs)
 
@@ -71,7 +73,7 @@ class Bundle(_STIXBase):
 STIX2_OBJ_MAPS = {}
 
 
-def parse(data, allow_custom=False, version=None):
+def parse(data, allow_custom=False, interoperability=False, version=None):
     """Convert a string, dict or file-like object into a STIX object.
 
     Args:
@@ -97,12 +99,12 @@ def parse(data, allow_custom=False, version=None):
     obj = _get_dict(data)
 
     # convert dict to full python-stix2 obj
-    obj = dict_to_stix2(obj, allow_custom, version)
+    obj = dict_to_stix2(obj, allow_custom, interoperability, version)
 
     return obj
 
 
-def dict_to_stix2(stix_dict, allow_custom=False, version=None):
+def dict_to_stix2(stix_dict, allow_custom=False, interoperability=False, version=None):
     """convert dictionary to full python-stix2 object
 
         Args:
@@ -144,7 +146,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             return stix_dict
         raise exceptions.ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
 
-    return obj_class(allow_custom=allow_custom, **stix_dict)
+    return obj_class(allow_custom=allow_custom, interoperability=interoperability, **stix_dict)
 
 
 def _register_type(new_type, version=None):

@@ -17,7 +17,13 @@ from .observables import ObservableProperty
 
 
 class STIXDomainObject(_STIXBase, _MarkingsMixin):
-    pass
+    def __init__(self, *args, **kwargs):
+        interoperability = kwargs.get('interoperability', False)
+        self.__interoperability = interoperability
+        self._properties['id'].interoperability = interoperability
+        self._properties['created_by_ref'].interoperability = interoperability
+
+        super(STIXDomainObject, self).__init__(*args, **kwargs)
 
 
 class AttackPattern(STIXDomainObject):
