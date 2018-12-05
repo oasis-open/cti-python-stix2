@@ -124,9 +124,10 @@ class _STIXBase(collections.Mapping):
         for m in self.get("granular_markings", []):
             validate(self, m.get("selectors"))
 
-    def __init__(self, allow_custom=False, **kwargs):
+    def __init__(self, allow_custom=False, interoperability=False, **kwargs):
         cls = self.__class__
         self.__allow_custom = allow_custom
+        self.__interoperability = interoperability
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
