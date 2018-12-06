@@ -8,6 +8,8 @@ import json
 from dateutil import parser
 import pytz
 
+import stix2.base
+
 from .exceptions import (
     InvalidValueError, RevokeError, UnmodifiablePropertyError,
 )
@@ -385,3 +387,20 @@ def remove_custom_stix(stix_obj):
 
 def get_type_from_id(stix_id):
     return stix_id.split('--', 1)[0]
+
+
+def is_marking(obj_or_id):
+    """Determines whether the given object or object ID is/is for a marking
+    definition.
+
+    :param obj_or_id: A STIX object or object ID as a string.
+    :return: True if a marking definition, False otherwise.
+    """
+
+    if isinstance(obj_or_id, (stix2.base._STIXBase, dict)):
+        result = obj_or_id["type"] == "marking-definition"
+    else:
+        # it's a string ID
+        result = obj_or_id.startswith("marking-definition--")
+
+    return result

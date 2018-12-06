@@ -3,18 +3,16 @@
 import collections
 from datetime import datetime
 
-from stix2.utils import format_datetime
+import six
+
+import stix2.utils
 
 """Supported filter operations"""
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = [bool, dict, float, int, list, str, tuple]
-try:
-    FILTER_VALUE_TYPES.append(unicode)
-except NameError:
-    # Python 3 doesn't need to worry about unicode
-    pass
+FILTER_VALUE_TYPES = (bool, dict, float, int, list, tuple, six.string_types,
+                      datetime)
 
 
 def _check_filter_components(prop, op, value):
@@ -33,7 +31,7 @@ def _check_filter_components(prop, op, value):
         # check filter operator is supported
         raise ValueError("Filter operator '%s' not supported for specified property: '%s'" % (op, prop))
 
-    if type(value) not in FILTER_VALUE_TYPES:
+    if not isinstance(value, FILTER_VALUE_TYPES):
         # check filter value type is supported
         raise TypeError("Filter value of '%s' is not supported. The type must be a Python immutable type or dictionary" % type(value))
 
@@ -66,10 +64,6 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
         if isinstance(value, list):
             value = tuple(value)
 
-        if isinstance(value, datetime):
-            # if value is a datetime obj, convert to str
-            value = format_datetime(value)
-
         _check_filter_components(prop, op, value)
 
         self = super(Filter, cls).__new__(cls, prop, op, value)
@@ -85,31 +79,33 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
             True if property matches the filter,
             False otherwise.
         """
-        if isinstance(stix_obj_property, datetime):
-            # if a datetime obj, convert to str format before comparison
-            # NOTE: this check seems like it should be done upstream
-            # but will put here for now
-            stix_obj_property = format_datetime(stix_obj_property)
+        # If filtering on a timestamp property and the filter value is a string,
+        # try to convert the filter value to a datetime instance.
+        if isinstance(stix_obj_property, datetime) and \
+                isinstance(self.value, six.string_types):
+            filter_value = stix2.utils.parse_into_datetime(self.value)
+        else:
+            filter_value = self.value
 
-        if self.op == '=':
-            return stix_obj_property == self.value
-        elif self.op == '!=':
-            return stix_obj_property != self.value
-        elif self.op == 'in':
-            return stix_obj_property in self.value
-        elif self.op == 'contains':
-            if isinstance(self.value, dict):
-                return self.value in stix_obj_property.values()
+        if self.op == "=":
+            return stix_obj_property == filter_value
+        elif self.op == "!=":
+            return stix_obj_property != filter_value
+        elif self.op == "in":
+            return stix_obj_property in filter_value
+        elif self.op == "contains":
+            if isinstance(filter_value, dict):
+                return filter_value in stix_obj_property.values()
             else:
-                return self.value in stix_obj_property
-        elif self.op == '>':
-            return stix_obj_property > self.value
-        elif self.op == '<':
-            return stix_obj_property < self.value
-        elif self.op == '>=':
-            return stix_obj_property >= self.value
-        elif self.op == '<=':
-            return stix_obj_property <= self.value
+                return filter_value in stix_obj_property
+        elif self.op == ">":
+            return stix_obj_property > filter_value
+        elif self.op == "<":
+            return stix_obj_property < filter_value
+        elif self.op == ">=":
+            return stix_obj_property >= filter_value
+        elif self.op == "<=":
+            return stix_obj_property <= filter_value
         else:
             raise ValueError("Filter operator: {0} not supported for specified property: {1}".format(self.op, self.property))
 
@@ -223,8 +219,9 @@ class FilterSet(object):
 
         Operates like set, only adding unique stix2.Filters to the FilterSet
 
-        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
-        as it allows for blind calls (very useful in DataStore)
+        Note:
+            method designed to be very accomodating (i.e. even accepting filters=None)
+            as it allows for blind calls (very useful in DataStore)
 
         Args:
             filters: stix2.Filter OR list of stix2.Filter OR stix2.FilterSet
@@ -245,11 +242,13 @@ class FilterSet(object):
     def remove(self, filters=None):
         """Remove a Filter, list of Filters, or FilterSet from the FilterSet.
 
-        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
-        as it allows for blind calls (very useful in DataStore)
+        Note:
+            method designed to be very accomodating (i.e. even accepting filters=None)
+            as it allows for blind calls (very useful in DataStore)
 
         Args:
             filters: stix2.Filter OR list of stix2.Filter or stix2.FilterSet
+
         """
         if not filters:
             # so remove() can be called blindly, useful for
