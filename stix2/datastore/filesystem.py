@@ -91,7 +91,7 @@ class AuthSet(object):
     def __repr__(self):
         return "{}list: {}".format(
             "white" if self.auth_type == AuthSet.WHITE else "black",
-            self.values
+            self.values,
         )
 
 
@@ -167,15 +167,19 @@ def _find_search_optimizations(filters):
                 # An "allow" ID filter implies a type filter too, since IDs
                 # contain types within them.
                 allowed_ids = _update_allow(allowed_ids, filter_.value)
-                allowed_types = _update_allow(allowed_types,
-                                              get_type_from_id(filter_.value))
+                allowed_types = _update_allow(
+                    allowed_types,
+                    get_type_from_id(filter_.value),
+                )
             elif filter_.op == "!=":
                 prohibited_ids.add(filter_.value)
             elif filter_.op == "in":
                 allowed_ids = _update_allow(allowed_ids, filter_.value)
-                allowed_types = _update_allow(allowed_types, (
-                    get_type_from_id(id_) for id_ in filter_.value
-                ))
+                allowed_types = _update_allow(
+                    allowed_types, (
+                        get_type_from_id(id_) for id_ in filter_.value
+                    ),
+                )
 
     opt_types = AuthSet(allowed_types, prohibited_types)
     opt_ids = AuthSet(allowed_ids, prohibited_ids)
@@ -311,7 +315,7 @@ def _check_object_from_file(query, filepath, allow_custom, version):
     except ValueError:  # not a JSON file
         raise TypeError(
             "STIX JSON object at '{0}' could either not be parsed "
-            "to JSON or was not valid STIX JSON".format(filepath)
+            "to JSON or was not valid STIX JSON".format(filepath),
         )
 
     stix_obj = parse(stix_json, allow_custom, version)
@@ -352,22 +356,28 @@ def _search_versioned(query, type_path, auth_ids, allow_custom, version):
 
     """
     results = []
-    id_dirs = _get_matching_dir_entries(type_path, auth_ids,
-                                        stat.S_ISDIR)
+    id_dirs = _get_matching_dir_entries(
+        type_path, auth_ids,
+        stat.S_ISDIR,
+    )
     for id_dir in id_dirs:
         id_path = os.path.join(type_path, id_dir)
 
         # This leverages a more sophisticated function to do a simple thing:
         # get all the JSON files from a directory.  I guess it does give us
         # file type checking, ensuring we only get regular files.
-        version_files = _get_matching_dir_entries(id_path, _AUTHSET_ANY,
-                                                  stat.S_ISREG, ".json")
+        version_files = _get_matching_dir_entries(
+            id_path, _AUTHSET_ANY,
+            stat.S_ISREG, ".json",
+        )
         for version_file in version_files:
             version_path = os.path.join(id_path, version_file)
 
             try:
-                stix_obj = _check_object_from_file(query, version_path,
-                                                   allow_custom, version)
+                stix_obj = _check_object_from_file(
+                    query, version_path,
+                    allow_custom, version,
+                )
                 if stix_obj:
                     results.append(stix_obj)
             except IOError as e:
@@ -377,14 +387,18 @@ def _search_versioned(query, type_path, auth_ids, allow_custom, version):
 
     # For backward-compatibility, also search for plain files named after
     # object IDs, in the type directory.
-    id_files = _get_matching_dir_entries(type_path, auth_ids, stat.S_ISREG,
-                                         ".json")
+    id_files = _get_matching_dir_entries(
+        type_path, auth_ids, stat.S_ISREG,
+        ".json",
+    )
     for id_file in id_files:
         id_path = os.path.join(type_path, id_file)
 
         try:
-            stix_obj = _check_object_from_file(query, id_path, allow_custom,
-                                               version)
+            stix_obj = _check_object_from_file(
+                query, id_path, allow_custom,
+                version,
+            )
             if stix_obj:
                 results.append(stix_obj)
         except IOError as e:
@@ -421,14 +435,18 @@ def _search_markings(query, markings_path, auth_ids, allow_custom, version):
 
     """
     results = []
-    id_files = _get_matching_dir_entries(markings_path, auth_ids, stat.S_ISREG,
-                                         ".json")
+    id_files = _get_matching_dir_entries(
+        markings_path, auth_ids, stat.S_ISREG,
+        ".json",
+    )
     for id_file in id_files:
         id_path = os.path.join(markings_path, id_file)
 
         try:
-            stix_obj = _check_object_from_file(query, id_path, allow_custom,
-                                               version)
+            stix_obj = _check_object_from_file(
+                query, id_path, allow_custom,
+                version,
+            )
             if stix_obj:
                 results.append(stix_obj)
         except IOError as e:
@@ -569,7 +587,7 @@ class FileSystemSink(DataSink):
             raise TypeError(
                 "stix_data must be a STIX object (or list of), "
                 "JSON formatted STIX (or list of), "
-                "or a JSON formatted STIX bundle"
+                "or a JSON formatted STIX bundle",
             )
 
 
@@ -683,16 +701,22 @@ class FileSystemSource(DataSource):
             query.add(_composite_filters)
 
         auth_types, auth_ids = _find_search_optimizations(query)
-        type_dirs = _get_matching_dir_entries(self._stix_dir, auth_types,
-                                              stat.S_ISDIR)
+        type_dirs = _get_matching_dir_entries(
+            self._stix_dir, auth_types,
+            stat.S_ISDIR,
+        )
         for type_dir in type_dirs:
             type_path = os.path.join(self._stix_dir, type_dir)
             if type_dir == "marking-definition":
-                type_results = _search_markings(query, type_path, auth_ids,
-                                                self.allow_custom, version)
+                type_results = _search_markings(
+                    query, type_path, auth_ids,
+                    self.allow_custom, version,
+                )
             else:
-                type_results = _search_versioned(query, type_path, auth_ids,
-                                                 self.allow_custom, version)
+                type_results = _search_versioned(
+                    query, type_path, auth_ids,
+                    self.allow_custom, version,
+                )
             all_data.extend(type_results)
 
         return all_data

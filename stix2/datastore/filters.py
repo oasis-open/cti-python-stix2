@@ -11,8 +11,10 @@ import stix2.utils
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = (bool, dict, float, int, list, tuple, six.string_types,
-                      datetime)
+FILTER_VALUE_TYPES = (
+    bool, dict, float, int, list, tuple, six.string_types,
+    datetime,
+)
 
 
 def _check_filter_components(prop, op, value):
