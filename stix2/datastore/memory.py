@@ -110,15 +110,15 @@ class MemoryStore(DataStoreMixin):
         sink (MemorySink): MemorySink
 
     """
-    def __init__(self, stix_data=None, allow_custom=True):
+    def __init__(self, stix_data=None, allow_custom=True, version=None):
         self._data = {}
 
         if stix_data:
-            _add(self, stix_data, allow_custom)
+            _add(self, stix_data, allow_custom, version)
 
         super(MemoryStore, self).__init__(
-            source=MemorySource(stix_data=self._data, allow_custom=allow_custom, _store=True),
-            sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, _store=True),
+            source=MemorySource(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True),
+            sink=MemorySink(stix_data=self._data, allow_custom=allow_custom, version=version, _store=True),
         )
 
     def save_to_file(self, *args, **kwargs):
@@ -161,13 +161,16 @@ class MemorySink(DataSink):
         allow_custom (bool): whether to allow custom objects/properties
             when exporting STIX content to file.
             Default: True.
+        version (str): If present, it forces the parser to use the version
+            provided. Otherwise, the library will make the best effort based
+            on checking the "spec_version" property.
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects.
             If part of a MemoryStore, the dict is shared with a MemorySource
 
     """
-    def __init__(self, stix_data=None, allow_custom=True, _store=False):
+    def __init__(self, stix_data=None, allow_custom=True, version=None, _store=False):
         super(MemorySink, self).__init__()
         self.allow_custom = allow_custom
 
@@ -176,10 +179,10 @@ class MemorySink(DataSink):
         else:
             self._data = {}
             if stix_data:
-                _add(self, stix_data, allow_custom)
+                _add(self, stix_data, allow_custom, version)
 
-    def add(self, stix_data):
-        _add(self, stix_data, self.allow_custom)
+    def add(self, stix_data, version=None):
+        _add(self, stix_data, self.allow_custom, version)
     add.__doc__ = _add.__doc__
 
     def save_to_file(self, path, encoding="utf-8"):
@@ -230,13 +233,16 @@ class MemorySource(DataSource):
         allow_custom (bool): whether to allow custom objects/properties
             when importing STIX content from file.
             Default: True.
+        version (str): If present, it forces the parser to use the version
+            provided. Otherwise, the library will make the best effort based
+            on checking the "spec_version" property.
 
     Attributes:
         _data (dict): the in-memory dict that holds STIX objects.
             If part of a MemoryStore, the dict is shared with a MemorySink
 
     """
-    def __init__(self, stix_data=None, allow_custom=True, _store=False):
+    def __init__(self, stix_data=None, allow_custom=True, version=None, _store=False):
         super(MemorySource, self).__init__()
         self.allow_custom = allow_custom
 
@@ -245,7 +251,7 @@ class MemorySource(DataSource):
         else:
             self._data = {}
             if stix_data:
-                _add(self, stix_data, allow_custom)
+                _add(self, stix_data, allow_custom, version)
 
     def get(self, stix_id, _composite_filters=None):
         """Retrieve STIX object from in-memory dict via STIX ID.
@@ -283,9 +289,6 @@ class MemorySource(DataSource):
     def all_versions(self, stix_id, _composite_filters=None):
         """Retrieve STIX objects from in-memory dict via STIX ID, all versions
         of it.
-
-        Note: Since Memory sources/sinks don't handle multiple versions of a
-        STIX object, this operation is unnecessary. Translate call to get().
 
         Args:
             stix_id (str): The STIX ID of the STIX 2 object to retrieve.
@@ -356,9 +359,9 @@ class MemorySource(DataSource):
 
         return all_data
 
-    def load_from_file(self, file_path):
-        with open(os.path.abspath(file_path), "r") as f:
+    def load_from_file(self, file_path, version=None):
+        with io.open(os.path.abspath(file_path), "r") as f:
             stix_data = json.load(f)
 
-        _add(self, stix_data, self.allow_custom)
+        _add(self, stix_data, self.allow_custom, version)
     load_from_file.__doc__ = MemoryStore.load_from_file.__doc__

@@ -201,8 +201,8 @@ def test_apply_common_filters3():
     assert len(resp) == 3
 
     resp = list(apply_common_filters(real_stix_objs, [filters[3]]))
-    assert resp[0].id == real_stix_objs[0].id
     assert len(resp) == 3
+    assert resp[0].id == real_stix_objs[0].id
 
 
 def test_apply_common_filters4():
@@ -342,14 +342,6 @@ def test_datetime_filter_behavior():
     """
     filter_with_dt_obj = Filter("created", "=", parse_into_datetime("2016-02-14T00:00:00.000Z", "millisecond"))
     filter_with_str = Filter("created", "=", "2016-02-14T00:00:00.000Z")
-
-    # check that filter value is converted from datetime to str
-    assert isinstance(filter_with_dt_obj.value, str)
-
-    # compare datetime string to filter w/ datetime obj
-    resp = list(apply_common_filters(stix_objs, [filter_with_dt_obj]))
-    assert len(resp) == 1
-    assert resp[0]["id"] == "vulnerability--ee916c28-c7a4-4d0d-ad56-a8d357f89fef"
 
     # compare datetime obj to filter w/ datetime obj
     resp = list(apply_common_filters(real_stix_objs, [filter_with_dt_obj]))
