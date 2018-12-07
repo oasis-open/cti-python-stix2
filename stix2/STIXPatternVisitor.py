@@ -14,6 +14,9 @@ from antlr4 import CommonTokenStream, InputStream
 
 # need to import all classes because we need to access them via globals()
 from .patterns import *  # noqa
+from .patterns import (FollowedByObservationExpression, StartStopQualifier, WithinQualifier,
+                       RepeatQualifier, StringConstant, IntegerConstant, FloatConstant, HexConstant,
+                       BinaryConstant, BooleanConstant, TimestampConstant)
 
 
 def collapse_lists(lists):
