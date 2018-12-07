@@ -13,7 +13,8 @@ from stix2.patterns import _BooleanExpression
 from antlr4 import CommonTokenStream, InputStream
 
 # need to import all classes because we need to access them via globals()
-from .patterns import *
+from .patterns import *  # noqa
+
 
 def collapse_lists(lists):
     result = []
@@ -31,7 +32,6 @@ def values_only(things):
         if not isinstance(x, TerminalNode):
             values.append(x)
     return values
-
 
 
 # This class defines a complete generic visitor for a parse tree produced by STIXPatternParser.
