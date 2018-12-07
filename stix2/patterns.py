@@ -13,6 +13,14 @@ def escape_quotes_and_backslashes(s):
     return s.replace(u'\\', u'\\\\').replace(u"'", u"\\'")
 
 
+def quote_if_needed(x):
+    if isinstance(x, str):
+        if x.find("-") != -1:
+            if not x.startswith("'"):
+                return "'" + x + "'"
+    return x
+
+
 class _Constant(object):
     pass
 
@@ -23,11 +31,13 @@ class StringConstant(_Constant):
     Args:
         value (str): string value
     """
-    def __init__(self, value):
+
+    def __init__(self, value, from_parse_tree=False):
+        self.needs_to_be_quoted = not from_parse_tree
         self.value = value
 
     def __str__(self):
-        return "'%s'" % escape_quotes_and_backslashes(self.value)
+        return "'%s'" % (escape_quotes_and_backslashes(self.value) if self.needs_to_be_quoted else self.value)
 
 
 class TimestampConstant(_Constant):
@@ -86,8 +96,8 @@ class BooleanConstant(_Constant):
             self.value = value
             return
 
-        trues = ['true', 't']
-        falses = ['false', 'f']
+        trues = ['true', 't', '1']
+        falses = ['false', 'f', '0']
         try:
             if value.lower() in trues:
                 self.value = True
@@ -143,7 +153,7 @@ class HashConstant(StringConstant):
             vocab_key = _HASH_REGEX[key][1]
             if not re.match(_HASH_REGEX[key][0], value):
                 raise ValueError("'%s' is not a valid %s hash" % (value, vocab_key))
-            self.value = value
+            super(HashConstant, self).__init__(value)
 
 
 class BinaryConstant(_Constant):
@@ -152,7 +162,13 @@ class BinaryConstant(_Constant):
     Args:
         value (str): base64 encoded string value
     """
-    def __init__(self, value):
+
+    def __init__(self, value, from_parse_tree=False):
+        # support with or without a 'b'
+        if from_parse_tree:
+            m = re.match("^b'(.+)'$", value)
+            if m:
+                value = m.group(1)
         try:
             base64.b64decode(value)
             self.value = value
@@ -169,10 +185,17 @@ class HexConstant(_Constant):
     Args:
         value (str): hexadecimal value
     """
-    def __init__(self, value):
-        if not re.match('^([a-fA-F0-9]{2})+$', value):
-            raise ValueError("must contain an even number of hexadecimal characters")
-        self.value = value
+
+    def __init__(self, value, from_parse_tree=False):
+        # support with or without an 'h'
+        if not from_parse_tree and re.match('^([a-fA-F0-9]{2})+$', value):
+            self.value = value
+        else:
+            m = re.match("^h'(([a-fA-F0-9]{2})+)'$", value)
+            if m:
+                self.value = m.group(1)
+            else:
+                raise ValueError("must contain an even number of hexadecimal characters")
 
     def __str__(self):
         return "h'%s'" % self.value
@@ -185,10 +208,11 @@ class ListConstant(_Constant):
         value (list): list of values
     """
     def __init__(self, values):
-        self.value = values
+        # handle _Constants or make a _Constant
+        self.value = [x if isinstance(x, _Constant) else make_constant(x) for x in values]
 
     def __str__(self):
-        return "(" + ", ".join([("%s" % make_constant(x)) for x in self.value]) + ")"
+        return "(" + ", ".join(["%s" % x for x in self.value]) + ")"
 
 
 def make_constant(value):
@@ -229,7 +253,10 @@ class _ObjectPathComponent(object):
             parse1 = component_name.split("[")
             return ListObjectPathComponent(parse1[0], parse1[1][:-1])
         else:
-            return BasicObjectPathComponent(component_name)
+            return BasicObjectPathComponent(component_name, False)
+
+    def __str__(self):
+        return quote_if_needed(self.property_name)
 
 
 class BasicObjectPathComponent(_ObjectPathComponent):
@@ -243,13 +270,10 @@ class BasicObjectPathComponent(_ObjectPathComponent):
         property_name (str): object property name
         is_key (bool): is dictionary key, default: False
     """
-    def __init__(self, property_name, is_key=False):
+    def __init__(self, property_name, is_key):
         self.property_name = property_name
         # TODO: set is_key to True if this component is a dictionary key
         # self.is_key = is_key
-
-    def __str__(self):
-        return self.property_name
 
 
 class ListObjectPathComponent(_ObjectPathComponent):
@@ -264,7 +288,7 @@ class ListObjectPathComponent(_ObjectPathComponent):
         self.index = index
 
     def __str__(self):
-        return "%s[%s]" % (self.property_name, self.index)
+        return "%s[%s]" % (quote_if_needed(self.property_name), self.index)
 
 
 class ReferenceObjectPathComponent(_ObjectPathComponent):
@@ -276,9 +300,6 @@ class ReferenceObjectPathComponent(_ObjectPathComponent):
     def __init__(self, reference_property_name):
         self.property_name = reference_property_name
 
-    def __str__(self):
-        return self.property_name
-
 
 class ObjectPath(object):
     """Pattern operand object (property) path
@@ -289,12 +310,14 @@ class ObjectPath(object):
     """
     def __init__(self, object_type_name, property_path):
         self.object_type_name = object_type_name
-        self.property_path = [x if isinstance(x, _ObjectPathComponent) else
-                              _ObjectPathComponent.create_ObjectPathComponent(x)
-                              for x in property_path]
+        self.property_path = [
+            x if isinstance(x, _ObjectPathComponent) else
+            _ObjectPathComponent.create_ObjectPathComponent(x)
+            for x in property_path
+        ]
 
     def __str__(self):
-        return "%s:%s" % (self.object_type_name, ".".join(["%s" % x for x in self.property_path]))
+        return "%s:%s" % (self.object_type_name, ".".join(["%s" % quote_if_needed(x) for x in self.property_path]))
 
     def merge(self, other):
         """Extend the object property with that of the supplied object property path"""
