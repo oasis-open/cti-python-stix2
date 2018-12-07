@@ -53,6 +53,7 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
 from .utils import new_version, revoke
 from .v20 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
+from .STIXPatternVisitor import create_pattern_object
 
 _collect_stix2_obj_maps()
 

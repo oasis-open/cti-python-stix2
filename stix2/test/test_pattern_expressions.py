@@ -2,8 +2,6 @@ import datetime
 
 import pytest
 
-from stix2.STIXPatternVisitor import create_pattern_object
-
 import stix2
 
 
