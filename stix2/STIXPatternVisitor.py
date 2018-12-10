@@ -11,11 +11,6 @@ from stix2patterns.validator import STIXPatternErrorListener
 from antlr4 import CommonTokenStream, InputStream
 from stix2.patterns import _BooleanExpression
 
-# need to import all classes because we need to access them via globals()
-# from .patterns import (BinaryConstant, BooleanConstant, FloatConstant,
-#                       FollowedByObservationExpression, HexConstant,
-#                       IntegerConstant, RepeatQualifier, StartStopQualifier,
-#                       StringConstant, TimestampConstant, WithinQualifier)
 from .patterns import *  # noqa: F405
 
 
