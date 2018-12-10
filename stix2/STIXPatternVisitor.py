@@ -1,6 +1,7 @@
 import importlib
 import inspect
 
+from antlr4 import CommonTokenStream, InputStream
 import six
 from stix2patterns.grammars.STIXPatternLexer import STIXPatternLexer
 from stix2patterns.grammars.STIXPatternParser import (STIXPatternParser,
@@ -8,15 +9,11 @@ from stix2patterns.grammars.STIXPatternParser import (STIXPatternParser,
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
 from stix2patterns.validator import STIXPatternErrorListener
 
-from antlr4 import CommonTokenStream, InputStream
-from stix2.patterns import (BinaryConstant, BooleanConstant, FloatConstant,
-                            FollowedByObservationExpression, HexConstant,
-                            IntegerConstant, RepeatQualifier,
-                            StartStopQualifier, StringConstant,
-                            TimestampConstant, WithinQualifier)
-from stix2.patterns import _BooleanExpression  # noqa
-
-from .patterns import *  # noqa: F403, F401
+from .patterns import (BinaryConstant, BooleanConstant, FloatConstant,
+                       FollowedByObservationExpression, HexConstant,
+                       IntegerConstant, RepeatQualifier, StartStopQualifier,
+                       StringConstant, TimestampConstant, WithinQualifier,
+                       _BooleanExpression)
 
 
 def collapse_lists(lists):
@@ -46,7 +43,7 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
     def __init__(self, module_suffix, module_name):
         if module_suffix and module_name:
             self.module_suffix = module_suffix
-            if STIXPatternVisitorForSTIX2.classes == {}:
+            if not STIXPatternVisitorForSTIX2.classes:
                 module = importlib.import_module(module_name)
                 for k, c in inspect.getmembers(module, inspect.isclass):
                     STIXPatternVisitorForSTIX2.classes[k] = c
