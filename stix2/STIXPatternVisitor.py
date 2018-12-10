@@ -16,7 +16,7 @@ from stix2.patterns import _BooleanExpression
 #                       FollowedByObservationExpression, HexConstant,
 #                       IntegerConstant, RepeatQualifier, StartStopQualifier,
 #                       StringConstant, TimestampConstant, WithinQualifier)
-from .patterns import *  # noqa
+from .patterns import *  # noqa: F405
 
 
 def collapse_lists(lists):
