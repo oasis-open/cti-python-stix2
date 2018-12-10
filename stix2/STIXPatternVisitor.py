@@ -9,11 +9,10 @@ from stix2patterns.grammars.STIXPatternParser import (STIXPatternParser,
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
 from stix2patterns.validator import STIXPatternErrorListener
 
-from .patterns import (BinaryConstant, BooleanConstant, FloatConstant,
-                       FollowedByObservationExpression, HexConstant,
-                       IntegerConstant, RepeatQualifier, StartStopQualifier,
-                       StringConstant, TimestampConstant, WithinQualifier,
-                       _BooleanExpression)
+from .patterns import *
+from .patterns import _BooleanExpression
+
+# flake8: noqa F405
 
 
 def collapse_lists(lists):
