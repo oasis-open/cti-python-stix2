@@ -12,10 +12,10 @@ from antlr4 import CommonTokenStream, InputStream
 from stix2.patterns import _BooleanExpression
 
 # need to import all classes because we need to access them via globals()
-from .patterns import (BinaryConstant, BooleanConstant, FloatConstant,
-                       FollowedByObservationExpression, HexConstant,
-                       IntegerConstant, RepeatQualifier, StartStopQualifier,
-                       StringConstant, TimestampConstant, WithinQualifier)
+# from .patterns import (BinaryConstant, BooleanConstant, FloatConstant,
+#                       FollowedByObservationExpression, HexConstant,
+#                       IntegerConstant, RepeatQualifier, StartStopQualifier,
+#                       StringConstant, TimestampConstant, WithinQualifier)
 from .patterns import *  # noqa
 
 
@@ -29,9 +29,9 @@ def collapse_lists(lists):
     return result
 
 
-def values_only(things):
+def remove_terminal_nodes(parse_tree_nodes):
     values = []
-    for x in things:
+    for x in parse_tree_nodes:
         if not isinstance(x, TerminalNode):
             values.append(x)
     return values
@@ -152,7 +152,7 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
     def visitPropTestEqual(self, ctx):
         children = self.visitChildren(ctx)
         operator = children[1].symbol.type
-        negated = negated = operator != STIXPatternParser.EQ
+        negated = operator != STIXPatternParser.EQ
         return self.instantiate("EqualityComparisonExpression", children[0], children[3 if len(children) > 3 else 2],
                                 negated)
 
@@ -274,7 +274,7 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
     # Visit a parse tree produced by STIXPatternParser#setLiteral.
     def visitSetLiteral(self, ctx):
         children = self.visitChildren(ctx)
-        return self.instantiate("ListConstant", values_only(children))
+        return self.instantiate("ListConstant", remove_terminal_nodes(children))
 
     # Visit a parse tree produced by STIXPatternParser#primitiveLiteral.
     def visitPrimitiveLiteral(self, ctx):
