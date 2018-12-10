@@ -5,6 +5,7 @@ import base64
 import binascii
 import datetime
 import re
+
 import six
 
 from .utils import parse_into_datetime

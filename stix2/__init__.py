@@ -54,7 +54,6 @@ from .utils import new_version, revoke
 from .v20 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 
-
 _collect_stix2_obj_maps()
 
 DEFAULT_VERSION = "2.0"  # Default version will always be the latest STIX 2.X version

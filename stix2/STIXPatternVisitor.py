@@ -3,20 +3,20 @@ import inspect
 
 import six
 from stix2patterns.grammars.STIXPatternLexer import STIXPatternLexer
-from stix2patterns.grammars.STIXPatternParser import (
-    STIXPatternParser, TerminalNode,
-)
+from stix2patterns.grammars.STIXPatternParser import (STIXPatternParser,
+                                                      TerminalNode)
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
 from stix2patterns.validator import STIXPatternErrorListener
-from stix2.patterns import _BooleanExpression
 
 from antlr4 import CommonTokenStream, InputStream
+from stix2.patterns import _BooleanExpression
 
 # need to import all classes because we need to access them via globals()
+from .patterns import (BinaryConstant, BooleanConstant, FloatConstant,
+                       FollowedByObservationExpression, HexConstant,
+                       IntegerConstant, RepeatQualifier, StartStopQualifier,
+                       StringConstant, TimestampConstant, WithinQualifier)
 from .patterns import *  # noqa
-from .patterns import (FollowedByObservationExpression, StartStopQualifier, WithinQualifier,
-                       RepeatQualifier, StringConstant, IntegerConstant, FloatConstant, HexConstant,
-                       BinaryConstant, BooleanConstant, TimestampConstant)
 
 
 def collapse_lists(lists):
