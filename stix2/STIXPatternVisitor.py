@@ -309,10 +309,10 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
 
 
 def create_pattern_object(pattern, module_suffix="", module_name=""):
-    '''
+    """
     Validates a pattern against the STIX Pattern grammar.  Error messages are
     returned in a list.  The test passed if the returned list is empty.
-    '''
+    """
 
     start = ''
     if isinstance(pattern, six.string_types):
