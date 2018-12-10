@@ -3,7 +3,7 @@ import datetime
 import pytest
 
 import stix2
-from stix2.STIXPatternVisitor import create_pattern_object
+from stix2.pattern_visitor import create_pattern_object
 
 
 def test_create_comparison_expression():
