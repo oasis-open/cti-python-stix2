@@ -50,7 +50,6 @@ from .patterns import (AndBooleanExpression, AndObservationExpression,
                        ReferenceObjectPathComponent, RepeatQualifier,
                        StartStopQualifier, StringConstant, TimestampConstant,
                        WithinQualifier)
-from .STIXPatternVisitor import create_pattern_object
 from .utils import new_version, revoke
 from .v20 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__

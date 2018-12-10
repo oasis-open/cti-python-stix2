@@ -5,6 +5,7 @@ import base64
 import binascii
 import datetime
 import re
+import six
 
 from .utils import parse_into_datetime
 
@@ -14,7 +15,7 @@ def escape_quotes_and_backslashes(s):
 
 
 def quote_if_needed(x):
-    if isinstance(x, str):
+    if isinstance(x, six.string_types):
         if x.find("-") != -1:
             if not x.startswith("'"):
                 return "'" + x + "'"
