@@ -9,9 +9,14 @@ from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
 from stix2patterns.validator import STIXPatternErrorListener
 
 from antlr4 import CommonTokenStream, InputStream
-from stix2.patterns import _BooleanExpression
+from stix2.patterns import (BinaryConstant, BooleanConstant, FloatConstant,
+                            FollowedByObservationExpression, HexConstant,
+                            IntegerConstant, RepeatQualifier,
+                            StartStopQualifier, StringConstant,
+                            TimestampConstant, WithinQualifier)
+from stix2.patterns import _BooleanExpression  # noqa
 
-from .patterns import *  # noqa: F405
+from .patterns import *  # noqa: F403, F401
 
 
 def collapse_lists(lists):
