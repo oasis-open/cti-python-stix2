@@ -3,14 +3,15 @@ import datetime
 import pytest
 
 import stix2
+from stix2.pattern_visitor import create_pattern_object
 
 
 def test_create_comparison_expression():
-
     exp = stix2.EqualityComparisonExpression(
         "file:hashes.'SHA-256'",
         stix2.HashConstant("aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f", "SHA-256"),
     )   # noqa
+
     assert str(exp) == "file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f'"
 
 
@@ -24,6 +25,7 @@ def test_boolean_expression():
         stix2.StringConstant("^Final Report.+\\.exe$"),
     )
     exp = stix2.AndBooleanExpression([exp1, exp2])
+
     assert str(exp) == "email-message:from_ref.value MATCHES '.+\\\\@example\\\\.com$' AND email-message:body_multipart[*].body_raw_ref.name MATCHES '^Final Report.+\\\\.exe$'"  # noqa
 
 
@@ -33,7 +35,7 @@ def test_boolean_expression_with_parentheses():
             "email-message",
             [
                 stix2.ReferenceObjectPathComponent("from_ref"),
-                stix2.BasicObjectPathComponent("value"),
+                stix2.BasicObjectPathComponent("value", False),
             ],
         ),
         stix2.StringConstant(".+\\@example\\.com$"),
@@ -91,9 +93,8 @@ def test_file_observable_expression():
         ),
     )
     exp2 = stix2.EqualityComparisonExpression("file:mime_type", stix2.StringConstant("application/x-pdf"))
-    bool_exp = stix2.AndBooleanExpression([exp1, exp2])
-    exp = stix2.ObservationExpression(bool_exp)
-    assert str(exp) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f' AND file:mime_type = 'application/x-pdf']"  # noqa
+    bool_exp = stix2.ObservationExpression(stix2.AndBooleanExpression([exp1, exp2]))
+    assert str(bool_exp) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f' AND file:mime_type = 'application/x-pdf']"  # noqa
 
 
 @pytest.mark.parametrize(
@@ -154,34 +155,27 @@ def test_artifact_payload():
         "artifact:payload_bin",
         stix2.StringConstant("\\xd4\\xc3\\xb2\\xa1\\x02\\x00\\x04\\x00"),
     )
-    and_exp = stix2.AndBooleanExpression([exp1, exp2])
-    exp = stix2.ObservationExpression(and_exp)
-    assert str(exp) == "[artifact:mime_type = 'application/vnd.tcpdump.pcap' AND artifact:payload_bin MATCHES '\\\\xd4\\\\xc3\\\\xb2\\\\xa1\\\\x02\\\\x00\\\\x04\\\\x00']"  # noqa
+    and_exp = stix2.ObservationExpression(stix2.AndBooleanExpression([exp1, exp2]))
+    assert str(and_exp) == "[artifact:mime_type = 'application/vnd.tcpdump.pcap' AND artifact:payload_bin MATCHES '\\\\xd4\\\\xc3\\\\xb2\\\\xa1\\\\x02\\\\x00\\\\x04\\\\x00']"  # noqa
 
 
 def test_greater_than_python_constant():
-    exp1 = stix2.GreaterThanComparisonExpression(
-        "file:extensions.windows-pebinary-ext.sections[*].entropy",
-        7.0,
-    )
+    exp1 = stix2.GreaterThanComparisonExpression("file:extensions.'windows-pebinary-ext'.sections[*].entropy", 7.0)
     exp = stix2.ObservationExpression(exp1)
-    assert str(exp) == "[file:extensions.windows-pebinary-ext.sections[*].entropy > 7.0]"
+    assert str(exp) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.0]"
 
 
 def test_greater_than():
     exp1 = stix2.GreaterThanComparisonExpression(
-        "file:extensions.windows-pebinary-ext.sections[*].entropy",
+        "file:extensions.'windows-pebinary-ext'.sections[*].entropy",
         stix2.FloatConstant(7.0),
     )
     exp = stix2.ObservationExpression(exp1)
-    assert str(exp) == "[file:extensions.windows-pebinary-ext.sections[*].entropy > 7.0]"
+    assert str(exp) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.0]"
 
 
 def test_less_than():
-    exp = stix2.LessThanComparisonExpression(
-        "file:size",
-        1024,
-    )
+    exp = stix2.LessThanComparisonExpression("file:size", 1024)
     assert str(exp) == "file:size < 1024"
 
 
@@ -190,6 +184,7 @@ def test_greater_than_or_equal():
         "file:size",
         1024,
     )
+
     assert str(exp) == "file:size >= 1024"
 
 
@@ -509,3 +504,20 @@ def test_make_constant_already_a_constant():
     str_const = stix2.StringConstant('Foo')
     result = stix2.patterns.make_constant(str_const)
     assert result is str_const
+
+
+def test_parsing_comparison_expression():
+    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']")
+    assert str(patt_obj) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']"
+
+
+def test_parsing_qualified_expression():
+    patt_obj = create_pattern_object(
+        "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS")
+    assert str(
+        patt_obj) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS"
+
+
+def test_list_constant():
+    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]")
+    assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
