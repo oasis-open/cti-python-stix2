@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-1.1.0 - 2018-11-28
+1.1.0 - 2018-12-11
 
 - Most (if not all) STIX 2.1 SDOs/SROs and core objects have been implemented according to the latest CSD/WD document
 - There is an implementation for the conversion scales
