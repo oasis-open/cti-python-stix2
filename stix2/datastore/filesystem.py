@@ -1,4 +1,5 @@
 """Python STIX2 FileSystem Source/Sink"""
+from __future__ import print_function  # Temporary while we address TODO statement
 
 import errno
 import io
