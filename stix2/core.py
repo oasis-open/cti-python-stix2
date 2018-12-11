@@ -33,7 +33,8 @@ def parse(data, allow_custom=False, version=None):
             into STIX objects, and will be returned as is. Default: False.
         version (str): If present, it forces the parser to use the version
             provided. Otherwise, the library will make the best effort based
-            on checking the "spec_version" property.
+            on checking the "spec_version" property. If none of the above are
+            possible, it will use the default version specified by the library.
 
     Returns:
         An instantiated Python STIX object.
@@ -70,7 +71,8 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             Default: False.
         version (str): If present, it forces the parser to use the version
             provided. Otherwise, the library will make the best effort based
-            on checking the "spec_version" property.
+            on checking the "spec_version" property. If none of the above are
+            possible, it will use the default version specified by the library.
 
     Returns:
         An instantiated Python STIX object
@@ -132,7 +134,8 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
         allow_custom (bool): Whether to allow custom properties or not.
             Default: False.
         version (str): If present, it forces the parser to use the version
-            provided. Otherwise, the library will use the latest version.
+            provided. Otherwise, the default version specified by the library
+            will be used.
 
     Returns:
         An instantiated Python STIX Cyber Observable object.

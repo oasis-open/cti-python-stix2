@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import sys
@@ -32,7 +33,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = 'stix2'
-copyright = '2017, OASIS Open'
+copyright = '{}, OASIS Open'.format(datetime.date.today().year)
 author = 'OASIS Open'
 
 version = __version__
