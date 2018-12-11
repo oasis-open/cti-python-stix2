@@ -4,9 +4,10 @@ import errno
 import io
 import json
 import os
+import re
 import stat
+import sys
 
-import pytz
 import six
 
 from stix2 import v20, v21
@@ -14,7 +15,7 @@ from stix2.base import _STIXBase
 from stix2.core import parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
-from stix2.utils import get_type_from_id, is_marking
+from stix2.utils import format_datetime, get_type_from_id, is_marking
 
 
 def _timestamp2filename(timestamp):
@@ -26,13 +27,10 @@ def _timestamp2filename(timestamp):
         timestamp: A timestamp, as a datetime.datetime object.
 
     """
-    # Different times will only produce different file names if all timestamps
-    # are in the same time zone!  So if timestamp is timezone-aware convert
-    # to UTC just to be safe.  If naive, just use as-is.
-    if timestamp.tzinfo is not None:
-        timestamp = timestamp.astimezone(pytz.utc)
-
-    return timestamp.strftime("%Y%m%d%H%M%S%f")
+    # The format_datetime will determine the correct level of precision.
+    ts = format_datetime(timestamp)
+    ts = re.sub(r"[-T:\.Z ]", "", ts)
+    return ts
 
 
 class AuthSet(object):
@@ -544,9 +542,13 @@ class FileSystemSink(DataSink):
             else:
                 stix_obj = v20.Bundle(stix_obj, allow_custom=self.allow_custom)
 
-        with io.open(file_path, 'w', encoding=encoding) as f:
-            stix_obj = stix_obj.serialize(pretty=True, encoding=encoding, ensure_ascii=False)
-            f.write(stix_obj)
+        # TODO: Better handling of the overwriting case.
+        if os.path.isfile(file_path):
+            print("Attempted to overwrite file!", file_path, file=sys.stderr)
+        else:
+            with io.open(file_path, 'w', encoding=encoding) as f:
+                stix_obj = stix_obj.serialize(pretty=True, encoding=encoding, ensure_ascii=False)
+                f.write(stix_obj)
 
     def add(self, stix_data=None, version=None):
         """Add STIX objects to file directory.
