@@ -4,8 +4,9 @@ import inspect
 from antlr4 import CommonTokenStream, InputStream
 import six
 from stix2patterns.grammars.STIXPatternLexer import STIXPatternLexer
-from stix2patterns.grammars.STIXPatternParser import (STIXPatternParser,
-                                                      TerminalNode)
+from stix2patterns.grammars.STIXPatternParser import (
+    STIXPatternParser, TerminalNode,
+)
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
 from stix2patterns.validator import STIXPatternErrorListener
 
@@ -149,25 +150,35 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
         children = self.visitChildren(ctx)
         operator = children[1].symbol.type
         negated = operator != STIXPatternParser.EQ
-        return self.instantiate("EqualityComparisonExpression", children[0], children[3 if len(children) > 3 else 2],
-                                negated)
+        return self.instantiate(
+            "EqualityComparisonExpression", children[0], children[3 if len(children) > 3 else 2],
+            negated,
+        )
 
     # Visit a parse tree produced by STIXPatternParser#propTestOrder.
     def visitPropTestOrder(self, ctx):
         children = self.visitChildren(ctx)
         operator = children[1].symbol.type
         if operator == STIXPatternParser.GT:
-            return self.instantiate("GreaterThanComparisonExpression", children[0],
-                                    children[3 if len(children) > 3 else 2], False)
+            return self.instantiate(
+                "GreaterThanComparisonExpression", children[0],
+                children[3 if len(children) > 3 else 2], False,
+            )
         elif operator == STIXPatternParser.LT:
-            return self.instantiate("LessThanComparisonExpression", children[0],
-                                    children[3 if len(children) > 3 else 2], False)
+            return self.instantiate(
+                "LessThanComparisonExpression", children[0],
+                children[3 if len(children) > 3 else 2], False,
+            )
         elif operator == STIXPatternParser.GE:
-            return self.instantiate("GreaterThanEqualComparisonExpression", children[0],
-                                    children[3 if len(children) > 3 else 2], False)
+            return self.instantiate(
+                "GreaterThanEqualComparisonExpression", children[0],
+                children[3 if len(children) > 3 else 2], False,
+            )
         elif operator == STIXPatternParser.LE:
-            return self.instantiate("LessThanEqualComparisonExpression", children[0],
-                                    children[3 if len(children) > 3 else 2], False)
+            return self.instantiate(
+                "LessThanEqualComparisonExpression", children[0],
+                children[3 if len(children) > 3 else 2], False,
+            )
 
     # Visit a parse tree produced by STIXPatternParser#propTestSet.
     def visitPropTestSet(self, ctx):
@@ -182,8 +193,10 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
     # Visit a parse tree produced by STIXPatternParser#propTestRegex.
     def visitPropTestRegex(self, ctx):
         children = self.visitChildren(ctx)
-        return self.instantiate("MatchesComparisonExpression", children[0], children[3 if len(children) > 3 else 2],
-                                False)
+        return self.instantiate(
+            "MatchesComparisonExpression", children[0], children[3 if len(children) > 3 else 2],
+            False,
+        )
 
     # Visit a parse tree produced by STIXPatternParser#propTestIsSubset.
     def visitPropTestIsSubset(self, ctx):

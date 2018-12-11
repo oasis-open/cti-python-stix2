@@ -6,91 +6,17 @@ Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
-import copy
-import re
+import itertools
 
-from ..base import _cls_init, _Extension, _Observable, _STIXBase
-from ..exceptions import (AtLeastOnePropertyError, CustomContentError,
-                          DependentPropertiesError, ParseError)
-from ..properties import (BinaryProperty, BooleanProperty, DictionaryProperty,
-                          EmbeddedObjectProperty, EnumProperty, FloatProperty,
-                          HashesProperty, HexProperty, IntegerProperty,
-                          ListProperty, ObjectReferenceProperty, Property,
-                          StringProperty, TimestampProperty, TypeProperty)
-from ..utils import TYPE_REGEX, _get_dict
-
-
-class ObservableProperty(Property):
-    """Property for holding Cyber Observable Objects.
-    """
-
-    def __init__(self, allow_custom=False, *args, **kwargs):
-        self.allow_custom = allow_custom
-        super(ObservableProperty, self).__init__(*args, **kwargs)
-
-    def clean(self, value):
-        try:
-            dictified = _get_dict(value)
-            # get deep copy since we are going modify the dict and might
-            # modify the original dict as _get_dict() does not return new
-            # dict when passed a dict
-            dictified = copy.deepcopy(dictified)
-        except ValueError:
-            raise ValueError("The observable property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The observable property must contain a non-empty dictionary")
-
-        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
-
-        for key, obj in dictified.items():
-            if self.allow_custom:
-                parsed_obj = parse_observable(obj, valid_refs, allow_custom=True)
-            else:
-                parsed_obj = parse_observable(obj, valid_refs)
-            dictified[key] = parsed_obj
-
-        return dictified
-
-
-class ExtensionsProperty(DictionaryProperty):
-    """Property for representing extensions on Observable objects.
-    """
-
-    def __init__(self, allow_custom=False, enclosing_type=None, required=False):
-        self.allow_custom = allow_custom
-        self.enclosing_type = enclosing_type
-        super(ExtensionsProperty, self).__init__(required)
-
-    def clean(self, value):
-        try:
-            dictified = _get_dict(value)
-            # get deep copy since we are going modify the dict and might
-            # modify the original dict as _get_dict() does not return new
-            # dict when passed a dict
-            dictified = copy.deepcopy(dictified)
-        except ValueError:
-            raise ValueError("The extensions property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The extensions property must contain a non-empty dictionary")
-
-        specific_type_map = EXT_MAP.get(self.enclosing_type, {})
-        for key, subvalue in dictified.items():
-            if key in specific_type_map:
-                cls = specific_type_map[key]
-                if type(subvalue) is dict:
-                    if self.allow_custom:
-                        subvalue['allow_custom'] = True
-                        dictified[key] = cls(**subvalue)
-                    else:
-                        dictified[key] = cls(**subvalue)
-                elif type(subvalue) is cls:
-                    # If already an instance of an _Extension class, assume it's valid
-                    dictified[key] = subvalue
-                else:
-                    raise ValueError("Cannot determine extension type.")
-            else:
-                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
-        return dictified
+from ..base import _Extension, _Observable, _STIXBase
+from ..custom import _custom_extension_builder, _custom_observable_builder
+from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
+from ..properties import (
+    BinaryProperty, BooleanProperty, DictionaryProperty,
+    EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+    HashesProperty, HexProperty, IntegerProperty, ListProperty,
+    ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+)
 
 
 class Artifact(_Observable):
@@ -99,8 +25,7 @@ class Artifact(_Observable):
     """  # noqa
 
     _type = 'artifact'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
@@ -111,8 +36,8 @@ class Artifact(_Observable):
 
     def _check_object_constraints(self):
         super(Artifact, self)._check_object_constraints()
-        self._check_mutually_exclusive_properties(["payload_bin", "url"])
-        self._check_properties_dependency(["hashes"], ["url"])
+        self._check_mutually_exclusive_properties(['payload_bin', 'url'])
+        self._check_properties_dependency(['hashes'], ['url'])
 
 
 class AutonomousSystem(_Observable):
@@ -121,8 +46,7 @@ class AutonomousSystem(_Observable):
     """  # noqa
 
     _type = 'autonomous-system'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
@@ -137,8 +61,7 @@ class Directory(_Observable):
     """  # noqa
 
     _type = 'directory'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
@@ -157,8 +80,7 @@ class DomainName(_Observable):
     """  # noqa
 
     _type = 'domain-name'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
@@ -172,8 +94,7 @@ class EmailAddress(_Observable):
     """  # noqa
 
     _type = 'email-addr'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
@@ -187,8 +108,7 @@ class EmailMIMEComponent(_STIXBase):
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716231>`__.
     """  # noqa
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('body', StringProperty()),
         ('body_raw_ref', ObjectReferenceProperty(valid_types=['artifact', 'file'])),
         ('content_type', StringProperty()),
@@ -197,7 +117,7 @@ class EmailMIMEComponent(_STIXBase):
 
     def _check_object_constraints(self):
         super(EmailMIMEComponent, self)._check_object_constraints()
-        self._check_at_least_one_property(["body", "body_raw_ref"])
+        self._check_at_least_one_property(['body', 'body_raw_ref'])
 
 
 class EmailMessage(_Observable):
@@ -206,8 +126,7 @@ class EmailMessage(_Observable):
     """  # noqa
 
     _type = 'email-message'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
@@ -228,10 +147,10 @@ class EmailMessage(_Observable):
 
     def _check_object_constraints(self):
         super(EmailMessage, self)._check_object_constraints()
-        self._check_properties_dependency(["is_multipart"], ["body_multipart"])
-        if self.get("is_multipart") is True and self.get("body"):
+        self._check_properties_dependency(['is_multipart'], ['body_multipart'])
+        if self.get('is_multipart') is True and self.get('body'):
             # 'body' MAY only be used if is_multipart is false.
-            raise DependentPropertiesError(self.__class__, [("is_multipart", "body")])
+            raise DependentPropertiesError(self.__class__, [('is_multipart', 'body')])
 
 
 class ArchiveExt(_Extension):
@@ -240,8 +159,7 @@ class ArchiveExt(_Extension):
     """  # noqa
 
     _type = 'archive-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types='file'), required=True)),
         ('version', StringProperty()),
         ('comment', StringProperty()),
@@ -253,8 +171,7 @@ class AlternateDataStream(_STIXBase):
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716239>`__.
     """  # noqa
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('hashes', HashesProperty()),
         ('size', IntegerProperty()),
@@ -267,8 +184,7 @@ class NTFSExt(_Extension):
     """  # noqa
 
     _type = 'ntfs-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('sid', StringProperty()),
         ('alternate_data_streams', ListProperty(EmbeddedObjectProperty(type=AlternateDataStream))),
     ])
@@ -280,8 +196,7 @@ class PDFExt(_Extension):
     """  # noqa
 
     _type = 'pdf-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('version', StringProperty()),
         ('is_optimized', BooleanProperty()),
         ('document_info_dict', DictionaryProperty()),
@@ -296,8 +211,7 @@ class RasterImageExt(_Extension):
     """  # noqa
 
     _type = 'raster-image-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('image_height', IntegerProperty()),
         ('image_width', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
@@ -311,8 +225,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716248>`__.
     """  # noqa
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('magic_hex', HexProperty()),
         ('major_linker_version', IntegerProperty()),
         ('minor_linker_version', IntegerProperty()),
@@ -356,8 +269,7 @@ class WindowsPESection(_STIXBase):
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716250>`__.
     """  # noqa
 
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty()),
         ('entropy', FloatProperty()),
@@ -371,8 +283,7 @@ class WindowsPEBinaryExt(_Extension):
     """  # noqa
 
     _type = 'windows-pebinary-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('pe_type', StringProperty(required=True)),  # open_vocab
         ('imphash', StringProperty()),
         ('machine_hex', HexProperty()),
@@ -394,8 +305,7 @@ class File(_Observable):
     """  # noqa
 
     _type = 'file'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('hashes', HashesProperty()),
         ('size', IntegerProperty()),
@@ -418,8 +328,8 @@ class File(_Observable):
 
     def _check_object_constraints(self):
         super(File, self)._check_object_constraints()
-        self._check_properties_dependency(["is_encrypted"], ["encryption_algorithm", "decryption_key"])
-        self._check_at_least_one_property(["hashes", "name"])
+        self._check_properties_dependency(['is_encrypted'], ['encryption_algorithm', 'decryption_key'])
+        self._check_at_least_one_property(['hashes', 'name'])
 
 
 class IPv4Address(_Observable):
@@ -428,8 +338,7 @@ class IPv4Address(_Observable):
     """  # noqa
 
     _type = 'ipv4-addr'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
@@ -444,8 +353,7 @@ class IPv6Address(_Observable):
     """  # noqa
 
     _type = 'ipv6-addr'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
@@ -460,8 +368,7 @@ class MACAddress(_Observable):
     """  # noqa
 
     _type = 'mac-addr'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
@@ -474,8 +381,7 @@ class Mutex(_Observable):
     """  # noqa
 
     _type = 'mutex'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
@@ -488,8 +394,7 @@ class HTTPRequestExt(_Extension):
     """  # noqa
 
     _type = 'http-request-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('request_method', StringProperty(required=True)),
         ('request_value', StringProperty(required=True)),
         ('request_version', StringProperty()),
@@ -505,8 +410,7 @@ class ICMPExt(_Extension):
     """  # noqa
 
     _type = 'icmp-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('icmp_type_hex', HexProperty(required=True)),
         ('icmp_code_hex', HexProperty(required=True)),
     ])
@@ -518,36 +422,43 @@ class SocketExt(_Extension):
     """  # noqa
 
     _type = 'socket-ext'
-    _properties = OrderedDict()
-    _properties.update([
-        ('address_family', EnumProperty(allowed=[
-            "AF_UNSPEC",
-            "AF_INET",
-            "AF_IPX",
-            "AF_APPLETALK",
-            "AF_NETBIOS",
-            "AF_INET6",
-            "AF_IRDA",
-            "AF_BTH",
-        ], required=True)),
+    _properties = OrderedDict([
+        (
+            'address_family', EnumProperty(
+                allowed=[
+                    "AF_UNSPEC",
+                    "AF_INET",
+                    "AF_IPX",
+                    "AF_APPLETALK",
+                    "AF_NETBIOS",
+                    "AF_INET6",
+                    "AF_IRDA",
+                    "AF_BTH",
+                ], required=True,
+            ),
+        ),
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
-        ('protocol_family', EnumProperty(allowed=[
-            "PF_INET",
-            "PF_IPX",
-            "PF_APPLETALK",
-            "PF_INET6",
-            "PF_AX25",
-            "PF_NETROM"
-        ])),
+        (
+            'protocol_family', EnumProperty(allowed=[
+                "PF_INET",
+                "PF_IPX",
+                "PF_APPLETALK",
+                "PF_INET6",
+                "PF_AX25",
+                "PF_NETROM",
+            ]),
+        ),
         ('options', DictionaryProperty()),
-        ('socket_type', EnumProperty(allowed=[
-            "SOCK_STREAM",
-            "SOCK_DGRAM",
-            "SOCK_RAW",
-            "SOCK_RDM",
-            "SOCK_SEQPACKET",
-        ])),
+        (
+            'socket_type', EnumProperty(allowed=[
+                "SOCK_STREAM",
+                "SOCK_DGRAM",
+                "SOCK_RAW",
+                "SOCK_RDM",
+                "SOCK_SEQPACKET",
+            ]),
+        ),
         ('socket_descriptor', IntegerProperty()),
         ('socket_handle', IntegerProperty()),
     ])
@@ -559,8 +470,7 @@ class TCPExt(_Extension):
     """  # noqa
 
     _type = 'tcp-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('src_flags_hex', HexProperty()),
         ('dst_flags_hex', HexProperty()),
     ])
@@ -572,8 +482,7 @@ class NetworkTraffic(_Observable):
     """  # noqa
 
     _type = 'network-traffic'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
@@ -597,7 +506,7 @@ class NetworkTraffic(_Observable):
 
     def _check_object_constraints(self):
         super(NetworkTraffic, self)._check_object_constraints()
-        self._check_at_least_one_property(["src_ref", "dst_ref"])
+        self._check_at_least_one_property(['src_ref', 'dst_ref'])
 
 
 class WindowsProcessExt(_Extension):
@@ -606,8 +515,7 @@ class WindowsProcessExt(_Extension):
     """  # noqa
 
     _type = 'windows-process-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('aslr_enabled', BooleanProperty()),
         ('dep_enabled', BooleanProperty()),
         ('priority', StringProperty()),
@@ -623,35 +531,40 @@ class WindowsServiceExt(_Extension):
     """  # noqa
 
     _type = 'windows-service-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('service_name', StringProperty(required=True)),
         ('descriptions', ListProperty(StringProperty)),
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
-        ('start_type', EnumProperty(allowed=[
-            "SERVICE_AUTO_START",
-            "SERVICE_BOOT_START",
-            "SERVICE_DEMAND_START",
-            "SERVICE_DISABLED",
-            "SERVICE_SYSTEM_ALERT",
-        ])),
+        (
+            'start_type', EnumProperty(allowed=[
+                "SERVICE_AUTO_START",
+                "SERVICE_BOOT_START",
+                "SERVICE_DEMAND_START",
+                "SERVICE_DISABLED",
+                "SERVICE_SYSTEM_ALERT",
+            ]),
+        ),
         ('service_dll_refs', ListProperty(ObjectReferenceProperty(valid_types='file'))),
-        ('service_type', EnumProperty(allowed=[
-            "SERVICE_KERNEL_DRIVER",
-            "SERVICE_FILE_SYSTEM_DRIVER",
-            "SERVICE_WIN32_OWN_PROCESS",
-            "SERVICE_WIN32_SHARE_PROCESS",
-        ])),
-        ('service_status', EnumProperty(allowed=[
-            "SERVICE_CONTINUE_PENDING",
-            "SERVICE_PAUSE_PENDING",
-            "SERVICE_PAUSED",
-            "SERVICE_RUNNING",
-            "SERVICE_START_PENDING",
-            "SERVICE_STOP_PENDING",
-            "SERVICE_STOPPED",
-        ])),
+        (
+            'service_type', EnumProperty(allowed=[
+                "SERVICE_KERNEL_DRIVER",
+                "SERVICE_FILE_SYSTEM_DRIVER",
+                "SERVICE_WIN32_OWN_PROCESS",
+                "SERVICE_WIN32_SHARE_PROCESS",
+            ]),
+        ),
+        (
+            'service_status', EnumProperty(allowed=[
+                "SERVICE_CONTINUE_PENDING",
+                "SERVICE_PAUSE_PENDING",
+                "SERVICE_PAUSED",
+                "SERVICE_RUNNING",
+                "SERVICE_START_PENDING",
+                "SERVICE_STOP_PENDING",
+                "SERVICE_STOPPED",
+            ]),
+        ),
     ])
 
 
@@ -661,8 +574,7 @@ class Process(_Observable):
     """  # noqa
 
     _type = 'process'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
@@ -686,14 +598,14 @@ class Process(_Observable):
         super(Process, self)._check_object_constraints()
         try:
             self._check_at_least_one_property()
-            if "windows-process-ext" in self.get('extensions', {}):
-                self.extensions["windows-process-ext"]._check_at_least_one_property()
+            if 'windows-process-ext' in self.get('extensions', {}):
+                self.extensions['windows-process-ext']._check_at_least_one_property()
         except AtLeastOnePropertyError as enclosing_exc:
             if 'extensions' not in self:
                 raise enclosing_exc
             else:
-                if "windows-process-ext" in self.get('extensions', {}):
-                    self.extensions["windows-process-ext"]._check_at_least_one_property()
+                if 'windows-process-ext' in self.get('extensions', {}):
+                    self.extensions['windows-process-ext']._check_at_least_one_property()
 
 
 class Software(_Observable):
@@ -702,8 +614,7 @@ class Software(_Observable):
     """  # noqa
 
     _type = 'software'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
@@ -720,8 +631,7 @@ class URL(_Observable):
     """  # noqa
 
     _type = 'url'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(enclosing_type=_type)),
@@ -734,8 +644,7 @@ class UNIXAccountExt(_Extension):
     """  # noqa
 
     _type = 'unix-account-ext'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('gid', IntegerProperty()),
         ('groups', ListProperty(StringProperty)),
         ('home_dir', StringProperty()),
@@ -749,8 +658,7 @@ class UserAccount(_Observable):
     """  # noqa
 
     _type = 'user-account'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('user_id', StringProperty(required=True)),
         ('account_login', StringProperty()),
@@ -775,25 +683,26 @@ class WindowsRegistryValueType(_STIXBase):
     """  # noqa
 
     _type = 'windows-registry-value-type'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('data', StringProperty()),
-        ('data_type', EnumProperty(allowed=[
-            'REG_NONE',
-            'REG_SZ',
-            'REG_EXPAND_SZ',
-            'REG_BINARY',
-            'REG_DWORD',
-            'REG_DWORD_BIG_ENDIAN',
-            'REG_LINK',
-            'REG_MULTI_SZ',
-            'REG_RESOURCE_LIST',
-            'REG_FULL_RESOURCE_DESCRIPTION',
-            'REG_RESOURCE_REQUIREMENTS_LIST',
-            'REG_QWORD',
-            'REG_INVALID_TYPE',
-        ])),
+        (
+            'data_type', EnumProperty(allowed=[
+                "REG_NONE",
+                "REG_SZ",
+                "REG_EXPAND_SZ",
+                "REG_BINARY",
+                "REG_DWORD",
+                "REG_DWORD_BIG_ENDIAN",
+                "REG_LINK",
+                "REG_MULTI_SZ",
+                "REG_RESOURCE_LIST",
+                "REG_FULL_RESOURCE_DESCRIPTION",
+                "REG_RESOURCE_REQUIREMENTS_LIST",
+                "REG_QWORD",
+                "REG_INVALID_TYPE",
+            ]),
+        ),
     ])
 
 
@@ -803,8 +712,7 @@ class WindowsRegistryKey(_Observable):
     """  # noqa
 
     _type = 'windows-registry-key'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('key', StringProperty(required=True)),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
@@ -827,8 +735,7 @@ class X509V3ExtenstionsType(_STIXBase):
     """  # noqa
 
     _type = 'x509-v3-extensions-type'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('basic_constraints', StringProperty()),
         ('name_constraints', StringProperty()),
         ('policy_constraints', StringProperty()),
@@ -854,8 +761,7 @@ class X509Certificate(_Observable):
     """  # noqa
 
     _type = 'x509-certificate'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('is_self_signed', BooleanProperty()),
         ('hashes', HashesProperty()),
@@ -874,215 +780,33 @@ class X509Certificate(_Observable):
     ])
 
 
-OBJ_MAP_OBSERVABLE = {
-    'artifact': Artifact,
-    'autonomous-system': AutonomousSystem,
-    'directory': Directory,
-    'domain-name': DomainName,
-    'email-addr': EmailAddress,
-    'email-message': EmailMessage,
-    'file': File,
-    'ipv4-addr': IPv4Address,
-    'ipv6-addr': IPv6Address,
-    'mac-addr': MACAddress,
-    'mutex': Mutex,
-    'network-traffic': NetworkTraffic,
-    'process': Process,
-    'software': Software,
-    'url': URL,
-    'user-account': UserAccount,
-    'windows-registry-key': WindowsRegistryKey,
-    'x509-certificate': X509Certificate,
-}
-
-
-EXT_MAP = {
-    'file': {
-        'archive-ext': ArchiveExt,
-        'ntfs-ext': NTFSExt,
-        'pdf-ext': PDFExt,
-        'raster-image-ext': RasterImageExt,
-        'windows-pebinary-ext': WindowsPEBinaryExt
-    },
-    'network-traffic': {
-        'http-request-ext': HTTPRequestExt,
-        'icmp-ext': ICMPExt,
-        'socket-ext': SocketExt,
-        'tcp-ext': TCPExt,
-    },
-    'process': {
-        'windows-process-ext': WindowsProcessExt,
-        'windows-service-ext': WindowsServiceExt,
-    },
-    'user-account': {
-        'unix-account-ext': UNIXAccountExt,
-    },
-}
-
-
-def parse_observable(data, _valid_refs=None, allow_custom=False):
-    """Deserialize a string or file-like object into a STIX Cyber Observable
-    object.
-
-    Args:
-        data: The STIX 2 string to be parsed.
-        _valid_refs: A list of object references valid for the scope of the
-            object being parsed. Use empty list if no valid refs are present.
-        allow_custom: Whether to allow custom properties or not.
-            Default: False.
-
-    Returns:
-        An instantiated Python STIX Cyber Observable object.
-    """
-
-    obj = _get_dict(data)
-    # get deep copy since we are going modify the dict and might
-    # modify the original dict as _get_dict() does not return new
-    # dict when passed a dict
-    obj = copy.deepcopy(obj)
-
-    obj['_valid_refs'] = _valid_refs or []
-
-    if 'type' not in obj:
-        raise ParseError("Can't parse observable with no 'type' property: %s" % str(obj))
-    try:
-        obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
-    except KeyError:
-        if allow_custom:
-            # flag allows for unknown custom objects too, but will not
-            # be parsed into STIX observable object, just returned as is
-            return obj
-        raise CustomContentError("Can't parse unknown observable type '%s'! For custom observables, "
-                                 "use the CustomObservable decorator." % obj['type'])
-
-    if 'extensions' in obj and obj['type'] in EXT_MAP:
-        for name, ext in obj['extensions'].items():
-            try:
-                ext_class = EXT_MAP[obj['type']][name]
-            except KeyError:
-                if not allow_custom:
-                    raise CustomContentError("Can't parse unknown extension type '%s'"
-                                             "for observable type '%s'!" % (name, obj['type']))
-            else:  # extension was found
-                obj['extensions'][name] = ext_class(allow_custom=allow_custom, **obj['extensions'][name])
-
-    return obj_class(allow_custom=allow_custom, **obj)
-
-
-def _register_observable(new_observable):
-    """Register a custom STIX Cyber Observable type.
-    """
-
-    OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
-
-
 def CustomObservable(type='x-custom-observable', properties=None):
     """Custom STIX Cyber Observable Object type decorator.
 
     Example:
+        >>> from stix2.v20 import CustomObservable
+        >>> from stix2.properties import IntegerProperty, StringProperty
         >>> @CustomObservable('x-custom-observable', [
         ...     ('property1', StringProperty(required=True)),
         ...     ('property2', IntegerProperty()),
         ... ])
         ... class MyNewObservableType():
         ...     pass
+
     """
-
-    def custom_builder(cls):
-
-        class _Custom(cls, _Observable):
-
-            if not re.match(TYPE_REGEX, type):
-                raise ValueError("Invalid observable type name '%s': must only contain the "
-                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
-            elif len(type) < 3 or len(type) > 250:
-                raise ValueError("Invalid observable type name '%s': must be between 3 and 250 characters." % type)
-
-            _type = type
-            _properties = OrderedDict()
-            _properties.update([
-                ('type', TypeProperty(_type)),
-            ])
-
-            if not properties or not isinstance(properties, list):
-                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
-            # Check properties ending in "_ref/s" are ObjectReferenceProperties
-            for prop_name, prop in properties:
-                if prop_name.endswith('_ref') and not isinstance(prop, ObjectReferenceProperty):
-                    raise ValueError("'%s' is named like an object reference property but "
-                                     "is not an ObjectReferenceProperty." % prop_name)
-                elif (prop_name.endswith('_refs') and (not isinstance(prop, ListProperty)
-                                                       or not isinstance(prop.contained, ObjectReferenceProperty))):
-                    raise ValueError("'%s' is named like an object reference list property but "
-                                     "is not a ListProperty containing ObjectReferenceProperty." % prop_name)
-
-            _properties.update(properties)
-            _properties.update([
-                ('extensions', ExtensionsProperty(enclosing_type=_type)),
-            ])
-
-            def __init__(self, **kwargs):
-                _Observable.__init__(self, **kwargs)
-                _cls_init(cls, self, kwargs)
-
-        _register_observable(_Custom)
-        return _Custom
-
-    return custom_builder
+    def wrapper(cls):
+        _properties = list(itertools.chain.from_iterable([
+            [('type', TypeProperty(type))],
+            properties,
+            [('extensions', ExtensionsProperty(enclosing_type=type))],
+        ]))
+        return _custom_observable_builder(cls, type, _properties, '2.0')
+    return wrapper
 
 
-def _register_extension(observable, new_extension):
-    """Register a custom extension to a STIX Cyber Observable type.
-    """
-
-    try:
-        observable_type = observable._type
-    except AttributeError:
-        raise ValueError("Unknown observable type. Custom observables must be "
-                         "created with the @CustomObservable decorator.")
-
-    try:
-        EXT_MAP[observable_type][new_extension._type] = new_extension
-    except KeyError:
-        if observable_type not in OBJ_MAP_OBSERVABLE:
-            raise ValueError("Unknown observable type '%s'. Custom observables "
-                             "must be created with the @CustomObservable decorator."
-                             % observable_type)
-        else:
-            EXT_MAP[observable_type] = {new_extension._type: new_extension}
-
-
-def CustomExtension(observable=None, type='x-custom-observable', properties=None):
+def CustomExtension(observable=None, type='x-custom-observable-ext', properties=None):
     """Decorator for custom extensions to STIX Cyber Observables.
     """
-
-    if not observable or not issubclass(observable, _Observable):
-        raise ValueError("'observable' must be a valid Observable class!")
-
-    def custom_builder(cls):
-
-        class _Custom(cls, _Extension):
-
-            if not re.match(TYPE_REGEX, type):
-                raise ValueError("Invalid extension type name '%s': must only contain the "
-                                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type)
-            elif len(type) < 3 or len(type) > 250:
-                raise ValueError("Invalid extension type name '%s': must be between 3 and 250 characters." % type)
-
-            _type = type
-            _properties = OrderedDict()
-
-            if not properties or not isinstance(properties, list):
-                raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
-            _properties.update(properties)
-
-            def __init__(self, **kwargs):
-                _Extension.__init__(self, **kwargs)
-                _cls_init(cls, self, kwargs)
-
-        _register_extension(observable, _Custom)
-        return _Custom
-
-    return custom_builder
+    def wrapper(cls):
+        return _custom_extension_builder(cls, observable, type, properties, '2.0')
+    return wrapper

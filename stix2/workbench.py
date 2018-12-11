@@ -1,4 +1,4 @@
-"""Functions and class wrappers for interacting with STIX data at a high level.
+"""Functions and class wrappers for interacting with STIX2 data at a high level.
 
 .. autofunction:: create
 .. autofunction:: set_default_creator
@@ -33,21 +33,23 @@ from . import Report as _Report
 from . import ThreatActor as _ThreatActor
 from . import Tool as _Tool
 from . import Vulnerability as _Vulnerability
-from . import (AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,  # noqa: F401
-               Bundle, CustomExtension, CustomMarking, CustomObservable,
-               Directory, DomainName, EmailAddress, EmailMessage,
-               EmailMIMEComponent, Environment, ExtensionsProperty,
-               ExternalReference, File, FileSystemSource, Filter,
-               GranularMarking, HTTPRequestExt, ICMPExt, IPv4Address,
-               IPv6Address, KillChainPhase, MACAddress, MarkingDefinition,
-               MemoryStore, Mutex, NetworkTraffic, NTFSExt, parse_observable,
-               PDFExt, Process, RasterImageExt, Relationship, Sighting,
-               SocketExt, Software, StatementMarking, TAXIICollectionSource,
-               TCPExt, TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, TLPMarking,
-               UNIXAccountExt, URL, UserAccount, WindowsPEBinaryExt,
-               WindowsPEOptionalHeaderType, WindowsPESection,
-               WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
-               WindowsServiceExt, X509Certificate, X509V3ExtenstionsType)
+from . import (  # noqa: F401
+    AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
+    Bundle, CustomExtension, CustomMarking, CustomObservable,
+    Directory, DomainName, EmailAddress, EmailMessage,
+    EmailMIMEComponent, Environment, ExternalReference, File,
+    FileSystemSource, Filter, GranularMarking, HTTPRequestExt,
+    ICMPExt, IPv4Address, IPv6Address, KillChainPhase, MACAddress,
+    MarkingDefinition, MemoryStore, Mutex, NetworkTraffic, NTFSExt,
+    parse_observable, PDFExt, Process, RasterImageExt, Relationship,
+    Sighting, SocketExt, Software, StatementMarking,
+    TAXIICollectionSource, TCPExt, TLP_AMBER, TLP_GREEN, TLP_RED,
+    TLP_WHITE, TLPMarking, UNIXAccountExt, URL, UserAccount,
+    WindowsPEBinaryExt, WindowsPEOptionalHeaderType,
+    WindowsPESection, WindowsProcessExt, WindowsRegistryKey,
+    WindowsRegistryValueType, WindowsServiceExt, X509Certificate,
+    X509V3ExtenstionsType
+)
 from .datastore.filters import FilterSet
 
 # Use an implicit MemoryStore
@@ -75,9 +77,11 @@ add_data_sources = _environ.source.add_data_sources
 # Wrap SDOs with helper functions
 
 
-STIX_OBJS = [_AttackPattern, _Campaign, _CourseOfAction, _Identity,
-             _Indicator, _IntrusionSet, _Malware, _ObservedData, _Report,
-             _ThreatActor, _Tool, _Vulnerability]
+STIX_OBJS = [
+    _AttackPattern, _Campaign, _CourseOfAction, _Identity,
+    _Indicator, _IntrusionSet, _Malware, _ObservedData, _Report,
+    _ThreatActor, _Tool, _Vulnerability,
+]
 
 STIX_OBJ_DOCS = """
 
@@ -93,9 +97,11 @@ STIX_OBJ_DOCS = """
 
         {}
 
-""".format(_environ.creator_of.__doc__,
-           _environ.relationships.__doc__,
-           _environ.related_to.__doc__)
+""".format(
+    _environ.creator_of.__doc__,
+    _environ.relationships.__doc__,
+    _environ.related_to.__doc__
+)
 
 
 def _created_by_wrapper(self, *args, **kwargs):
@@ -143,7 +149,7 @@ def _setup_workbench():
     for obj_type in STIX_OBJS:
         new_class_dict = {
             '__new__': _constructor_wrapper(obj_type),
-            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.rst#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS)
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.rst#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS),
         }
         new_class = type(obj_type.__name__, (), new_class_dict)
 

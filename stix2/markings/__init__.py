@@ -9,7 +9,6 @@ Note:
     Definitions. The corresponding methods on those classes are identical to
     these functions except that the `obj` parameter is omitted.
 
-
 .. autosummary::
    :toctree: markings
 
@@ -51,7 +50,7 @@ def get_markings(obj, selectors=None, inherited=False, descendants=False):
         obj,
         selectors,
         inherited,
-        descendants
+        descendants,
     )
 
     if inherited:
@@ -208,7 +207,7 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
         marking,
         selectors,
         inherited,
-        descendants
+        descendants,
     )
 
     if inherited:
@@ -221,7 +220,7 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
                 granular_marks,
                 selectors,
                 inherited,
-                descendants
+                descendants,
             )
 
         result = result or object_markings.is_marked(obj, object_marks)

@@ -1,5 +1,4 @@
-"""Classes to aid in working with the STIX 2 patterning language.
-"""
+"""Classes to aid in working with the STIX 2 patterning language."""
 
 import base64
 import binascii
@@ -187,7 +186,6 @@ class HexConstant(_Constant):
     Args:
         value (str): hexadecimal value
     """
-
     def __init__(self, value, from_parse_tree=False):
         # support with or without an 'h'
         if not from_parse_tree and re.match('^([a-fA-F0-9]{2})+$', value):
