@@ -22,6 +22,8 @@ class STIXDomainObject(_STIXBase, _MarkingsMixin):
         self.__interoperability = interoperability
         self._properties['id'].interoperability = interoperability
         self._properties['created_by_ref'].interoperability = interoperability
+        if kwargs.get('object_marking_refs'):
+            self._properties['object_marking_refs'].contained.interoperability = interoperability
 
         super(STIXDomainObject, self).__init__(*args, **kwargs)
 
@@ -261,6 +263,11 @@ class Report(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def __init__(self, *args, **kwargs):
+        self._properties['object_refs'].contained.interoperability = kwargs.get('interoperability', False)
+
+        super(Report, self).__init__(*args, **kwargs)
 
 
 class ThreatActor(STIXDomainObject):
