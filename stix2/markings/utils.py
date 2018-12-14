@@ -1,5 +1,4 @@
-"""Utility functions for STIX 2.0 data markings.
-"""
+"""Utility functions for STIX2 data markings."""
 
 import collections
 
@@ -23,7 +22,7 @@ def _evaluate_expression(obj, selector):
 
     """
     for items, value in iterpath(obj):
-        path = ".".join(items)
+        path = '.'.join(items)
 
         if path == selector and value:
             return [value]
@@ -119,12 +118,12 @@ def compress_markings(granular_markings):
     map_ = collections.defaultdict(set)
 
     for granular_marking in granular_markings:
-        if granular_marking.get("marking_ref"):
-            map_[granular_marking.get("marking_ref")].update(granular_marking.get("selectors"))
+        if granular_marking.get('marking_ref'):
+            map_[granular_marking.get('marking_ref')].update(granular_marking.get('selectors'))
 
     compressed = \
         [
-            {"marking_ref": marking_ref, "selectors": sorted(selectors)}
+            {'marking_ref': marking_ref, 'selectors': sorted(selectors)}
             for marking_ref, selectors in six.iteritems(map_)
         ]
 
@@ -173,14 +172,14 @@ def expand_markings(granular_markings):
     expanded = []
 
     for marking in granular_markings:
-        selectors = marking.get("selectors")
-        marking_ref = marking.get("marking_ref")
+        selectors = marking.get('selectors')
+        marking_ref = marking.get('marking_ref')
 
         expanded.extend(
             [
-                {"marking_ref": marking_ref, "selectors": [selector]}
+                {'marking_ref': marking_ref, 'selectors': [selector]}
                 for selector in selectors
-            ]
+            ],
         )
 
     return expanded
@@ -189,7 +188,7 @@ def expand_markings(granular_markings):
 def build_granular_marking(granular_marking):
     """Return a dictionary with the required structure for a granular marking.
     """
-    return {"granular_markings": expand_markings(granular_marking)}
+    return {'granular_markings': expand_markings(granular_marking)}
 
 
 def iterpath(obj, path=None):
@@ -229,7 +228,7 @@ def iterpath(obj, path=None):
         elif isinstance(varobj, list):
 
             for item in varobj:
-                index = "[{0}]".format(varobj.index(item))
+                index = '[{0}]'.format(varobj.index(item))
                 path.append(index)
 
                 yield (path, item)

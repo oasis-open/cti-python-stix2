@@ -1,8 +1,9 @@
-"""Classes for representing properties of STIX Objects and Cyber Observables.
-"""
+"""Classes for representing properties of STIX Objects and Cyber Observables."""
+
 import base64
 import binascii
 import collections
+import copy
 import inspect
 import re
 import uuid
@@ -11,19 +12,22 @@ from six import string_types, text_type
 from stix2patterns.validator import run_validator
 
 from .base import _STIXBase
-from .exceptions import DictionaryKeyError
-from .utils import _get_dict, parse_into_datetime
+from .core import STIX2_OBJ_MAPS, parse, parse_observable
+from .exceptions import CustomContentError, DictionaryKeyError
+from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 # This uses the regular expression for a RFC 4122, Version 4 UUID. In the
 # 8-4-4-4-12 hexadecimal representation, the first hex digit of the third
-# component must be a 4, and the first hex digit of the fourth component must be
-# 8, 9, a, or b (10xx bit pattern).
-ID_REGEX = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
-                      "[0-9a-fA-F]{8}-"
-                      "[0-9a-fA-F]{4}-"
-                      "4[0-9a-fA-F]{3}-"
-                      "[89abAB][0-9a-fA-F]{3}-"
-                      "[0-9a-fA-F]{12}$")
+# component must be a 4, and the first hex digit of the fourth component
+# must be 8, 9, a, or b (10xx bit pattern).
+ID_REGEX = re.compile(
+    r"^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
+    "[0-9a-fA-F]{8}-"
+    "[0-9a-fA-F]{4}-"
+    "4[0-9a-fA-F]{3}-"
+    "[89abAB][0-9a-fA-F]{3}-"
+    "[0-9a-fA-F]{12}$",
+)
 
 ID_REGEX_interoperability = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
                                        "[0-9a-fA-F]{8}-"
@@ -44,14 +48,15 @@ class Property(object):
     ``__init__()``.
 
     Args:
-        required (bool): If ``True``, the property must be provided when creating an
-            object with that property. No default value exists for these properties.
-            (Default: ``False``)
+        required (bool): If ``True``, the property must be provided when
+            creating an object with that property. No default value exists for
+            these properties. (Default: ``False``)
         fixed: This provides a constant default value. Users are free to
-            provide this value explicity when constructing an object (which allows
-            you to copy **all** values from an existing object to a new object), but
-            if the user provides a value other than the ``fixed`` value, it will raise
-            an error. This is semantically equivalent to defining both:
+            provide this value explicity when constructing an object (which
+            allows you to copy **all** values from an existing object to a new
+            object), but if the user provides a value other than the ``fixed``
+            value, it will raise an error. This is semantically equivalent to
+            defining both:
 
             - a ``clean()`` function that checks if the value matches the fixed
               value, and
@@ -62,29 +67,31 @@ class Property(object):
     - ``def clean(self, value) -> any:``
         - Return a value that is valid for this property. If ``value`` is not
           valid for this property, this will attempt to transform it first. If
-          ``value`` is not valid and no such transformation is possible, it should
-          raise a ValueError.
+          ``value`` is not valid and no such transformation is possible, it
+          should raise a ValueError.
     - ``def default(self):``
         - provide a default value for this property.
         - ``default()`` can return the special value ``NOW`` to use the current
-            time. This is useful when several timestamps in the same object need
-            to use the same default value, so calling now() for each property--
-            likely several microseconds apart-- does not work.
+            time. This is useful when several timestamps in the same object
+            need to use the same default value, so calling now() for each
+            property-- likely several microseconds apart-- does not work.
 
-    Subclasses can instead provide a lambda function for ``default`` as a keyword
-    argument. ``clean`` should not be provided as a lambda since lambdas cannot
-    raise their own exceptions.
+    Subclasses can instead provide a lambda function for ``default`` as a
+    keyword argument. ``clean`` should not be provided as a lambda since
+    lambdas cannot raise their own exceptions.
 
-    When instantiating Properties, ``required`` and ``default`` should not be used
-    together. ``default`` implies that the property is required in the specification
-    so this function will be used to supply a value if none is provided.
-    ``required`` means that the user must provide this; it is required in the
-    specification and we can't or don't want to create a default value.
+    When instantiating Properties, ``required`` and ``default`` should not be
+    used together. ``default`` implies that the property is required in the
+    specification so this function will be used to supply a value if none is
+    provided. ``required`` means that the user must provide this; it is
+    required in the specification and we can't or don't want to create a
+    default value.
+
     """
 
     def _default_clean(self, value):
         if value != self._fixed_value:
-            raise ValueError("must equal '{0}'.".format(self._fixed_value))
+            raise ValueError("must equal '{}'.".format(self._fixed_value))
         return value
 
     def __init__(self, required=False, fixed=None, default=None):
@@ -143,7 +150,7 @@ class ListProperty(Property):
 
             if type(self.contained) is EmbeddedObjectProperty:
                 obj_type = self.contained.type
-            elif type(self.contained).__name__ is 'STIXObjectProperty':
+            elif type(self.contained).__name__ is "STIXObjectProperty":
                 # ^ this way of checking doesn't require a circular import
                 # valid is already an instance of a python-stix2 class; no need
                 # to turn it into a dictionary and then pass it to the class
@@ -191,7 +198,7 @@ class IDProperty(Property):
 
     def clean(self, value):
         if not value.startswith(self.required_prefix):
-            raise ValueError("must start with '{0}'.".format(self.required_prefix))
+            raise ValueError("must start with '{}'.".format(self.required_prefix))
         if hasattr(self, 'interoperability') and self.interoperability:
             if not ID_REGEX_interoperability.match(value):
                 raise ValueError(ERROR_INVALID_ID)
@@ -206,20 +213,50 @@ class IDProperty(Property):
 
 class IntegerProperty(Property):
 
+    def __init__(self, min=None, max=None, **kwargs):
+        self.min = min
+        self.max = max
+        super(IntegerProperty, self).__init__(**kwargs)
+
     def clean(self, value):
         try:
-            return int(value)
+            value = int(value)
         except Exception:
             raise ValueError("must be an integer.")
+
+        if self.min is not None and value < self.min:
+            msg = "minimum value is {}. received {}".format(self.min, value)
+            raise ValueError(msg)
+
+        if self.max is not None and value > self.max:
+            msg = "maximum value is {}. received {}".format(self.max, value)
+            raise ValueError(msg)
+
+        return value
 
 
 class FloatProperty(Property):
 
+    def __init__(self, min=None, max=None, **kwargs):
+        self.min = min
+        self.max = max
+        super(FloatProperty, self).__init__(**kwargs)
+
     def clean(self, value):
         try:
-            return float(value)
+            value = float(value)
         except Exception:
             raise ValueError("must be a float.")
+
+        if self.min is not None and value < self.min:
+            msg = "minimum value is {}. received {}".format(self.min, value)
+            raise ValueError(msg)
+
+        if self.max is not None and value > self.max:
+            msg = "maximum value is {}. received {}".format(self.max, value)
+            raise ValueError(msg)
+
+        return value
 
 
 class BooleanProperty(Property):
@@ -228,8 +265,8 @@ class BooleanProperty(Property):
         if isinstance(value, bool):
             return value
 
-        trues = ['true', 't']
-        falses = ['false', 'f']
+        trues = ['true', 't', '1']
+        falses = ['false', 'f', '0']
         try:
             if value.lower() in trues:
                 return True
@@ -256,6 +293,10 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
+    def __init__(self, spec_version='2.0', **kwargs):
+        self.spec_version = spec_version
+        super(DictionaryProperty, self).__init__(**kwargs)
+
     def clean(self, value):
         try:
             dictified = _get_dict(value)
@@ -263,35 +304,40 @@ class DictionaryProperty(Property):
             raise ValueError("The dictionary property must contain a dictionary")
         if dictified == {}:
             raise ValueError("The dictionary property must contain a non-empty dictionary")
-
         for k in dictified.keys():
-            if len(k) < 3:
-                raise DictionaryKeyError(k, "shorter than 3 characters")
-            elif len(k) > 256:
-                raise DictionaryKeyError(k, "longer than 256 characters")
-            if not re.match('^[a-zA-Z0-9_-]+$', k):
-                raise DictionaryKeyError(k, "contains characters other than"
-                                         "lowercase a-z, uppercase A-Z, "
-                                         "numerals 0-9, hyphen (-), or "
-                                         "underscore (_)")
+            if self.spec_version == '2.0':
+                if len(k) < 3:
+                    raise DictionaryKeyError(k, "shorter than 3 characters")
+                elif len(k) > 256:
+                    raise DictionaryKeyError(k, "longer than 256 characters")
+            elif self.spec_version == '2.1':
+                if len(k) > 250:
+                    raise DictionaryKeyError(k, "longer than 250 characters")
+            if not re.match(r"^[a-zA-Z0-9_-]+$", k):
+                msg = (
+                    "contains characters other than lowercase a-z, "
+                    "uppercase A-Z, numerals 0-9, hyphen (-), or "
+                    "underscore (_)"
+                )
+                raise DictionaryKeyError(k, msg)
         return dictified
 
 
 HASHES_REGEX = {
-    "MD5": ("^[a-fA-F0-9]{32}$", "MD5"),
-    "MD6": ("^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
-    "RIPEMD160": ("^[a-fA-F0-9]{40}$", "RIPEMD-160"),
-    "SHA1": ("^[a-fA-F0-9]{40}$", "SHA-1"),
-    "SHA224": ("^[a-fA-F0-9]{56}$", "SHA-224"),
-    "SHA256": ("^[a-fA-F0-9]{64}$", "SHA-256"),
-    "SHA384": ("^[a-fA-F0-9]{96}$", "SHA-384"),
-    "SHA512": ("^[a-fA-F0-9]{128}$", "SHA-512"),
-    "SHA3224": ("^[a-fA-F0-9]{56}$", "SHA3-224"),
-    "SHA3256": ("^[a-fA-F0-9]{64}$", "SHA3-256"),
-    "SHA3384": ("^[a-fA-F0-9]{96}$", "SHA3-384"),
-    "SHA3512": ("^[a-fA-F0-9]{128}$", "SHA3-512"),
-    "SSDEEP": ("^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
-    "WHIRLPOOL": ("^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+    "MD5": (r"^[a-fA-F0-9]{32}$", "MD5"),
+    "MD6": (r"^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
+    "RIPEMD160": (r"^[a-fA-F0-9]{40}$", "RIPEMD-160"),
+    "SHA1": (r"^[a-fA-F0-9]{40}$", "SHA-1"),
+    "SHA224": (r"^[a-fA-F0-9]{56}$", "SHA-224"),
+    "SHA256": (r"^[a-fA-F0-9]{64}$", "SHA-256"),
+    "SHA384": (r"^[a-fA-F0-9]{96}$", "SHA-384"),
+    "SHA512": (r"^[a-fA-F0-9]{128}$", "SHA-512"),
+    "SHA3224": (r"^[a-fA-F0-9]{56}$", "SHA3-224"),
+    "SHA3256": (r"^[a-fA-F0-9]{64}$", "SHA3-256"),
+    "SHA3384": (r"^[a-fA-F0-9]{96}$", "SHA3-384"),
+    "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
+    "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
+    "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
 }
 
 
@@ -304,7 +350,7 @@ class HashesProperty(DictionaryProperty):
             if key in HASHES_REGEX:
                 vocab_key = HASHES_REGEX[key][1]
                 if not re.match(HASHES_REGEX[key][0], v):
-                    raise ValueError("'%s' is not a valid %s hash" % (v, vocab_key))
+                    raise ValueError("'{0}' is not a valid {1} hash".format(v, vocab_key))
                 if k != vocab_key:
                     clean_dict[vocab_key] = clean_dict[k]
                     del clean_dict[k]
@@ -324,7 +370,7 @@ class BinaryProperty(Property):
 class HexProperty(Property):
 
     def clean(self, value):
-        if not re.match('^([a-fA-F0-9]{2})+$', value):
+        if not re.match(r"^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
         return value
 
@@ -344,7 +390,7 @@ class ReferenceProperty(Property):
         value = str(value)
         if self.type:
             if not value.startswith(self.type):
-                raise ValueError("must start with '{0}'.".format(self.type))
+                raise ValueError("must start with '{}'.".format(self.type))
         if hasattr(self, 'interoperability') and self.interoperability:
             if not ID_REGEX_interoperability.match(value):
                 raise ValueError(ERROR_INVALID_ID)
@@ -354,7 +400,7 @@ class ReferenceProperty(Property):
         return value
 
 
-SELECTOR_REGEX = re.compile("^[a-z0-9_-]{3,250}(\\.(\\[\\d+\\]|[a-z0-9_-]{1,250}))*$")
+SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
 
 
 class SelectorProperty(Property):
@@ -384,7 +430,7 @@ class EmbeddedObjectProperty(Property):
         if type(value) is dict:
             value = self.type(**value)
         elif not isinstance(value, self.type):
-            raise ValueError("must be of type %s." % self.type.__name__)
+            raise ValueError("must be of type {}.".format(self.type.__name__))
         return value
 
 
@@ -399,7 +445,7 @@ class EnumProperty(StringProperty):
     def clean(self, value):
         value = super(EnumProperty, self).clean(value)
         if value not in self.allowed:
-            raise ValueError("value '%s' is not valid for this enumeration." % value)
+            raise ValueError("value '{}' is not valid for this enumeration.".format(value))
         return self.string_type(value)
 
 
@@ -412,3 +458,127 @@ class PatternProperty(StringProperty):
             raise ValueError(str(errors[0]))
 
         return self.string_type(value)
+
+
+class ObservableProperty(Property):
+    """Property for holding Cyber Observable Objects.
+    """
+
+    def __init__(self, spec_version='2.0', allow_custom=False, *args, **kwargs):
+        self.allow_custom = allow_custom
+        self.spec_version = spec_version
+        super(ObservableProperty, self).__init__(*args, **kwargs)
+
+    def clean(self, value):
+        try:
+            dictified = _get_dict(value)
+            # get deep copy since we are going modify the dict and might
+            # modify the original dict as _get_dict() does not return new
+            # dict when passed a dict
+            dictified = copy.deepcopy(dictified)
+        except ValueError:
+            raise ValueError("The observable property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The observable property must contain a non-empty dictionary")
+
+        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
+
+        for key, obj in dictified.items():
+            parsed_obj = parse_observable(
+                obj,
+                valid_refs,
+                allow_custom=self.allow_custom,
+                version=self.spec_version,
+            )
+            dictified[key] = parsed_obj
+
+        return dictified
+
+
+class ExtensionsProperty(DictionaryProperty):
+    """Property for representing extensions on Observable objects.
+    """
+
+    def __init__(self, spec_version='2.0', allow_custom=False, enclosing_type=None, required=False):
+        self.allow_custom = allow_custom
+        self.enclosing_type = enclosing_type
+        super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
+
+    def clean(self, value):
+        try:
+            dictified = _get_dict(value)
+            # get deep copy since we are going modify the dict and might
+            # modify the original dict as _get_dict() does not return new
+            # dict when passed a dict
+            dictified = copy.deepcopy(dictified)
+        except ValueError:
+            raise ValueError("The extensions property must contain a dictionary")
+        if dictified == {}:
+            raise ValueError("The extensions property must contain a non-empty dictionary")
+
+        v = 'v' + self.spec_version.replace('.', '')
+
+        specific_type_map = STIX2_OBJ_MAPS[v]['observable-extensions'].get(self.enclosing_type, {})
+        for key, subvalue in dictified.items():
+            if key in specific_type_map:
+                cls = specific_type_map[key]
+                if type(subvalue) is dict:
+                    if self.allow_custom:
+                        subvalue['allow_custom'] = True
+                        dictified[key] = cls(**subvalue)
+                    else:
+                        dictified[key] = cls(**subvalue)
+                elif type(subvalue) is cls:
+                    # If already an instance of an _Extension class, assume it's valid
+                    dictified[key] = subvalue
+                else:
+                    raise ValueError("Cannot determine extension type.")
+            else:
+                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
+        return dictified
+
+
+class STIXObjectProperty(Property):
+
+    def __init__(self, spec_version='2.0', allow_custom=False, interoperability=False, *args, **kwargs):
+        self.allow_custom = allow_custom
+        self.spec_version = spec_version
+        self.interoperability = interoperability
+        super(STIXObjectProperty, self).__init__(*args, **kwargs)
+
+    def clean(self, value):
+        # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
+        # a bundle with no further checks.
+        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
+               for x in get_class_hierarchy_names(value)):
+            # A simple "is this a spec version 2.1+ object" test.  For now,
+            # limit 2.0 bundles to 2.0 objects.  It's not possible yet to
+            # have validation co-constraints among properties, e.g. have
+            # validation here depend on the value of another property
+            # (spec_version).  So this is a hack, and not technically spec-
+            # compliant.
+            if 'spec_version' in value and self.spec_version == '2.0':
+                raise ValueError(
+                    "Spec version 2.0 bundles don't yet support "
+                    "containing objects of a different spec "
+                    "version.",
+                )
+            return value
+        try:
+            dictified = _get_dict(value)
+        except ValueError:
+            raise ValueError("This property may only contain a dictionary or object")
+        if dictified == {}:
+            raise ValueError("This property may only contain a non-empty dictionary or object")
+        if 'type' in dictified and dictified['type'] == 'bundle':
+            raise ValueError("This property may not contain a Bundle object")
+        if 'spec_version' in dictified and self.spec_version == '2.0':
+            # See above comment regarding spec_version.
+            raise ValueError(
+                "Spec version 2.0 bundles don't yet support "
+                "containing objects of a different spec version.",
+            )
+
+        parsed_obj = parse(dictified, allow_custom=self.allow_custom, interoperability=self.interoperability)
+
+        return parsed_obj

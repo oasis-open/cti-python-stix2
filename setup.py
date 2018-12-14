@@ -11,26 +11,27 @@ VERSION_FILE = os.path.join(BASE_DIR, 'stix2', 'version.py')
 def get_version():
     with open(VERSION_FILE) as f:
         for line in f.readlines():
-            if line.startswith("__version__"):
+            if line.startswith('__version__'):
                 version = line.split()[-1].strip('"')
                 return version
         raise AttributeError("Package does not have a __version__")
 
 
-with open('README.rst') as f:
-    long_description = f.read()
+def get_long_description():
+    with open('README.rst') as f:
+        return f.read()
 
 
 setup(
     name='stix2',
     version=get_version(),
     description='Produce and consume STIX 2 JSON content',
-    long_description=long_description,
-    url='https://github.com/oasis-open/cti-python-stix2',
+    long_description=get_long_description(),
+    url='https://oasis-open.github.io/cti-documentation/',
     author='OASIS Cyber Threat Intelligence Technical Committee',
     author_email='cti-users@lists.oasis-open.org',
-    maintainer='Greg Back',
-    maintainer_email='gback@mitre.org',
+    maintainer='Chris Lenk, Emmanuelle Vargas-Gonzalez',
+    maintainer_email='clenk@mitre.org, emmanuelle@mitre.org',
     license='BSD',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -45,7 +46,7 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    keywords="stix stix2 json cti cyber threat intelligence",
+    keywords='stix stix2 json cti cyber threat intelligence',
     packages=find_packages(exclude=['*.test']),
     install_requires=[
         'python-dateutil',
@@ -55,7 +56,12 @@ setup(
         'six',
         'stix2-patterns',
     ],
+    project_urls={
+        'Documentation': 'https://stix2.readthedocs.io/',
+        'Source Code': 'https://github.com/oasis-open/cti-python-stix2/',
+        'Bug Tracker': 'https://github.com/oasis-open/cti-python-stix2/issues/',
+    },
     extras_require={
-        'taxii': ['taxii2-client']
-    }
+        'taxii': ['taxii2-client'],
+    },
 )

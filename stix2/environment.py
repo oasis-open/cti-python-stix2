@@ -1,5 +1,4 @@
-"""Python STIX 2.0 Environment API.
-"""
+"""Python STIX2 Environment API."""
 
 import copy
 
@@ -27,9 +26,11 @@ class ObjectFactory(object):
             default. Defaults to True.
     """
 
-    def __init__(self, created_by_ref=None, created=None,
-                 external_references=None, object_marking_refs=None,
-                 list_append=True):
+    def __init__(
+        self, created_by_ref=None, created=None,
+        external_references=None, object_marking_refs=None,
+        list_append=True,
+    ):
 
         self._defaults = {}
         if created_by_ref:
@@ -166,3 +167,22 @@ class Environment(DataStoreMixin):
     def parse(self, *args, **kwargs):
         return _parse(*args, **kwargs)
     parse.__doc__ = _parse.__doc__
+
+    def creator_of(self, obj):
+        """Retrieve the Identity refered to by the object's `created_by_ref`.
+
+        Args:
+            obj: The STIX object whose `created_by_ref` property will be looked
+                up.
+
+        Returns:
+            str: The STIX object's creator, or None, if the object contains no
+                `created_by_ref` property or the object's creator cannot be
+                found.
+
+        """
+        creator_id = obj.get('created_by_ref', '')
+        if creator_id:
+            return self.get(creator_id)
+        else:
+            return None

@@ -2,26 +2,13 @@
 
 from collections import OrderedDict
 
-from ..base import _STIXBase
-from ..markings import _MarkingsMixin
-from ..properties import (BooleanProperty, IDProperty, IntegerProperty,
-                          ListProperty, ReferenceProperty, StringProperty,
-                          TimestampProperty, TypeProperty)
+from ..core import STIXRelationshipObject
+from ..properties import (
+    BooleanProperty, IDProperty, IntegerProperty, ListProperty,
+    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+)
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking
-
-
-class STIXRelationshipObject(_STIXBase, _MarkingsMixin):
-    def __init__(self, *args, **kwargs):
-        interoperability = kwargs.get('interoperability', False)
-        self.__interoperability = interoperability
-        self._properties['id'].interoperability = interoperability
-        if kwargs.get('created_by_ref'):
-            self._properties['created_by_ref'].interoperability = interoperability
-        if kwargs.get('object_marking_refs'):
-            self._properties['object_marking_refs'].contained.interoperability = interoperability
-
-        super(STIXRelationshipObject, self).__init__(*args, **kwargs)
 
 
 class Relationship(STIXRelationshipObject):
@@ -30,11 +17,10 @@ class Relationship(STIXRelationshipObject):
     """
 
     _type = 'relationship'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('relationship_type', StringProperty(required=True)),
@@ -44,13 +30,15 @@ class Relationship(STIXRelationshipObject):
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
-    def __init__(self, source_ref=None, relationship_type=None,
-                 target_ref=None, **kwargs):
+    def __init__(
+        self, source_ref=None, relationship_type=None,
+        target_ref=None, **kwargs
+    ):
         # Allow (source_ref, relationship_type, target_ref) as positional args.
         if source_ref and not kwargs.get('source_ref'):
             kwargs['source_ref'] = source_ref
@@ -71,24 +59,23 @@ class Sighting(STIXRelationshipObject):
     """
 
     _type = 'sighting'
-    _properties = OrderedDict()
-    _properties.update([
+    _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type="identity")),
+        ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
-        ('count', IntegerProperty()),
+        ('count', IntegerProperty(min=0, max=999999999)),
         ('sighting_of_ref', ReferenceProperty(required=True)),
-        ('observed_data_refs', ListProperty(ReferenceProperty(type="observed-data"))),
-        ('where_sighted_refs', ListProperty(ReferenceProperty(type="identity"))),
+        ('observed_data_refs', ListProperty(ReferenceProperty(type='observed-data'))),
+        ('where_sighted_refs', ListProperty(ReferenceProperty(type='identity'))),
         ('summary', BooleanProperty(default=lambda: False)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type="marking-definition"))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 

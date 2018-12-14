@@ -1,3 +1,4 @@
+import datetime
 import os
 import re
 import sys
@@ -6,6 +7,7 @@ from six import class_types
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
+from stix2.version import __version__
 
 sys.path.insert(0, os.path.abspath('..'))
 
@@ -31,11 +33,11 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = 'stix2'
-copyright = '2017, OASIS Open'
+copyright = '{}, OASIS Open'.format(datetime.date.today().year)
 author = 'OASIS Open'
 
-version = '1.0.4'
-release = '1.0.4'
+version = __version__
+release = __version__
 
 language = None
 exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
@@ -49,7 +51,7 @@ html_sidebars = {
         'navigation.html',
         'relations.html',
         'searchbox.html',
-    ]
+    ],
 }
 
 latex_elements = {}

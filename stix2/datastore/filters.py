@@ -1,7 +1,4 @@
-"""
-Filters for Python STIX 2.0 DataSources, DataSinks, DataStores
-
-"""
+"""Filters for Python STIX2 DataSources, DataSinks, DataStores"""
 
 import collections
 from datetime import datetime
@@ -14,8 +11,10 @@ import stix2.utils
 FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
-FILTER_VALUE_TYPES = (bool, dict, float, int, list, tuple, six.string_types,
-                      datetime)
+FILTER_VALUE_TYPES = (
+    bool, dict, float, int, list, tuple, six.string_types,
+    datetime,
+)
 
 
 def _check_filter_components(prop, op, value):
@@ -38,14 +37,14 @@ def _check_filter_components(prop, op, value):
         # check filter value type is supported
         raise TypeError("Filter value of '%s' is not supported. The type must be a Python immutable type or dictionary" % type(value))
 
-    if prop == "type" and "_" in value:
+    if prop == 'type' and '_' in value:
         # check filter where the property is type, value (type name) cannot have underscores
         raise ValueError("Filter for property 'type' cannot have its value '%s' include underscores" % value)
 
     return True
 
 
-class Filter(collections.namedtuple("Filter", ['property', 'op', 'value'])):
+class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
     """STIX 2 filters that support the querying functionality of STIX 2
     DataStores and DataSources.
 
@@ -157,7 +156,7 @@ def _check_filter(filter_, stix_obj):
     """
     # For properties like granular_markings and external_references
     # need to extract the first property from the string.
-    prop = filter_.property.split(".")[0]
+    prop = filter_.property.split('.')[0]
 
     if prop not in stix_obj.keys():
         # check filter "property" is in STIX object - if cant be
@@ -165,9 +164,9 @@ def _check_filter(filter_, stix_obj):
         # (i.e. did not make it through the filter)
         return False
 
-    if "." in filter_.property:
+    if '.' in filter_.property:
         # Check embedded properties, from e.g. granular_markings or external_references
-        sub_property = filter_.property.split(".", 1)[1]
+        sub_property = filter_.property.split('.', 1)[1]
         sub_filter = filter_._replace(property=sub_property)
 
         if isinstance(stix_obj[prop], list):
@@ -222,8 +221,9 @@ class FilterSet(object):
 
         Operates like set, only adding unique stix2.Filters to the FilterSet
 
-        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
-        as it allows for blind calls (very useful in DataStore)
+        Note:
+            method designed to be very accomodating (i.e. even accepting filters=None)
+            as it allows for blind calls (very useful in DataStore)
 
         Args:
             filters: stix2.Filter OR list of stix2.Filter OR stix2.FilterSet
@@ -244,11 +244,13 @@ class FilterSet(object):
     def remove(self, filters=None):
         """Remove a Filter, list of Filters, or FilterSet from the FilterSet.
 
-        NOTE: method designed to be very accomodating (i.e. even accepting filters=None)
-        as it allows for blind calls (very useful in DataStore)
+        Note:
+            method designed to be very accomodating (i.e. even accepting filters=None)
+            as it allows for blind calls (very useful in DataStore)
 
         Args:
             filters: stix2.Filter OR list of stix2.Filter or stix2.FilterSet
+
         """
         if not filters:
             # so remove() can be called blindly, useful for

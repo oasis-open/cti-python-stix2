@@ -7,8 +7,10 @@ import stix2
 
 
 def main():
-    collection = Collection("http://127.0.0.1:5000/trustgroup1/collections/52892447-4d7e-4f70-b94d-d7f22742ff63/",
-                            user="admin", password="Password0")
+    collection = Collection(
+        "http://127.0.0.1:5000/trustgroup1/collections/52892447-4d7e-4f70-b94d-d7f22742ff63/",
+        user="admin", password="Password0",
+    )
 
     # instantiate TAXII data source
     taxii = stix2.TAXIICollectionSource(collection)

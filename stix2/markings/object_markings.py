@@ -1,5 +1,4 @@
-"""Functions for working with STIX 2.0 object markings.
-"""
+"""Functions for working with STIX2 object markings."""
 
 from stix2 import exceptions
 from stix2.markings import utils
@@ -18,7 +17,7 @@ def get_markings(obj):
             markings are present in `object_marking_refs`.
 
     """
-    return obj.get("object_marking_refs", [])
+    return obj.get('object_marking_refs', [])
 
 
 def add_markings(obj, marking):
@@ -35,7 +34,7 @@ def add_markings(obj, marking):
     """
     marking = utils.convert_to_marking_list(marking)
 
-    object_markings = set(obj.get("object_marking_refs", []) + marking)
+    object_markings = set(obj.get('object_marking_refs', []) + marking)
 
     return new_version(obj, object_marking_refs=list(object_markings), allow_custom=True)
 
@@ -59,12 +58,12 @@ def remove_markings(obj, marking):
     """
     marking = utils.convert_to_marking_list(marking)
 
-    object_markings = obj.get("object_marking_refs", [])
+    object_markings = obj.get('object_marking_refs', [])
 
     if not object_markings:
         return obj
 
-    if any(x not in obj["object_marking_refs"] for x in marking):
+    if any(x not in obj['object_marking_refs'] for x in marking):
         raise exceptions.MarkingNotFoundError(obj, marking)
 
     new_markings = [x for x in object_markings if x not in marking]
@@ -124,7 +123,7 @@ def is_marked(obj, marking=None):
 
     """
     marking = utils.convert_to_marking_list(marking)
-    object_markings = obj.get("object_marking_refs", [])
+    object_markings = obj.get('object_marking_refs', [])
 
     if marking:
         return any(x in object_markings for x in marking)
