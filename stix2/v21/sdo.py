@@ -434,6 +434,11 @@ class Report(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def __init__(self, *args, **kwargs):
+        self._properties['object_refs'].contained.interoperability = kwargs.get('interoperability', False)
+
+        super(Report, self).__init__(*args, **kwargs)
+
 
 class ThreatActor(STIXDomainObject):
     # TODO: Add link
