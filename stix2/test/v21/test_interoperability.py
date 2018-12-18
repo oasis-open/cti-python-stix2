@@ -34,8 +34,7 @@ ATTACK_PATTERN_KWARGS = dict(
 
 BUNDLE_KWARGS = dict(
     type='bundle',
-    id=BUNDLE_ID,
-    spec_version='2.0'
+    id=BUNDLE_ID
 )
 
 CAMPAIGN_KWARGS = dict(
@@ -67,7 +66,8 @@ INDICATOR_KWARGS = dict(
     id=INDICATOR_ID,
     labels=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
+    indicator_types=["malicious-activity"],
 )
 
 INTRUSION_SET_KWARGS = dict(
@@ -85,7 +85,8 @@ MALWARE_KWARGS = dict(
     labels=['ransomware'],
     name="Cryptolocker",
     description="A ransomware related to ...",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
+    malware_types=["malicious-activity"],
 )
 
 MARKING_DEFINITION_KWARGS = dict(
@@ -118,7 +119,8 @@ REPORT_KWARGS = dict(
     name="Bad Cybercrime",
     published=FAKE_TIME,
     object_refs=OBJECT_REFS,
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
+    report_types=["malicious-activity"]
 )
 
 RELATIONSHIP_KWARGS = dict(
@@ -144,7 +146,8 @@ THREAT_ACTOR_KWARGS = dict(
     id=THREAT_ACTOR_ID,
     labels=["crime-syndicate"],
     name="Evil Org",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
+    threat_actor_types=["malicious-activity"]
 )
 
 TOOL_KWARGS = dict(
@@ -153,7 +156,8 @@ TOOL_KWARGS = dict(
     labels=["remote-access"],
     name="VNC",
     created_by_ref=IDENTITY_ID,
-    interoperability=True
+    interoperability=True,
+    tool_types=["malicious-activity"]
 )
 
 VULNERABILITY_KWARGS = dict(
@@ -165,22 +169,22 @@ VULNERABILITY_KWARGS = dict(
 
 
 if __name__ == '__main__':
-    attack_pattern = stix2.AttackPattern(**ATTACK_PATTERN_KWARGS, interoperability=True)
-    campaign = stix2.Campaign(**CAMPAIGN_KWARGS, interoperability=True)
-    course_of_action = stix2.CourseOfAction(**COURSE_OF_ACTION_KWARGS, interoperability=True)
-    identity = stix2.Identity(**IDENTITY_KWARGS, interoperability=True)
-    indicator = stix2.Indicator(**INDICATOR_KWARGS, interoperability=True)
-    intrusion_set = stix2.IntrusionSet(**INTRUSION_SET_KWARGS, interoperability=True)
-    malware = stix2.Malware(**MALWARE_KWARGS, interoperability=True)
-    marking_definition = stix2.MarkingDefinition(**MARKING_DEFINITION_KWARGS, interoperability=True)
-    observed_data = stix2.ObservedData(**OBSERVED_DATA_KWARGS, interoperability=True)
-    relationship = stix2.Relationship(**RELATIONSHIP_KWARGS, interoperability=True)
-    sighting = stix2.Sighting(**SIGHTING_KWARGS, interoperability=True)
-    threat_actor = stix2.ThreatActor(**THREAT_ACTOR_KWARGS, interoperability=True)
-    tool = stix2.Tool(**TOOL_KWARGS)#, interoperability=True),
-    vulnerability = stix2.Vulnerability(**VULNERABILITY_KWARGS, interoperability=True)
-    report = stix2.Report(**REPORT_KWARGS, interoperability=True)
-    bundle = stix2.Bundle(**BUNDLE_KWARGS, interoperability=True,
+    attack_pattern = stix2.v21.AttackPattern(**ATTACK_PATTERN_KWARGS, interoperability=True)
+    campaign = stix2.v21.Campaign(**CAMPAIGN_KWARGS, interoperability=True)
+    course_of_action = stix2.v21.CourseOfAction(**COURSE_OF_ACTION_KWARGS, interoperability=True)
+    identity = stix2.v21.Identity(**IDENTITY_KWARGS, interoperability=True)
+    indicator = stix2.v21.Indicator(**INDICATOR_KWARGS, interoperability=True)
+    intrusion_set = stix2.v21.IntrusionSet(**INTRUSION_SET_KWARGS, interoperability=True)
+    malware = stix2.v21.Malware(**MALWARE_KWARGS, interoperability=True)
+    marking_definition = stix2.v21.MarkingDefinition(**MARKING_DEFINITION_KWARGS, interoperability=True)
+    observed_data = stix2.v21.ObservedData(**OBSERVED_DATA_KWARGS, interoperability=True)
+    relationship = stix2.v21.Relationship(**RELATIONSHIP_KWARGS, interoperability=True)
+    sighting = stix2.v21.Sighting(**SIGHTING_KWARGS, interoperability=True)
+    threat_actor = stix2.v21.ThreatActor(**THREAT_ACTOR_KWARGS, interoperability=True)
+    tool = stix2.v21.Tool(**TOOL_KWARGS)#, interoperability=True),
+    vulnerability = stix2.v21.Vulnerability(**VULNERABILITY_KWARGS, interoperability=True)
+    report = stix2.v21.Report(**REPORT_KWARGS, interoperability=True)
+    bundle = stix2.v21.Bundle(**BUNDLE_KWARGS, interoperability=True,
                           objects=[attack_pattern, campaign, course_of_action, identity, indicator,
                                    intrusion_set, malware, marking_definition, observed_data, tool,
                                    relationship, sighting, threat_actor, vulnerability, report])
