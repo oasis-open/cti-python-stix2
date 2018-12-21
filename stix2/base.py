@@ -221,6 +221,7 @@ class _STIXBase(collections.Mapping):
             # Assume: valid references in the original object are still valid in the new version
             new_inner['_valid_refs'] = {'*': '*'}
         new_inner['allow_custom'] = self.__allow_custom
+        new_inner['interoperability'] = self.__interoperability
         return cls(**new_inner)
 
     def properties_populated(self):
