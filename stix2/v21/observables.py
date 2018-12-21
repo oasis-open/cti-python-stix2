@@ -758,6 +758,19 @@ class WindowsRegistryValueType(_STIXBase):
     ])
 
 
+class CallableValues(list):
+    """Wrapper to allow `values()` method on WindowsRegistryKey objects.
+    Needed because `values` is also a property.
+    """
+
+    def __init__(self, parent_instance, *args, **kwargs):
+        self.parent_instance = parent_instance
+        super(CallableValues, self).__init__(*args, **kwargs)
+
+    def __call__(self):
+        return _Observable.values(self.parent_instance)
+
+
 class WindowsRegistryKey(_Observable):
     # TODO: Add link
     """For more detailed information on this object's properties, see
@@ -779,7 +792,7 @@ class WindowsRegistryKey(_Observable):
     @property
     def values(self):
         # Needed because 'values' is a property on collections.Mapping objects
-        return self._inner['values']
+        return CallableValues(self, self._inner['values'])
 
 
 class X509V3ExtenstionsType(_STIXBase):

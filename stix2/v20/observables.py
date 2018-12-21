@@ -706,6 +706,19 @@ class WindowsRegistryValueType(_STIXBase):
     ])
 
 
+class CallableValues(list):
+    """Wrapper to allow `values()` method on WindowsRegistryKey objects.
+    Needed because `values` is also a property.
+    """
+
+    def __init__(self, parent_instance, *args, **kwargs):
+        self.parent_instance = parent_instance
+        super(CallableValues, self).__init__(*args, **kwargs)
+
+    def __call__(self):
+        return _Observable.values(self.parent_instance)
+
+
 class WindowsRegistryKey(_Observable):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716291>`__.
@@ -726,7 +739,7 @@ class WindowsRegistryKey(_Observable):
     @property
     def values(self):
         # Needed because 'values' is a property on collections.Mapping objects
-        return self._inner['values']
+        return CallableValues(self, self._inner['values'])
 
 
 class X509V3ExtenstionsType(_STIXBase):

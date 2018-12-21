@@ -1290,6 +1290,8 @@ def test_windows_registry_key_example():
     assert w.values[0].name == "Foo"
     assert w.values[0].data == "qwerty"
     assert w.values[0].data_type == "REG_SZ"
+    # ensure no errors in serialization because of 'values'
+    assert "Foo" in str(w)
 
 
 def test_x509_certificate_example():
