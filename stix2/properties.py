@@ -29,7 +29,7 @@ ID_REGEX = re.compile(
     "[0-9a-fA-F]{12}$",
 )
 
-ID_REGEX_interoperability = re.compile("^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
+ID_REGEX_interoperability = re.compile(r"^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
                                        "[0-9a-fA-F]{8}-"
                                        "[0-9a-fA-F]{4}-"
                                        "[0-9a-fA-F]{4}-"
