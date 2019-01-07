@@ -291,8 +291,6 @@ class DictionaryProperty(Property):
             dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -498,8 +496,6 @@ class ExtensionsProperty(DictionaryProperty):
             dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The extensions property must contain a non-empty dictionary")
 
         v = 'v' + self.spec_version.replace('.', '')
 

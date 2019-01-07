@@ -1140,15 +1140,6 @@ def test_process_example_windows_process_ext_empty():
     assert excinfo.value.properties == sorted(properties_of_extension)
 
 
-def test_process_example_extensions_empty():
-    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-            stix2.v20.Process(extensions={})
-
-    assert excinfo.value.cls == stix2.v20.Process
-    assert excinfo.value.prop_name == 'extensions'
-    assert 'non-empty dictionary' in excinfo.value.reason
-
-
 def test_process_example_with_WindowsProcessExt_Object():
     p = stix2.v20.Process(extensions={
         "windows-process-ext": stix2.v20.WindowsProcessExt(
