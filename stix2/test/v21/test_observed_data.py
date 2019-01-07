@@ -1114,6 +1114,16 @@ def test_process_example_windows_process_ext_empty():
     assert excinfo.value.properties == sorted(properties_of_extension)
 
 
+def test_process_example_extensions_empty():
+    proc = stix2.v20.Process(
+        pid=314,
+        name="foobar.exe",
+        extensions={},
+    )
+
+    assert '{}' in str(proc)
+
+
 def test_process_example_with_WindowsProcessExt_Object():
     p = stix2.v21.Process(extensions={
         "windows-process-ext": stix2.v21.WindowsProcessExt(
