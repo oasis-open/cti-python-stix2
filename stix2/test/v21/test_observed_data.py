@@ -1115,7 +1115,7 @@ def test_process_example_windows_process_ext_empty():
 
 
 def test_process_example_extensions_empty():
-    proc = stix2.v20.Process(
+    proc = stix2.v21.Process(
         pid=314,
         name="foobar.exe",
         extensions={},
