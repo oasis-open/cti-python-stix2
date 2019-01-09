@@ -1,7 +1,4 @@
 """Python STIX2 FileSystem Source/Sink"""
-# Temporary while we address TODO statement
-from __future__ import print_function
-
 import errno
 import io
 import json
@@ -544,7 +541,6 @@ class FileSystemSink(DataSink):
             else:
                 stix_obj = v20.Bundle(stix_obj, allow_custom=self.allow_custom)
 
-        # TODO: Better handling of the overwriting case.
         if os.path.isfile(file_path):
             raise DataSourceError("Attempted to overwrite file (!) at: {}".format(file_path))
         else:
