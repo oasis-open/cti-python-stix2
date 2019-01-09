@@ -12,7 +12,7 @@ from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
-    BinaryProperty, BooleanProperty, DictionaryProperty,
+    BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IntegerProperty, ListProperty,
     ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
@@ -756,19 +756,6 @@ class WindowsRegistryValueType(_STIXBase):
             ]),
         ),
     ])
-
-
-class CallableValues(list):
-    """Wrapper to allow `values()` method on WindowsRegistryKey objects.
-    Needed because `values` is also a property.
-    """
-
-    def __init__(self, parent_instance, *args, **kwargs):
-        self.parent_instance = parent_instance
-        super(CallableValues, self).__init__(*args, **kwargs)
-
-    def __call__(self):
-        return _Observable.values(self.parent_instance)
 
 
 class WindowsRegistryKey(_Observable):
