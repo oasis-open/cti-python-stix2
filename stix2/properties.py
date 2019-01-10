@@ -11,7 +11,7 @@ import uuid
 from six import string_types, text_type
 from stix2patterns.validator import run_validator
 
-from .base import _STIXBase
+from .base import _Observable, _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import CustomContentError, DictionaryKeyError
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
@@ -174,6 +174,19 @@ class ListProperty(Property):
         return result
 
 
+class CallableValues(list):
+    """Wrapper to allow `values()` method on WindowsRegistryKey objects.
+    Needed because `values` is also a property.
+    """
+
+    def __init__(self, parent_instance, *args, **kwargs):
+        self.parent_instance = parent_instance
+        super(CallableValues, self).__init__(*args, **kwargs)
+
+    def __call__(self):
+        return _Observable.values(self.parent_instance)
+
+
 class StringProperty(Property):
 
     def __init__(self, **kwargs):
@@ -302,8 +315,6 @@ class DictionaryProperty(Property):
             dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -513,8 +524,6 @@ class ExtensionsProperty(DictionaryProperty):
             dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The extensions property must contain a non-empty dictionary")
 
         v = 'v' + self.spec_version.replace('.', '')
 
