@@ -13,7 +13,7 @@ from .exceptions import (
     MutuallyExclusivePropertiesError,
 )
 from .markings.utils import validate
-from .utils import NOW, find_property_index, format_datetime, get_timestamp
+from .utils import NOW, format_datetime, get_timestamp
 from .utils import new_version as _new_version
 from .utils import revoke as _revoke
 
@@ -32,13 +32,16 @@ class STIXJSONEncoder(json.JSONEncoder):
     """
 
     def default(self, obj):
-        if isinstance(obj, (dt.date, dt.datetime)):
+        if isinstance(obj, _STIXBase):
+            obj_dict = dict(obj)
+            props = obj.object_properties()
+            tmp = collections.OrderedDict()
+            for prop in props:
+                if prop in obj_dict and prop not in obj._defaulted_optional_properties:
+                    tmp[prop] = obj_dict[prop]
+            return tmp
+        elif isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
-        elif isinstance(obj, _STIXBase):
-            tmp_obj = dict(copy.deepcopy(obj))
-            for prop_name in obj._defaulted_optional_properties:
-                del tmp_obj[prop_name]
-            return tmp_obj
         else:
             return super(STIXJSONEncoder, self).default(obj)
 
@@ -52,10 +55,16 @@ class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
     """
 
     def default(self, obj):
-        if isinstance(obj, (dt.date, dt.datetime)):
+        if isinstance(obj, _STIXBase):
+            obj_dict = dict(obj)
+            tmp = collections.OrderedDict()
+            props = obj.object_properties()
+            for prop in props:
+                if prop in obj_dict:
+                    tmp[prop] = obj_dict[prop]
+            return tmp
+        elif isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
-        elif isinstance(obj, _STIXBase):
-            return dict(obj)
         else:
             return super(STIXJSONIncludeOptionalDefaultsEncoder, self).default(obj)
 
@@ -273,10 +282,7 @@ class _STIXBase(collections.Mapping):
             overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
         """
         if pretty:
-            def sort_by(element):
-                return find_property_index(self, *element)
-
-            kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
+            kwargs.update({'indent': 4, 'separators': (',', ': ')})
 
         if include_optional_defaults:
             return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
