@@ -22,6 +22,14 @@ __all__ = ['STIXJSONEncoder', '_STIXBase']
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 
 
+def _sort_key(elem):
+    key = elem[0]
+    try:
+        return int(key)
+    except ValueError:
+        return key
+
+
 class STIXJSONEncoder(json.JSONEncoder):
     """Custom JSONEncoder subclass for serializing Python ``stix2`` objects.
 
@@ -36,9 +44,33 @@ class STIXJSONEncoder(json.JSONEncoder):
             obj_dict = dict(obj)
             props = obj.object_properties()
             tmp = collections.OrderedDict()
+            dicts_queue = collections.deque()
             for prop in props:
                 if prop in obj_dict and prop not in obj._defaulted_optional_properties:
-                    tmp[prop] = obj_dict[prop]
+                    if isinstance(obj_dict[prop], dict):
+                        od = collections.OrderedDict(sorted(obj_dict[prop].items(), key=_sort_key))
+                        dicts_queue.extend([(k, v, od) for k, v in od.items()])
+                        tmp[prop] = od
+                    elif isinstance(obj_dict[prop], list):
+                        tmp[prop] = obj_dict[prop]
+                        for e in obj_dict[prop]:
+                            if isinstance(e, dict):
+                                i = obj_dict[prop].index(e)
+                                obj_dict[prop][i] = collections.OrderedDict(sorted(e.items(), key=_sort_key))
+                                dicts_queue.extend([(k, v, e) for k, v in e.items()])
+                    else:
+                        tmp[prop] = obj_dict[prop]
+
+            while dicts_queue:
+                k, v, d = dicts_queue.popleft()
+                if isinstance(v, dict):
+                    d[k] = collections.OrderedDict(sorted(v.items(), key=_sort_key))
+                    dicts_queue.extend([(k2, v2, v) for k2, v2 in v.items()])
+                elif isinstance(v, list):
+                    for e in v:
+                        if isinstance(e, dict):
+                            v[v.index(e)] = collections.OrderedDict(sorted(e.items(), key=_sort_key))
+                            dicts_queue.extend([(k2, v2, e) for k2, v2 in e.items()])
             return tmp
         elif isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
@@ -57,11 +89,35 @@ class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, _STIXBase):
             obj_dict = dict(obj)
-            tmp = collections.OrderedDict()
             props = obj.object_properties()
+            tmp = collections.OrderedDict()
+            dicts_queue = collections.deque()
             for prop in props:
                 if prop in obj_dict:
-                    tmp[prop] = obj_dict[prop]
+                    if isinstance(obj_dict[prop], dict):
+                        od = collections.OrderedDict(sorted(obj_dict[prop].items(), key=_sort_key))
+                        dicts_queue.extend([(k, v, od) for k, v in od.items()])
+                        tmp[prop] = od
+                    elif isinstance(obj_dict[prop], list):
+                        tmp[prop] = obj_dict[prop]
+                        for e in obj_dict[prop]:
+                            if isinstance(e, dict):
+                                i = obj_dict[prop].index(e)
+                                obj_dict[prop][i] = collections.OrderedDict(sorted(e.items(), key=_sort_key))
+                                dicts_queue.extend([(k, v, e) for k, v in e.items()])
+                    else:
+                        tmp[prop] = obj_dict[prop]
+
+            while dicts_queue:
+                k, v, d = dicts_queue.popleft()
+                if isinstance(v, dict):
+                    d[k] = collections.OrderedDict(sorted(v.items(), key=_sort_key))
+                    dicts_queue.extend([(k2, v2, v) for k2, v2 in v.items()])
+                elif isinstance(v, list):
+                    for e in v:
+                        if isinstance(e, dict):
+                            v[v.index(e)] = collections.OrderedDict(sorted(e.items(), key=_sort_key))
+                            dicts_queue.extend([(k2, v2, e) for k2, v2 in e.items()])
             return tmp
         elif isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
