@@ -1,4 +1,16 @@
-"""STIX 2.0 API Objects."""
+"""STIX 2.0 API Objects.
+
+.. autosummary::
+   :toctree: v20
+
+   bundle
+   common
+   observables
+   sdo
+   sro
+
+|
+"""
 
 # flake8: noqa
 
