@@ -443,14 +443,14 @@ def test_filesystem_sink_attempt_stix_file_overwrite(fs_sink, fs_source):
     assert "Georgey" in camp8_r.aliases
 
     # now attempt to overwrite the same file
-    camp9 = stix2.v20.Campaign(
-        name="George Washington",
-        objective="Create an awesome country",
-        aliases=["Georgey"],
-    )
+    # camp9 = stix2.v20.Campaign(
+    #     name="George Washington",
+    #     objective="Create an awesome country",
+    #     aliases=["Georgey"],
+    # )
 
     with pytest.raises(DataSourceError) as excinfo:
-        fs_sink.add(camp9)
+        fs_sink.add(camp8)
     assert "Attempted to overwrite file" in str(excinfo)
 
     os.remove(filepath)
