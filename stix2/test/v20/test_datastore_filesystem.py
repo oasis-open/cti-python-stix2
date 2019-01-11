@@ -421,7 +421,7 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     os.remove(camp7filepath)
 
 
-def test_filesystem_sink_attempt_stix_file_overwrite(fs_sink, fs_source):
+def test_filesystem_attempt_stix_file_overwrite(fs_store):
     # add python stix object
     camp8 = stix2.v20.Campaign(
         name="George Washington",
@@ -429,28 +429,20 @@ def test_filesystem_sink_attempt_stix_file_overwrite(fs_sink, fs_source):
         aliases=["Georgey"],
     )
 
-    fs_sink.add(camp8)
+    fs_store.add(camp8)
+
+    camp8_r = fs_store.get(camp8.id)
+    assert camp8_r.id == camp8_r.id
+    assert camp8_r.name == camp8.name
 
     filepath = os.path.join(
-        FS_PATH, "campaign", camp8.id,
-        _timestamp2filename(camp8.modified) + ".json",
+        FS_PATH, "campaign", camp8_r.id,
+        _timestamp2filename(camp8_r.modified) + ".json",
     )
-    assert os.path.exists(filepath)
 
-    camp8_r = fs_source.get(camp8.id)
-    assert camp8_r.id == camp8.id
-    assert camp8_r.name == "George Washington"
-    assert "Georgey" in camp8_r.aliases
-
-    # now attempt to overwrite the same file
-    # camp9 = stix2.v20.Campaign(
-    #     name="George Washington",
-    #     objective="Create an awesome country",
-    #     aliases=["Georgey"],
-    # )
-
+    # Now attempt to overwrite the existing file
     with pytest.raises(DataSourceError) as excinfo:
-        fs_sink.add(camp8)
+        fs_store.add(camp8)
     assert "Attempted to overwrite file" in str(excinfo)
 
     os.remove(filepath)
