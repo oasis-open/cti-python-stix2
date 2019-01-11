@@ -9,6 +9,7 @@ import pytest
 import pytz
 
 import stix2
+from stix2.datastore import DataSourceError
 from stix2.datastore.filesystem import (
     AuthSet, _find_search_optimizations, _get_matching_dir_entries,
     _timestamp2filename,
@@ -418,6 +419,41 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     # remove all added objects
     os.remove(camp6filepath)
     os.remove(camp7filepath)
+
+
+def test_filesystem_sink_attempt_stix_file_overwrite(fs_sink, fs_source):
+    # add python stix object
+    camp8 = stix2.v20.Campaign(
+        name="George Washington",
+        objective="Create an awesome country",
+        aliases=["Georgey"],
+    )
+
+    fs_sink.add(camp8)
+
+    filepath = os.path.join(
+        FS_PATH, "campaign", camp8.id,
+        _timestamp2filename(camp8.modified) + ".json",
+    )
+    assert os.path.exists(filepath)
+
+    camp8_r = fs_source.get(camp8.id)
+    assert camp8_r.id == camp8.id
+    assert camp8_r.name == "George Washington"
+    assert "Georgey" in camp8_r.aliases
+
+    # now attempt to overwrite the same file
+    camp9 = stix2.v20.Campaign(
+        name="George Washington",
+        objective="Create an awesome country",
+        aliases=["Georgey"],
+    )
+
+    with pytest.raises(DataSourceError) as excinfo:
+        fs_sink.add(camp9)
+    assert "Attempted to overwrite file" in str(excinfo)
+
+    os.remove(filepath)
 
 
 def test_filesystem_sink_marking(fs_sink):
