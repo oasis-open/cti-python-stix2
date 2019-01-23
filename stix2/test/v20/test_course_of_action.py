@@ -20,7 +20,7 @@ EXPECTED = """{
 
 def test_course_of_action_example():
     coa = stix2.v20.CourseOfAction(
-        id="course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        id=COURSE_OF_ACTION_ID,
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
         modified="2016-04-06T20:03:48.000Z",
