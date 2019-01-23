@@ -94,7 +94,7 @@ def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
         EXPECTED_SIGHTING,
         {
             "created": "2016-04-06T20:06:37Z",
-            "id": "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb",
+            "id": SIGHTING_ID,
             "modified": "2016-04-06T20:06:37Z",
             "sighting_of_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
             "type": "sighting",
@@ -111,5 +111,5 @@ def test_parse_sighting(data):
     assert sighting.id == SIGHTING_ID
     assert sighting.created == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
     assert sighting.modified == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
-    assert sighting.sighting_of_ref == "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
+    assert sighting.sighting_of_ref == INDICATOR_ID
     assert sighting.where_sighted_refs == ["identity--8cc7afd6-5455-4d2b-a736-e614ee631d99"]

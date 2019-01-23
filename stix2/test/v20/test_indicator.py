@@ -153,7 +153,7 @@ def test_created_modified_time_are_identical_by_default():
         EXPECTED_INDICATOR,
         {
             "type": "indicator",
-            "id": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "id": INDICATOR_ID,
             "created": "2017-01-01T00:00:01Z",
             "modified": "2017-01-01T00:00:01Z",
             "labels": [

@@ -5,7 +5,7 @@ import pytz
 
 import stix2
 
-from .constants import INTRUSION_SET_ID
+from .constants import IDENTITY_ALT_ID, INTRUSION_SET_ID
 
 EXPECTED = """{
     "type": "intrusion-set",
@@ -28,8 +28,8 @@ EXPECTED = """{
 
 def test_intrusion_set_example():
     intrusion_set = stix2.v20.IntrusionSet(
-        id="intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        id=INTRUSION_SET_ID,
+        created_by_ref=IDENTITY_ALT_ID,
         created="2016-04-06T20:03:48.000Z",
         modified="2016-04-06T20:03:48.000Z",
         name="Bobcat Breakin",
@@ -49,14 +49,14 @@ def test_intrusion_set_example():
                 "Zookeeper",
             ],
             "created": "2016-04-06T20:03:48.000Z",
-            "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            "created_by_ref": IDENTITY_ALT_ID,
             "description": "Incidents usually feature a shared TTP of a bobcat being released...",
             "goals": [
                 "acquisition-theft",
                 "harassment",
                 "damage",
             ],
-            "id": "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",
+            "id": INTRUSION_SET_ID,
             "modified": "2016-04-06T20:03:48.000Z",
             "name": "Bobcat Breakin",
             "type": "intrusion-set",

@@ -3,6 +3,8 @@ import pytest
 import stix2
 from stix2 import core, exceptions
 
+from .constants import IDENTITY_ALT_ID
+
 BUNDLE = {
     "type": "bundle",
     "spec_version": "2.0",
@@ -96,7 +98,7 @@ def test_register_marking_with_no_version():
 def test_register_observable_with_version():
     observed_data = stix2.v20.ObservedData(
         id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ALT_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
@@ -134,7 +136,7 @@ def test_register_observable_with_version():
 def test_register_observable_extension_with_version():
     observed_data = stix2.v20.ObservedData(
         id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ALT_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",

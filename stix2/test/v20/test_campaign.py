@@ -5,7 +5,7 @@ import pytz
 
 import stix2
 
-from .constants import CAMPAIGN_ID, CAMPAIGN_MORE_KWARGS
+from .constants import CAMPAIGN_ID, CAMPAIGN_MORE_KWARGS, IDENTITY_ALT_ID
 
 EXPECTED = """{
     "type": "campaign",
@@ -45,7 +45,7 @@ def test_parse_campaign(data):
     assert cmpn.id == CAMPAIGN_ID
     assert cmpn.created == dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
     assert cmpn.modified == dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
-    assert cmpn.created_by_ref == "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff"
+    assert cmpn.created_by_ref == IDENTITY_ALT_ID
     assert cmpn.description == "Campaign by Green Group against a series of targets in the financial services sector."
     assert cmpn.name == "Green Group Attacks Against Finance"
 
