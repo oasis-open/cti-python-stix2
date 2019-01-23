@@ -26,7 +26,7 @@ EXPECTED = """{
 
 def test_attack_pattern_example():
     ap = stix2.v21.AttackPattern(
-        id="attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+        id=ATTACK_PATTERN_ID,
         created="2016-05-12T08:17:27.000Z",
         modified="2016-05-12T08:17:27.000Z",
         name="Spear Phishing",
@@ -46,7 +46,7 @@ def test_attack_pattern_example():
         {
             "type": "attack-pattern",
             "spec_version": "2.1",
-            "id": "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+            "id": ATTACK_PATTERN_ID,
             "created": "2016-05-12T08:17:27.000Z",
             "modified": "2016-05-12T08:17:27.000Z",
             "description": "...",
@@ -77,11 +77,44 @@ def test_parse_attack_pattern(data):
 def test_attack_pattern_invalid_labels():
     with pytest.raises(stix2.exceptions.InvalidValueError):
         stix2.v21.AttackPattern(
-            id="attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+            id=ATTACK_PATTERN_ID,
             created="2016-05-12T08:17:27Z",
             modified="2016-05-12T08:17:27Z",
             name="Spear Phishing",
             labels=1,
         )
+
+
+def test_overly_precise_timestamps():
+    ap = stix2.v21.AttackPattern(
+        id=ATTACK_PATTERN_ID,
+        created="2016-05-12T08:17:27.0000342Z",
+        modified="2016-05-12T08:17:27.000287Z",
+        name="Spear Phishing",
+        external_references=[{
+            "source_name": "capec",
+            "external_id": "CAPEC-163",
+        }],
+        description="...",
+    )
+
+    assert str(ap) == EXPECTED
+
+
+def test_less_precise_timestamps():
+    ap = stix2.v21.AttackPattern(
+        id=ATTACK_PATTERN_ID,
+        created="2016-05-12T08:17:27.00Z",
+        modified="2016-05-12T08:17:27.0Z",
+        name="Spear Phishing",
+        external_references=[{
+            "source_name": "capec",
+            "external_id": "CAPEC-163",
+        }],
+        description="...",
+    )
+
+    assert str(ap) == EXPECTED
+
 
 # TODO: Add other examples
