@@ -80,7 +80,7 @@ def test_marking_def_example_with_tlp():
 
 def test_marking_def_example_with_statement_positional_argument():
     marking_definition = stix2.v21.MarkingDefinition(
-        id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        id=MARKING_DEFINITION_ID,
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
         definition=stix2.StatementMarking(statement="Copyright 2016, Example Corp"),
@@ -92,7 +92,7 @@ def test_marking_def_example_with_statement_positional_argument():
 def test_marking_def_example_with_kwargs_statement():
     kwargs = dict(statement="Copyright 2016, Example Corp")
     marking_definition = stix2.v21.MarkingDefinition(
-        id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        id=MARKING_DEFINITION_ID,
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
         definition=stix2.StatementMarking(**kwargs),
@@ -104,7 +104,7 @@ def test_marking_def_example_with_kwargs_statement():
 def test_marking_def_invalid_type():
     with pytest.raises(ValueError):
         stix2.v21.MarkingDefinition(
-            id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            id=MARKING_DEFINITION_ID,
             created="2017-01-20T00:00:00.000Z",
             definition_type="my-definition-type",
             definition=stix2.StatementMarking("Copyright 2016, Example Corp"),
@@ -126,7 +126,7 @@ def test_campaign_with_markings_example():
 
 def test_granular_example():
     granular_marking = stix2.v21.GranularMarking(
-        marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        marking_ref=MARKING_DEFINITION_ID,
         selectors=["abc", "abc.[23]", "abc.def", "abc.[2].efg"],
     )
 
@@ -136,7 +136,7 @@ def test_granular_example():
 def test_granular_example_with_bad_selector():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.GranularMarking(
-            marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            marking_ref=MARKING_DEFINITION_ID,
             selectors=["abc[0]"],   # missing "."
         )
 
@@ -156,7 +156,7 @@ def test_campaign_with_granular_markings_example():
         description="Campaign by Green Group against a series of targets in the financial services sector.",
         granular_markings=[
             stix2.v21.GranularMarking(
-                marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+                marking_ref=MARKING_DEFINITION_ID,
                 selectors=["description"],
             ),
         ],
@@ -168,7 +168,7 @@ def test_campaign_with_granular_markings_example():
     "data", [
         EXPECTED_TLP_MARKING_DEFINITION,
         {
-            "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            "id": MARKING_DEFINITION_ID,
             "spec_version": "2.1",
             "type": "marking-definition",
             "created": "2017-01-20T00:00:00Z",

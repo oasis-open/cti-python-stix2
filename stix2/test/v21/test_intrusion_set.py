@@ -29,7 +29,7 @@ EXPECTED = """{
 
 def test_intrusion_set_example():
     intrusion_set = stix2.v21.IntrusionSet(
-        id="intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",
+        id=INTRUSION_SET_ID,
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
         modified="2016-04-06T20:03:48.000Z",
@@ -57,7 +57,7 @@ def test_intrusion_set_example():
                 "harassment",
                 "damage",
             ],
-            "id": "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29",
+            "id": INTRUSION_SET_ID,
             "modified": "2016-04-06T20:03:48.000Z",
             "name": "Bobcat Breakin",
             "spec_version": "2.1",

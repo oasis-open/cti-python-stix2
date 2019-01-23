@@ -84,7 +84,7 @@ def test_note_with_required_properties():
         {
             "type": "note",
             "spec_version": "2.1",
-            "id": "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+            "id": NOTE_ID,
             "created": "2016-05-12T08:17:27.000Z",
             "modified": "2016-05-12T08:17:27.000Z",
             "abstract": "Tracking Team Note#1",
@@ -93,7 +93,7 @@ def test_note_with_required_properties():
                 "John Doe",
             ],
             "object_refs": [
-                "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+                CAMPAIGN_ID,
             ],
             "external_references": [
                 {

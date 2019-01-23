@@ -37,7 +37,7 @@ EXPECTED_WITH_REVOKED = """{
 
 def test_tool_example():
     tool = stix2.v21.Tool(
-        id="tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        id=TOOL_ID,
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
         modified="2016-04-06T20:03:48.000Z",
@@ -54,7 +54,7 @@ def test_tool_example():
         {
             "created": "2016-04-06T20:03:48Z",
             "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
-            "id": "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+            "id": TOOL_ID,
             "tool_types": [
                 "remote-access",
             ],
@@ -86,7 +86,7 @@ def test_tool_no_workbench_wrappers():
 
 def test_tool_serialize_with_defaults():
     tool = stix2.v21.Tool(
-        id="tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        id=TOOL_ID,
         created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
         modified="2016-04-06T20:03:48.000Z",

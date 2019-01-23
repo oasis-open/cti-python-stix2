@@ -5,7 +5,7 @@ import pytz
 
 import stix2
 
-from .constants import IDENTITY_ALT_ID, THREAT_ACTOR_ID
+from .constants import THREAT_ACTOR_ID
 
 EXPECTED = """{
     "type": "threat-actor",
@@ -24,7 +24,7 @@ EXPECTED = """{
 def test_threat_actor_example():
     threat_actor = stix2.v20.ThreatActor(
         id=THREAT_ACTOR_ID,
-        created_by_ref=IDENTITY_ALT_ID,
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         created="2016-04-06T20:03:48.000Z",
         modified="2016-04-06T20:03:48.000Z",
         description="The Evil Org threat actor group",
@@ -40,7 +40,7 @@ def test_threat_actor_example():
         EXPECTED,
         {
             "created": "2016-04-06T20:03:48.000Z",
-            "created_by_ref": IDENTITY_ALT_ID,
+            "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
             "description": "The Evil Org threat actor group",
             "id": THREAT_ACTOR_ID,
             "modified": "2016-04-06T20:03:48.000Z",
@@ -57,7 +57,7 @@ def test_parse_threat_actor(data):
     assert actor.id == THREAT_ACTOR_ID
     assert actor.created == dt.datetime(2016, 4, 6, 20, 3, 48, tzinfo=pytz.utc)
     assert actor.modified == dt.datetime(2016, 4, 6, 20, 3, 48, tzinfo=pytz.utc)
-    assert actor.created_by_ref == IDENTITY_ALT_ID
+    assert actor.created_by_ref == "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff"
     assert actor.description == "The Evil Org threat actor group"
     assert actor.name == "Evil Org"
     assert actor.labels == ["crime-syndicate"]
