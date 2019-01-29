@@ -6,7 +6,7 @@ import pytz
 
 import stix2
 
-from .constants import OBSERVED_DATA_ID
+from .constants import IDENTITY_ID, OBSERVED_DATA_ID
 
 OBJECTS_REGEX = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL)
 
@@ -14,7 +14,7 @@ OBJECTS_REGEX = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}',
 EXPECTED = """{
     "type": "observed-data",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T19:58:16.000Z",
     "modified": "2016-04-06T19:58:16.000Z",
     "first_observed": "2015-12-21T19:00:00Z",
@@ -32,7 +32,7 @@ EXPECTED = """{
 def test_observed_data_example():
     observed_data = stix2.v20.ObservedData(
         id=OBSERVED_DATA_ID,
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
@@ -52,7 +52,7 @@ def test_observed_data_example():
 EXPECTED_WITH_REF = """{
     "type": "observed-data",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T19:58:16.000Z",
     "modified": "2016-04-06T19:58:16.000Z",
     "first_observed": "2015-12-21T19:00:00Z",
@@ -77,7 +77,7 @@ EXPECTED_WITH_REF = """{
 def test_observed_data_example_with_refs():
     observed_data = stix2.v20.ObservedData(
         id=OBSERVED_DATA_ID,
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
@@ -103,7 +103,7 @@ def test_observed_data_example_with_bad_refs():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v20.ObservedData(
             id=OBSERVED_DATA_ID,
-            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created_by_ref=IDENTITY_ID,
             created="2016-04-06T19:58:16.000Z",
             modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
@@ -131,7 +131,7 @@ def test_observed_data_example_with_non_dictionary():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v20.ObservedData(
             id=OBSERVED_DATA_ID,
-            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created_by_ref=IDENTITY_ID,
             created="2016-04-06T19:58:16.000Z",
             modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
@@ -149,7 +149,7 @@ def test_observed_data_example_with_empty_dictionary():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v20.ObservedData(
             id=OBSERVED_DATA_ID,
-            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created_by_ref=IDENTITY_ID,
             created="2016-04-06T19:58:16.000Z",
             modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
@@ -170,7 +170,7 @@ def test_observed_data_example_with_empty_dictionary():
             "type": "observed-data",
             "id": OBSERVED_DATA_ID,
             "created": "2016-04-06T19:58:16.000Z",
-            "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            "created_by_ref": IDENTITY_ID,
             "first_observed": "2015-12-21T19:00:00Z",
             "last_observed": "2015-12-21T19:00:00Z",
             "modified": "2016-04-06T19:58:16.000Z",
@@ -193,7 +193,7 @@ def test_parse_observed_data(data):
     assert odata.modified == dt.datetime(2016, 4, 6, 19, 58, 16, tzinfo=pytz.utc)
     assert odata.first_observed == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert odata.last_observed == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert odata.created_by_ref == "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff"
+    assert odata.created_by_ref == IDENTITY_ID
     assert odata.objects["0"].type == "file"
 
 
@@ -533,7 +533,7 @@ def test_parse_basic_tcp_traffic_with_error(data):
 
 EXPECTED_PROCESS_OD = """{
     "created": "2016-04-06T19:58:16.000Z",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "first_observed": "2015-12-21T19:00:00Z",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
     "last_observed": "2015-12-21T19:00:00Z",
@@ -564,7 +564,7 @@ EXPECTED_PROCESS_OD = """{
 def test_observed_data_with_process_example():
     observed_data = stix2.v20.ObservedData(
         id=OBSERVED_DATA_ID,
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
