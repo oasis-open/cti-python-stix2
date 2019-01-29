@@ -69,7 +69,7 @@ def test_location_with_some_required_properties():
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "region": "north-america",
@@ -94,7 +94,7 @@ def test_parse_location(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 90.01,
@@ -103,7 +103,7 @@ def test_parse_location(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": -90.1,
@@ -123,7 +123,7 @@ def test_location_bad_latitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 80,
@@ -132,7 +132,7 @@ def test_location_bad_latitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 80,
@@ -152,7 +152,7 @@ def test_location_bad_longitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "longitude": 175.7,
@@ -161,7 +161,7 @@ def test_location_bad_longitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 80,
@@ -181,7 +181,7 @@ def test_location_properties_missing_when_precision_is_present(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 18.468842,
@@ -203,7 +203,7 @@ def test_location_negative_precision(data):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "latitude": 18.468842,
@@ -215,7 +215,7 @@ def test_location_negative_precision(data):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "longitude": 160.7,
@@ -238,7 +238,7 @@ def test_location_latitude_dependency_missing(data, msg):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "latitude": 18.468842,
@@ -249,7 +249,7 @@ def test_location_latitude_dependency_missing(data, msg):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "longitude": 160.7,

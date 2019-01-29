@@ -275,13 +275,13 @@ def test_memory_store_object_creator_of_present(mem_store):
     camp = Campaign(
         name="Scipio Africanus",
         objective="Defeat the Carthaginians",
-        created_by_ref="identity--e4196283-7420-4277-a7a3-d57f61ef1389",
+        created_by_ref=IDENTITY_ID,
         x_empire="Roman",
         allow_custom=True,
     )
 
     iden = Identity(
-        id="identity--e4196283-7420-4277-a7a3-d57f61ef1389",
+        id=IDENTITY_ID,
         name="Foo Corp.",
         identity_class="corporation",
     )
