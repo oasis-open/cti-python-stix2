@@ -420,7 +420,7 @@ class CompositeDataSource(DataSource):
     """Controller for all the attached DataSources.
 
     A user can have a single CompositeDataSource as an interface
-    the a set of DataSources. When an API call is made to the
+    to a set of DataSources. When an API call is made to the
     CompositeDataSource, it is delegated to each of the (real)
     DataSources that are attached to it.
 
