@@ -4,6 +4,8 @@ from stix2 import parse
 from stix2.datastore.filters import Filter, apply_common_filters
 from stix2.utils import STIXdatetime, parse_into_datetime
 
+from .constants import OBSERVED_DATA_ID
+
 stix_objs = [
     {
         "created": "2017-01-27T13:49:53.997Z",
@@ -72,7 +74,7 @@ stix_objs = [
     {
         "type": "observed-data",
         "spec_version": "2.1",
-        "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+        "id": OBSERVED_DATA_ID,
         "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         "created": "2016-04-06T19:58:16.000Z",
         "modified": "2016-04-06T19:58:16.000Z",
@@ -444,7 +446,7 @@ def test_filters7(stix_objs2, real_stix_objs2):
     obsvd_data_obj = {
         "type": "observed-data",
         "spec_version": "2.1",
-        "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+        "id": OBSERVED_DATA_ID,
         "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
         "created": "2016-04-06T19:58:16.000Z",
         "modified": "2016-04-06T19:58:16.000Z",

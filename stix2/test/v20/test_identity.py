@@ -19,7 +19,7 @@ EXPECTED = """{
 
 def test_identity_example():
     identity = stix2.v20.Identity(
-        id="identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+        id=IDENTITY_ID,
         created="2015-12-21T19:59:11.000Z",
         modified="2015-12-21T19:59:11.000Z",
         name="John Smith",
@@ -34,7 +34,7 @@ def test_identity_example():
         EXPECTED,
         {
             "created": "2015-12-21T19:59:11.000Z",
-            "id": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+            "id": IDENTITY_ID,
             "identity_class": "individual",
             "modified": "2015-12-21T19:59:11.000Z",
             "name": "John Smith",

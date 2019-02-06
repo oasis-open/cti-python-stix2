@@ -142,12 +142,12 @@ def test_create_relationship_with_positional_args(indicator, malware):
         EXPECTED_RELATIONSHIP,
         {
             "created": "2016-04-06T20:06:37Z",
-            "id": "relationship--df7c87eb-75d2-4948-af81-9d49d246f301",
+            "id": RELATIONSHIP_ID,
             "modified": "2016-04-06T20:06:37Z",
-            "relationship_type": "indicates",
-            "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
-            "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
             "type": "relationship",
+            "relationship_type": "indicates",
+            "source_ref": INDICATOR_ID,
+            "target_ref": MALWARE_ID,
         },
     ],
 )
@@ -159,5 +159,5 @@ def test_parse_relationship(data):
     assert rel.created == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
     assert rel.modified == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
     assert rel.relationship_type == "indicates"
-    assert rel.source_ref == "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
-    assert rel.target_ref == "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
+    assert rel.source_ref == INDICATOR_ID
+    assert rel.target_ref == MALWARE_ID

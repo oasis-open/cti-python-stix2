@@ -5,13 +5,16 @@ import pytz
 
 import stix2
 
-from .constants import INDICATOR_KWARGS, REPORT_ID
+from .constants import (
+    CAMPAIGN_ID, IDENTITY_ID, INDICATOR_ID, INDICATOR_KWARGS, RELATIONSHIP_ID,
+    REPORT_ID,
+)
 
 EXPECTED = """{
     "type": "report",
     "spec_version": "2.1",
     "id": "report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
-    "created_by_ref": "identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2015-12-21T19:59:11.000Z",
     "modified": "2015-12-21T19:59:11.000Z",
     "name": "The Black Vine Cyberespionage Group",
@@ -21,17 +24,17 @@ EXPECTED = """{
     ],
     "published": "2016-01-20T17:00:00Z",
     "object_refs": [
-        "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
-        "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-        "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a"
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+        "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        "relationship--df7c87eb-75d2-4948-af81-9d49d246f301"
     ]
 }"""
 
 
 def test_report_example():
     report = stix2.v21.Report(
-        id="report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
-        created_by_ref="identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283",
+        id=REPORT_ID,
+        created_by_ref=IDENTITY_ID,
         created="2015-12-21T19:59:11.000Z",
         modified="2015-12-21T19:59:11.000Z",
         name="The Black Vine Cyberespionage Group",
@@ -39,9 +42,9 @@ def test_report_example():
         published="2016-01-20T17:00:00Z",
         report_types=["campaign"],
         object_refs=[
-            "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
-            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+            INDICATOR_ID,
+            CAMPAIGN_ID,
+            RELATIONSHIP_ID,
         ],
     )
 
@@ -50,8 +53,8 @@ def test_report_example():
 
 def test_report_example_objects_in_object_refs():
     report = stix2.v21.Report(
-        id="report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
-        created_by_ref="identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283",
+        id=REPORT_ID,
+        created_by_ref=IDENTITY_ID,
         created="2015-12-21T19:59:11.000Z",
         modified="2015-12-21T19:59:11.000Z",
         name="The Black Vine Cyberespionage Group",
@@ -59,9 +62,9 @@ def test_report_example_objects_in_object_refs():
         published="2016-01-20T17:00:00Z",
         report_types=["campaign"],
         object_refs=[
-            stix2.v21.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
-            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+            stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS),
+            CAMPAIGN_ID,
+            RELATIONSHIP_ID,
         ],
     )
 
@@ -71,8 +74,8 @@ def test_report_example_objects_in_object_refs():
 def test_report_example_objects_in_object_refs_with_bad_id():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Report(
-            id="report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
-            created_by_ref="identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283",
+            id=REPORT_ID,
+            created_by_ref=IDENTITY_ID,
             created="2015-12-21T19:59:11.000Z",
             modified="2015-12-21T19:59:11.000Z",
             name="The Black Vine Cyberespionage Group",
@@ -80,9 +83,9 @@ def test_report_example_objects_in_object_refs_with_bad_id():
             published="2016-01-20T17:00:00Z",
             report_types=["campaign"],
             object_refs=[
-                stix2.v21.Indicator(id="indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2", **INDICATOR_KWARGS),
+                stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS),
                 "campaign-83422c77-904c-4dc1-aff5-5c38f3a2c55c",   # the "bad" id, missing a "-"
-                "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+                RELATIONSHIP_ID,
             ],
         )
 
@@ -97,18 +100,18 @@ def test_report_example_objects_in_object_refs_with_bad_id():
         EXPECTED,
         {
             "created": "2015-12-21T19:59:11.000Z",
-            "created_by_ref": "identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283",
+            "created_by_ref": IDENTITY_ID,
             "description": "A simple report with an indicator and campaign",
-            "id": "report--84e4d88f-44ea-4bcd-bbf3-b2c1c320bcb3",
+            "id": REPORT_ID,
             "report_types": [
                 "campaign",
             ],
             "modified": "2015-12-21T19:59:11.000Z",
             "name": "The Black Vine Cyberespionage Group",
             "object_refs": [
-                "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
-                "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-                "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+                INDICATOR_ID,
+                CAMPAIGN_ID,
+                RELATIONSHIP_ID,
             ],
             "published": "2016-01-20T17:00:00Z",
             "spec_version": "2.1",
@@ -124,11 +127,11 @@ def test_parse_report(data):
     assert rept.id == REPORT_ID
     assert rept.created == dt.datetime(2015, 12, 21, 19, 59, 11, tzinfo=pytz.utc)
     assert rept.modified == dt.datetime(2015, 12, 21, 19, 59, 11, tzinfo=pytz.utc)
-    assert rept.created_by_ref == "identity--a463ffb3-1bd9-4d94-b02d-74e4f1658283"
+    assert rept.created_by_ref == IDENTITY_ID
     assert rept.object_refs == [
-        "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
-        "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-        "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+        INDICATOR_ID,
+        CAMPAIGN_ID,
+        RELATIONSHIP_ID,
     ]
     assert rept.description == "A simple report with an indicator and campaign"
     assert rept.report_types == ["campaign"]

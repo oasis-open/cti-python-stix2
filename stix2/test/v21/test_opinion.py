@@ -66,7 +66,7 @@ def test_opinion_with_required_properties():
         {
             "type": "opinion",
             "spec_version": "2.1",
-            "id": "opinion--b01efc25-77b4-4003-b18b-f6e24b5cd9f7",
+            "id": OPINION_ID,
             "created": "2016-05-12T08:17:27.000Z",
             "modified": "2016-05-12T08:17:27.000Z",
             "explanation": EXPLANATION,

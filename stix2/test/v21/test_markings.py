@@ -6,7 +6,7 @@ import pytz
 import stix2
 from stix2.v21 import TLP_WHITE
 
-from .constants import MARKING_DEFINITION_ID
+from .constants import IDENTITY_ID, MARKING_DEFINITION_ID
 
 EXPECTED_TLP_MARKING_DEFINITION = """{
     "type": "marking-definition",
@@ -34,7 +34,7 @@ EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING = """{
     "type": "campaign",
     "spec_version": "2.1",
     "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T20:03:00.000Z",
     "modified": "2016-04-06T20:03:00.000Z",
     "name": "Green Group Attacks Against Finance",
@@ -58,7 +58,7 @@ EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
     "type": "campaign",
     "spec_version": "2.1",
     "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T20:03:00.000Z",
     "modified": "2016-04-06T20:03:00.000Z",
     "name": "Green Group Attacks Against Finance",
@@ -80,7 +80,7 @@ def test_marking_def_example_with_tlp():
 
 def test_marking_def_example_with_statement_positional_argument():
     marking_definition = stix2.v21.MarkingDefinition(
-        id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        id=MARKING_DEFINITION_ID,
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
         definition=stix2.StatementMarking(statement="Copyright 2016, Example Corp"),
@@ -92,7 +92,7 @@ def test_marking_def_example_with_statement_positional_argument():
 def test_marking_def_example_with_kwargs_statement():
     kwargs = dict(statement="Copyright 2016, Example Corp")
     marking_definition = stix2.v21.MarkingDefinition(
-        id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        id=MARKING_DEFINITION_ID,
         created="2017-01-20T00:00:00.000Z",
         definition_type="statement",
         definition=stix2.StatementMarking(**kwargs),
@@ -104,7 +104,7 @@ def test_marking_def_example_with_kwargs_statement():
 def test_marking_def_invalid_type():
     with pytest.raises(ValueError):
         stix2.v21.MarkingDefinition(
-            id="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            id=MARKING_DEFINITION_ID,
             created="2017-01-20T00:00:00.000Z",
             definition_type="my-definition-type",
             definition=stix2.StatementMarking("Copyright 2016, Example Corp"),
@@ -114,7 +114,7 @@ def test_marking_def_invalid_type():
 def test_campaign_with_markings_example():
     campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T20:03:00Z",
         modified="2016-04-06T20:03:00Z",
         name="Green Group Attacks Against Finance",
@@ -126,7 +126,7 @@ def test_campaign_with_markings_example():
 
 def test_granular_example():
     granular_marking = stix2.v21.GranularMarking(
-        marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+        marking_ref=MARKING_DEFINITION_ID,
         selectors=["abc", "abc.[23]", "abc.def", "abc.[2].efg"],
     )
 
@@ -136,7 +136,7 @@ def test_granular_example():
 def test_granular_example_with_bad_selector():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.GranularMarking(
-            marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            marking_ref=MARKING_DEFINITION_ID,
             selectors=["abc[0]"],   # missing "."
         )
 
@@ -149,14 +149,14 @@ def test_granular_example_with_bad_selector():
 def test_campaign_with_granular_markings_example():
     campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T20:03:00Z",
         modified="2016-04-06T20:03:00Z",
         name="Green Group Attacks Against Finance",
         description="Campaign by Green Group against a series of targets in the financial services sector.",
         granular_markings=[
             stix2.v21.GranularMarking(
-                marking_ref="marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+                marking_ref=MARKING_DEFINITION_ID,
                 selectors=["description"],
             ),
         ],
@@ -168,7 +168,7 @@ def test_campaign_with_granular_markings_example():
     "data", [
         EXPECTED_TLP_MARKING_DEFINITION,
         {
-            "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            "id": MARKING_DEFINITION_ID,
             "spec_version": "2.1",
             "type": "marking-definition",
             "created": "2017-01-20T00:00:00Z",
@@ -265,7 +265,7 @@ def test_marking_wrong_type_construction():
 def test_campaign_add_markings():
     campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T20:03:00Z",
         modified="2016-04-06T20:03:00Z",
         name="Green Group Attacks Against Finance",
