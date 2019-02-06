@@ -3,6 +3,8 @@
 from collections import OrderedDict
 import itertools
 
+from six.moves.urllib.parse import quote_plus
+
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
 from ..properties import (
@@ -262,6 +264,30 @@ class Location(STIXDomainObject):
 
         self._check_properties_dependency(['latitude'], ['longitude'])
         self._check_properties_dependency(['longitude'], ['latitude'])
+
+    def to_maps_url(self, map_engine="Google Maps"):
+        params = []
+        if self.get('latitude') is not None and self.get('longitude') is not None:
+            latitude = self.get('latitude')
+            longitude = self.get('longitude')
+            params.extend([str(latitude), str(longitude)])
+        else:
+            properties = ['street_address', 'city', 'region', 'administrative_area', 'country', 'postal_code']
+            params = [self.get(prop) for prop in properties if self.get(prop) is not None]
+
+        return self._to_maps_url_creator(map_engine, params)
+
+    def _to_maps_url_creator(self, map_engine, params):
+        if map_engine == "Google Maps":
+            url_base = "https://www.google.com/maps/search/?api=1&query="
+            url_ending = params[0]
+            for i in range(1, len(params)):
+                url_ending = url_ending + "," + params[i]
+
+            final_url = url_base + quote_plus(url_ending)
+            return final_url
+        else:
+            return "Other map engines are not currently supported."
 
 
 class Malware(STIXDomainObject):
