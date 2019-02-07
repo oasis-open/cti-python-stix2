@@ -267,12 +267,13 @@ class Location(STIXDomainObject):
 
     def to_maps_url(self, map_engine="Google Maps"):
         params = []
-        if self.get('latitude') is not None and self.get('longitude') is not None:
-            latitude = self.get('latitude')
-            longitude = self.get('longitude')
+
+        latitude = self.get('latitude', None)
+        longitude = self.get('longitude', None)
+        if latitude is not None and longitude is not None:
             params.extend([str(latitude), str(longitude)])
         else:
-            properties = ['street_address', 'city', 'region', 'administrative_area', 'country', 'postal_code']
+            properties = ['street_address', 'city', 'country', 'region', 'administrative_area', 'postal_code']
             params = [self.get(prop) for prop in properties if self.get(prop) is not None]
 
         return self._to_maps_url_creator(map_engine, params)
@@ -287,7 +288,7 @@ class Location(STIXDomainObject):
             final_url = url_base + quote_plus(url_ending)
             return final_url
         else:
-            return "Other map engines are not currently supported."
+            raise ValueError(map_engine + " is not a valid or currently-supported map engine")
 
 
 class Malware(STIXDomainObject):
