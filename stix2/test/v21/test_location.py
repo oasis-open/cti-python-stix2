@@ -50,7 +50,6 @@ def test_location_with_some_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
 
     loc = stix2.v21.Location(
-        type="location",
         id=LOCATION_ID,
         created=now,
         modified=now,
@@ -266,24 +265,19 @@ def test_location_lat_or_lon_dependency_missing(data, msg):
 
 
 def test_google_map_url_long_lat_provided():
-    EXPECTED_URL = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
-    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
+    expected_url = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
 
     loc = stix2.v21.Location(
-        type="location",
-        id=LOCATION_ID,
-        created=now,
-        modified=now,
         latitude=41.862401,
         longitude=-87.616001,
     )
 
     loc_url = loc.to_maps_url()
-    assert loc_url == EXPECTED_URL
+    assert loc_url == expected_url
 
 
 def test_google_map_url_multiple_props_no_long_lat_provided():
-    EXPECTED_URL = "https://www.google.com/maps/search/?api=1&query=1410+Museum+Campus+Drive%2C+Chicago%2C+IL+60605%2CUnited+States+of+America%2CNorth+America"
+    expected_url = "https://www.google.com/maps/search/?api=1&query=1410+Museum+Campus+Drive%2C+Chicago%2C+IL+60605%2CUnited+States+of+America%2CNorth+America"
     now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
 
     loc = stix2.v21.Location(
@@ -297,18 +291,13 @@ def test_google_map_url_multiple_props_no_long_lat_provided():
     )
 
     loc_url = loc.to_maps_url()
-    assert loc_url == EXPECTED_URL
+    assert loc_url == expected_url
 
 
 def test_google_map_url_multiple_props_and_long_lat_provided():
-    EXPECTED_URL = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
-    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
+    expected_url = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
 
     loc = stix2.v21.Location(
-        type="location",
-        id=LOCATION_ID,
-        created=now,
-        modified=now,
         region="North America",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
@@ -317,17 +306,11 @@ def test_google_map_url_multiple_props_and_long_lat_provided():
     )
 
     loc_url = loc.to_maps_url()
-    assert loc_url == EXPECTED_URL
+    assert loc_url == expected_url
 
 
 def test_map_url_invalid_map_engine_provided():
-    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
-
     loc = stix2.v21.Location(
-        type="location",
-        id=LOCATION_ID,
-        created=now,
-        modified=now,
         latitude=41.862401,
         longitude=-87.616001,
     )
@@ -339,49 +322,34 @@ def test_map_url_invalid_map_engine_provided():
 
 
 def test_bing_map_url_long_lat_provided():
-    EXPECTED_URL = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
-    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
+    expected_url = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
 
     loc = stix2.v21.Location(
-        type="location",
-        id=LOCATION_ID,
-        created=now,
-        modified=now,
         latitude=41.862401,
         longitude=-87.616001,
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
-    assert loc_url == EXPECTED_URL
+    assert loc_url == expected_url
 
 
 def test_bing_map_url_multiple_props_no_long_lat_provided():
-    EXPECTED_URL = "https://bing.com/maps/default.aspx?where1=1410+Museum+Campus+Drive%2C+Chicago%2C+IL+60605%2CUnited+States+of+America%2CNorth+America&lvl=16"
-    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
+    expected_url = "https://bing.com/maps/default.aspx?where1=1410+Museum+Campus+Drive%2C+Chicago%2C+IL+60605%2CUnited+States+of+America%2CNorth+America&lvl=16"
 
     loc = stix2.v21.Location(
-        type="location",
-        id=LOCATION_ID,
-        created=now,
-        modified=now,
         region="North America",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
-    assert loc_url == EXPECTED_URL
+    assert loc_url == expected_url
 
 
 def test_bing_map_url_multiple_props_and_long_lat_provided():
-    EXPECTED_URL = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
-    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
+    expected_url = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
 
     loc = stix2.v21.Location(
-        type="location",
-        id=LOCATION_ID,
-        created=now,
-        modified=now,
         region="North America",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
@@ -390,4 +358,4 @@ def test_bing_map_url_multiple_props_and_long_lat_provided():
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
-    assert loc_url == EXPECTED_URL
+    assert loc_url == expected_url
