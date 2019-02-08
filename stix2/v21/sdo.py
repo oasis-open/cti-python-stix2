@@ -276,19 +276,33 @@ class Location(STIXDomainObject):
             properties = ['street_address', 'city', 'country', 'region', 'administrative_area', 'postal_code']
             params = [self.get(prop) for prop in properties if self.get(prop) is not None]
 
-        return self._to_maps_url_creator(map_engine, params)
+        return self._to_maps_url_dispatcher(map_engine, params)
 
-    def _to_maps_url_creator(self, map_engine, params):
+    def _to_maps_url_dispatcher(self, map_engine, params):
         if map_engine == "Google Maps":
-            url_base = "https://www.google.com/maps/search/?api=1&query="
-            url_ending = params[0]
-            for i in range(1, len(params)):
-                url_ending = url_ending + "," + params[i]
-
-            final_url = url_base + quote_plus(url_ending)
-            return final_url
+            return self._to_google_maps_url(params)
+        elif map_engine == "Bing Maps":
+            return self._to_bing_maps_url(params)
         else:
             raise ValueError(map_engine + " is not a valid or currently-supported map engine")
+
+    def _to_google_maps_url(self, params):
+        url_base = "https://www.google.com/maps/search/?api=1&query="
+        url_ending = params[0]
+        for i in range(1, len(params)):
+            url_ending = url_ending + "," + params[i]
+
+        final_url = url_base + quote_plus(url_ending)
+        return final_url
+
+    def _to_bing_maps_url(self, params):
+        url_base = "https://bing.com/maps/default.aspx?where1="
+        url_ending = params[0]
+        for i in range(1, len(params)):
+            url_ending = url_ending + "," + params[i]
+
+        final_url = url_base + quote_plus(url_ending) + "&lvl=16"   # level 16 zoom so long/lat searches shown more clearly
+        return final_url
 
 
 class Malware(STIXDomainObject):
