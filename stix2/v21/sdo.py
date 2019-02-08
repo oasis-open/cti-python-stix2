@@ -266,6 +266,17 @@ class Location(STIXDomainObject):
         self._check_properties_dependency(['longitude'], ['latitude'])
 
     def to_maps_url(self, map_engine="Google Maps"):
+        """Return URL to this location in an online map engine.
+
+        Google Maps is the default, but Bing maps are also supported.
+
+        Args:
+            map_engine (str): Which map engine to find the location in
+
+        Returns:
+            The URL of the location in the given map engine.
+
+        """
         params = []
 
         latitude = self.get('latitude', None)
