@@ -150,7 +150,7 @@ class ListProperty(Property):
 
             if type(self.contained) is EmbeddedObjectProperty:
                 obj_type = self.contained.type
-            elif type(self.contained).__name__ is "STIXObjectProperty":
+            elif type(self.contained).__name__ == "STIXObjectProperty":
                 # ^ this way of checking doesn't require a circular import
                 # valid is already an instance of a python-stix2 class; no need
                 # to turn it into a dictionary and then pass it to the class
