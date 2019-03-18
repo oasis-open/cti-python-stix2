@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.1.2 - 2019-02-13
+
+* #86 Adds helper function to Location objects to generate a URL to the location in an online map engine.
+
 1.1.1 - 2019-01-11
 
 * #234 Update documentation structure to better navigate between v20/v21 objects
