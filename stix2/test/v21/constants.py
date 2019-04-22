@@ -31,6 +31,12 @@ MARKING_IDS = [
     "marking-definition--68520ae2-fefe-43a9-84ee-2c2a934d2c7d",
     "marking-definition--2802dfb1-1019-40a8-8848-68d0ec0e417f",
 ]
+MARKING_LANGS = [
+    "en",
+    "es",
+    "de",
+    "ja",
+]
 RELATIONSHIP_IDS = [
     'relationship--06520621-5352-4e6a-b976-e8fa3d437ffd',
     'relationship--181c9c09-43e6-45dd-9374-3bec192f05ef',

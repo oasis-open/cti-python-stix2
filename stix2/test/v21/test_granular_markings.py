@@ -5,7 +5,7 @@ from stix2.exceptions import MarkingNotFoundError
 from stix2.v21 import TLP_RED, Malware
 
 from .constants import MALWARE_MORE_KWARGS as MALWARE_KWARGS_CONST
-from .constants import MARKING_IDS
+from .constants import MARKING_IDS, MARKING_LANGS
 
 """Tests for the Data Markings API."""
 
@@ -106,6 +106,37 @@ def test_add_marking_mark_multiple_selector_multiple_refs():
         **MALWARE_KWARGS
     )
     before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "name"])
+
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
+
+
+def test_add_marking_mark_multiple_selector_multiple_refs_mixed():
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description", "name"],
+                "marking_ref": MARKING_IDS[0],
+            },
+            {
+                "selectors": ["description", "name"],
+                "marking_ref": MARKING_IDS[1],
+            },
+            {
+                "selectors": ["description", "name"],
+                "lang": MARKING_LANGS[0],
+            },
+            {
+                "selectors": ["description", "name"],
+                "lang": MARKING_LANGS[1],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1], MARKING_LANGS[0], MARKING_LANGS[1]], ["description", "name"])
 
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
@@ -376,6 +407,98 @@ def test_get_markings_positional_arguments_combinations(data):
     assert set(markings.get_markings(data, "x.z.foo2", False, True)) == set(["10"])
 
 
+GET_MARKINGS_TEST_DATA_LANGS = {
+    "a": 333,
+    "b": "value",
+    "c": [
+        17,
+        "list value",
+        {
+            "g": "nested",
+            "h": 45,
+        },
+    ],
+    "x": {
+        "y": [
+            "hello",
+            88,
+        ],
+        "z": {
+            "foo1": "bar",
+            "foo2": 65,
+        },
+    },
+    "granular_markings": [
+        {
+            "marking_ref": "m1",
+            "selectors": ["a"],
+        },
+        {
+            "marking_ref": "m2",
+            "selectors": ["c"],
+        },
+        {
+            "marking_ref": "m3",
+            "selectors": ["c.[1]"],
+        },
+        {
+            "marking_ref": "m4",
+            "selectors": ["c.[2]"],
+        },
+        {
+            "marking_ref": "m5",
+            "selectors": ["c.[2].g"],
+        },
+        {
+            "marking_ref": "m6",
+            "selectors": ["x"],
+        },
+        {
+            "lang": "l7",
+            "selectors": ["x.y"],
+        },
+        {
+            "marking_ref": "m8",
+            "selectors": ["x.y.[1]"],
+        },
+        {
+            "lang": "l9",
+            "selectors": ["x.z"],
+        },
+        {
+            "marking_ref": "m9",
+            "selectors": ["x.z"],
+        },
+        {
+            "marking_ref": "m10",
+            "selectors": ["x.z.foo2"],
+        },
+    ],
+}
+
+
+@pytest.mark.parametrize("data", [GET_MARKINGS_TEST_DATA_LANGS])
+def test_get_markings_multiple_selectors(data):
+    """Test multiple selectors return combination of markings."""
+    total = markings.get_markings(data, ["x.y", "x.z"])
+    xy_markings = markings.get_markings(data, ["x.y"])
+    xz_markings = markings.get_markings(data, ["x.z"])
+
+    assert set(xy_markings).issubset(total)
+    assert set(xz_markings).issubset(total)
+    assert set(xy_markings).union(xz_markings).issuperset(total)
+
+
+@pytest.mark.parametrize("data", [GET_MARKINGS_TEST_DATA_LANGS])
+def test_get_markings_multiple_selectors_with_options(data):
+    """Test multiple selectors return combination of markings."""
+    total = markings.get_markings(data, ["x.y", "x.z"], lang=False)
+    xz_markings = markings.get_markings(data, ["x.z"], marking_ref=False)
+
+    assert len(total) == 1
+    assert len(xz_markings) == 1
+
+
 @pytest.mark.parametrize(
     "data", [
         (
@@ -451,6 +574,38 @@ def test_remove_marking_mark_one_selector_from_multiple_ones():
         **MALWARE_KWARGS
     )
     before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
+
+
+def test_remove_marking_mark_one_selector_from_multiple_ones_mixed():
+    after = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "marking_ref": MARKING_IDS[0],
+            },
+            {
+                "selectors": ["description"],
+                "lang": MARKING_LANGS[0],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    before = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[0],
+            },
+            {
+                "selectors": ["description", "modified"],
+                "lang": MARKING_LANGS[0],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_LANGS[0]], ["modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 
@@ -592,6 +747,10 @@ IS_MARKED_TEST_DATA = [
                 "selectors": ["malware_types", "description"],
                 "marking_ref": MARKING_IDS[3],
             },
+            {
+                "selectors": ["name"],
+                "lang": MARKING_LANGS[1],
+            },
         ],
         **MALWARE_KWARGS
     ),
@@ -609,6 +768,10 @@ IS_MARKED_TEST_DATA = [
                 "selectors": ["malware_types", "description"],
                 "marking_ref": MARKING_IDS[3],
             },
+            {
+                "selectors": ["name"],
+                "lang": MARKING_LANGS[1],
+            },
         ],
         **MALWARE_KWARGS
     ),
@@ -620,6 +783,7 @@ def test_is_marked_smoke(data):
     """Smoke test is_marked call does not fail."""
     assert markings.is_marked(data, selectors=["description"])
     assert markings.is_marked(data, selectors=["modified"]) is False
+    assert markings.is_marked(data, selectors=["name"])
 
 
 @pytest.mark.parametrize(
@@ -666,6 +830,7 @@ def test_is_marked_valid_selector_and_refs(data):
     """Test that a valid selector returns True when marking_refs match."""
     assert markings.is_marked(data, [MARKING_IDS[1]], ["description"])
     assert markings.is_marked(data, [MARKING_IDS[1]], ["modified"]) is False
+    assert markings.is_marked(data, [MARKING_LANGS[1]], ["name"])
 
 
 @pytest.mark.parametrize("data", IS_MARKED_TEST_DATA)
@@ -870,6 +1035,28 @@ def test_set_marking_mark_one_selector_multiple_refs():
         assert m in after["granular_markings"]
 
 
+def test_set_marking_mark_one_selector_multiple_lang_refs():
+    before = Malware(
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description"],
+                "lang": MARKING_LANGS[0],
+            },
+            {
+                "selectors": ["description"],
+                "lang": MARKING_LANGS[1],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, [MARKING_LANGS[0], MARKING_LANGS[1]], ["description"])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
+
+
 def test_set_marking_mark_multiple_selector_one_refs():
     before = Malware(
         granular_markings=[
@@ -890,6 +1077,38 @@ def test_set_marking_mark_multiple_selector_one_refs():
         **MALWARE_KWARGS
     )
     before = markings.set_markings(before, [MARKING_IDS[0]], ["description", "modified"])
+    for m in before["granular_markings"]:
+        assert m in after["granular_markings"]
+
+
+def test_set_marking_mark_multiple_mixed_markings():
+    before = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[1],
+            },
+            {
+                "selectors": ["description", "modified"],
+                "lang": MARKING_LANGS[2],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    after = Malware(
+        granular_markings=[
+            {
+                "selectors": ["description", "modified"],
+                "marking_ref": MARKING_IDS[2],
+            },
+            {
+                "selectors": ["description", "modified"],
+                "lang": MARKING_LANGS[3],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+    before = markings.set_markings(before, [MARKING_IDS[2], MARKING_LANGS[3]], ["description", "modified"])
     for m in before["granular_markings"]:
         assert m in after["granular_markings"]
 

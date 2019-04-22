@@ -54,7 +54,7 @@ EXPECTED_GRANULAR_MARKING = """{
     ]
 }"""
 
-EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
+EXPECTED_CAMPAIGN_WITH_GRANULAR_REF_MARKINGS = """{
     "type": "campaign",
     "spec_version": "2.1",
     "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
@@ -66,6 +66,27 @@ EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS = """{
     "granular_markings": [
         {
             "marking_ref": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            "selectors": [
+                "description"
+            ]
+        }
+    ]
+}"""
+
+
+EXPECTED_CAMPAIGN_WITH_GRANULAR_LANG_MARKINGS = """{
+    "type": "campaign",
+    "spec_version": "2.1",
+    "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+    "created": "2016-04-06T20:03:00.000Z",
+    "modified": "2016-04-06T20:03:00.000Z",
+    "name": "Bank Attack",
+    "description": "Weitere Informationen über Banküberfall",
+    "lang": "en",
+    "granular_markings": [
+        {
+            "lang": "de",
             "selectors": [
                 "description"
             ]
@@ -161,7 +182,7 @@ def test_campaign_with_granular_markings_example():
             ),
         ],
     )
-    assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_MARKINGS
+    assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_REF_MARKINGS
 
 
 @pytest.mark.parametrize(
@@ -273,3 +294,26 @@ def test_campaign_add_markings():
     )
     campaign = campaign.add_markings(TLP_WHITE)
     assert campaign.object_marking_refs[0] == TLP_WHITE.id
+
+
+def test_campaign_with_granular_lang_markings_example():
+    campaign = stix2.v21.Campaign(
+        id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        created_by_ref=IDENTITY_ID,
+        created="2016-04-06T20:03:00Z",
+        modified="2016-04-06T20:03:00Z",
+        name="Bank Attack",
+        lang="en",
+        description="Weitere Informationen über Banküberfall",
+        granular_markings=[
+            stix2.v21.GranularMarking(
+                lang="de",
+                selectors=["description"],
+            ),
+        ],
+    )
+
+    # In order to provide the same representation, we need to disable escaping
+    # in json.dumps(). https://docs.python.org/3/library/json.html#json.dumps
+    # or https://docs.python.org/2/library/json.html#json.dumps
+    assert campaign.serialize(pretty=True, ensure_ascii=False) == EXPECTED_CAMPAIGN_WITH_GRANULAR_LANG_MARKINGS
