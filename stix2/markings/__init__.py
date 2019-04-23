@@ -55,7 +55,7 @@ def get_markings(obj, selectors=None, inherited=False, descendants=False, markin
         inherited,
         descendants,
         marking_ref,
-        lang
+        lang,
     )
 
     if inherited:

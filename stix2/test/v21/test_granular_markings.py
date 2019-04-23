@@ -478,7 +478,7 @@ GET_MARKINGS_TEST_DATA_LANGS = {
 
 
 @pytest.mark.parametrize("data", [GET_MARKINGS_TEST_DATA_LANGS])
-def test_get_markings_multiple_selectors(data):
+def test_get_markings_multiple_selectors_langs(data):
     """Test multiple selectors return combination of markings."""
     total = markings.get_markings(data, ["x.y", "x.z"])
     xy_markings = markings.get_markings(data, ["x.y"])

@@ -2,7 +2,7 @@
 
 from stix2 import exceptions
 from stix2.markings import utils
-from stix2.utils import new_version, is_marking
+from stix2.utils import is_marking, new_version
 
 
 def get_markings(obj, selectors, inherited=False, descendants=False, marking_ref=True, lang=True):
@@ -212,7 +212,7 @@ def clear_markings(obj, selectors, marking_ref=True, lang=True):
 
     granular_dict = utils.build_granular_marking([
         {'selectors': selectors, 'marking_ref': 'N/A'},
-        {'selectors': selectors, 'lang': 'N/A'}
+        {'selectors': selectors, 'lang': 'N/A'},
     ])
 
     clear = granular_dict.get('granular_markings', [])
