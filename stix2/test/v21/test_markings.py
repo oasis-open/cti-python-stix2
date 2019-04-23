@@ -76,7 +76,7 @@ EXPECTED_CAMPAIGN_WITH_GRANULAR_REF_MARKINGS = """{
 }"""
 
 
-EXPECTED_CAMPAIGN_WITH_GRANULAR_LANG_MARKINGS = """{
+EXPECTED_CAMPAIGN_WITH_GRANULAR_LANG_MARKINGS = u"""{
     "type": "campaign",
     "spec_version": "2.1",
     "id": "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
