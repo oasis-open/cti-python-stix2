@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import datetime as dt
 
 import pytest
