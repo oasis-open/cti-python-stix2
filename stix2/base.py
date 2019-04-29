@@ -144,12 +144,12 @@ class _STIXBase(collections.Mapping):
         if custom_props:
             self.__allow_custom = True
 
-        # Remove any keyword arguments whose value is None
+        # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}
         props = kwargs.copy()
         props.update(custom_props)
         for prop_name, prop_value in props.items():
-            if prop_value is not None:
+            if prop_value is not None and prop_value != []:
                 setting_kwargs[prop_name] = prop_value
 
         # Detect any missing required properties
