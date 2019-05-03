@@ -203,3 +203,16 @@ class MarkingNotFoundError(STIXError, AssertionError):
     def __str__(self):
         msg = "Marking {0} was not found in {1}!"
         return msg.format(self.key, self.cls.__class__.__name__)
+
+
+class TLPMarkingDefinitionError(STIXError, AssertionError):
+    """Marking violation. The marking-definition for TLP MUST follow the mandated instances from the spec."""
+
+    def __init__(self, user_obj, spec_obj):
+        super(TLPMarkingDefinitionError, self).__init__()
+        self.user_obj = user_obj
+        self.spec_obj = spec_obj
+
+    def __str__(self):
+        msg = "Marking {0} does not match spec marking {1}!"
+        return msg.format(self.user_obj, self.spec_obj)
