@@ -11,7 +11,7 @@ from ..properties import (
     IntegerProperty, ListProperty, Property, ReferenceProperty,
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
-from ..utils import NOW, _get_dict
+from ..utils import NOW, _get_dict, check_tlp_marking
 
 
 class ExternalReference(_STIXBase):
@@ -173,6 +173,14 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
                 kwargs['definition'] = marking_type(**defn)
 
         super(MarkingDefinition, self).__init__(**kwargs)
+
+    def _check_object_constraints(self):
+        super(MarkingDefinition, self)._check_object_constraints()
+        check_tlp_marking(self, '2.1')
+
+    def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
+        check_tlp_marking(self, '2.1')
+        return super(MarkingDefinition, self).serialize(pretty, include_optional_defaults, **kwargs)
 
 
 OBJ_MAP_MARKING = {
