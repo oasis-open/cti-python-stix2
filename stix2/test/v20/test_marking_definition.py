@@ -71,12 +71,14 @@ def test_bad_created_marking_tlp_amber():
 
 
 def test_bad_created_marking_tlp_red():
-    with pytest.raises(exceptions.TLPMarkingDefinitionError):
+    with pytest.raises(exceptions.TLPMarkingDefinitionError) as excinfo:
         MarkingDefinition(
             id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
             definition_type='tlp',
             definition=TLPMarking(tlp='red'),
         )
+
+    assert "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed" in str(excinfo.value)
 
 
 def test_successful_tlp_white():
