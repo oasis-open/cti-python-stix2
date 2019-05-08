@@ -450,6 +450,11 @@ def test_enum_property_valid(value):
     assert enum_prop.clean('b')
 
 
+def test_enum_property_clean():
+    enum_prop = EnumProperty(['1'])
+    assert enum_prop.clean(1) == '1'
+
+
 def test_enum_property_invalid():
     enum_prop = EnumProperty(['a', 'b', 'c'])
     with pytest.raises(ValueError):
