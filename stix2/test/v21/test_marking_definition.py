@@ -89,7 +89,7 @@ def test_successful_tlp_white():
         definition=TLPMarking(tlp='white'),
     )
 
-    assert white.serialize() in TLP_WHITE.serialize()
+    assert white.serialize(sort_keys=True) == TLP_WHITE.serialize(sort_keys=True)
 
 
 def test_successful_tlp_green():
@@ -100,7 +100,7 @@ def test_successful_tlp_green():
         definition=TLPMarking(tlp='green'),
     )
 
-    assert green.serialize() in TLP_GREEN.serialize()
+    assert green.serialize(sort_keys=True) == TLP_GREEN.serialize(sort_keys=True)
 
 
 def test_successful_tlp_amber():
@@ -111,7 +111,7 @@ def test_successful_tlp_amber():
         definition=TLPMarking(tlp='amber'),
     )
 
-    assert amber.serialize() in TLP_AMBER.serialize()
+    assert amber.serialize(sort_keys=True) == TLP_AMBER.serialize(sort_keys=True)
 
 
 def test_successful_tlp_red():
@@ -122,7 +122,7 @@ def test_successful_tlp_red():
         definition=TLPMarking(tlp='red'),
     )
 
-    assert red.serialize() in TLP_RED.serialize()
+    assert red.serialize(sort_keys=True) == TLP_RED.serialize(sort_keys=True)
 
 
 def test_unknown_tlp_marking():

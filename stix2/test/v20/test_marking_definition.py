@@ -89,40 +89,40 @@ def test_successful_tlp_white():
         definition=TLPMarking(tlp='white'),
     )
 
-    assert white.serialize() in TLP_WHITE.serialize()
+    assert white.serialize(sort_keys=True) == TLP_WHITE.serialize(sort_keys=True)
 
 
 def test_successful_tlp_green():
-    white = MarkingDefinition(
+    green = MarkingDefinition(
         id='marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
         definition=TLPMarking(tlp='green'),
     )
 
-    assert white.serialize() in TLP_GREEN.serialize()
+    assert green.serialize(sort_keys=True) == TLP_GREEN.serialize(sort_keys=True)
 
 
 def test_successful_tlp_amber():
-    white = MarkingDefinition(
+    amber = MarkingDefinition(
         id='marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
         definition=TLPMarking(tlp='amber'),
     )
 
-    assert white.serialize() in TLP_AMBER.serialize()
+    assert amber.serialize(sort_keys=True) == TLP_AMBER.serialize(sort_keys=True)
 
 
 def test_successful_tlp_red():
-    white = MarkingDefinition(
+    red = MarkingDefinition(
         id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
         definition=TLPMarking(tlp='red'),
     )
 
-    assert white.serialize() in TLP_RED.serialize()
+    assert red.serialize(sort_keys=True) == TLP_RED.serialize(sort_keys=True)
 
 
 def test_unknown_tlp_marking():
