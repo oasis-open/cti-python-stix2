@@ -6,12 +6,13 @@ import copy
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
+from ..markings.utils import check_tlp_marking
 from ..properties import (
     BooleanProperty, DictionaryProperty, HashesProperty, IDProperty,
     IntegerProperty, ListProperty, Property, ReferenceProperty,
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
-from ..utils import NOW, _get_dict, check_tlp_marking
+from ..utils import NOW, _get_dict
 
 
 class ExternalReference(_STIXBase):
