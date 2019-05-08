@@ -450,6 +450,8 @@ def test_filesystem_attempt_stix_file_overwrite(fs_store):
 
 def test_filesystem_sink_marking(fs_sink):
     marking = stix2.v20.MarkingDefinition(
+        id="marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
+        created="2017-01-20T00:00:00.000Z",
         definition_type="tlp",
         definition=stix2.v20.TLPMarking(tlp="green"),
     )
@@ -583,6 +585,8 @@ def test_filesystem_store_add_invalid_object(fs_store):
 
 def test_filesystem_store_add_marking(fs_store):
     marking = stix2.v20.MarkingDefinition(
+        id="marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
+        created="2017-01-20T00:00:00.000Z",
         definition_type="tlp",
         definition=stix2.v20.TLPMarking(tlp="green"),
     )
