@@ -11,8 +11,7 @@ import pytz
 import stix2.base
 
 from .exceptions import (
-    InvalidValueError, RevokeError, TLPMarkingDefinitionError,
-    UnmodifiablePropertyError,
+    InvalidValueError, RevokeError, UnmodifiablePropertyError,
 )
 
 # Sentinel value for properties that should be set to the current time.
