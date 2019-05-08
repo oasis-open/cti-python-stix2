@@ -121,10 +121,15 @@ def compress_markings(granular_markings):
         if granular_marking.get('marking_ref'):
             map_[granular_marking.get('marking_ref')].update(granular_marking.get('selectors'))
 
+        if granular_marking.get('lang'):
+            map_[granular_marking.get('lang')].update(granular_marking.get('selectors'))
+
     compressed = \
         [
-            {'marking_ref': marking_ref, 'selectors': sorted(selectors)}
-            for marking_ref, selectors in six.iteritems(map_)
+            {'marking_ref': item, 'selectors': sorted(selectors)}
+            if utils.is_marking(item) else
+            {'lang': item, 'selectors': sorted(selectors)}
+            for item, selectors in six.iteritems(map_)
         ]
 
     return compressed
@@ -174,13 +179,22 @@ def expand_markings(granular_markings):
     for marking in granular_markings:
         selectors = marking.get('selectors')
         marking_ref = marking.get('marking_ref')
+        lang = marking.get('lang')
 
-        expanded.extend(
-            [
-                {'marking_ref': marking_ref, 'selectors': [selector]}
-                for selector in selectors
-            ],
-        )
+        if marking_ref:
+            expanded.extend(
+                [
+                    {'marking_ref': marking_ref, 'selectors': [selector]}
+                    for selector in selectors
+                ],
+            )
+        if lang:
+            expanded.extend(
+                [
+                    {'lang': lang, 'selectors': [selector]}
+                    for selector in selectors
+                ],
+            )
 
     return expanded
 

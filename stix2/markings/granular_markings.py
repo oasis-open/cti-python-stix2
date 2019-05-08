@@ -2,10 +2,10 @@
 
 from stix2 import exceptions
 from stix2.markings import utils
-from stix2.utils import new_version
+from stix2.utils import is_marking, new_version
 
 
-def get_markings(obj, selectors, inherited=False, descendants=False):
+def get_markings(obj, selectors, inherited=False, descendants=False, marking_ref=True, lang=True):
     """
     Get all granular markings associated to with the properties.
 
@@ -13,10 +13,13 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
         obj: An SDO or SRO object.
         selectors: string or list of selector strings relative to the SDO or
             SRO in which the properties appear.
-        inherited: If True, include markings inherited relative to the
+        inherited (bool): If True, include markings inherited relative to the
             properties.
-        descendants: If True, include granular markings applied to any children
-            relative to the properties.
+        descendants (bool): If True, include granular markings applied to any
+            children relative to the properties.
+        marking_ref (bool): If False, excludes markings that use
+            ``marking_ref`` property.
+        lang (bool): If False, excludes markings that use ``lang`` property.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -43,13 +46,18 @@ def get_markings(obj, selectors, inherited=False, descendants=False):
                     (user_selector.startswith(marking_selector) and inherited),  # Catch inherited selectors.
                     (marking_selector.startswith(user_selector) and descendants),
                 ]):  # Catch descendants selectors
-                    refs = marking.get('marking_ref', [])
-                    results.update([refs])
+                    ref = marking.get('marking_ref')
+                    lng = marking.get('lang')
+
+                    if ref and marking_ref:
+                        results.add(ref)
+                    if lng and lang:
+                        results.add(lng)
 
     return list(results)
 
 
-def set_markings(obj, marking, selectors):
+def set_markings(obj, marking, selectors, marking_ref=True, lang=True):
     """
     Remove all granular markings associated with selectors and append a new
     granular marking. Refer to `clear_markings` and `add_markings` for details.
@@ -60,19 +68,25 @@ def set_markings(obj, marking, selectors):
             SRO in which the properties appear.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
+        marking_ref (bool): If False, markings that use the ``marking_ref``
+            property will not be removed.
+        lang (bool): If False, markings that use the ``lang`` property
+            will not be removed.
 
     Returns:
         A new version of the given SDO or SRO with specified markings removed
         and new ones added.
 
     """
-    obj = clear_markings(obj, selectors)
+    obj = clear_markings(obj, selectors, marking_ref, lang)
     return add_markings(obj, marking, selectors)
 
 
 def remove_markings(obj, marking, selectors):
     """
-    Remove a granular marking from the granular_markings collection.
+    Remove a granular marking from the granular_markings collection. The method
+    makes a best-effort attempt to distinguish between a marking-definition
+    or language granular marking.
 
     Args:
         obj: An SDO or SRO object.
@@ -103,7 +117,10 @@ def remove_markings(obj, marking, selectors):
 
     to_remove = []
     for m in marking:
-        to_remove.append({'marking_ref': m, 'selectors': selectors})
+        if is_marking(m):
+            to_remove.append({'marking_ref': m, 'selectors': selectors})
+        else:
+            to_remove.append({'lang': m, 'selectors': selectors})
 
     remove = utils.build_granular_marking(to_remove).get('granular_markings')
 
@@ -124,7 +141,9 @@ def remove_markings(obj, marking, selectors):
 
 def add_markings(obj, marking, selectors):
     """
-    Append a granular marking to the granular_markings collection.
+    Append a granular marking to the granular_markings collection. The method
+    makes a best-effort attempt to distinguish between a marking-definition
+    or language granular marking.
 
     Args:
         obj: An SDO or SRO object.
@@ -146,7 +165,10 @@ def add_markings(obj, marking, selectors):
 
     granular_marking = []
     for m in marking:
-        granular_marking.append({'marking_ref': m, 'selectors': sorted(selectors)})
+        if is_marking(m):
+            granular_marking.append({'marking_ref': m, 'selectors': sorted(selectors)})
+        else:
+            granular_marking.append({'lang': m, 'selectors': sorted(selectors)})
 
     if obj.get('granular_markings'):
         granular_marking.extend(obj.get('granular_markings'))
@@ -156,7 +178,7 @@ def add_markings(obj, marking, selectors):
     return new_version(obj, granular_markings=granular_marking, allow_custom=True)
 
 
-def clear_markings(obj, selectors):
+def clear_markings(obj, selectors, marking_ref=True, lang=True):
     """
     Remove all granular markings associated with the selectors.
 
@@ -164,6 +186,10 @@ def clear_markings(obj, selectors):
         obj: An SDO or SRO object.
         selectors: string or list of selectors strings relative to the SDO or
             SRO in which the properties appear.
+        marking_ref (bool): If False, markings that use the ``marking_ref``
+            property will not be removed.
+        lang (bool): If False, markings that use the ``lang`` property
+            will not be removed.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -184,11 +210,12 @@ def clear_markings(obj, selectors):
 
     granular_markings = utils.expand_markings(granular_markings)
 
-    sdo = utils.build_granular_marking(
-        [{'selectors': selectors, 'marking_ref': 'N/A'}],
-    )
+    granular_dict = utils.build_granular_marking([
+        {'selectors': selectors, 'marking_ref': 'N/A'},
+        {'selectors': selectors, 'lang': 'N/A'},
+    ])
 
-    clear = sdo.get('granular_markings', [])
+    clear = granular_dict.get('granular_markings', [])
 
     if not any(
         clear_selector in sdo_selectors.get('selectors', [])
@@ -201,10 +228,13 @@ def clear_markings(obj, selectors):
     for granular_marking in granular_markings:
         for s in selectors:
             if s in granular_marking.get('selectors', []):
-                marking_refs = granular_marking.get('marking_ref')
+                ref = granular_marking.get('marking_ref')
+                lng = granular_marking.get('lang')
 
-                if marking_refs:
+                if ref and marking_ref:
                     granular_marking['marking_ref'] = ''
+                if lng and lang:
+                    granular_marking['lang'] = ''
 
     granular_markings = utils.compress_markings(granular_markings)
 
@@ -222,11 +252,12 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
         obj: An SDO or SRO object.
         marking: identifier or list of marking identifiers that apply to the
             properties selected by `selectors`.
-        selectors: string or list of selectors strings relative to the SDO or
-            SRO in which the properties appear.
-        inherited: If True, return markings inherited from the given selector.
-        descendants: If True, return granular markings applied to any children
-            of the given selector.
+        selectors (bool): string or list of selectors strings relative to the
+            SDO or SRO in which the properties appear.
+        inherited (bool): If True, return markings inherited from the given
+            selector.
+        descendants (bool): If True, return granular markings applied to any
+            children of the given selector.
 
     Raises:
         InvalidSelectorError: If `selectors` fail validation.
@@ -262,9 +293,12 @@ def is_marked(obj, marking=None, selectors=None, inherited=False, descendants=Fa
                     (marking_selector.startswith(user_selector) and descendants),
                 ]):  # Catch descendants selectors
                     marking_ref = granular_marking.get('marking_ref', '')
+                    lang = granular_marking.get('lang', '')
 
                     if marking and any(x == marking_ref for x in marking):
                         markings.update([marking_ref])
+                    if marking and any(x == lang for x in marking):
+                        markings.update([lang])
 
                     marked = True
 
