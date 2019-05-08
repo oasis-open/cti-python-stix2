@@ -4,7 +4,7 @@ import collections
 
 import six
 
-from stix2 import exceptions
+from stix2 import exceptions, utils
 
 
 def _evaluate_expression(obj, selector):
@@ -240,3 +240,81 @@ def iterpath(obj, path=None):
                 path.pop()
 
         path.pop()
+
+
+def check_tlp_marking(marking_obj, spec_version):
+    # Specific TLP Marking validation case.
+
+    if marking_obj["definition_type"] == "tlp":
+        color = marking_obj["definition"]["tlp"]
+
+        if color == "white":
+            if spec_version == '2.0':
+                w = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "white"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9", "type": "marking-definition"}'
+                )
+            else:
+                w = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "white"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9", "type": "marking-definition",'
+                    ' "spec_version": "2.1"}'
+                )
+            if marking_obj["id"] != "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9":
+                raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], w)
+            elif utils.format_datetime(marking_obj["created"]) != "2017-01-20T00:00:00.000Z":
+                raise exceptions.TLPMarkingDefinitionError(utils.format_datetime(marking_obj["created"]), w)
+
+        elif color == "green":
+            if spec_version == '2.0':
+                g = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "green"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da", "type": "marking-definition"}'
+                )
+            else:
+                g = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "green"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da", "type": "marking-definition",'
+                    ' "spec_version": "2.1"}'
+                )
+            if marking_obj["id"] != "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da":
+                raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], g)
+            elif utils.format_datetime(marking_obj["created"]) != "2017-01-20T00:00:00.000Z":
+                raise exceptions.TLPMarkingDefinitionError(utils.format_datetime(marking_obj["created"]), g)
+
+        elif color == "amber":
+            if spec_version == '2.0':
+                a = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "amber"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82", "type": "marking-definition"}'
+                )
+            else:
+                a = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "amber"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82", "type": "marking-definition",'
+                    ' "spec_version": "2.1"}'
+                )
+            if marking_obj["id"] != "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82":
+                raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], a)
+            elif utils.format_datetime(marking_obj["created"]) != "2017-01-20T00:00:00.000Z":
+                raise exceptions.TLPMarkingDefinitionError(utils.format_datetime(marking_obj["created"]), a)
+
+        elif color == "red":
+            if spec_version == '2.0':
+                r = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "red"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed", "type": "marking-definition"}'
+                )
+            else:
+                r = (
+                    '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "red"}, "definition_type": "tlp",'
+                    ' "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed", "type": "marking-definition",'
+                    ' "spec_version": "2.1"}'
+                )
+            if marking_obj["id"] != "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed":
+                raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], r)
+            elif utils.format_datetime(marking_obj["created"]) != "2017-01-20T00:00:00.000Z":
+                raise exceptions.TLPMarkingDefinitionError(utils.format_datetime(marking_obj["created"]), r)
+
+        else:
+            raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], "Does not match any TLP Marking definition")
