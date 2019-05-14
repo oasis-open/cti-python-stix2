@@ -206,7 +206,10 @@ class IDProperty(Property):
     def clean(self, value):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{}'.".format(self.required_prefix))
-        if not ID_REGEX.match(value):
+        prefix, _, uid = value.partition('--')
+        try:
+            uuid.UUID(uid)
+        except ValueError:
             raise ValueError(ERROR_INVALID_ID)
         return value
 
@@ -392,7 +395,10 @@ class ReferenceProperty(Property):
         if self.type:
             if not value.startswith(self.type):
                 raise ValueError("must start with '{}'.".format(self.type))
-        if not ID_REGEX.match(value):
+        prefix, _, uid = value.partition('--')
+        try:
+            uuid.UUID(uid)
+        except ValueError:
             raise ValueError(ERROR_INVALID_ID)
         return value
 
