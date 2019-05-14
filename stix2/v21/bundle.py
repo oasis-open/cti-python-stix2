@@ -33,3 +33,6 @@ class Bundle(_STIXBase):
         self._properties['objects'].contained.allow_custom = kwargs.get('allow_custom', False)
 
         super(Bundle, self).__init__(**kwargs)
+
+    def get_obj(self, obj_uuid):
+        return next((elem for elem in self.objects if elem['id'] == obj_uuid), None)
