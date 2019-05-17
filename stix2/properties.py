@@ -16,21 +16,13 @@ from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import CustomContentError, DictionaryKeyError
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
-# This uses the regular expression for a RFC 4122, Version 4 UUID. In the
-# 8-4-4-4-12 hexadecimal representation, the first hex digit of the third
-# component must be a 4, and the first hex digit of the fourth component
-# must be 8, 9, a, or b (10xx bit pattern).
-ID_REGEX = re.compile(
-    r"^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
-    "[0-9a-fA-F]{8}-"
-    "[0-9a-fA-F]{4}-"
-    "4[0-9a-fA-F]{3}-"
-    "[89abAB][0-9a-fA-F]{3}-"
-    "[0-9a-fA-F]{12}$",
-)
+
+# Regular expression for object type used as a prefix in ID
+ID_PREFIX_REGEX = re.compile(r"^[a-z0-9][a-z0-9-]+[a-z0-9]$")
+
 
 ERROR_INVALID_ID = (
-    "not a valid STIX identifier, must match <object-type>--<UUIDv4>"
+    "not a valid STIX identifier, must match <object-type>--<UUID>"
 )
 
 
@@ -204,14 +196,8 @@ class IDProperty(Property):
         super(IDProperty, self).__init__()
 
     def clean(self, value):
-        if not value.startswith(self.required_prefix):
-            raise ValueError("must start with '{}'.".format(self.required_prefix))
-        prefix, _, uid = value.partition('--')
-        try:
-            uuid.UUID(uid)
-        except ValueError:
-            raise ValueError(ERROR_INVALID_ID)
-        return value
+        return validate_id(
+            value, required_prefix=self.required_prefix)
 
     def default(self):
         return self.required_prefix + str(uuid.uuid4())
@@ -392,15 +378,8 @@ class ReferenceProperty(Property):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
-        if self.type:
-            if not value.startswith(self.type):
-                raise ValueError("must start with '{}'.".format(self.type))
-        prefix, _, uid = value.partition('--')
-        try:
-            uuid.UUID(uid)
-        except ValueError:
-            raise ValueError(ERROR_INVALID_ID)
-        return value
+        return validate_id(
+            value, required_prefix=self.type)
 
 
 SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
@@ -583,3 +562,17 @@ class STIXObjectProperty(Property):
         parsed_obj = parse(dictified, allow_custom=self.allow_custom)
 
         return parsed_obj
+
+
+def validate_id(value, required_prefix=None):
+    if required_prefix and not value.startswith(required_prefix):
+        raise ValueError(
+            "must start with '{}'.".format(required_prefix))
+    prefix, _, uid = value.partition('--')
+    if not ID_PREFIX_REGEX.match(value):
+        raise ValueError(ERROR_INVALID_ID)
+    try:
+        uuid.UUID(uid)
+    except ValueError:
+        raise ValueError(ERROR_INVALID_ID)
+    return value
