@@ -569,7 +569,7 @@ def validate_id(value, required_prefix=None):
         raise ValueError(
             "must start with '{}'.".format(required_prefix))
     prefix, _, uid = value.partition('--')
-    if not ID_PREFIX_REGEX.match(value):
+    if not ID_PREFIX_REGEX.match(prefix):
         raise ValueError(ERROR_INVALID_ID)
     try:
         uuid.UUID(uid)
