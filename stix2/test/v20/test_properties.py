@@ -136,14 +136,22 @@ def test_id_property_wrong_type():
     assert str(excinfo.value) == "must start with 'my-type--'."
 
 
+@pytest.mark.parametrize("value", [
+    # valid non v4 UUIDs
+    'my-type--00000000-0000-0000-0000-000000000000',
+    'my-type--' + str(uuid.uuid1()),
+    'my-type--' + str(uuid.uuid3(uuid.NAMESPACE_DNS, "example.org")),
+    'my-type--' + str(uuid.uuid5(uuid.NAMESPACE_DNS, "example.org")),
+])
+def test_id_property_valid_uuid_for_type(value):
+    type = value.split('--', 1)[0]
+    assert IDProperty(type=type).clean(value) == value
+
+
 @pytest.mark.parametrize(
     "value", [
         'my-type--foo',
-        # Not a v4 UUID
-        'my-type--00000000-0000-0000-0000-000000000000',
-        'my-type--' + str(uuid.uuid1()),
-        'my-type--' + str(uuid.uuid3(uuid.NAMESPACE_DNS, "example.org")),
-        'my-type--' + str(uuid.uuid5(uuid.NAMESPACE_DNS, "example.org")),
+        'my-type--1234-5678'
     ],
 )
 def test_id_property_not_a_valid_hex_uuid(value):
@@ -278,12 +286,16 @@ def test_reference_property():
     ref_prop = ReferenceProperty()
 
     assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
+
+    value = "my-type--00000000-0000-0000-0000-000000000000"
+    assert ref_prop.clean(value) == value
+
     with pytest.raises(ValueError):
         ref_prop.clean("foo")
 
-    # This is not a valid V4 UUID
+    # This is not a valid UUID
     with pytest.raises(ValueError):
-        ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000")
+        ref_prop.clean("my-type--1234-56789")
 
 
 @pytest.mark.parametrize(
