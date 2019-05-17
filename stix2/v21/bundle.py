@@ -35,4 +35,16 @@ class Bundle(_STIXBase):
         super(Bundle, self).__init__(**kwargs)
 
     def get_obj(self, obj_uuid):
-        return next((elem for elem in self.objects if elem['id'] == obj_uuid), None)
+        found_objs = [elem for elem in self.objects if elem.id == obj_uuid]
+        if found_objs == []:
+            raise KeyError("'%s' does not match the id property of any of the bundle's objects" % obj_uuid)
+        return found_objs
+
+    def __getitem__(self, key):
+        try:
+            return super(Bundle, self).__getitem__(key)
+        except KeyError:
+            try:
+                return self.get_obj(key)
+            except KeyError:
+                raise KeyError("'%s' is neither a valid bundle property nor does it match the id property of any of the bundle's objects" % key)

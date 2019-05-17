@@ -183,8 +183,23 @@ def test_parse_bundle(version):
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'
-    assert bundle.get_obj('malware--00000000-0000-4000-8000-000000000003').type == 'malware'
-    assert bundle.get_obj('blah blah') is None
+    assert bundle['type'] == "bundle"
+    assert len(bundle["indicator--00000000-0000-4000-8000-000000000001"]) == 1
+
+
+def test_bundle_obj_id_not_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    assert bundle.type == "bundle"
+    assert bundle.id.startswith("bundle--")
+    assert type(bundle.objects[0]) is stix2.v21.Indicator
+    assert bundle.objects[0].type == 'indicator'
+    assert bundle.objects[1].type == 'malware'
+    assert bundle.objects[2].type == 'relationship'
+
+    with pytest.raises(KeyError) as excinfo:
+        bundle.get_obj('blah blah')
+    assert "does not match the id property of any of the bundle" in str(excinfo.value)
 
 
 def test_parse_unknown_type():
