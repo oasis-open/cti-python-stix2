@@ -246,6 +246,64 @@ def test_bundle_obj_id_found():
     assert len(mal_list) == 1
 
 
+@pytest.mark.parametrize(
+    "bundle_data", [{
+        "type": "bundle",
+        "id": "bundle--00000000-0000-4000-8000-000000000007",
+        "spec_version": "2.0",
+        "objects": [
+            {
+                "type": "indicator",
+                "id": "indicator--00000000-0000-4000-8000-000000000001",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-01-01T12:34:56.000Z",
+                "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+                "valid_from": "2017-01-01T12:34:56Z",
+                "labels": [
+                    "malicious-activity",
+                ],
+            },
+            {
+                "type": "malware",
+                "id": "malware--00000000-0000-4000-8000-000000000003",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-01-01T12:34:56.000Z",
+                "name": "Cryptolocker1",
+                "labels": [
+                    "ransomware",
+                ],
+            },
+            {
+                "type": "malware",
+                "id": "malware--00000000-0000-4000-8000-000000000003",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-12-21T12:34:56.000Z",
+                "name": "CryptolockerOne",
+                "labels": [
+                    "ransomware",
+                ],
+            },
+            {
+                "type": "relationship",
+                "id": "relationship--00000000-0000-4000-8000-000000000005",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-01-01T12:34:56.000Z",
+                "relationship_type": "indicates",
+                "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+                "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+            },
+        ],
+    }],
+)
+def test_bundle_objs_ids_found(bundle_data):
+    bundle = stix2.parse(bundle_data)
+
+    mal_list = bundle.get_obj("malware--00000000-0000-4000-8000-000000000003")
+    assert bundle.objects[1] == mal_list[0]
+    assert bundle.objects[2] == mal_list[1]
+    assert len(mal_list) == 2
+
+
 def test_bundle_getitem_overload_property_found():
     bundle = stix2.parse(EXPECTED_BUNDLE)
 
