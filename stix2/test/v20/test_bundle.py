@@ -236,3 +236,42 @@ def test_bundle_with_different_spec_objects():
         stix2.v20.Bundle(objects=data)
 
     assert "Spec version 2.0 bundles don't yet support containing objects of a different spec version." in str(excinfo.value)
+
+
+def test_bundle_obj_id_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    mal_list = bundle.get_obj("malware--00000000-0000-4000-8000-000000000003")
+    assert bundle.objects[1] == mal_list[0]
+    assert len(mal_list) == 1
+
+
+def test_bundle_getitem_overload_property_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    assert bundle.type == "bundle"
+    assert bundle['type'] == "bundle"
+
+
+def test_bundle_getitem_overload_obj_id_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    mal_list = bundle["malware--00000000-0000-4000-8000-000000000003"]
+    assert bundle.objects[1] == mal_list[0]
+    assert len(mal_list) == 1
+
+
+def test_bundle_obj_id_not_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    with pytest.raises(KeyError) as excinfo:
+        bundle.get_obj('non existent')
+    assert "does not match the id property of any of the bundle" in str(excinfo.value)
+
+
+def test_bundle_getitem_overload_obj_id_not_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    with pytest.raises(KeyError) as excinfo:
+        bundle['non existent']
+    assert "neither a valid bundle property nor does it match the id property" in str(excinfo.value)
