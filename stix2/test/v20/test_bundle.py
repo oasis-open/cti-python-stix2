@@ -332,4 +332,4 @@ def test_bundle_getitem_overload_obj_id_not_found():
 
     with pytest.raises(KeyError) as excinfo:
         bundle['non existent']
-    assert "neither a valid bundle property nor does it match the id property" in str(excinfo.value)
+    assert "neither a property on the bundle nor does it match the id property" in str(excinfo.value)

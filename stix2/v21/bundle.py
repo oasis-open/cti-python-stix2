@@ -50,4 +50,4 @@ class Bundle(_STIXBase):
             try:
                 return self.get_obj(key)
             except KeyError:
-                raise KeyError("'%s' is neither a valid bundle property nor does it match the id property of any of the bundle's objects" % key)
+                raise KeyError("'%s' is neither a property on the bundle nor does it match the id property of any of the bundle's objects" % key)
