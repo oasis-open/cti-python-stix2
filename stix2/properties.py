@@ -16,13 +16,12 @@ from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import CustomContentError, DictionaryKeyError
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
-
 # Regular expression for object type used as a prefix in ID
 ID_PREFIX_REGEX = re.compile(r"^[a-z0-9][a-z0-9-]+[a-z0-9]$")
 
 
 ERROR_INVALID_ID = (
-    "not a valid STIX identifier, must match <object-type>--<UUID>"
+    "not a valid STIX identifier, must match <object-type>--<UUID>",
 )
 
 
@@ -196,8 +195,7 @@ class IDProperty(Property):
         super(IDProperty, self).__init__()
 
     def clean(self, value):
-        return validate_id(
-            value, required_prefix=self.required_prefix)
+        return validate_id(value, required_prefix=self.required_prefix)
 
     def default(self):
         return self.required_prefix + str(uuid.uuid4())
@@ -378,8 +376,7 @@ class ReferenceProperty(Property):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
-        return validate_id(
-            value, required_prefix=self.type)
+        return validate_id(value, required_prefix=self.type)
 
 
 SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
@@ -566,8 +563,7 @@ class STIXObjectProperty(Property):
 
 def validate_id(value, required_prefix=None):
     if required_prefix and not value.startswith(required_prefix):
-        raise ValueError(
-            "must start with '{}'.".format(required_prefix))
+        raise ValueError("must start with '{}'.".format(required_prefix))
     prefix, _, uid = value.partition('--')
     if not ID_PREFIX_REGEX.match(prefix):
         raise ValueError(ERROR_INVALID_ID)
