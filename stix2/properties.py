@@ -21,7 +21,7 @@ ID_PREFIX_REGEX = re.compile(r"^[a-z0-9][a-z0-9-]+[a-z0-9]$")
 
 
 ERROR_INVALID_ID = (
-    "not a valid STIX identifier, must match <object-type>--<UUID>",
+    "not a valid STIX identifier, must match <object-type>--<UUID>"
 )
 
 
