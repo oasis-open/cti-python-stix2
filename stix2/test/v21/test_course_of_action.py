@@ -4,6 +4,7 @@ import pytest
 import pytz
 
 import stix2
+import stix2.exceptions
 
 from .constants import COURSE_OF_ACTION_ID
 
@@ -15,7 +16,14 @@ EXPECTED = """{
     "created": "2016-04-06T20:03:48.000Z",
     "modified": "2016-04-06T20:03:48.000Z",
     "name": "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ..."
+    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
+    "action_type": "textual:text/plain",
+    "os_execution_envs": [
+        "a",
+        "b",
+        "c"
+    ],
+    "action_bin": "aGVsbG8gd29ybGQ="
 }"""
 
 
@@ -27,6 +35,9 @@ def test_course_of_action_example():
         modified="2016-04-06T20:03:48.000Z",
         name="Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
         description="This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
+        action_type="textual:text/plain",
+        os_execution_envs=["a", "b", "c"],
+        action_bin="aGVsbG8gd29ybGQ="
     )
 
     assert str(coa) == EXPECTED
@@ -44,6 +55,9 @@ def test_course_of_action_example():
             "name": "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
             "spec_version": "2.1",
             "type": "course-of-action",
+            "action_type": "textual:text/plain",
+            "os_execution_envs": ["a", "b", "c"],
+            "action_bin": "aGVsbG8gd29ybGQ="
         },
     ],
 )
@@ -58,5 +72,20 @@ def test_parse_course_of_action(data):
     assert coa.created_by_ref == "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff"
     assert coa.description == "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ..."
     assert coa.name == "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter"
+    assert coa.action_type == "textual:text/plain"
+    assert coa.os_execution_envs == ["a", "b", "c"]
+    assert coa.action_bin == "aGVsbG8gd29ybGQ="
+
+
+def test_course_of_action_constraint():
+    with pytest.raises(stix2.exceptions.MutuallyExclusivePropertiesError):
+        stix2.v21.CourseOfAction(
+            name="Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
+            action_bin="aGVsbG8gd29ybGQ=",
+            action_reference=stix2.v21.ExternalReference(
+                source_name="a source",
+                description="description of a source"
+            )
+        )
 
 # TODO: Add other examples
