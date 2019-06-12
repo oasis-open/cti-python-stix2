@@ -97,6 +97,10 @@ class CourseOfAction(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
+        ('action_type', StringProperty()),
+        ('os_execution_envs', ListProperty(StringProperty)),
+        ('action_bin', StringProperty()),
+        ('action_reference', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -105,6 +109,14 @@ class CourseOfAction(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        super(CourseOfAction, self)._check_object_constraints()
+
+        self._check_mutually_exclusive_properties(
+            ["action_bin", "action_reference"],
+            at_least_one=False,
+        )
 
 
 class Identity(STIXDomainObject):
