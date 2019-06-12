@@ -115,7 +115,7 @@ class CourseOfAction(STIXDomainObject):
 
         self._check_mutually_exclusive_properties(
             ["action_bin", "action_reference"],
-            at_least_one=False
+            at_least_one=False,
         )
 
 
