@@ -5,7 +5,7 @@ import pytest
 import stix2
 from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
 from stix2.properties import (
-    ERROR_INVALID_ID, BinaryProperty, BooleanProperty, DictionaryProperty,
+    BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
     Property, ReferenceProperty, STIXObjectProperty, StringProperty,
@@ -89,7 +89,7 @@ def test_type_property():
     assert prop.clean(prop.default())
 
 
-ID_PROP = IDProperty('my-type')
+ID_PROP = IDProperty('my-type', spec_version="2.0")
 MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 
 
@@ -127,7 +127,7 @@ CONSTANT_IDS.extend(constants.RELATIONSHIP_IDS)
 @pytest.mark.parametrize("value", CONSTANT_IDS)
 def test_id_property_valid_for_type(value):
     type = value.split('--', 1)[0]
-    assert IDProperty(type=type).clean(value) == value
+    assert IDProperty(type=type, spec_version="2.0").clean(value) == value
 
 
 def test_id_property_wrong_type():
@@ -147,9 +147,8 @@ def test_id_property_wrong_type():
     ],
 )
 def test_id_property_not_a_valid_hex_uuid(value):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         ID_PROP.clean(value)
-    assert str(excinfo.value) == ERROR_INVALID_ID
 
 
 def test_id_property_default():
@@ -275,7 +274,7 @@ def test_boolean_property_invalid(value):
 
 
 def test_reference_property():
-    ref_prop = ReferenceProperty()
+    ref_prop = ReferenceProperty(spec_version="2.0")
 
     assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
     with pytest.raises(ValueError):
@@ -284,6 +283,16 @@ def test_reference_property():
     # This is not a valid V4 UUID
     with pytest.raises(ValueError):
         ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000")
+
+
+def test_reference_property_specific_type():
+    ref_prop = ReferenceProperty("my-type", spec_version="2.0")
+
+    with pytest.raises(ValueError):
+        ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf")
+
+    assert ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf") == \
+        "my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf"
 
 
 @pytest.mark.parametrize(
