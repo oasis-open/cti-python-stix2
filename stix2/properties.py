@@ -41,6 +41,38 @@ def _check_uuid(uuid_str, spec_version):
     return ok
 
 
+def _validate_id(id_, spec_version, required_prefix):
+    """
+    Check the STIX identifier for correctness, raise an exception if there are
+    errors.
+
+    :param id_: The STIX identifier
+    :param spec_version: The STIX specification version to use
+    :param required_prefix: The required prefix on the identifier, if any.
+        This function doesn't add a "--" suffix to the prefix, so callers must
+        add it if it is important.  Pass None to skip the prefix check.
+    :raises ValueError: If there are any errors with the identifier
+    """
+    if required_prefix:
+        if not id_.startswith(required_prefix):
+            raise ValueError("must start with '{}'.".format(required_prefix))
+
+    try:
+        if required_prefix:
+            uuid_part = id_[len(required_prefix):]
+        else:
+            idx = id_.index("--")
+            uuid_part = id_[idx+2:]
+
+        result = _check_uuid(uuid_part, spec_version)
+    except ValueError:
+        # replace their ValueError with ours
+        raise ValueError(ERROR_INVALID_ID.format(id_))
+
+    if not result:
+        raise ValueError(ERROR_INVALID_ID.format(id_))
+
+
 class Property(object):
     """Represent a property of STIX data type.
 
@@ -198,19 +230,7 @@ class IDProperty(Property):
         super(IDProperty, self).__init__()
 
     def clean(self, value):
-        if not value.startswith(self.required_prefix):
-            raise ValueError("must start with '{}'.".format(self.required_prefix))
-
-        uuid_part = value[len(self.required_prefix):]
-        try:
-            result = _check_uuid(uuid_part, self.spec_version)
-        except ValueError:
-            # replace their ValueError with ours
-            raise ValueError(ERROR_INVALID_ID.format(value))
-
-        if not result:
-            raise ValueError(ERROR_INVALID_ID.format(value))
-
+        _validate_id(value, self.spec_version, self.required_prefix)
         return value
 
     def default(self):
@@ -396,26 +416,7 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        if self.required_prefix:
-            if not value.startswith(self.required_prefix):
-                raise ValueError(
-                    "must start with '{}'.".format(self.required_prefix),
-                )
-
-        try:
-            if self.required_prefix:
-                uuid_part = value[len(self.required_prefix):]
-            else:
-                idx = value.index("--")
-                uuid_part = value[idx+2:]
-
-            result = _check_uuid(uuid_part, self.spec_version)
-        except ValueError:
-            # replace their ValueError with ours
-            raise ValueError(ERROR_INVALID_ID.format(value))
-
-        if not result:
-            raise ValueError(ERROR_INVALID_ID.format(value))
+        _validate_id(value, self.spec_version, self.required_prefix)
 
         return value
 
