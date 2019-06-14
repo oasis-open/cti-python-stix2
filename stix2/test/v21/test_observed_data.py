@@ -1073,9 +1073,9 @@ def test_process_example_empty_error():
 
 def test_process_example_empty_with_extensions():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-            stix2.v21.Process(extensions={
-                "windows-process-ext": {},
-            })
+        stix2.v21.Process(extensions={
+            "windows-process-ext": {},
+        })
 
     assert excinfo.value.cls == stix2.v21.WindowsProcessExt
     properties_of_extension = list(stix2.v21.WindowsProcessExt._properties.keys())
@@ -1102,12 +1102,12 @@ def test_process_example_windows_process_ext():
 
 def test_process_example_windows_process_ext_empty():
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-            stix2.v21.Process(
-                pid=1221,
-                extensions={
-                    "windows-process-ext": {},
-                },
-            )
+        stix2.v21.Process(
+            pid=1221,
+            extensions={
+                "windows-process-ext": {},
+            },
+        )
 
     assert excinfo.value.cls == stix2.v21.WindowsProcessExt
     properties_of_extension = list(stix2.v21.WindowsProcessExt._properties.keys())
@@ -1116,7 +1116,7 @@ def test_process_example_windows_process_ext_empty():
 
 def test_process_example_extensions_empty():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-            stix2.v21.Process(extensions={})
+        stix2.v21.Process(extensions={})
 
     assert excinfo.value.cls == stix2.v21.Process
     assert excinfo.value.prop_name == 'extensions'

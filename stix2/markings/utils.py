@@ -39,7 +39,7 @@ def _validate_selector(obj, selector):
 
 
 def _get_marking_id(marking):
-    if type(marking).__name__ is 'MarkingDefinition':  # avoid circular import
+    if type(marking).__name__ == 'MarkingDefinition':  # avoid circular import
         return marking.id
     return marking
 
