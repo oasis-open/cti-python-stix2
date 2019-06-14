@@ -48,7 +48,7 @@ class GranularMarking(_STIXBase):
     """
 
     _properties = OrderedDict([
-        ('marking_ref', ReferenceProperty(required=True, type='marking-definition')),
+        ('marking_ref', ReferenceProperty(required=True, spec_version='2.0', type='marking-definition')),
         ('selectors', ListProperty(SelectorProperty, required=True)),
     ])
 
@@ -103,11 +103,11 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
     _type = 'marking-definition'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.0')),
+        ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('definition_type', StringProperty(required=True)),
         ('definition', MarkingProperty(required=True)),
