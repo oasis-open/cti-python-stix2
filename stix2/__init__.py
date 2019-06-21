@@ -28,6 +28,8 @@
 
 # flake8: noqa
 
+DEFAULT_VERSION = '2.1'  # Default version will always be the latest STIX 2.X version
+
 from .confidence import scales
 from .core import _collect_stix2_mappings, parse, parse_observable
 from .datastore import CompositeDataSource
@@ -64,5 +66,3 @@ from .v20 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 
 _collect_stix2_mappings()
-
-DEFAULT_VERSION = '2.1'  # Default version will always be the latest STIX 2.X version
