@@ -15,6 +15,7 @@ from .base import _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import CustomContentError, DictionaryKeyError
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
+import stix2
 
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
@@ -224,7 +225,7 @@ class TypeProperty(Property):
 
 class IDProperty(Property):
 
-    def __init__(self, type, spec_version="2.1"):
+    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
         self.required_prefix = type + "--"
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
@@ -319,7 +320,7 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version='2.0', **kwargs):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -403,7 +404,7 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, type=None, spec_version="2.1", **kwargs):
+    def __init__(self, type=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
@@ -485,7 +486,7 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version='2.0', allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
@@ -520,7 +521,7 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version='2.0', allow_custom=False, enclosing_type=None, required=False):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
         self.allow_custom = allow_custom
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
@@ -561,7 +562,7 @@ class ExtensionsProperty(DictionaryProperty):
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version='2.0', allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
