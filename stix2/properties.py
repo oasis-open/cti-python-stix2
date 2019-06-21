@@ -11,11 +11,12 @@ import uuid
 from six import string_types, text_type
 from stix2patterns.validator import run_validator
 
+import stix2
+
 from .base import _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import CustomContentError, DictionaryKeyError
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
-import stix2
 
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
