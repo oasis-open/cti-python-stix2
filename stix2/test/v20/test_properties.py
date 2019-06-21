@@ -338,7 +338,7 @@ def test_hex_property():
     ],
 )
 def test_dictionary_property_valid(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version="2.0")
     assert dict_prop.clean(d)
 
 
@@ -359,7 +359,7 @@ def test_dictionary_property_valid(d):
     ],
 )
 def test_dictionary_property_invalid_key(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version="2.0")
 
     with pytest.raises(DictionaryKeyError) as excinfo:
         dict_prop.clean(d[0])
@@ -382,7 +382,7 @@ def test_dictionary_property_invalid_key(d):
     ],
 )
 def test_dictionary_property_invalid(d):
-    dict_prop = DictionaryProperty()
+    dict_prop = DictionaryProperty(spec_version="2.0")
 
     with pytest.raises(ValueError) as excinfo:
         dict_prop.clean(d[0])
@@ -392,7 +392,7 @@ def test_dictionary_property_invalid(d):
 def test_property_list_of_dictionary():
     @stix2.v20.CustomObject(
         'x-new-obj', [
-            ('property1', ListProperty(DictionaryProperty(), required=True)),
+            ('property1', ListProperty(DictionaryProperty(spec_version="2.0"), required=True)),
         ],
     )
     class NewObj():
@@ -458,7 +458,7 @@ def test_enum_property_invalid():
 
 
 def test_extension_property_valid():
-    ext_prop = ExtensionsProperty(enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version="2.0", enclosing_type='file')
     assert ext_prop({
         'windows-pebinary-ext': {
             'pe_type': 'exe',
@@ -475,13 +475,13 @@ def test_extension_property_valid():
     ],
 )
 def test_extension_property_invalid(data):
-    ext_prop = ExtensionsProperty(enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version="2.0", enclosing_type='file')
     with pytest.raises(ValueError):
         ext_prop.clean(data)
 
 
 def test_extension_property_invalid_type():
-    ext_prop = ExtensionsProperty(enclosing_type='indicator')
+    ext_prop = ExtensionsProperty(spec_version="2.0", enclosing_type='indicator')
     with pytest.raises(ValueError) as excinfo:
         ext_prop.clean(
             {

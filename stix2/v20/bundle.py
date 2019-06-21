@@ -20,7 +20,7 @@ class Bundle(_STIXBase):
         # Not technically correct: STIX 2.0 spec doesn't say spec_version must
         # have this value, but it's all we support for now.
         ('spec_version', StringProperty(fixed='2.0')),
-        ('objects', ListProperty(STIXObjectProperty)),
+        ('objects', ListProperty(STIXObjectProperty(spec_version="2.0"))),
     ])
 
     def __init__(self, *args, **kwargs):
