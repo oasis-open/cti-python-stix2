@@ -310,7 +310,10 @@ class _Observable(_STIXBase):
             allowed_types = prop.valid_types
 
         try:
-            ref_type = self._STIXBase__valid_refs[ref]
+            try:
+                ref_type = self._STIXBase__valid_refs[ref].type
+            except AttributeError:
+                ref_type = self._STIXBase__valid_refs[ref]
         except TypeError:
             raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
 

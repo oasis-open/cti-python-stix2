@@ -6,6 +6,7 @@ import copy
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
+from ..markings.utils import check_tlp_marking
 from ..properties import (
     HashesProperty, IDProperty, ListProperty, Property, ReferenceProperty,
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
@@ -139,6 +140,14 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
                 self._properties['object_marking_refs'].contained.interoperability = interoperability
 
         super(MarkingDefinition, self).__init__(**kwargs)
+
+    def _check_object_constraints(self):
+        super(MarkingDefinition, self)._check_object_constraints()
+        check_tlp_marking(self, '2.0')
+
+    def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
+        check_tlp_marking(self, '2.0')
+        return super(MarkingDefinition, self).serialize(pretty, include_optional_defaults, **kwargs)
 
 
 OBJ_MAP_MARKING = {

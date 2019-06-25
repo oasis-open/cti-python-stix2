@@ -40,3 +40,21 @@ class Bundle(_STIXBase):
         self._properties['objects'].contained.interoperability = interoperability
 
         super(Bundle, self).__init__(**kwargs)
+
+    def get_obj(self, obj_uuid):
+        if "objects" in self._inner:
+            found_objs = [elem for elem in self.objects if elem.id == obj_uuid]
+            if found_objs == []:
+                raise KeyError("'%s' does not match the id property of any of the bundle's objects" % obj_uuid)
+            return found_objs
+        else:
+            raise KeyError("There are no objects in this empty bundle")
+
+    def __getitem__(self, key):
+        try:
+            return super(Bundle, self).__getitem__(key)
+        except KeyError:
+            try:
+                return self.get_obj(key)
+            except KeyError:
+                raise KeyError("'%s' is neither a property on the bundle nor does it match the id property of any of the bundle's objects" % key)

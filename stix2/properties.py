@@ -190,11 +190,12 @@ class CallableValues(list):
 class StringProperty(Property):
 
     def __init__(self, **kwargs):
-        self.string_type = text_type
         super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        return self.string_type(value)
+        if not isinstance(value, string_types):
+            return text_type(value)
+        return value
 
 
 class TypeProperty(Property):
@@ -454,21 +455,22 @@ class EnumProperty(StringProperty):
         super(EnumProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        value = super(EnumProperty, self).clean(value)
-        if value not in self.allowed:
-            raise ValueError("value '{}' is not valid for this enumeration.".format(value))
-        return self.string_type(value)
+        cleaned_value = super(EnumProperty, self).clean(value)
+        if cleaned_value not in self.allowed:
+            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+
+        return cleaned_value
 
 
 class PatternProperty(StringProperty):
 
     def clean(self, value):
-        str_value = super(PatternProperty, self).clean(value)
-        errors = run_validator(str_value)
+        cleaned_value = super(PatternProperty, self).clean(value)
+        errors = run_validator(cleaned_value)
         if errors:
             raise ValueError(str(errors[0]))
 
-        return self.string_type(value)
+        return cleaned_value
 
 
 class ObservableProperty(Property):

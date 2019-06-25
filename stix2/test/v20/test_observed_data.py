@@ -960,6 +960,24 @@ def test_ip4_address_example():
     assert ip4.resolves_to_refs == ["4", "5"]
 
 
+def test_ip4_address_valid_refs():
+    mac1 = stix2.v20.MACAddress(
+        value="a1:b2:c3:d4:e5:f6",
+    )
+    mac2 = stix2.v20.MACAddress(
+        value="a7:b8:c9:d0:e1:f2",
+    )
+
+    ip4 = stix2.v20.IPv4Address(
+        _valid_refs={"1": mac1, "2": mac2},
+        value="177.60.40.7",
+        resolves_to_refs=["1", "2"],
+    )
+
+    assert ip4.value == "177.60.40.7"
+    assert ip4.resolves_to_refs == ["1", "2"]
+
+
 def test_ip4_address_example_cidr():
     ip4 = stix2.v20.IPv4Address(value="198.51.100.0/24")
 
