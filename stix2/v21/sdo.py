@@ -349,7 +349,8 @@ class ObservedData(STIXDomainObject):
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
-        ('objects', ObservableProperty(spec_version='2.1', required=True)),
+        ('objects', ObservableProperty(spec_version='2.1')),
+        ('object_refs', ListProperty(ReferenceProperty(spec_version="2.1"))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -368,16 +369,16 @@ class ObservedData(STIXDomainObject):
     def _check_object_constraints(self):
         super(self.__class__, self)._check_object_constraints()
 
-        if self.get('number_observed', 1) == 1:
-            self._check_properties_dependency(['first_observed'], ['last_observed'])
-            self._check_properties_dependency(['last_observed'], ['first_observed'])
-
         first_observed = self.get('first_observed')
         last_observed = self.get('last_observed')
 
         if first_observed and last_observed and last_observed < first_observed:
             msg = "{0.id} 'last_observed' must be greater than or equal to 'first_observed'"
             raise ValueError(msg.format(self))
+
+        self._check_mutually_exclusive_properties(
+            ["objects", "object_refs"],
+        )
 
 
 class Opinion(STIXDomainObject):
