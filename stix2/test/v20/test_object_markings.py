@@ -107,7 +107,6 @@ def test_add_markings_combination():
     "data", [
         ([""]),
         (""),
-        ([]),
         ([MARKING_IDS[0], 456]),
     ],
 )
@@ -576,7 +575,6 @@ def test_set_marking():
 
 @pytest.mark.parametrize(
     "data", [
-        ([]),
         ([""]),
         (""),
         ([MARKING_IDS[4], 687]),

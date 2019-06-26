@@ -12,16 +12,8 @@
    patterns
    properties
    utils
-   v20.bundle
-   v20.common
-   v20.observables
-   v20.sdo
-   v20.sro
-   v21.bundle
-   v21.common
-   v21.observables
-   v21.sdo
-   v21.sro
+   v20
+   v21
    workbench
 
 """

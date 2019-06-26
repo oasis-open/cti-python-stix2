@@ -143,12 +143,12 @@ class _STIXBase(collections.Mapping):
         if custom_props:
             self.__allow_custom = True
 
-        # Remove any keyword arguments whose value is None
+        # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}
         props = kwargs.copy()
         props.update(custom_props)
         for prop_name, prop_value in props.items():
-            if prop_value is not None:
+            if prop_value is not None and prop_value != []:
                 setting_kwargs[prop_name] = prop_value
 
         # Detect any missing required properties
@@ -308,7 +308,10 @@ class _Observable(_STIXBase):
             allowed_types = prop.valid_types
 
         try:
-            ref_type = self._STIXBase__valid_refs[ref]
+            try:
+                ref_type = self._STIXBase__valid_refs[ref].type
+            except AttributeError:
+                ref_type = self._STIXBase__valid_refs[ref]
         except TypeError:
             raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
 

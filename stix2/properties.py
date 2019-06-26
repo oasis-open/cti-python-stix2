@@ -13,7 +13,7 @@ from stix2patterns.validator import run_validator
 
 import stix2
 
-from .base import _STIXBase
+from .base import _Observable, _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import CustomContentError, DictionaryKeyError
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
@@ -208,14 +208,28 @@ class ListProperty(Property):
         return result
 
 
+class CallableValues(list):
+    """Wrapper to allow `values()` method on WindowsRegistryKey objects.
+    Needed because `values` is also a property.
+    """
+
+    def __init__(self, parent_instance, *args, **kwargs):
+        self.parent_instance = parent_instance
+        super(CallableValues, self).__init__(*args, **kwargs)
+
+    def __call__(self):
+        return _Observable.values(self.parent_instance)
+
+
 class StringProperty(Property):
 
     def __init__(self, **kwargs):
-        self.string_type = text_type
         super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        return self.string_type(value)
+        if not isinstance(value, string_types):
+            return text_type(value)
+        return value
 
 
 class TypeProperty(Property):
@@ -330,8 +344,6 @@ class DictionaryProperty(Property):
             dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The dictionary property must contain a non-empty dictionary")
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -466,21 +478,22 @@ class EnumProperty(StringProperty):
         super(EnumProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        value = super(EnumProperty, self).clean(value)
-        if value not in self.allowed:
-            raise ValueError("value '{}' is not valid for this enumeration.".format(value))
-        return self.string_type(value)
+        cleaned_value = super(EnumProperty, self).clean(value)
+        if cleaned_value not in self.allowed:
+            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+
+        return cleaned_value
 
 
 class PatternProperty(StringProperty):
 
     def clean(self, value):
-        str_value = super(PatternProperty, self).clean(value)
-        errors = run_validator(str_value)
+        cleaned_value = super(PatternProperty, self).clean(value)
+        errors = run_validator(cleaned_value)
         if errors:
             raise ValueError(str(errors[0]))
 
-        return self.string_type(value)
+        return cleaned_value
 
 
 class ObservableProperty(Property):
@@ -536,8 +549,6 @@ class ExtensionsProperty(DictionaryProperty):
             dictified = copy.deepcopy(dictified)
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
-        if dictified == {}:
-            raise ValueError("The extensions property must contain a non-empty dictionary")
 
         v = 'v' + self.spec_version.replace('.', '')
 

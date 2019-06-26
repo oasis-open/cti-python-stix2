@@ -373,7 +373,6 @@ def test_dictionary_property_invalid_key(d):
 
 @pytest.mark.parametrize(
     "d", [
-        ({}, "The dictionary property must contain a non-empty dictionary"),
         # TODO: This error message could be made more helpful. The error is caused
         # because `json.loads()` doesn't like the *single* quotes around the key
         # name, even though they are valid in a Python dictionary. While technically
@@ -453,6 +452,11 @@ def test_embedded_property():
 def test_enum_property_valid(value):
     enum_prop = EnumProperty(value)
     assert enum_prop.clean('b')
+
+
+def test_enum_property_clean():
+    enum_prop = EnumProperty(['1'])
+    assert enum_prop.clean(1) == '1'
 
 
 def test_enum_property_invalid():

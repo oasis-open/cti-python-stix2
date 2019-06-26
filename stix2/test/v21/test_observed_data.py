@@ -7,7 +7,7 @@ import pytz
 import stix2
 import stix2.exceptions
 
-from .constants import OBSERVED_DATA_ID
+from .constants import IDENTITY_ID, OBSERVED_DATA_ID
 
 OBJECTS_REGEX = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL)
 
@@ -16,7 +16,7 @@ EXPECTED = """{
     "type": "observed-data",
     "spec_version": "2.1",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T19:58:16.000Z",
     "modified": "2016-04-06T19:58:16.000Z",
     "first_observed": "2015-12-21T19:00:00Z",
@@ -33,8 +33,8 @@ EXPECTED = """{
 
 def test_observed_data_example():
     observed_data = stix2.v21.ObservedData(
-        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        id=OBSERVED_DATA_ID,
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
@@ -55,7 +55,7 @@ EXPECTED_WITH_REF = """{
     "type": "observed-data",
     "spec_version": "2.1",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T19:58:16.000Z",
     "modified": "2016-04-06T19:58:16.000Z",
     "first_observed": "2015-12-21T19:00:00Z",
@@ -79,8 +79,8 @@ EXPECTED_WITH_REF = """{
 
 def test_observed_data_example_with_refs():
     observed_data = stix2.v21.ObservedData(
-        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        id=OBSERVED_DATA_ID,
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
@@ -166,8 +166,8 @@ def test_observed_data_object_constraint():
 def test_observed_data_example_with_bad_refs():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.ObservedData(
-            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            id=OBSERVED_DATA_ID,
+            created_by_ref=IDENTITY_ID,
             created="2016-04-06T19:58:16.000Z",
             modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
@@ -194,8 +194,8 @@ def test_observed_data_example_with_bad_refs():
 def test_observed_data_example_with_non_dictionary():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.ObservedData(
-            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            id=OBSERVED_DATA_ID,
+            created_by_ref=IDENTITY_ID,
             created="2016-04-06T19:58:16.000Z",
             modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
@@ -212,8 +212,8 @@ def test_observed_data_example_with_non_dictionary():
 def test_observed_data_example_with_empty_dictionary():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.ObservedData(
-            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            id=OBSERVED_DATA_ID,
+            created_by_ref=IDENTITY_ID,
             created="2016-04-06T19:58:16.000Z",
             modified="2016-04-06T19:58:16.000Z",
             first_observed="2015-12-21T19:00:00Z",
@@ -233,9 +233,9 @@ def test_observed_data_example_with_empty_dictionary():
         {
             "type": "observed-data",
             "spec_version": "2.1",
-            "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            "id": OBSERVED_DATA_ID,
             "created": "2016-04-06T19:58:16.000Z",
-            "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            "created_by_ref": IDENTITY_ID,
             "first_observed": "2015-12-21T19:00:00Z",
             "last_observed": "2015-12-21T19:00:00Z",
             "modified": "2016-04-06T19:58:16.000Z",
@@ -259,7 +259,7 @@ def test_parse_observed_data(data):
     assert odata.modified == dt.datetime(2016, 4, 6, 19, 58, 16, tzinfo=pytz.utc)
     assert odata.first_observed == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert odata.last_observed == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert odata.created_by_ref == "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff"
+    assert odata.created_by_ref == IDENTITY_ID
     assert odata.objects["0"].type == "file"
 
 
@@ -599,7 +599,7 @@ def test_parse_basic_tcp_traffic_with_error(data):
 
 EXPECTED_PROCESS_OD = """{
     "created": "2016-04-06T19:58:16.000Z",
-    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "first_observed": "2015-12-21T19:00:00Z",
     "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
     "last_observed": "2015-12-21T19:00:00Z",
@@ -627,8 +627,8 @@ EXPECTED_PROCESS_OD = """{
 
 def test_observed_data_with_process_example():
     observed_data = stix2.v21.ObservedData(
-        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        id=OBSERVED_DATA_ID,
+        created_by_ref=IDENTITY_ID,
         created="2016-04-06T19:58:16.000Z",
         modified="2016-04-06T19:58:16.000Z",
         first_observed="2015-12-21T19:00:00Z",
@@ -1002,6 +1002,24 @@ def test_ip4_address_example():
     assert ip4.resolves_to_refs == ["4", "5"]
 
 
+def test_ip4_address_valid_refs():
+    mac1 = stix2.v21.MACAddress(
+        value="a1:b2:c3:d4:e5:f6",
+    )
+    mac2 = stix2.v21.MACAddress(
+        value="a7:b8:c9:d0:e1:f2",
+    )
+
+    ip4 = stix2.v21.IPv4Address(
+        _valid_refs={"1": mac1, "2": mac2},
+        value="177.60.40.7",
+        resolves_to_refs=["1", "2"],
+    )
+
+    assert ip4.value == "177.60.40.7"
+    assert ip4.resolves_to_refs == ["1", "2"]
+
+
 def test_ip4_address_example_cidr():
     ip4 = stix2.v21.IPv4Address(value="198.51.100.0/24")
 
@@ -1177,12 +1195,12 @@ def test_process_example_windows_process_ext_empty():
 
 
 def test_process_example_extensions_empty():
-    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.v21.Process(extensions={})
+    proc = stix2.v21.Process(
+        pid=314,
+        extensions={},
+    )
 
-    assert excinfo.value.cls == stix2.v21.Process
-    assert excinfo.value.prop_name == 'extensions'
-    assert 'non-empty dictionary' in excinfo.value.reason
+    assert '{}' in str(proc)
 
 
 def test_process_example_with_WindowsProcessExt_Object():
@@ -1326,6 +1344,8 @@ def test_windows_registry_key_example():
     assert w.values[0].name == "Foo"
     assert w.values[0].data == "qwerty"
     assert w.values[0].data_type == "REG_SZ"
+    # ensure no errors in serialization because of 'values'
+    assert "Foo" in str(w)
 
 
 def test_x509_certificate_example():

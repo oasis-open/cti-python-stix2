@@ -4,6 +4,8 @@ import pytest
 
 import stix2
 
+from .constants import IDENTITY_ID
+
 EXPECTED_BUNDLE = """{
     "type": "bundle",
     "id": "bundle--00000000-0000-4000-8000-000000000007",
@@ -190,7 +192,7 @@ def test_parse_unknown_type():
         "id": "other--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
         "created": "2016-04-06T20:03:00Z",
         "modified": "2016-04-06T20:03:00Z",
-        "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        "created_by_ref": IDENTITY_ID,
         "description": "Campaign by Green Group against a series of targets in the financial services sector.",
         "name": "Green Group Attacks Against Finance",
     }
@@ -205,3 +207,103 @@ def test_stix_object_property():
 
     identity = stix2.v21.Identity(name="test", identity_class="individual")
     assert prop.clean(identity) is identity
+
+
+def test_bundle_obj_id_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    mal_list = bundle.get_obj("malware--00000000-0000-4000-8000-000000000003")
+    assert bundle.objects[1] == mal_list[0]
+    assert len(mal_list) == 1
+
+
+@pytest.mark.parametrize(
+    "bundle_data", [{
+        "type": "bundle",
+        "id": "bundle--00000000-0000-4000-8000-000000000007",
+        "objects": [
+            {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--00000000-0000-4000-8000-000000000001",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-01-01T12:34:56.000Z",
+                "indicator_types": [
+                    "malicious-activity",
+                ],
+                "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+                "valid_from": "2017-01-01T12:34:56Z",
+            },
+            {
+                "type": "malware",
+                "spec_version": "2.1",
+                "id": "malware--00000000-0000-4000-8000-000000000003",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-01-01T12:34:56.000Z",
+                "name": "Cryptolocker1",
+                "malware_types": [
+                    "ransomware",
+                ],
+            },
+            {
+                "type": "malware",
+                "spec_version": "2.1",
+                "id": "malware--00000000-0000-4000-8000-000000000003",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-12-21T12:34:56.000Z",
+                "name": "CryptolockerOne",
+                "malware_types": [
+                    "ransomware",
+                ],
+            },
+            {
+                "type": "relationship",
+                "spec_version": "2.1",
+                "id": "relationship--00000000-0000-4000-8000-000000000005",
+                "created": "2017-01-01T12:34:56.000Z",
+                "modified": "2017-01-01T12:34:56.000Z",
+                "relationship_type": "indicates",
+                "source_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+                "target_ref": "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+            },
+        ],
+    }],
+)
+def test_bundle_objs_ids_found(bundle_data):
+    bundle = stix2.parse(bundle_data)
+
+    mal_list = bundle.get_obj("malware--00000000-0000-4000-8000-000000000003")
+    assert bundle.objects[1] == mal_list[0]
+    assert bundle.objects[2] == mal_list[1]
+    assert len(mal_list) == 2
+
+
+def test_bundle_getitem_overload_property_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    assert bundle.type == "bundle"
+    assert bundle['type'] == "bundle"
+
+
+def test_bundle_getitem_overload_obj_id_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    mal_list = bundle["malware--00000000-0000-4000-8000-000000000003"]
+    assert bundle.objects[1] == mal_list[0]
+    assert len(mal_list) == 1
+
+
+def test_bundle_obj_id_not_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    with pytest.raises(KeyError) as excinfo:
+        bundle.get_obj('non existent')
+    assert "does not match the id property of any of the bundle" in str(excinfo.value)
+
+
+def test_bundle_getitem_overload_obj_id_not_found():
+    bundle = stix2.parse(EXPECTED_BUNDLE)
+
+    with pytest.raises(KeyError) as excinfo:
+        bundle['non existent']
+    assert "neither a property on the bundle nor does it match the id property" in str(excinfo.value)

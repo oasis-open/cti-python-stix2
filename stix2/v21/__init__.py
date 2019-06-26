@@ -1,4 +1,16 @@
-"""STIX 2.1 API Objects."""
+"""STIX 2.1 API Objects.
+
+.. autosummary::
+   :toctree: v21
+
+   bundle
+   common
+   observables
+   sdo
+   sro
+
+|
+"""
 
 # flake8: noqa
 

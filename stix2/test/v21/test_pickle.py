@@ -2,13 +2,15 @@ import pickle
 
 import stix2
 
+from .constants import IDENTITY_ID
+
 
 def test_pickling():
     """
     Ensure a pickle/unpickle cycle works okay.
     """
     identity = stix2.v21.Identity(
-        id="identity--d66cb89d-5228-4983-958c-fa84ef75c88c",
+        id=IDENTITY_ID,
         name="alice",
         description="this is a pickle test",
         identity_class="some_class",

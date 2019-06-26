@@ -369,7 +369,6 @@ def test_dictionary_property_invalid_key(d):
 
 @pytest.mark.parametrize(
     "d", [
-        ({}, "The dictionary property must contain a non-empty dictionary"),
         # TODO: This error message could be made more helpful. The error is caused
         # because `json.loads()` doesn't like the *single* quotes around the key
         # name, even though they are valid in a Python dictionary. While technically

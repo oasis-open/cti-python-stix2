@@ -9,6 +9,7 @@ import pytest
 import pytz
 
 import stix2
+from stix2.datastore import DataSourceError
 from stix2.datastore.filesystem import (
     AuthSet, _find_search_optimizations, _get_matching_dir_entries,
     _timestamp2filename,
@@ -420,8 +421,37 @@ def test_filesystem_sink_add_objects_list(fs_sink, fs_source):
     os.remove(camp7filepath)
 
 
+def test_filesystem_attempt_stix_file_overwrite(fs_store):
+    # add python stix object
+    camp8 = stix2.v20.Campaign(
+        name="George Washington",
+        objective="Create an awesome country",
+        aliases=["Georgey"],
+    )
+
+    fs_store.add(camp8)
+
+    camp8_r = fs_store.get(camp8.id)
+    assert camp8_r.id == camp8_r.id
+    assert camp8_r.name == camp8.name
+
+    filepath = os.path.join(
+        FS_PATH, "campaign", camp8_r.id,
+        _timestamp2filename(camp8_r.modified) + ".json",
+    )
+
+    # Now attempt to overwrite the existing file
+    with pytest.raises(DataSourceError) as excinfo:
+        fs_store.add(camp8)
+    assert "Attempted to overwrite file" in str(excinfo)
+
+    os.remove(filepath)
+
+
 def test_filesystem_sink_marking(fs_sink):
     marking = stix2.v20.MarkingDefinition(
+        id="marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
+        created="2017-01-20T00:00:00.000Z",
         definition_type="tlp",
         definition=stix2.v20.TLPMarking(tlp="green"),
     )
@@ -555,6 +585,8 @@ def test_filesystem_store_add_invalid_object(fs_store):
 
 def test_filesystem_store_add_marking(fs_store):
     marking = stix2.v20.MarkingDefinition(
+        id="marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
+        created="2017-01-20T00:00:00.000Z",
         definition_type="tlp",
         definition=stix2.v20.TLPMarking(tlp="green"),
     )

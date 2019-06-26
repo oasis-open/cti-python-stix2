@@ -50,7 +50,6 @@ def test_location_with_some_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
 
     loc = stix2.v21.Location(
-        type="location",
         id=LOCATION_ID,
         created=now,
         modified=now,
@@ -69,7 +68,7 @@ def test_location_with_some_required_properties():
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "region": "north-america",
@@ -94,7 +93,7 @@ def test_parse_location(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 90.01,
@@ -103,7 +102,7 @@ def test_parse_location(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": -90.1,
@@ -123,7 +122,7 @@ def test_location_bad_latitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 80,
@@ -132,7 +131,7 @@ def test_location_bad_latitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 80,
@@ -152,7 +151,7 @@ def test_location_bad_longitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "longitude": 175.7,
@@ -161,7 +160,7 @@ def test_location_bad_longitude(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 80,
@@ -181,7 +180,7 @@ def test_location_properties_missing_when_precision_is_present(data):
         {
             "type": "location",
             "spec_version": "2.1",
-            "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+            "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
             "latitude": 18.468842,
@@ -203,7 +202,7 @@ def test_location_negative_precision(data):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "latitude": 18.468842,
@@ -215,7 +214,7 @@ def test_location_negative_precision(data):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "longitude": 160.7,
@@ -238,7 +237,7 @@ def test_location_latitude_dependency_missing(data, msg):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "latitude": 18.468842,
@@ -249,7 +248,7 @@ def test_location_latitude_dependency_missing(data, msg):
             {
                 "type": "location",
                 "spec_version": "2.1",
-                "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
+                "id": LOCATION_ID,
                 "created": "2016-04-06T20:03:00.000Z",
                 "modified": "2016-04-06T20:03:00.000Z",
                 "longitude": 160.7,
@@ -263,3 +262,100 @@ def test_location_lat_or_lon_dependency_missing(data, msg):
         stix2.parse(data)
 
     assert msg in str(excinfo.value)
+
+
+def test_google_map_url_long_lat_provided():
+    expected_url = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
+
+    loc = stix2.v21.Location(
+        latitude=41.862401,
+        longitude=-87.616001,
+    )
+
+    loc_url = loc.to_maps_url()
+    assert loc_url == expected_url
+
+
+def test_google_map_url_multiple_props_no_long_lat_provided():
+    expected_url = "https://www.google.com/maps/search/?api=1&query=1410+Museum+Campus+Drive%2C+Chicago%2C+IL+60605%2CUnited+States+of+America%2CNorth+America"
+    now = dt.datetime(2019, 2, 7, 12, 34, 56, tzinfo=pytz.utc)
+
+    loc = stix2.v21.Location(
+        type="location",
+        id=LOCATION_ID,
+        created=now,
+        modified=now,
+        region="North America",
+        country="United States of America",
+        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+    )
+
+    loc_url = loc.to_maps_url()
+    assert loc_url == expected_url
+
+
+def test_google_map_url_multiple_props_and_long_lat_provided():
+    expected_url = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
+
+    loc = stix2.v21.Location(
+        region="North America",
+        country="United States of America",
+        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+        latitude=41.862401,
+        longitude=-87.616001,
+    )
+
+    loc_url = loc.to_maps_url()
+    assert loc_url == expected_url
+
+
+def test_map_url_invalid_map_engine_provided():
+    loc = stix2.v21.Location(
+        latitude=41.862401,
+        longitude=-87.616001,
+    )
+
+    with pytest.raises(ValueError) as excinfo:
+        loc.to_maps_url("Fake Maps")
+
+    assert "is not a valid or currently-supported map engine" in str(excinfo.value)
+
+
+def test_bing_map_url_long_lat_provided():
+    expected_url = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
+
+    loc = stix2.v21.Location(
+        latitude=41.862401,
+        longitude=-87.616001,
+    )
+
+    loc_url = loc.to_maps_url("Bing Maps")
+    assert loc_url == expected_url
+
+
+def test_bing_map_url_multiple_props_no_long_lat_provided():
+    expected_url = "https://bing.com/maps/default.aspx?where1=1410+Museum+Campus+Drive%2C+Chicago%2C+IL+60605%2CUnited+States+of+America%2CNorth+America&lvl=16"
+
+    loc = stix2.v21.Location(
+        region="North America",
+        country="United States of America",
+        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+    )
+
+    loc_url = loc.to_maps_url("Bing Maps")
+    assert loc_url == expected_url
+
+
+def test_bing_map_url_multiple_props_and_long_lat_provided():
+    expected_url = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
+
+    loc = stix2.v21.Location(
+        region="North America",
+        country="United States of America",
+        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+        latitude=41.862401,
+        longitude=-87.616001,
+    )
+
+    loc_url = loc.to_maps_url("Bing Maps")
+    assert loc_url == expected_url

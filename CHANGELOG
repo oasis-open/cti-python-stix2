@@ -1,6 +1,17 @@
 CHANGELOG
 =========
 
+1.1.2 - 2019-02-13
+
+* #86 Adds helper function to Location objects to generate a URL to the location in an online map engine.
+
+1.1.1 - 2019-01-11
+
+* #234 Update documentation structure to better navigate between v20/v21 objects
+* #232 FileSystemStore now raises an exception if you attempt to overwrite an existing file
+* #236 Fix a serialization problem with the WindowsRegistryKey observable object
+* #238 Fix a problem with the LanguageContent object not allowing its creation with an empty dictionary
+
 1.1.0 - 2018-12-11
 
 - Most (if not all) STIX 2.1 SDOs/SROs and core objects have been implemented according to the latest CSD/WD document
