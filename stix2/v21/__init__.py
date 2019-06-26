@@ -21,8 +21,8 @@ from .observables import (
 )
 from .sdo import (
     AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
-    IntrusionSet, Location, Malware, Note, ObservedData, Opinion, Report,
-    ThreatActor, Tool, Vulnerability,
+    IntrusionSet, Location, Malware, MalwareAnalysis, Note, ObservedData,
+    Opinion, Report, ThreatActor, Tool, Vulnerability,
 )
 from .sro import Relationship, Sighting
 
@@ -37,6 +37,7 @@ OBJ_MAP = {
     'language-content': LanguageContent,
     'location': Location,
     'malware': Malware,
+    'malware-analysis': MalwareAnalysis,
     'note': Note,
     'marking-definition': MarkingDefinition,
     'observed-data': ObservedData,
