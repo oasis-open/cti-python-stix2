@@ -369,10 +369,6 @@ class ObservedData(STIXDomainObject):
     def _check_object_constraints(self):
         super(self.__class__, self)._check_object_constraints()
 
-        if self.get('number_observed', 1) == 1:
-            self._check_properties_dependency(['first_observed'], ['last_observed'])
-            self._check_properties_dependency(['last_observed'], ['first_observed'])
-
         first_observed = self.get('first_observed')
         last_observed = self.get('last_observed')
 
