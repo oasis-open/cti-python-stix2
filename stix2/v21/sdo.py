@@ -356,6 +356,49 @@ class Malware(STIXDomainObject):
     ])
 
 
+class MalwareAnalysis(STIXDomainObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'malware-analysis'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.1')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('product', StringProperty(required=True)),
+        ('version', StringProperty()),
+        ('host_vm_ref', ReferenceProperty(type='software', spec_version='2.1')),
+        ('operating_system_ref', ReferenceProperty(type='software', spec_version='2.1')),
+        ('installed_software_refs', ListProperty(ReferenceProperty(type='software', spec_version='2.1'))),
+        ('configuration_version', StringProperty()),
+        ('module', StringProperty()),
+        ('analysis_engine_version', StringProperty()),
+        ('analysis_definition_version', StringProperty()),
+        ('submitted', TimestampProperty()),
+        ('analysis_started', TimestampProperty()),
+        ('analysis_ended', TimestampProperty()),
+        ('av_result', StringProperty()),
+        ('analysis_sco_refs', ListProperty(ReferenceProperty(spec_version='2.1'))),
+    ])
+
+    def _check_object_constraints(self):
+        super(MalwareAnalysis, self)._check_object_constraints()
+
+        self._check_at_least_one_property(["av_result", "analysis_sco_refs"])
+
+
 class Note(STIXDomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
