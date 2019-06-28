@@ -8,9 +8,10 @@ from six.moves.urllib.parse import quote_plus
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
 from ..properties import (
-    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
-    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
-    StringProperty, TimestampProperty, TypeProperty,
+    BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
+    FloatProperty, IDProperty, IntegerProperty, ListProperty,
+    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
@@ -101,8 +102,8 @@ class CourseOfAction(STIXDomainObject):
         ('description', StringProperty()),
         ('action_type', StringProperty()),
         ('os_execution_envs', ListProperty(StringProperty)),
-        ('action_bin', StringProperty()),
-        ('action_reference', StringProperty()),
+        ('action_bin', BinaryProperty()),
+        ('action_reference', EmbeddedObjectProperty(ExternalReference)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
