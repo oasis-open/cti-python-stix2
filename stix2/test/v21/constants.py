@@ -78,6 +78,7 @@ IDENTITY_KWARGS = dict(
 INDICATOR_KWARGS = dict(
     indicator_types=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+    valid_from="2017-01-01T12:34:56Z",
 )
 
 INTRUSION_SET_KWARGS = dict(
@@ -87,6 +88,7 @@ INTRUSION_SET_KWARGS = dict(
 MALWARE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
+    is_family=False,
 )
 
 MALWARE_MORE_KWARGS = dict(
@@ -97,6 +99,7 @@ MALWARE_MORE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
     description="A ransomware related to ...",
+    is_family=False,
 )
 
 OBSERVED_DATA_KWARGS = dict(
