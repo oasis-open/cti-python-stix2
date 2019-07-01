@@ -41,7 +41,7 @@ class Bundle(_STIXBase):
 
     def get_obj(self, obj_uuid):
         if "objects" in self._inner:
-            found_objs = [elem for elem in self.objects if elem.id == obj_uuid]
+            found_objs = [elem for elem in self.objects if elem['id'] == obj_uuid]
             if found_objs == []:
                 raise KeyError("'%s' does not match the id property of any of the bundle's objects" % obj_uuid)
             return found_objs
