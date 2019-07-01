@@ -32,7 +32,7 @@ EXPECTED_BUNDLE = """{
             "malware_types": [
                 "ransomware"
             ],
-            "is_family": False
+            "is_family": "False"
         },
         {
             "type": "relationship",
