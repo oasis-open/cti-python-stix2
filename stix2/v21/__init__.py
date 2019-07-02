@@ -32,9 +32,10 @@ from .observables import (
     X509Certificate, X509V3ExtenstionsType,
 )
 from .sdo import (
-    AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
-    IntrusionSet, Location, Malware, MalwareAnalysis, Note, ObservedData,
-    Opinion, Report, ThreatActor, Tool, Vulnerability,
+    AttackPattern, Campaign, CourseOfAction, CustomObject, Grouping, Identity,
+    Indicator, Infrastructure, IntrusionSet, Location, Malware,
+    MalwareAnalysis, Note, ObservedData, Opinion, Report, ThreatActor, Tool,
+    Vulnerability,
 )
 from .sro import Relationship, Sighting
 
@@ -43,8 +44,10 @@ OBJ_MAP = {
     'bundle': Bundle,
     'campaign': Campaign,
     'course-of-action': CourseOfAction,
+    'grouping': Grouping,
     'identity': Identity,
     'indicator': Indicator,
+    'infrastructure': Infrastructure,
     'intrusion-set': IntrusionSet,
     'language-content': LanguageContent,
     'location': Location,

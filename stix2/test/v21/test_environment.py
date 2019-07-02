@@ -220,7 +220,7 @@ def test_parse_malware():
         "malware_types": [
             "ransomware"
         ],
-        "is_family": "False"
+        "is_family": false
     }"""
     mal = env.parse(data, version="2.1")
 

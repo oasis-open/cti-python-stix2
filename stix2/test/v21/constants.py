@@ -7,8 +7,10 @@ FAKE_TIME = dt.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
 ATTACK_PATTERN_ID = "attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 CAMPAIGN_ID = "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 COURSE_OF_ACTION_ID = "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
+GROUPING_ID = "grouping--753abcde-3141-5926-ace5-0a810b1ff996"
 IDENTITY_ID = "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
 INDICATOR_ID = "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
+INFRASTRUCTURE_ID = "infrastructure--3000ae1b-784c-f03d-8abc-0a625b2ff018"
 INTRUSION_SET_ID = "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29"
 LOCATION_ID = "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64"
 MALWARE_ID = "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
@@ -70,6 +72,11 @@ COURSE_OF_ACTION_KWARGS = dict(
     name="Block",
 )
 
+GROUPING_KWARGS = dict(
+    name="Harry Potter and the Leet Hackers",
+    context="suspicious-activity",
+)
+
 IDENTITY_KWARGS = dict(
     name="John Smith",
     identity_class="individual",
@@ -79,6 +86,11 @@ INDICATOR_KWARGS = dict(
     indicator_types=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     valid_from="2017-01-01T12:34:56Z",
+)
+
+INFRASTRUCTURE_KWARGS = dict(
+    name="Poison Ivy C2",
+    infrastructure_types=["command-and-control"],
 )
 
 INTRUSION_SET_KWARGS = dict(
