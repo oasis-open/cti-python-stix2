@@ -5,7 +5,8 @@ import pytest
 import stix2
 
 from .constants import (
-    FAKE_TIME, INDICATOR_KWARGS, MALWARE_KWARGS, RELATIONSHIP_KWARGS,
+    FAKE_TIME, GROUPING_KWARGS, INDICATOR_KWARGS, INFRASTRUCTURE_KWARGS,
+    MALWARE_KWARGS, RELATIONSHIP_KWARGS,
 )
 
 
@@ -37,6 +38,16 @@ def uuid4(monkeypatch):
 @pytest.fixture
 def indicator(uuid4, clock):
     return stix2.v21.Indicator(**INDICATOR_KWARGS)
+
+
+@pytest.fixture
+def infrastructure(uuid4, clock):
+    return stix2.v21.Infrastructure(**INFRASTRUCTURE_KWARGS)
+
+
+@pytest.fixture
+def grouping(uuid4, clock):
+    return stix2.v21.Grouping(**GROUPING_KWARGS)
 
 
 @pytest.fixture

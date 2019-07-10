@@ -122,6 +122,34 @@ class CourseOfAction(STIXDomainObject):
         )
 
 
+class Grouping(STIXDomainObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'grouping'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.1')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('name', StringProperty()),
+        ('description', StringProperty()),
+        ('context', StringProperty(required=True)),
+        ('object_refs', ListProperty(ReferenceProperty)),
+    ])
+
+
 class Identity(STIXDomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
@@ -170,7 +198,7 @@ class Indicator(STIXDomainObject):
         ('description', StringProperty()),
         ('indicator_types', ListProperty(StringProperty, required=True)),
         ('pattern', PatternProperty(required=True)),
-        ('valid_from', TimestampProperty(default=lambda: NOW)),
+        ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -190,6 +218,46 @@ class Indicator(STIXDomainObject):
 
         if valid_from and valid_until and valid_until <= valid_from:
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
+            raise ValueError(msg.format(self))
+
+
+class Infrastructure(STIXDomainObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'infrastructure'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('infrastructure_types', ListProperty(StringProperty, required=True)),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
+    ])
+
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))
 
 
@@ -346,7 +414,16 @@ class Malware(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('malware_types', ListProperty(StringProperty, required=True)),
+        ('is_family', BooleanProperty(required=True)),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
+        ('os_execution_envs', ListProperty(StringProperty)),
+        ('architecture_execution_envs', ListProperty(StringProperty)),
+        ('implementation_languages', ListProperty(StringProperty)),
+        ('capabilities', ListProperty(StringProperty)),
+        ('sample_refs', ListProperty(ReferenceProperty(spec_version='2.1'))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -355,6 +432,16 @@ class Malware(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        super(self.__class__, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
+            raise ValueError(msg.format(self))
 
 
 class MalwareAnalysis(STIXDomainObject):
@@ -596,6 +683,7 @@ class Tool(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('tool_types', ListProperty(StringProperty, required=True)),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),

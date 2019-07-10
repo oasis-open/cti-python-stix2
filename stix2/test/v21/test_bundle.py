@@ -31,7 +31,8 @@ EXPECTED_BUNDLE = """{
             "name": "Cryptolocker",
             "malware_types": [
                 "ransomware"
-            ]
+            ],
+            "is_family": false
         },
         {
             "type": "relationship",
@@ -72,6 +73,7 @@ EXPECTED_BUNDLE_DICT = {
             "malware_types": [
                 "ransomware",
             ],
+            "is_family": False,
         },
         {
             "type": "relationship",
@@ -244,6 +246,7 @@ def test_bundle_obj_id_found():
                 "malware_types": [
                     "ransomware",
                 ],
+                "is_family": False,
             },
             {
                 "type": "malware",
@@ -255,6 +258,7 @@ def test_bundle_obj_id_found():
                 "malware_types": [
                     "ransomware",
                 ],
+                "is_family": False,
             },
             {
                 "type": "relationship",

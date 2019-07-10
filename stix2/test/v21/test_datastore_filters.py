@@ -16,6 +16,7 @@ stix_objs = [
             "remote-access-trojan",
         ],
         "modified": "2017-01-27T13:49:53.997Z",
+        "is_family": False,
         "name": "Poison Ivy",
         "type": "malware",
     },
