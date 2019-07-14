@@ -80,6 +80,7 @@ class Sighting(STIXRelationshipObject):
         ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('description', StringProperty()),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('count', IntegerProperty(min=0, max=999999999)),
