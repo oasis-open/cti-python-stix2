@@ -29,6 +29,7 @@ stix_objs = [
         "modified": "2014-05-08T09:00:00.000Z",
         "name": "File hash for Poison Ivy variant",
         "pattern": "[file:hashes.'SHA-256' = 'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2014-05-08T09:00:00.000000Z",

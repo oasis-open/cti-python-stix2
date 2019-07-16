@@ -14,7 +14,11 @@ EXPECTED_GROUPING = """{
     "created": "2017-01-01T12:34:56.000Z",
     "modified": "2017-01-01T12:34:56.000Z",
     "name": "Harry Potter and the Leet Hackers",
-    "context": "suspicious-activity"
+    "context": "suspicious-activity",
+    "object_refs": [
+        "malware--c8d2fae5-7271-400c-b81d-931a4caf20b9",
+        "identity--988145ed-a3b4-4421-b7a7-273376be67ce"
+    ]
 }"""
 
 
@@ -28,6 +32,10 @@ def test_grouping_with_all_required_properties():
         modified=now,
         name="Harry Potter and the Leet Hackers",
         context="suspicious-activity",
+        object_refs=[
+            "malware--c8d2fae5-7271-400c-b81d-931a4caf20b9",
+            "identity--988145ed-a3b4-4421-b7a7-273376be67ce",
+        ],
     )
 
     assert str(grp) == EXPECTED_GROUPING
@@ -74,7 +82,7 @@ def test_grouping_required_properties():
         stix2.v21.Grouping()
 
     assert excinfo.value.cls == stix2.v21.Grouping
-    assert excinfo.value.properties == ["context"]
+    assert excinfo.value.properties == ["context", "object_refs"]
 
 
 def test_invalid_kwarg_to_grouping():
@@ -97,6 +105,10 @@ def test_invalid_kwarg_to_grouping():
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Harry Potter and the Leet Hackers",
             "context": "suspicious-activity",
+            "object_refs": [
+                "malware--c8d2fae5-7271-400c-b81d-931a4caf20b9",
+                "identity--988145ed-a3b4-4421-b7a7-273376be67ce",
+            ],
         },
     ],
 )
@@ -110,3 +122,7 @@ def test_parse_grouping(data):
     assert grp.modified == dt.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
     assert grp.name == "Harry Potter and the Leet Hackers"
     assert grp.context == "suspicious-activity"
+    assert grp.object_refs == [
+        "malware--c8d2fae5-7271-400c-b81d-931a4caf20b9",
+        "identity--988145ed-a3b4-4421-b7a7-273376be67ce"
+    ]

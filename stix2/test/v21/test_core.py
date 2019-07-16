@@ -16,6 +16,7 @@ BUNDLE = {
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "pattern_type": "stix",
             "valid_from": "2017-01-01T12:34:56Z",
             "indicator_types": [
                 "malicious-activity",

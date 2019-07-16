@@ -75,6 +75,10 @@ COURSE_OF_ACTION_KWARGS = dict(
 GROUPING_KWARGS = dict(
     name="Harry Potter and the Leet Hackers",
     context="suspicious-activity",
+    object_refs=[
+        "malware--c8d2fae5-7271-400c-b81d-931a4caf20b9",
+        "identity--988145ed-a3b4-4421-b7a7-273376be67ce"
+    ],
 )
 
 IDENTITY_KWARGS = dict(
@@ -84,6 +88,7 @@ IDENTITY_KWARGS = dict(
 
 INDICATOR_KWARGS = dict(
     indicator_types=['malicious-activity'],
+    pattern_type="stix",
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     valid_from="2017-01-01T12:34:56Z",
 )
