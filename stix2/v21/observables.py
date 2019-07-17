@@ -165,8 +165,7 @@ class EmailMessage(_Observable):
         self._check_properties_dependency(['is_multipart'], ['body_multipart'])
         if self.get('is_multipart') is True and self.get('body'):
             # 'body' MAY only be used if is_multipart is false.
-            raise DependentPropertiesError(
-                self.__class__, [('is_multipart', 'body')])
+            raise DependentPropertiesError(self.__class__, [('is_multipart', 'body')])
 
 
 class ArchiveExt(_Extension):
