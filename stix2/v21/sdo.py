@@ -416,13 +416,14 @@ class ObservedData(STIXDomainObject):
     ])
 
     def __init__(self, *args, **kwargs):
+        print('running here...')
         pass
-        # self.__allow_custom = kwargs.get('allow_custom', False)
-        # Removing the objects check as it is replaced with object_refs in 21
-        # self._properties['objects'].allow_custom = kwargs.get(
-        #     'allow_custom', False)
+        self.__allow_custom = kwargs.get('allow_custom', False)
+        Removing the objects check as it is replaced with object_refs in 21
+        self._properties['objects'].allow_custom = kwargs.get(
+            'allow_custom', False)
 
-        # super(ObservedData, self).__init__(*args, **kwargs)
+        super(ObservedData, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(self.__class__, self)._check_object_constraints()
