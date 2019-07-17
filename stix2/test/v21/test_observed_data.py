@@ -693,16 +693,16 @@ def test_directory_example():
     dir = stix2.v21.Directory(
         _valid_refs={"1": "file"},
         path='/usr/lib',
-        created="2015-12-21T19:00:00Z",
-        modified="2015-12-24T19:00:00Z",
-        accessed="2015-12-21T20:00:00Z",
+        ctime="2015-12-21T19:00:00Z",
+        mtime="2015-12-24T19:00:00Z",
+        atime="2015-12-21T20:00:00Z",
         contains_refs=["1"],
     )
 
     assert dir.path == '/usr/lib'
-    assert dir.created == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert dir.modified == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
-    assert dir.accessed == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+    assert dir.ctime == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
+    assert dir.mtime == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
+    assert dir.atime == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
     assert dir.contains_refs == ["1"]
 
 
@@ -711,9 +711,9 @@ def test_directory_example_ref_error():
         stix2.v21.Directory(
             _valid_refs=[],
             path='/usr/lib',
-            created="2015-12-21T19:00:00Z",
-            modified="2015-12-24T19:00:00Z",
-            accessed="2015-12-21T20:00:00Z",
+            ctime="2015-12-21T19:00:00Z",
+            mtime="2015-12-24T19:00:00Z",
+            atime="2015-12-21T20:00:00Z",
             contains_refs=["1"],
         )
 
@@ -753,9 +753,9 @@ def test_file_example():
         size=100,
         magic_number_hex="1C",
         mime_type="application/msword",
-        created="2016-12-21T19:00:00Z",
-        modified="2016-12-24T19:00:00Z",
-        accessed="2016-12-21T20:00:00Z",
+        ctime="2016-12-21T19:00:00Z",
+        mtime="2016-12-24T19:00:00Z",
+        atime="2016-12-21T20:00:00Z",
     )
 
     assert f.name == "qwerty.dll"
@@ -763,9 +763,9 @@ def test_file_example():
     assert f.magic_number_hex == "1C"
     assert f.hashes["SHA-256"] == "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
     assert f.mime_type == "application/msword"
-    assert f.created == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert f.modified == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
-    assert f.accessed == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+    assert f.ctime == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
+    assert f.mtime == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
+    assert f.atime == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
 
 
 def test_file_example_with_NTFSExt():
