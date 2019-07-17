@@ -77,8 +77,7 @@ class Directory(_Observable):
         ('created', TimestampProperty()),
         ('modified', TimestampProperty()),
         ('accessed', TimestampProperty()),
-        ('contains_refs', ListProperty(
-            ObjectReferenceProperty(valid_types=['file', 'directory']))),
+        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
@@ -94,8 +93,7 @@ class DomainName(_Observable):
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(
-            valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
+        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
@@ -125,8 +123,7 @@ class EmailMIMEComponent(_STIXBase):
 
     _properties = OrderedDict([
         ('body', StringProperty()),
-        ('body_raw_ref', ObjectReferenceProperty(
-            valid_types=['artifact', 'file'])),
+        ('body_raw_ref', ObjectReferenceProperty(valid_types=['artifact', 'file'])),
         ('content_type', StringProperty()),
         ('content_disposition', StringProperty()),
     ])
@@ -158,8 +155,7 @@ class EmailMessage(_Observable):
         ('received_lines', ListProperty(StringProperty)),
         ('additional_header_fields', DictionaryProperty(spec_version='2.1')),
         ('body', StringProperty()),
-        ('body_multipart', ListProperty(
-            EmbeddedObjectProperty(type=EmailMIMEComponent))),
+        ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
         ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
@@ -181,8 +177,7 @@ class ArchiveExt(_Extension):
 
     _type = 'archive-ext'
     _properties = OrderedDict([
-        ('contains_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='file'), required=True)),
+        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types='file'), required=True)),
         ('comment', StringProperty()),
     ])
 
@@ -209,8 +204,7 @@ class NTFSExt(_Extension):
     _type = 'ntfs-ext'
     _properties = OrderedDict([
         ('sid', StringProperty()),
-        ('alternate_data_streams', ListProperty(
-            EmbeddedObjectProperty(type=AlternateDataStream))),
+        ('alternate_data_streams', ListProperty(EmbeddedObjectProperty(type=AlternateDataStream))),
     ])
 
 
@@ -322,8 +316,7 @@ class WindowsPEBinaryExt(_Extension):
         ('size_of_optional_header', IntegerProperty(min=0)),
         ('characteristics_hex', HexProperty()),
         ('file_header_hashes', HashesProperty(spec_version='2.1')),
-        ('optional_header', EmbeddedObjectProperty(
-            type=WindowsPEOptionalHeaderType)),
+        ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
 
@@ -370,10 +363,8 @@ class IPv4Address(_Observable):
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='mac-addr'))),
-        ('belongs_to_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
+        ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
@@ -389,10 +380,8 @@ class IPv6Address(_Observable):
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type)),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='mac-addr'))),
-        ('belongs_to_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
+        ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
@@ -532,10 +521,8 @@ class NetworkTraffic(_Observable):
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
-        ('src_ref', ObjectReferenceProperty(valid_types=[
-         'ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
-        ('dst_ref', ObjectReferenceProperty(valid_types=[
-         'ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
+        ('src_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
+        ('dst_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
         ('src_port', IntegerProperty(min=0, max=65535)),
         ('dst_port', IntegerProperty(min=0, max=65535)),
         ('protocols', ListProperty(StringProperty, required=True)),
@@ -546,10 +533,8 @@ class NetworkTraffic(_Observable):
         ('ipfix', DictionaryProperty(spec_version='2.1')),
         ('src_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('encapsulates_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='network-traffic'))),
-        ('encapsulates_by_ref', ObjectReferenceProperty(
-            valid_types='network-traffic')),
+        ('encapsulates_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
+        ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
@@ -620,8 +605,7 @@ class WindowsServiceExt(_Extension):
                 "SERVICE_SYSTEM_ALERT",
             ]),
         ),
-        ('service_dll_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='file'))),
+        ('service_dll_refs', ListProperty(ObjectReferenceProperty(valid_types='file'))),
         (
             'service_type', EnumProperty(allowed=[
                 "SERVICE_KERNEL_DRIVER",
@@ -661,8 +645,7 @@ class Process(_Observable):
         ('cwd', StringProperty()),
         ('command_line', StringProperty()),
         ('environment_variables', DictionaryProperty(spec_version='2.1')),
-        ('opened_connection_refs', ListProperty(
-            ObjectReferenceProperty(valid_types='network-traffic'))),
+        ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('image_ref', ObjectReferenceProperty(valid_types='file')),
         ('parent_ref', ObjectReferenceProperty(valid_types='process')),
