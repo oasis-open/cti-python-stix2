@@ -415,14 +415,14 @@ class ObservedData(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
-    # Removing this as it should not be needed any longer (with object_refs)
-    # def __init__(self, *args, **kwargs):
-    #     self.__allow_custom = kwargs.get('allow_custom', False)
+    # Removing this as it should not be needed any longer (with object)
+    def __init__(self, *args, **kwargs):
+        self.__allow_custom = kwargs.get('allow_custom', False)
     #     Removing the objects check as it is replaced with object_refs in 21
     #     self._properties['objects'].allow_custom = kwargs.get(
     #         'allow_custom', False)
 
-    #     super(ObservedData, self).__init__(*args, **kwargs)
+        super(ObservedData, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(self.__class__, self)._check_object_constraints()
