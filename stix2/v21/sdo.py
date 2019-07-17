@@ -237,6 +237,7 @@ class Location(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty()),
         ('description', StringProperty()),
         ('latitude', FloatProperty(min=-90.0, max=90.0)),
         ('longitude', FloatProperty(min=-180.0, max=180.0)),
