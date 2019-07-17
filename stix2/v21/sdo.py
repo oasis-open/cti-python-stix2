@@ -416,7 +416,8 @@ class ObservedData(STIXDomainObject):
     ])
 
     def __init__(self, *args, **kwargs):
-        self.__allow_custom = kwargs.get('allow_custom', False)
+        pass
+        # self.__allow_custom = kwargs.get('allow_custom', False)
         # Removing the objects check as it is replaced with object_refs in 21
         # self._properties['objects'].allow_custom = kwargs.get(
         #     'allow_custom', False)
