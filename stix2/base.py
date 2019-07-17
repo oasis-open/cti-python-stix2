@@ -143,7 +143,6 @@ class _STIXBase(collections.Mapping):
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
         if not self.__allow_custom:
-            print(set(kwargs), set(self._properties))
             extra_kwargs = list(set(kwargs) - set(self._properties))
             if extra_kwargs:
                 raise ExtraPropertiesError(cls, extra_kwargs)
