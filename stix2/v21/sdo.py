@@ -422,7 +422,7 @@ class ObservedData(STIXDomainObject):
         # self._properties['objects'].allow_custom = kwargs.get(
         #     'allow_custom', False)
 
-        super(ObservedData, self).__init__(*args, **kwargs)
+        # super(ObservedData, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(self.__class__, self)._check_object_constraints()
