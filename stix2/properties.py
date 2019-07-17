@@ -544,7 +544,7 @@ class STIXObjectProperty(Property):
     def clean(self, value):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
-        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition')
+        if any(x in ('STIXDomainObject', 'STIXRelationshipObject', 'MarkingDefinition', '_Observable')
                for x in get_class_hierarchy_names(value)):
             # A simple "is this a spec version 2.1+ object" test.  For now,
             # limit 2.0 bundles to 2.0 objects.  It's not possible yet to
