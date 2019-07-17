@@ -38,7 +38,8 @@ class AttackPattern(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -68,7 +69,8 @@ class Campaign(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -104,7 +106,8 @@ class CourseOfAction(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -134,7 +137,8 @@ class Identity(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -165,7 +169,8 @@ class Indicator(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -208,7 +213,8 @@ class IntrusionSet(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -237,6 +243,7 @@ class Location(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty()),
         ('description', StringProperty()),
         ('latitude', FloatProperty(min=-90.0, max=90.0)),
         ('longitude', FloatProperty(min=-180.0, max=180.0)),
@@ -252,7 +259,8 @@ class Location(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -260,7 +268,8 @@ class Location(STIXDomainObject):
         super(self.__class__, self)._check_object_constraints()
 
         if self.get('precision') is not None:
-            self._check_properties_dependency(['longitude', 'latitude'], ['precision'])
+            self._check_properties_dependency(
+                ['longitude', 'latitude'], ['precision'])
 
         self._check_properties_dependency(['latitude'], ['longitude'])
         self._check_properties_dependency(['longitude'], ['latitude'])
@@ -284,8 +293,10 @@ class Location(STIXDomainObject):
         if latitude is not None and longitude is not None:
             params.extend([str(latitude), str(longitude)])
         else:
-            properties = ['street_address', 'city', 'country', 'region', 'administrative_area', 'postal_code']
-            params = [self.get(prop) for prop in properties if self.get(prop) is not None]
+            properties = ['street_address', 'city', 'country',
+                          'region', 'administrative_area', 'postal_code']
+            params = [self.get(prop)
+                      for prop in properties if self.get(prop) is not None]
 
         return self._to_maps_url_dispatcher(map_engine, params)
 
@@ -295,7 +306,8 @@ class Location(STIXDomainObject):
         elif map_engine == "Bing Maps":
             return self._to_bing_maps_url(params)
         else:
-            raise ValueError(map_engine + " is not a valid or currently-supported map engine")
+            raise ValueError(
+                map_engine + " is not a valid or currently-supported map engine")
 
     def _to_google_maps_url(self, params):
         url_base = "https://www.google.com/maps/search/?api=1&query="
@@ -312,7 +324,8 @@ class Location(STIXDomainObject):
         for i in range(1, len(params)):
             url_ending = url_ending + "," + params[i]
 
-        final_url = url_base + quote_plus(url_ending) + "&lvl=16"   # level 16 zoom so long/lat searches shown more clearly
+        # level 16 zoom so long/lat searches shown more clearly
+        final_url = url_base + quote_plus(url_ending) + "&lvl=16"
         return final_url
 
 
@@ -339,7 +352,8 @@ class Malware(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -367,7 +381,8 @@ class Note(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -395,13 +410,15 @@ class ObservedData(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def __init__(self, *args, **kwargs):
         self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
+        self._properties['objects'].allow_custom = kwargs.get(
+            'allow_custom', False)
 
         super(ObservedData, self).__init__(*args, **kwargs)
 
@@ -409,8 +426,10 @@ class ObservedData(STIXDomainObject):
         super(self.__class__, self)._check_object_constraints()
 
         if self.get('number_observed', 1) == 1:
-            self._check_properties_dependency(['first_observed'], ['last_observed'])
-            self._check_properties_dependency(['last_observed'], ['first_observed'])
+            self._check_properties_dependency(
+                ['first_observed'], ['last_observed'])
+            self._check_properties_dependency(
+                ['last_observed'], ['first_observed'])
 
         first_observed = self.get('first_observed')
         last_observed = self.get('last_observed')
@@ -453,7 +472,8 @@ class Opinion(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -482,7 +502,8 @@ class Report(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -517,7 +538,8 @@ class ThreatActor(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -546,7 +568,8 @@ class Tool(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -572,7 +595,8 @@ class Vulnerability(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(
+            ReferenceProperty(type='marking-definition'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -613,8 +637,10 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('spec_version', StringProperty(fixed='2.1')),
                 ('id', IDProperty(type)),
                 ('created_by_ref', ReferenceProperty(type='identity')),
-                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                ('created', TimestampProperty(
+                    default=lambda: NOW, precision='millisecond')),
+                ('modified', TimestampProperty(
+                    default=lambda: NOW, precision='millisecond')),
             ],
             [x for x in properties if not x[0].startswith('x_')],
             [
@@ -623,10 +649,12 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('confidence', IntegerProperty()),
                 ('lang', StringProperty()),
                 ('external_references', ListProperty(ExternalReference)),
-                ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+                ('object_marking_refs', ListProperty(
+                    ReferenceProperty(type='marking-definition'))),
                 ('granular_markings', ListProperty(GranularMarking)),
             ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
+            sorted([x for x in properties if x[0].startswith('x_')],
+                   key=lambda x: x[0]),
         ]))
         return _custom_object_builder(cls, type, _properties, '2.1')
 
