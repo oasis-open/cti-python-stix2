@@ -219,7 +219,8 @@ def test_parse_malware():
         "name": "Cryptolocker",
         "malware_types": [
             "ransomware"
-        ]
+        ],
+        "is_family": false
     }"""
     mal = env.parse(data, version="2.1")
 
@@ -230,6 +231,7 @@ def test_parse_malware():
     assert mal.modified == FAKE_TIME
     assert mal.malware_types == ['ransomware']
     assert mal.name == "Cryptolocker"
+    assert not mal.is_family
 
 
 def test_creator_of():
@@ -351,6 +353,7 @@ def test_related_to_no_id(ds):
     mal = {
         "type": "malware",
         "name": "some variant",
+        "is_family": False,
     }
     with pytest.raises(ValueError) as excinfo:
         env.related_to(mal)

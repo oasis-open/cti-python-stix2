@@ -98,8 +98,8 @@ def test_indicator_required_properties():
         stix2.v21.Indicator()
 
     assert excinfo.value.cls == stix2.v21.Indicator
-    assert excinfo.value.properties == ["indicator_types", "pattern"]
-    assert str(excinfo.value) == "No values for required properties for Indicator: (indicator_types, pattern)."
+    assert excinfo.value.properties == ["indicator_types", "pattern", "valid_from"]
+    assert str(excinfo.value) == "No values for required properties for Indicator: (indicator_types, pattern, valid_from)."
 
 
 def test_indicator_required_property_pattern():
@@ -107,7 +107,7 @@ def test_indicator_required_property_pattern():
         stix2.v21.Indicator(indicator_types=['malicious-activity'])
 
     assert excinfo.value.cls == stix2.v21.Indicator
-    assert excinfo.value.properties == ["pattern"]
+    assert excinfo.value.properties == ["pattern", "valid_from"]
 
 
 def test_indicator_created_ref_invalid_format():
@@ -116,8 +116,6 @@ def test_indicator_created_ref_invalid_format():
 
     assert excinfo.value.cls == stix2.v21.Indicator
     assert excinfo.value.prop_name == "created_by_ref"
-    assert excinfo.value.reason == "must start with 'identity'."
-    assert str(excinfo.value) == "Invalid value for Indicator 'created_by_ref': must start with 'identity'."
 
 
 def test_indicator_revoked_invalid():
@@ -186,6 +184,7 @@ def test_invalid_indicator_pattern():
         stix2.v21.Indicator(
             indicator_types=['malicious-activity'],
             pattern="file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e'",
+            valid_from="2017-01-01T12:34:56Z",
         )
     assert excinfo.value.cls == stix2.v21.Indicator
     assert excinfo.value.prop_name == 'pattern'
@@ -195,6 +194,7 @@ def test_invalid_indicator_pattern():
         stix2.v21.Indicator(
             indicator_types=['malicious-activity'],
             pattern='[file:hashes.MD5 = "d41d8cd98f00b204e9800998ecf8427e"]',
+            valid_from="2017-01-01T12:34:56Z",
         )
     assert excinfo.value.cls == stix2.v21.Indicator
     assert excinfo.value.prop_name == 'pattern'

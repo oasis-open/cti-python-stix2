@@ -5,6 +5,7 @@ import pytest
 import pytz
 
 import stix2
+import stix2.exceptions
 
 from .constants import IDENTITY_ID, OBSERVED_DATA_ID
 
@@ -99,6 +100,67 @@ def test_observed_data_example_with_refs():
     )
 
     assert str(observed_data) == EXPECTED_WITH_REF
+
+
+EXPECTED_OBJECT_REFS = """{
+    "type": "observed-data",
+    "spec_version": "2.1",
+    "id": "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+    "created_by_ref": "identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+    "created": "2016-04-06T19:58:16.000Z",
+    "modified": "2016-04-06T19:58:16.000Z",
+    "first_observed": "2015-12-21T19:00:00Z",
+    "last_observed": "2015-12-21T19:00:00Z",
+    "number_observed": 50,
+    "object_refs": [
+        "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
+        "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+        "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c"
+    ]
+}"""
+
+
+def test_observed_data_example_with_object_refs():
+    observed_data = stix2.v21.ObservedData(
+        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+        created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+        created="2016-04-06T19:58:16.000Z",
+        modified="2016-04-06T19:58:16.000Z",
+        first_observed="2015-12-21T19:00:00Z",
+        last_observed="2015-12-21T19:00:00Z",
+        number_observed=50,
+        object_refs=[
+            "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
+            "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+            "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
+        ],
+    )
+
+    assert str(observed_data) == EXPECTED_OBJECT_REFS
+
+
+def test_observed_data_object_constraint():
+    with pytest.raises(stix2.exceptions.MutuallyExclusivePropertiesError):
+        stix2.v21.ObservedData(
+            id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
+            created_by_ref="identity--f431f809-377b-45e0-aa1c-6a4751cae5ff",
+            created="2016-04-06T19:58:16.000Z",
+            modified="2016-04-06T19:58:16.000Z",
+            first_observed="2015-12-21T19:00:00Z",
+            last_observed="2015-12-21T19:00:00Z",
+            number_observed=50,
+            objects={
+                "0": {
+                    "name": "foo.exe",
+                    "type": "file",
+                },
+            },
+            object_refs=[
+                "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
+                "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+                "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
+            ],
+        )
 
 
 def test_observed_data_example_with_bad_refs():

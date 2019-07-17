@@ -31,6 +31,7 @@ BUNDLE = {
             "malware_types": [
                 "ransomware",
             ],
+            "is_family": False,
         },
         {
             "type": "relationship",
