@@ -73,7 +73,8 @@ class _STIXBase(collections.Mapping):
         custom_props.sort()
 
         all_properties = list(self._properties.keys())
-        all_properties.extend(custom_props)  # Any custom properties to the bottom
+        # Any custom properties to the bottom
+        all_properties.extend(custom_props)
 
         return all_properties
 
@@ -91,7 +92,8 @@ class _STIXBase(collections.Mapping):
             except ValueError as exc:
                 if self.__allow_custom and isinstance(exc, CustomContentError):
                     return
-                raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
+                raise InvalidValueError(
+                    self.__class__, prop_name, reason=str(exc))
 
     # interproperty constraint methods
 
@@ -100,15 +102,18 @@ class _STIXBase(collections.Mapping):
         count = len(set(list_of_properties).intersection(current_properties))
         # at_least_one allows for xor to be checked
         if count > 1 or (at_least_one and count == 0):
-            raise MutuallyExclusivePropertiesError(self.__class__, list_of_properties)
+            raise MutuallyExclusivePropertiesError(
+                self.__class__, list_of_properties)
 
     def _check_at_least_one_property(self, list_of_properties=None):
         if not list_of_properties:
-            list_of_properties = sorted(list(self.__class__._properties.keys()))
+            list_of_properties = sorted(
+                list(self.__class__._properties.keys()))
             if 'type' in list_of_properties:
                 list_of_properties.remove('type')
         current_properties = self.properties_populated()
-        list_of_properties_populated = set(list_of_properties).intersection(current_properties)
+        list_of_properties_populated = set(
+            list_of_properties).intersection(current_properties)
         if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(['extensions'])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
@@ -119,7 +124,8 @@ class _STIXBase(collections.Mapping):
                 if not self.get(p) and self.get(dp):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
-            raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
+            raise DependentPropertiesError(
+                self.__class__, failed_dependency_pairs)
 
     def _check_object_constraints(self):
         for m in self.get('granular_markings', []):
@@ -137,6 +143,7 @@ class _STIXBase(collections.Mapping):
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
         if not self.__allow_custom:
+            print(set(kwargs), set(self._properties))
             extra_kwargs = list(set(kwargs) - set(self._properties))
             if extra_kwargs:
                 raise ExtraPropertiesError(cls, extra_kwargs)
@@ -276,7 +283,8 @@ class _STIXBase(collections.Mapping):
             def sort_by(element):
                 return find_property_index(self, *element)
 
-            kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
+            kwargs.update({'indent': 4, 'separators': (
+                ',', ': '), 'item_sort_key': sort_by})
 
         if include_optional_defaults:
             return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
@@ -291,7 +299,8 @@ class _Observable(_STIXBase):
         self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
 
         self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
+        self._properties['extensions'].allow_custom = kwargs.get(
+            'allow_custom', False)
 
         super(_Observable, self).__init__(**kwargs)
 
@@ -300,7 +309,8 @@ class _Observable(_STIXBase):
             return  # don't check if refs are valid
 
         if ref not in self._STIXBase__valid_refs:
-            raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+            raise InvalidObjRefError(
+                self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
 
         try:
             allowed_types = prop.contained.valid_types
@@ -313,11 +323,13 @@ class _Observable(_STIXBase):
             except AttributeError:
                 ref_type = self._STIXBase__valid_refs[ref]
         except TypeError:
-            raise ValueError("'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
+            raise ValueError(
+                "'%s' must be created with _valid_refs as a dict, not a list." % self.__class__.__name__)
 
         if allowed_types:
             if ref_type not in allowed_types:
-                raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
+                raise InvalidObjRefError(
+                    self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 
     def _check_property(self, prop_name, prop, kwargs):
         super(_Observable, self)._check_property(prop_name, prop, kwargs)

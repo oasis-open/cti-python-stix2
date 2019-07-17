@@ -404,7 +404,7 @@ class ObservedData(STIXDomainObject):
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
-        ('objects', ObservableProperty(spec_version='2.1', required=True)),
+        ('object_refs', ListProperty(ReferenceProperty, required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -417,8 +417,9 @@ class ObservedData(STIXDomainObject):
 
     def __init__(self, *args, **kwargs):
         self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get(
-            'allow_custom', False)
+        # Removing the objects check as it is replaced with object_refs in 21
+        # self._properties['objects'].allow_custom = kwargs.get(
+        #     'allow_custom', False)
 
         super(ObservedData, self).__init__(*args, **kwargs)
 
