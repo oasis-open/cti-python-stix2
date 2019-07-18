@@ -3,6 +3,10 @@
 cti-python-stix2
 ================
 
+MODIFIED VERSION: Implementing some things that are currently missing from the implementation but are cited in most recent drafts of stix2.1 - provided purely as a method of sharing some of the current working practices, including:
+- `name` on Location objects
+- `id` on SCOs
+
 This is an `OASIS TC Open Repository <https://www.oasis-open.org/resources/open-repositories/>`__.
 See the `Governance <#governance>`__ section for more information.
 

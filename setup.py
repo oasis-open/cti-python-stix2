@@ -23,15 +23,15 @@ def get_long_description():
 
 
 setup(
-    name='stix2',
+    name='stix2eiq',
     version=get_version(),
-    description='Produce and consume STIX 2 JSON content',
+    description='Produce and consume STIX 2 JSON content - additions in line with yet-to-be-released spec',
     long_description=get_long_description(),
     url='https://oasis-open.github.io/cti-documentation/',
-    author='OASIS Cyber Threat Intelligence Technical Committee',
+    author='EclecticIQ',
     author_email='cti-users@lists.oasis-open.org',
-    maintainer='Chris Lenk, Emmanuelle Vargas-Gonzalez',
-    maintainer_email='clenk@mitre.org, emmanuelle@mitre.org',
+    maintainer="Chris O'Brien",
+    maintainer_email='chris@eclecticiq.com',
     license='BSD',
     classifiers=[
         'Development Status :: 4 - Beta',
