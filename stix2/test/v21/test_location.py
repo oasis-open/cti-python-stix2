@@ -265,6 +265,15 @@ def test_location_lat_or_lon_dependency_missing(data, msg):
     assert msg in str(excinfo.value)
 
 
+def test_location_complex_presence_constraint():
+    with pytest.raises(stix2.exceptions.PropertyPresenceError):
+        stix2.parse({
+            "type": "location",
+            "spec_version": "2.1",
+            "id": LOCATION_ID,
+        })
+
+
 def test_google_map_url_long_lat_provided():
     expected_url = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
 
