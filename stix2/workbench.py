@@ -117,12 +117,6 @@ def _related_wrapper(self, *args, **kwargs):
     return _environ.related_to(self, *args, **kwargs)
 
 
-def _observed_data_init(self, *args, **kwargs):
-    self.__allow_custom = kwargs.get('allow_custom', False)
-    self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
-    super(self.__class__, self).__init__(*args, **kwargs)
-
-
 def _setup_workbench():
     for obj_type in STIX_OBJS:
 
