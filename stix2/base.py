@@ -5,6 +5,7 @@ import copy
 import datetime as dt
 
 import simplejson as json
+import six
 
 from .exceptions import (
     AtLeastOnePropertyError, CustomContentError, DependentPropertiesError,
@@ -88,10 +89,25 @@ class _STIXBase(collections.Mapping):
         if prop_name in kwargs:
             try:
                 kwargs[prop_name] = prop.clean(kwargs[prop_name])
-            except ValueError as exc:
-                if self.__allow_custom and isinstance(exc, CustomContentError):
-                    return
-                raise InvalidValueError(self.__class__, prop_name, reason=str(exc))
+            except InvalidValueError:
+                # No point in wrapping InvalidValueError in another
+                # InvalidValueError... so let those propagate.
+                raise
+            except CustomContentError as exc:
+                if not self.__allow_custom:
+                    six.raise_from(
+                        InvalidValueError(
+                            self.__class__, prop_name, reason=str(exc),
+                        ),
+                        exc,
+                    )
+            except Exception as exc:
+                six.raise_from(
+                    InvalidValueError(
+                        self.__class__, prop_name, reason=str(exc),
+                    ),
+                    exc,
+                )
 
     # interproperty constraint methods
 

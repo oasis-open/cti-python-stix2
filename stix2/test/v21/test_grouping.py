@@ -124,5 +124,5 @@ def test_parse_grouping(data):
     assert grp.context == "suspicious-activity"
     assert grp.object_refs == [
         "malware--c8d2fae5-7271-400c-b81d-931a4caf20b9",
-        "identity--988145ed-a3b4-4421-b7a7-273376be67ce"
+        "identity--988145ed-a3b4-4421-b7a7-273376be67ce",
     ]

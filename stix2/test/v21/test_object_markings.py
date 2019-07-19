@@ -3,6 +3,7 @@ import pytest
 from stix2 import exceptions, markings
 from stix2.v21 import TLP_AMBER, Malware
 
+from ...exceptions import MarkingNotFoundError
 from .constants import FAKE_TIME, MALWARE_ID
 from .constants import MALWARE_KWARGS as MALWARE_KWARGS_CONST
 from .constants import MARKING_IDS
@@ -349,7 +350,7 @@ def test_remove_markings_bad_markings():
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
         **MALWARE_KWARGS
     )
-    with pytest.raises(AssertionError) as excinfo:
+    with pytest.raises(MarkingNotFoundError) as excinfo:
         markings.remove_markings(before, [MARKING_IDS[4]], None)
     assert str(excinfo.value) == "Marking ['%s'] was not found in Malware!" % MARKING_IDS[4]
 

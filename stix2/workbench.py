@@ -20,6 +20,7 @@
 
 """
 
+import functools
 import stix2
 from . import AttackPattern as _AttackPattern
 from . import Campaign as _Campaign
@@ -122,42 +123,35 @@ def _observed_data_init(self, *args, **kwargs):
     super(self.__class__, self).__init__(*args, **kwargs)
 
 
-def _constructor_wrapper(obj_type):
-    # Use an intermediate wrapper class so the implicit environment will create objects that have our wrapper functions
-    class_dict = dict(
-        created_by=_created_by_wrapper,
-        relationships=_relationships_wrapper,
-        related=_related_wrapper,
-        **obj_type.__dict__
-    )
-
-    # Avoid TypeError about super() in ObservedData
-    if 'ObservedData' in obj_type.__name__:
-        class_dict['__init__'] = _observed_data_init
-
-    wrapped_type = type(obj_type.__name__, obj_type.__bases__, class_dict)
-
-    @staticmethod
-    def new_constructor(cls, *args, **kwargs):
-        x = _environ.create(wrapped_type, *args, **kwargs)
-        return x
-    return new_constructor
-
-
 def _setup_workbench():
-    # Create wrapper classes whose constructors call the implicit environment's create()
     for obj_type in STIX_OBJS:
-        new_class_dict = {
-            '__new__': _constructor_wrapper(obj_type),
-            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.rst#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS),
-        }
-        new_class = type(obj_type.__name__, (), new_class_dict)
 
-        # Add our new class to this module's globals and to the library-wide mapping.
-        # This allows parse() to use the wrapped classes.
-        globals()[obj_type.__name__] = new_class
-        stix2.OBJ_MAP[obj_type._type] = new_class
-        new_class = None
+        # The idea here was originally to dynamically create subclasses which
+        # were cleverly customized such that instantiating them would actually
+        # invoke _environ.create().  This turns out to be impossible, since
+        # __new__ can never create the class in the normal way, since that
+        # invokes __new__ again, resulting in infinite recursion.  And
+        # _environ.create() does exactly that.
+        #
+        # So instead, we create something "class-like", in that calling it
+        # produces an instance of the desired class.  But these things will
+        # be functions instead of classes.  One might think this trickery will
+        # have undesirable side-effects, but actually it seems to work.
+        # So far...
+        new_class_dict = {
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.v21.sdo.rst#stix2.v21.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS),
+            'created_by': _created_by_wrapper,
+            'relationships': _relationships_wrapper,
+            'related': _related_wrapper,
+        }
+
+        new_class = type(obj_type.__name__, (obj_type,), new_class_dict)
+        factory_func = functools.partial(_environ.create, new_class)
+
+        # Add our new "class" to this module's globals and to the library-wide
+        # mapping.  This allows parse() to use the wrapped classes.
+        globals()[obj_type.__name__] = factory_func
+        stix2.OBJ_MAP[obj_type._type] = factory_func
 
 
 _setup_workbench()

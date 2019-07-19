@@ -5,7 +5,15 @@ class STIXError(Exception):
     """Base class for errors generated in the stix2 library."""
 
 
-class InvalidValueError(STIXError, ValueError):
+class ObjectConfigurationError(STIXError):
+    """
+    Represents specification violations regarding the composition of STIX
+    objects.
+    """
+    pass
+
+
+class InvalidValueError(ObjectConfigurationError):
     """An invalid value was provided to a STIX object's ``__init__``."""
 
     def __init__(self, cls, prop_name, reason):
@@ -19,18 +27,18 @@ class InvalidValueError(STIXError, ValueError):
         return msg.format(self)
 
 
-class InvalidPropertyConfigurationError(STIXError, ValueError):
+class PropertyPresenceError(ObjectConfigurationError):
     """
     Represents an invalid combination of properties on a STIX object.  This
     class can be used directly when the object requirements are more
     complicated and none of the more specific exception subclasses apply.
     """
     def __init__(self, message, cls):
-        super(InvalidPropertyConfigurationError, self).__init__(message)
+        super(PropertyPresenceError, self).__init__(message)
         self.cls = cls
 
 
-class MissingPropertiesError(InvalidPropertyConfigurationError):
+class MissingPropertiesError(PropertyPresenceError):
     """Missing one or more required properties when constructing STIX object."""
 
     def __init__(self, cls, properties):
@@ -44,7 +52,7 @@ class MissingPropertiesError(InvalidPropertyConfigurationError):
         super(MissingPropertiesError, self).__init__(msg, cls)
 
 
-class ExtraPropertiesError(InvalidPropertyConfigurationError):
+class ExtraPropertiesError(PropertyPresenceError):
     """One or more extra properties were provided when constructing STIX object."""
 
     def __init__(self, cls, properties):
@@ -58,7 +66,7 @@ class ExtraPropertiesError(InvalidPropertyConfigurationError):
         super(ExtraPropertiesError, self).__init__(msg, cls)
 
 
-class MutuallyExclusivePropertiesError(InvalidPropertyConfigurationError):
+class MutuallyExclusivePropertiesError(PropertyPresenceError):
     """Violating interproperty mutually exclusive constraint of a STIX object type."""
 
     def __init__(self, cls, properties):
@@ -72,7 +80,7 @@ class MutuallyExclusivePropertiesError(InvalidPropertyConfigurationError):
         super(MutuallyExclusivePropertiesError, self).__init__(msg, cls)
 
 
-class DependentPropertiesError(InvalidPropertyConfigurationError):
+class DependentPropertiesError(PropertyPresenceError):
     """Violating interproperty dependency constraint of a STIX object type."""
 
     def __init__(self, cls, dependencies):
@@ -86,7 +94,7 @@ class DependentPropertiesError(InvalidPropertyConfigurationError):
         super(DependentPropertiesError, self).__init__(msg, cls)
 
 
-class AtLeastOnePropertyError(InvalidPropertyConfigurationError):
+class AtLeastOnePropertyError(PropertyPresenceError):
     """Violating a constraint of a STIX object type that at least one of the given properties must be populated."""
 
     def __init__(self, cls, properties):
@@ -94,27 +102,14 @@ class AtLeastOnePropertyError(InvalidPropertyConfigurationError):
 
         msg = "At least one of the ({1}) properties for {0} must be " \
               "populated.".format(
-            cls.__name__,
-            ", ".join(x for x in self.properties),
-        )
+                   cls.__name__,
+                   ", ".join(x for x in self.properties),
+              )
 
         super(AtLeastOnePropertyError, self).__init__(msg, cls)
 
 
-class ImmutableError(STIXError, ValueError):
-    """Attempted to modify an object after creation."""
-
-    def __init__(self, cls, key):
-        super(ImmutableError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
-        return msg.format(self)
-
-
-class DictionaryKeyError(STIXError, ValueError):
+class DictionaryKeyError(ObjectConfigurationError):
     """Dictionary key does not conform to the correct format."""
 
     def __init__(self, key, reason):
@@ -127,7 +122,7 @@ class DictionaryKeyError(STIXError, ValueError):
         return msg.format(self)
 
 
-class InvalidObjRefError(STIXError, ValueError):
+class InvalidObjRefError(ObjectConfigurationError):
     """A STIX Cyber Observable Object contains an invalid object reference."""
 
     def __init__(self, cls, prop_name, reason):
@@ -141,47 +136,7 @@ class InvalidObjRefError(STIXError, ValueError):
         return msg.format(self)
 
 
-class UnmodifiablePropertyError(STIXError, ValueError):
-    """Attempted to modify an unmodifiable property of object when creating a new version."""
-
-    def __init__(self, unchangable_properties):
-        super(UnmodifiablePropertyError, self).__init__()
-        self.unchangable_properties = unchangable_properties
-
-    def __str__(self):
-        msg = "These properties cannot be changed when making a new version: {0}."
-        return msg.format(", ".join(self.unchangable_properties))
-
-
-class RevokeError(STIXError, ValueError):
-    """Attempted to an operation on a revoked object."""
-
-    def __init__(self, called_by):
-        super(RevokeError, self).__init__()
-        self.called_by = called_by
-
-    def __str__(self):
-        if self.called_by == "revoke":
-            return "Cannot revoke an already revoked object."
-        else:
-            return "Cannot create a new version of a revoked object."
-
-
-class ParseError(STIXError, ValueError):
-    """Could not parse object."""
-
-    def __init__(self, msg):
-        super(ParseError, self).__init__(msg)
-
-
-class CustomContentError(STIXError, ValueError):
-    """Custom STIX Content (SDO, Observable, Extension, etc.) detected."""
-
-    def __init__(self, msg):
-        super(CustomContentError, self).__init__(msg)
-
-
-class InvalidSelectorError(STIXError, AssertionError):
+class InvalidSelectorError(ObjectConfigurationError):
     """Granular Marking selector violation. The selector must resolve into an existing STIX object property."""
 
     def __init__(self, cls, key):
@@ -194,20 +149,7 @@ class InvalidSelectorError(STIXError, AssertionError):
         return msg.format(self.key, self.cls.__class__.__name__)
 
 
-class MarkingNotFoundError(STIXError, AssertionError):
-    """Marking violation. The marking reference must be present in SDO or SRO."""
-
-    def __init__(self, cls, key):
-        super(MarkingNotFoundError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Marking {0} was not found in {1}!"
-        return msg.format(self.key, self.cls.__class__.__name__)
-
-
-class TLPMarkingDefinitionError(STIXError, AssertionError):
+class TLPMarkingDefinitionError(ObjectConfigurationError):
     """Marking violation. The marking-definition for TLP MUST follow the mandated instances from the spec."""
 
     def __init__(self, user_obj, spec_obj):
@@ -218,3 +160,69 @@ class TLPMarkingDefinitionError(STIXError, AssertionError):
     def __str__(self):
         msg = "Marking {0} does not match spec marking {1}!"
         return msg.format(self.user_obj, self.spec_obj)
+
+
+class ImmutableError(STIXError):
+    """Attempted to modify an object after creation."""
+
+    def __init__(self, cls, key):
+        super(ImmutableError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
+        return msg.format(self)
+
+
+class UnmodifiablePropertyError(STIXError):
+    """Attempted to modify an unmodifiable property of object when creating a new version."""
+
+    def __init__(self, unchangable_properties):
+        super(UnmodifiablePropertyError, self).__init__()
+        self.unchangable_properties = unchangable_properties
+
+    def __str__(self):
+        msg = "These properties cannot be changed when making a new version: {0}."
+        return msg.format(", ".join(self.unchangable_properties))
+
+
+class RevokeError(STIXError):
+    """Attempted an operation on a revoked object."""
+
+    def __init__(self, called_by):
+        super(RevokeError, self).__init__()
+        self.called_by = called_by
+
+    def __str__(self):
+        if self.called_by == "revoke":
+            return "Cannot revoke an already revoked object."
+        else:
+            return "Cannot create a new version of a revoked object."
+
+
+class ParseError(STIXError):
+    """Could not parse object."""
+
+    def __init__(self, msg):
+        super(ParseError, self).__init__(msg)
+
+
+class CustomContentError(STIXError):
+    """Custom STIX Content (SDO, Observable, Extension, etc.) detected."""
+
+    def __init__(self, msg):
+        super(CustomContentError, self).__init__(msg)
+
+
+class MarkingNotFoundError(STIXError):
+    """Marking violation. The marking reference must be present in SDO or SRO."""
+
+    def __init__(self, cls, key):
+        super(MarkingNotFoundError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Marking {0} was not found in {1}!"
+        return msg.format(self.key, self.cls.__class__.__name__)

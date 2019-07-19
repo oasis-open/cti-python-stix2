@@ -7,7 +7,7 @@ from six.moves.urllib.parse import quote_plus
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..exceptions import InvalidPropertyConfigurationError
+from ..exceptions import PropertyPresenceError
 from ..properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, IDProperty, IntegerProperty, ListProperty,
@@ -76,7 +76,7 @@ class Campaign(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Campaign, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -215,7 +215,7 @@ class Indicator(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Indicator, self)._check_object_constraints()
 
         valid_from = self.get('valid_from')
         valid_until = self.get('valid_until')
@@ -256,7 +256,7 @@ class Infrastructure(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Infrastructure, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -299,7 +299,7 @@ class IntrusionSet(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(IntrusionSet, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -344,7 +344,7 @@ class Location(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Location, self)._check_object_constraints()
 
         if self.get('precision') is not None:
             self._check_properties_dependency(['longitude', 'latitude'], ['precision'])
@@ -360,10 +360,10 @@ class Location(STIXDomainObject):
                 and 'longitude' in self
             )
         ):
-            raise InvalidPropertyConfigurationError(
+            raise PropertyPresenceError(
                 "Location objects must have the properties 'region', "
                 "'country', or 'latitude' and 'longitude'",
-                Location
+                Location,
             )
 
     def to_maps_url(self, map_engine="Google Maps"):
@@ -454,7 +454,7 @@ class Malware(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Malware, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -464,9 +464,9 @@ class Malware(STIXDomainObject):
             raise ValueError(msg.format(self))
 
         if self.is_family and "name" not in self:
-            raise InvalidPropertyConfigurationError(
+            raise PropertyPresenceError(
                 "'name' is a required property for malware families",
-                Malware
+                Malware,
             )
 
 
@@ -576,7 +576,7 @@ class ObservedData(STIXDomainObject):
         super(ObservedData, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(ObservedData, self)._check_object_constraints()
 
         first_observed = self.get('first_observed')
         last_observed = self.get('last_observed')
@@ -694,7 +694,7 @@ class ThreatActor(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(ThreatActor, self)._check_object_constraints()
 
         first_observed = self.get('first_seen')
         last_observed = self.get('last_seen')

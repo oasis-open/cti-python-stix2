@@ -3,6 +3,7 @@ import pytest
 import stix2
 import stix2.base
 
+from ...exceptions import InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
@@ -97,7 +98,7 @@ def test_identity_custom_property_allowed():
 def test_parse_identity_custom_property(data):
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.parse(data, version="2.1")
-    assert excinfo.value.cls == stix2.v21.Identity
+    assert issubclass(excinfo.value.cls, stix2.v21.Identity)
     assert excinfo.value.properties == ['foo']
     assert "Unexpected properties for" in str(excinfo.value)
 
@@ -136,7 +137,7 @@ def test_custom_property_dict_in_bundled_object():
         'identity_class': 'individual',
         'x_foo': 'bar',
     }
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(InvalidValueError):
         stix2.v21.Bundle(custom_identity)
 
     bundle = stix2.v21.Bundle(custom_identity, allow_custom=True)
@@ -203,7 +204,7 @@ def test_custom_property_object_in_observable_extension():
 
 
 def test_custom_property_dict_in_observable_extension():
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(InvalidValueError):
         stix2.v21.File(
             name='test',
             extensions={
@@ -722,7 +723,7 @@ def test_custom_extension():
 def test_custom_extension_wrong_observable_type():
     # NewExtension is an extension of DomainName, not File
     ext = NewExtension(property1='something')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.File(
             name="abc.txt",
             extensions={
@@ -915,7 +916,7 @@ def test_parse_observable_with_custom_extension():
     ],
 )
 def test_parse_observable_with_unregistered_custom_extension(data):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.parse_observable(data, version='2.1')
     assert "Can't parse unknown extension type" in str(excinfo.value)
 

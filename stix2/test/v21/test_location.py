@@ -5,6 +5,7 @@ import pytest
 import pytz
 
 import stix2
+import stix2.exceptions
 
 from .constants import LOCATION_ID
 
@@ -111,7 +112,7 @@ def test_parse_location(data):
     ],
 )
 def test_location_bad_latitude(data):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.parse(data)
 
     assert "Invalid value for Location 'latitude'" in str(excinfo.value)
@@ -140,7 +141,7 @@ def test_location_bad_latitude(data):
     ],
 )
 def test_location_bad_longitude(data):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.parse(data)
 
     assert "Invalid value for Location 'longitude'" in str(excinfo.value)
@@ -190,7 +191,7 @@ def test_location_properties_missing_when_precision_is_present(data):
     ],
 )
 def test_location_negative_precision(data):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.parse(data)
 
     assert "Invalid value for Location 'precision'" in str(excinfo.value)

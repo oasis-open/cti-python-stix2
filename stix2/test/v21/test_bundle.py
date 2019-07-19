@@ -4,6 +4,7 @@ import pytest
 
 import stix2
 
+from ...exceptions import InvalidValueError
 from .constants import IDENTITY_ID
 
 EXPECTED_BUNDLE = """{
@@ -164,15 +165,15 @@ def test_create_bundle_with_arg_listarg_and_kwarg(indicator, malware, relationsh
 
 
 def test_create_bundle_invalid(indicator, malware, relationship):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.Bundle(objects=[1])
     assert excinfo.value.reason == "This property may only contain a dictionary or object"
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.Bundle(objects=[{}])
     assert excinfo.value.reason == "This property may only contain a non-empty dictionary or object"
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.Bundle(objects=[{'type': 'bundle'}])
     assert excinfo.value.reason == 'This property may not contain a Bundle object'
 
@@ -183,7 +184,7 @@ def test_parse_bundle(version):
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    assert type(bundle.objects[0]) is stix2.v21.Indicator
+    assert isinstance(bundle.objects[0], stix2.v21.Indicator)
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'
