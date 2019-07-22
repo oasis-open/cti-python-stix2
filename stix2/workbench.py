@@ -133,7 +133,7 @@ def _setup_workbench():
         # have undesirable side-effects, but actually it seems to work.
         # So far...
         new_class_dict = {
-            '__doc__': 'Workbench wrapper around the `{0} <stix2.v21.sdo.rst#stix2.v21.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS),
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.rst#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS),
             'created_by': _created_by_wrapper,
             'relationships': _relationships_wrapper,
             'related': _related_wrapper,
