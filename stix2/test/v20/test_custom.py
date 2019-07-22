@@ -96,7 +96,7 @@ def test_identity_custom_property_allowed():
 def test_parse_identity_custom_property(data):
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.parse(data, version="2.0")
-    assert excinfo.value.cls == stix2.v20.Identity
+    assert issubclass(excinfo.value.cls, stix2.v20.Identity)
     assert excinfo.value.properties == ['foo']
     assert "Unexpected properties for" in str(excinfo.value)
 

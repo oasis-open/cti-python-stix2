@@ -176,7 +176,7 @@ def test_parse_bundle(version):
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    assert type(bundle.objects[0]) is stix2.v20.Indicator
+    assert isinstance(bundle.objects[0], stix2.v20.Indicator)
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'
