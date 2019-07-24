@@ -259,6 +259,9 @@ def test_default_creator():
     assert 'created_by_ref' not in constants.CAMPAIGN_KWARGS
     assert campaign.created_by_ref == constants.IDENTITY_ID
 
+    # turn off side-effects to avoid affecting future tests
+    set_default_creator(None)
+
 
 def test_default_created_timestamp():
     timestamp = "2018-03-19T01:02:03.000Z"
@@ -268,6 +271,9 @@ def test_default_created_timestamp():
     assert 'created' not in constants.CAMPAIGN_KWARGS
     assert stix2.utils.format_datetime(campaign.created) == timestamp
     assert stix2.utils.format_datetime(campaign.modified) == timestamp
+
+    # turn off side-effects to avoid affecting future tests
+    set_default_created(None)
 
 
 def test_default_external_refs():
@@ -281,6 +287,9 @@ def test_default_external_refs():
     assert campaign.external_references[0].source_name == "ACME Threat Intel"
     assert campaign.external_references[0].description == "Threat report"
 
+    # turn off side-effects to avoid affecting future tests
+    set_default_external_refs([])
+
 
 def test_default_object_marking_refs():
     stmt_marking = StatementMarking("Copyright 2016, Example Corp")
@@ -292,6 +301,9 @@ def test_default_object_marking_refs():
     campaign = Campaign(**constants.CAMPAIGN_KWARGS)
 
     assert campaign.object_marking_refs[0] == mark_def.id
+
+    # turn off side-effects to avoid affecting future tests
+    set_default_object_marking_refs([])
 
 
 def test_workbench_custom_property_object_in_observable_extension():
