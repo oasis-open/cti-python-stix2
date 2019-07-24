@@ -3,13 +3,14 @@ import os
 
 import stix2
 from stix2.workbench import (
-    _STIX_VID, AttackPattern, Campaign, CourseOfAction, ExternalReference,
-    FileSystemSource, Filter, Identity, Indicator, IntrusionSet, Malware,
-    MarkingDefinition, ObservedData, Relationship, Report, StatementMarking,
-    ThreatActor, Tool, Vulnerability, add_data_source, all_versions,
-    attack_patterns, campaigns, courses_of_action, create, get, identities,
-    indicators, intrusion_sets, malware, observed_data, query, reports, save,
-    set_default_created, set_default_creator, set_default_external_refs,
+    _STIX_VID, AttackPattern, Bundle, Campaign, CourseOfAction,
+    ExternalReference, File, FileSystemSource, Filter, Identity, Indicator,
+    IntrusionSet, Malware, MarkingDefinition, NTFSExt, ObservedData,
+    Relationship, Report, StatementMarking, ThreatActor, Tool, Vulnerability,
+    add_data_source, all_versions, attack_patterns, campaigns,
+    courses_of_action, create, get, identities, indicators, intrusion_sets,
+    malware, observed_data, query, reports, save, set_default_created,
+    set_default_creator, set_default_external_refs,
     set_default_object_marking_refs, threat_actors, tools, vulnerabilities,
 )
 
@@ -164,7 +165,7 @@ def test_workbench_get_all_vulnerabilities():
 
 def test_workbench_add_to_bundle():
     vuln = Vulnerability(**constants.VULNERABILITY_KWARGS)
-    bundle = stix2.v20.Bundle(vuln)
+    bundle = Bundle(vuln)
     assert bundle.objects[0].name == 'Heartbleed'
 
 
@@ -305,12 +306,12 @@ def test_default_object_marking_refs():
 
 
 def test_workbench_custom_property_object_in_observable_extension():
-    ntfs = stix2.v20.NTFSExt(
+    ntfs = NTFSExt(
         allow_custom=True,
         sid=1,
         x_foo='bar',
     )
-    artifact = stix2.v20.File(
+    artifact = File(
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
@@ -327,7 +328,7 @@ def test_workbench_custom_property_object_in_observable_extension():
 
 
 def test_workbench_custom_property_dict_in_observable_extension():
-    artifact = stix2.v20.File(
+    artifact = File(
         allow_custom=True,
         name='test',
         extensions={
