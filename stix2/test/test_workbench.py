@@ -3,7 +3,7 @@ import os
 
 import stix2
 from stix2.workbench import (
-    AttackPattern, Campaign, CourseOfAction, ExternalReference,
+    _STIX_VID, AttackPattern, Campaign, CourseOfAction, ExternalReference,
     FileSystemSource, Filter, Identity, Indicator, IntrusionSet, Malware,
     MarkingDefinition, ObservedData, Relationship, Report, StatementMarking,
     ThreatActor, Tool, Vulnerability, add_data_source, all_versions,
@@ -14,7 +14,6 @@ from stix2.workbench import (
 )
 
 # Auto-detect some settings based on the current default STIX version
-_STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
 _STIX_DATA_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     _STIX_VID,

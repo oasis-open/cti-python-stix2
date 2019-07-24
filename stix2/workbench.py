@@ -53,6 +53,11 @@ from . import (  # noqa: F401
 )
 from .datastore.filters import FilterSet
 
+
+# Enable some adaptation to the current default supported STIX version.
+_STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
+
+
 # Use an implicit MemoryStore
 _environ = Environment(store=MemoryStore())
 
@@ -133,7 +138,11 @@ def _setup_workbench():
         # have undesirable side-effects, but actually it seems to work.
         # So far...
         new_class_dict = {
-            '__doc__': 'Workbench wrapper around the `{0} <stix2.v20.sdo.rst#stix2.v20.sdo.{0}>`__ object. {1}'.format(obj_type.__name__, STIX_OBJ_DOCS),
+            '__doc__': 'Workbench wrapper around the `{0} <stix2.{1}.sdo.rst#stix2.{1}.sdo.{0}>`__ object. {2}'.format(
+                obj_type.__name__,
+                _STIX_VID,
+                STIX_OBJ_DOCS,
+            ),
             'created_by': _created_by_wrapper,
             'relationships': _relationships_wrapper,
             'related': _related_wrapper,
