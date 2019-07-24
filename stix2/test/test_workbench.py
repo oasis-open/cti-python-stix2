@@ -13,13 +13,12 @@ from stix2.workbench import (
     set_default_object_marking_refs, threat_actors, tools, vulnerabilities,
 )
 
-
 # Auto-detect some settings based on the current default STIX version
 _STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
 _STIX_DATA_PATH = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     _STIX_VID,
-    "stix2_data"
+    "stix2_data",
 )
 _STIX_CONSTANTS_MODULE = "stix2.test." + _STIX_VID + ".constants"
 
@@ -172,7 +171,7 @@ def test_workbench_add_to_bundle():
 
 def test_workbench_relationships():
     rel = Relationship(
-        constants.INDICATOR_ID, 'indicates', constants.MALWARE_ID
+        constants.INDICATOR_ID, 'indicates', constants.MALWARE_ID,
     )
     save(rel)
 
@@ -186,7 +185,7 @@ def test_workbench_relationships():
 
 def test_workbench_created_by():
     intset = IntrusionSet(
-        name="Breach 123", created_by_ref=constants.IDENTITY_ID
+        name="Breach 123", created_by_ref=constants.IDENTITY_ID,
     )
     save(intset)
     creator = intset.created_by()
@@ -210,7 +209,7 @@ def test_workbench_related():
 
 def test_workbench_related_with_filters():
     malware = Malware(
-        labels=["ransomware"], name="CryptorBit", created_by_ref=constants.IDENTITY_ID
+        labels=["ransomware"], name="CryptorBit", created_by_ref=constants.IDENTITY_ID,
     )
     rel = Relationship(malware.id, 'variant-of', constants.MALWARE_ID)
     save([malware, rel])
