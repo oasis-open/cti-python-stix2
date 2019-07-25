@@ -134,6 +134,9 @@ select additional or substitute Maintainers, per `consensus agreements
 -  `Emmanuelle Vargas-Gonzalez <mailto:emmanuelle@mitre.org>`__; GitHub ID:
    https://github.com/emmanvg/; WWW: `MITRE
    Corporation <https://www.mitre.org/>`__
+   
+-  `Jason Keirstead <mailto:Jason.Keirstead@ca.ibm.com>`__; GitHub ID:
+   https://github.com/JasonKeirstead; WWW: `IBM <http://www.ibm.com/>`__
 
 About OASIS TC Open Repositories
 --------------------------------
