@@ -71,3 +71,18 @@ def test_language_content_campaign():
     # or https://docs.python.org/2/library/json.html#json.dumps
     assert lc.serialize(pretty=True, ensure_ascii=False) == TEST_LANGUAGE_CONTENT
     assert lc.modified == camp.modified
+
+
+def test_object_modified_optional():
+    """
+    object_modified is now optional in STIX 2.1.
+    """
+
+    stix2.v21.LanguageContent(
+        object_ref=CAMPAIGN_ID,
+        contents={
+            "en": {
+                "name": "the english text",
+            },
+        },
+    )
