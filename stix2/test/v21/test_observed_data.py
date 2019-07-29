@@ -1375,3 +1375,18 @@ def test_new_version_with_related_objects():
     new_version = data.new_version(last_observed="2017-12-12T12:00:00Z")
     assert new_version.last_observed.year == 2017
     assert new_version.objects['domain'].resolves_to_refs[0] == 'src_ip'
+
+
+def test_objects_deprecation():
+    with pytest.deprecated_call():
+        stix2.v21.ObservedData(
+            first_observed="2016-03-12T12:00:00Z",
+            last_observed="2016-03-12T12:00:00Z",
+            number_observed=1,
+            objects={
+                "0": {
+                    "type": "file",
+                    "name": "foo",
+                },
+            },
+        )

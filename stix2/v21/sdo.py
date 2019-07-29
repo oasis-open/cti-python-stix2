@@ -2,6 +2,7 @@
 
 from collections import OrderedDict
 import itertools
+import warnings
 
 from six.moves.urllib.parse import quote_plus
 
@@ -572,6 +573,13 @@ class ObservedData(STIXDomainObject):
     def __init__(self, *args, **kwargs):
         self.__allow_custom = kwargs.get('allow_custom', False)
         self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
+
+        if "objects" in kwargs:
+            warnings.warn(
+                "The 'objects' property of observed-data is deprecated in "
+                "STIX 2.1.",
+                DeprecationWarning,
+            )
 
         super(ObservedData, self).__init__(*args, **kwargs)
 
