@@ -206,8 +206,14 @@ class IDProperty(Property):
     def clean(self, value):
         if not value.startswith(self.required_prefix):
             raise ValueError("must start with '{}'.".format(self.required_prefix))
-        if not ID_REGEX.match(value):
-            raise ValueError(ERROR_INVALID_ID)
+
+        # Removed UUIDv4 enforced validation for ID properties to allow setting uuidv5s
+        # ID values should be validated by the producer
+        # Once stix2 library supports this officially this won't be needed anymore
+
+        # if not ID_REGEX.match(value):
+        #     raise ValueError(ERROR_INVALID_ID)
+
         return value
 
     def default(self):
