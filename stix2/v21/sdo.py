@@ -8,7 +8,7 @@ from six.moves.urllib.parse import quote_plus
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..exceptions import PropertyPresenceError
+from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
 from ..properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, IDProperty, IntegerProperty, ListProperty,
@@ -578,7 +578,7 @@ class ObservedData(STIXDomainObject):
             warnings.warn(
                 "The 'objects' property of observed-data is deprecated in "
                 "STIX 2.1.",
-                DeprecationWarning,
+                STIXDeprecationWarning,
             )
 
         super(ObservedData, self).__init__(*args, **kwargs)

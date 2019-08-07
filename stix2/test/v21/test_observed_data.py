@@ -1378,7 +1378,8 @@ def test_new_version_with_related_objects():
 
 
 def test_objects_deprecation():
-    with pytest.deprecated_call():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
         stix2.v21.ObservedData(
             first_observed="2016-03-12T12:00:00Z",
             last_observed="2016-03-12T12:00:00Z",

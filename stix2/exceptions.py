@@ -226,3 +226,10 @@ class MarkingNotFoundError(STIXError):
     def __str__(self):
         msg = "Marking {0} was not found in {1}!"
         return msg.format(self.key, self.cls.__class__.__name__)
+
+
+class STIXDeprecationWarning(DeprecationWarning):
+    """
+    Represents usage of a deprecated component of a STIX specification.
+    """
+    pass
