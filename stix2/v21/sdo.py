@@ -2,11 +2,13 @@
 
 from collections import OrderedDict
 import itertools
+import warnings
 
 from six.moves.urllib.parse import quote_plus
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
+from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
 from ..properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, IDProperty, IntegerProperty, ListProperty,
@@ -33,6 +35,7 @@ class AttackPattern(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -74,7 +77,7 @@ class Campaign(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Campaign, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -146,7 +149,7 @@ class Grouping(STIXDomainObject):
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('context', StringProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty)),
+        ('object_refs', ListProperty(ReferenceProperty, required=True)),
     ])
 
 
@@ -198,6 +201,8 @@ class Indicator(STIXDomainObject):
         ('description', StringProperty()),
         ('indicator_types', ListProperty(StringProperty, required=True)),
         ('pattern', PatternProperty(required=True)),
+        ('pattern_type', StringProperty(required=True)),
+        ('pattern_version', StringProperty()),
         ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
@@ -211,7 +216,7 @@ class Indicator(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Indicator, self)._check_object_constraints()
 
         valid_from = self.get('valid_from')
         valid_until = self.get('valid_until')
@@ -245,13 +250,14 @@ class Infrastructure(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('infrastructure_types', ListProperty(StringProperty, required=True)),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Infrastructure, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -294,7 +300,7 @@ class IntrusionSet(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(IntrusionSet, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -318,6 +324,7 @@ class Location(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty()),
         ('description', StringProperty()),
         ('latitude', FloatProperty(min=-90.0, max=90.0)),
         ('longitude', FloatProperty(min=-180.0, max=180.0)),
@@ -338,13 +345,27 @@ class Location(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Location, self)._check_object_constraints()
 
         if self.get('precision') is not None:
             self._check_properties_dependency(['longitude', 'latitude'], ['precision'])
 
         self._check_properties_dependency(['latitude'], ['longitude'])
         self._check_properties_dependency(['longitude'], ['latitude'])
+
+        if not (
+            'region' in self
+            or 'country' in self
+            or (
+                'latitude' in self
+                and 'longitude' in self
+            )
+        ):
+            raise PropertyPresenceError(
+                "Location objects must have the properties 'region', "
+                "'country', or 'latitude' and 'longitude'",
+                Location,
+            )
 
     def to_maps_url(self, map_engine="Google Maps"):
         """Return URL to this location in an online map engine.
@@ -411,7 +432,7 @@ class Malware(STIXDomainObject):
         ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('name', StringProperty(required=True)),
+        ('name', StringProperty()),
         ('description', StringProperty()),
         ('malware_types', ListProperty(StringProperty, required=True)),
         ('is_family', BooleanProperty(required=True)),
@@ -434,7 +455,7 @@ class Malware(STIXDomainObject):
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Malware, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -442,6 +463,12 @@ class Malware(STIXDomainObject):
         if first_seen and last_seen and last_seen < first_seen:
             msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))
+
+        if self.is_family and "name" not in self:
+            raise PropertyPresenceError(
+                "'name' is a required property for malware families",
+                Malware,
+            )
 
 
 class MalwareAnalysis(STIXDomainObject):
@@ -471,7 +498,7 @@ class MalwareAnalysis(STIXDomainObject):
         ('operating_system_ref', ReferenceProperty(type='software', spec_version='2.1')),
         ('installed_software_refs', ListProperty(ReferenceProperty(type='software', spec_version='2.1'))),
         ('configuration_version', StringProperty()),
-        ('module', StringProperty()),
+        ('modules', ListProperty(StringProperty)),
         ('analysis_engine_version', StringProperty()),
         ('analysis_definition_version', StringProperty()),
         ('submitted', TimestampProperty()),
@@ -547,10 +574,17 @@ class ObservedData(STIXDomainObject):
         self.__allow_custom = kwargs.get('allow_custom', False)
         self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
+        if "objects" in kwargs:
+            warnings.warn(
+                "The 'objects' property of observed-data is deprecated in "
+                "STIX 2.1.",
+                STIXDeprecationWarning,
+            )
+
         super(ObservedData, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(ObservedData, self)._check_object_constraints()
 
         first_observed = self.get('first_observed')
         last_observed = self.get('last_observed')
@@ -580,7 +614,6 @@ class Opinion(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('explanation', StringProperty()),
         ('authors', ListProperty(StringProperty)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
         (
             'opinion', EnumProperty(
                 allowed=[
@@ -592,6 +625,7 @@ class Opinion(STIXDomainObject):
                 ], required=True,
             ),
         ),
+        ('object_refs', ListProperty(ReferenceProperty, required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -649,6 +683,8 @@ class ThreatActor(STIXDomainObject):
         ('description', StringProperty()),
         ('threat_actor_types', ListProperty(StringProperty, required=True)),
         ('aliases', ListProperty(StringProperty)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
         ('roles', ListProperty(StringProperty)),
         ('goals', ListProperty(StringProperty)),
         ('sophistication', StringProperty()),
@@ -664,6 +700,16 @@ class ThreatActor(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        super(ThreatActor, self)._check_object_constraints()
+
+        first_observed = self.get('first_seen')
+        last_observed = self.get('last_seen')
+
+        if first_observed and last_observed and last_observed < first_observed:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
+            raise ValueError(msg.format(self))
 
 
 class Tool(STIXDomainObject):

@@ -2,7 +2,7 @@
 import pytest
 
 from stix2 import markings
-from stix2.exceptions import MarkingNotFoundError
+from stix2.exceptions import InvalidSelectorError, MarkingNotFoundError
 from stix2.v20 import TLP_RED, Malware
 
 from .constants import MALWARE_MORE_KWARGS as MALWARE_KWARGS_CONST
@@ -179,7 +179,7 @@ def test_add_marking_mark_same_property_same_marking():
     ],
 )
 def test_add_marking_bad_selector(data, marking):
-    with pytest.raises(AssertionError):
+    with pytest.raises(InvalidSelectorError):
         markings.add_markings(data, marking[0], marking[1])
 
 
@@ -299,7 +299,7 @@ def test_get_markings_multiple_selectors(data):
 )
 def test_get_markings_bad_selector(data, selector):
     """Test bad selectors raise exception"""
-    with pytest.raises(AssertionError):
+    with pytest.raises(InvalidSelectorError):
         markings.get_markings(data, selector)
 
 
@@ -560,7 +560,7 @@ def test_remove_marking_bad_selector():
     before = {
         "description": "test description",
     }
-    with pytest.raises(AssertionError):
+    with pytest.raises(InvalidSelectorError):
         markings.remove_markings(before, ["marking-definition--1", "marking-definition--2"], ["title"])
 
 
@@ -642,7 +642,7 @@ def test_is_marked_smoke(data):
 )
 def test_is_marked_invalid_selector(data, selector):
     """Test invalid selector raises an error."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(InvalidSelectorError):
         markings.is_marked(data, selectors=selector)
 
 
@@ -836,7 +836,7 @@ def test_is_marked_positional_arguments_combinations():
 
 
 def test_create_sdo_with_invalid_marking():
-    with pytest.raises(AssertionError) as excinfo:
+    with pytest.raises(InvalidSelectorError) as excinfo:
         Malware(
             granular_markings=[
                 {
@@ -974,7 +974,7 @@ def test_set_marking_bad_selector(marking):
         **MALWARE_KWARGS
     )
 
-    with pytest.raises(AssertionError):
+    with pytest.raises(InvalidSelectorError):
         before = markings.set_markings(before, marking[0], marking[1])
 
     assert before == after
@@ -1080,7 +1080,7 @@ def test_clear_marking_all_selectors(data):
 )
 def test_clear_marking_bad_selector(data, selector):
     """Test bad selector raises exception."""
-    with pytest.raises(AssertionError):
+    with pytest.raises(InvalidSelectorError):
         markings.clear_markings(data, selector)
 
 

@@ -23,10 +23,10 @@ EXPECTED_OPINION = """{
     "created": "2016-05-12T08:17:27.000Z",
     "modified": "2016-05-12T08:17:27.000Z",
     "explanation": "%s",
+    "opinion": "strongly-disagree",
     "object_refs": [
         "relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471"
-    ],
-    "opinion": "strongly-disagree"
+    ]
 }""" % EXPLANATION
 
 EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
@@ -37,8 +37,9 @@ EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
     created='2016-05-12T08:17:27.000Z',
     modified='2016-05-12T08:17:27.000Z',
     explanation="%s",
-    object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
-    opinion='strongly-disagree'""" % EXPLANATION
+    opinion='strongly-disagree',
+    object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471']
+    """ % EXPLANATION
 ).split()) + ")"
 
 
