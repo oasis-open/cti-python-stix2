@@ -257,7 +257,7 @@ def test_and_observable_expression():
 
 
 def test_invalid_and_observable_expression():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.AndBooleanExpression([
             stix2.EqualityComparisonExpression(
                 "user-account:display_name",
@@ -268,7 +268,6 @@ def test_invalid_and_observable_expression():
                 stix2.StringConstant("admin"),
             ),
         ])
-    assert "All operands to an 'AND' expression must have the same object type" in str(excinfo)
 
 
 def test_hex():
@@ -352,30 +351,26 @@ def test_list2():
 
 
 def test_invalid_constant_type():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.EqualityComparisonExpression(
             "artifact:payload_bin",
             {'foo': 'bar'},
         )
-    assert 'Unable to create a constant' in str(excinfo)
 
 
 def test_invalid_integer_constant():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.IntegerConstant('foo')
-    assert 'must be an integer' in str(excinfo)
 
 
 def test_invalid_timestamp_constant():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.TimestampConstant('foo')
-    assert 'Must be a datetime object or timestamp string' in str(excinfo)
 
 
 def test_invalid_float_constant():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.FloatConstant('foo')
-    assert 'must be a float' in str(excinfo)
 
 
 @pytest.mark.parametrize(
@@ -400,9 +395,8 @@ def test_boolean_constant(data, result):
 
 
 def test_invalid_boolean_constant():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.BooleanConstant('foo')
-    assert 'must be a boolean' in str(excinfo)
 
 
 @pytest.mark.parametrize(
@@ -412,21 +406,18 @@ def test_invalid_boolean_constant():
     ],
 )
 def test_invalid_hash_constant(hashtype, data):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.HashConstant(data, hashtype)
-    assert 'is not a valid {} hash'.format(hashtype) in str(excinfo)
 
 
 def test_invalid_hex_constant():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.HexConstant('mm')
-    assert "must contain an even number of hexadecimal characters" in str(excinfo)
 
 
 def test_invalid_binary_constant():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.BinaryConstant('foo')
-    assert 'must contain a base64' in str(excinfo)
 
 
 def test_escape_quotes_and_backslashes():
@@ -459,15 +450,13 @@ def test_repeat_qualifier():
 
 
 def test_invalid_repeat_qualifier():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.RepeatQualifier('foo')
-    assert 'is not a valid argument for a Repeat Qualifier' in str(excinfo)
 
 
 def test_invalid_within_qualifier():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.WithinQualifier('foo')
-    assert 'is not a valid argument for a Within Qualifier' in str(excinfo)
 
 
 def test_startstop_qualifier():
@@ -485,19 +474,17 @@ def test_startstop_qualifier():
 
 
 def test_invalid_startstop_qualifier():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.StartStopQualifier(
             'foo',
             stix2.TimestampConstant('2016-06-01T00:00:00Z'),
         )
-    assert 'is not a valid argument for a Start/Stop Qualifier' in str(excinfo)
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.StartStopQualifier(
             datetime.date(2016, 6, 1),
             'foo',
         )
-    assert 'is not a valid argument for a Start/Stop Qualifier' in str(excinfo)
 
 
 def test_make_constant_already_a_constant():
