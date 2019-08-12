@@ -27,6 +27,7 @@ setup(
     version=get_version(),
     description='Produce and consume STIX 2 JSON content',
     long_description=get_long_description(),
+    long_description_content_type='text/x-rst',
     url='https://oasis-open.github.io/cti-documentation/',
     author='OASIS Cyber Threat Intelligence Technical Committee',
     author_email='cti-users@lists.oasis-open.org',
