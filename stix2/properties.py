@@ -102,7 +102,7 @@ class Property(object):
         - Return a value that is valid for this property. If ``value`` is not
           valid for this property, this will attempt to transform it first. If
           ``value`` is not valid and no such transformation is possible, it
-          should raise a ValueError.
+          should raise an exception.
     - ``def default(self):``
         - provide a default value for this property.
         - ``default()`` can return the special value ``NOW`` to use the current
