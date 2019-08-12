@@ -48,7 +48,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     keywords='stix stix2 json cti cyber threat intelligence',
-    packages=find_packages(exclude=['*.test']),
+    packages=find_packages(exclude=['*.test', '*.test.*']),
     install_requires=[
         'python-dateutil',
         'pytz',
