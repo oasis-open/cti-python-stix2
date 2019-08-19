@@ -28,7 +28,7 @@ class Artifact(_Observable):
     _type = 'artifact'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
@@ -37,6 +37,7 @@ class Artifact(_Observable):
         ('decryption_key', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["hashes", "payload_bin"]
 
     def _check_object_constraints(self):
         super(Artifact, self)._check_object_constraints()
@@ -53,12 +54,13 @@ class AutonomousSystem(_Observable):
     _type = 'autonomous-system'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
         ('rir', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["number"]
 
 
 class Directory(_Observable):
@@ -70,7 +72,7 @@ class Directory(_Observable):
     _type = 'directory'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
         # these are not the created/modified timestamps of the object itself
@@ -80,6 +82,7 @@ class Directory(_Observable):
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["path"]
 
 
 class DomainName(_Observable):
@@ -91,11 +94,12 @@ class DomainName(_Observable):
     _type = 'domain-name'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class EmailAddress(_Observable):
@@ -107,12 +111,13 @@ class EmailAddress(_Observable):
     _type = 'email-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class EmailMIMEComponent(_STIXBase):
@@ -142,7 +147,7 @@ class EmailMessage(_Observable):
     _type = 'email-message'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
         ('content_type', StringProperty()),
@@ -159,6 +164,7 @@ class EmailMessage(_Observable):
         ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["from_ref", "subject", "body"]
 
     def _check_object_constraints(self):
         super(EmailMessage, self)._check_object_constraints()
@@ -329,7 +335,7 @@ class File(_Observable):
     _type = 'file'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('hashes', HashesProperty(spec_version='2.1')),
         ('size', IntegerProperty(min=0)),
         ('name', StringProperty()),
@@ -345,6 +351,7 @@ class File(_Observable):
         ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["hashes", "name", "extensions"]
 
     def _check_object_constraints(self):
         super(File, self)._check_object_constraints()
@@ -360,12 +367,13 @@ class IPv4Address(_Observable):
     _type = 'ipv4-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class IPv6Address(_Observable):
@@ -377,12 +385,13 @@ class IPv6Address(_Observable):
     _type = 'ipv6-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class MACAddress(_Observable):
@@ -394,10 +403,11 @@ class MACAddress(_Observable):
     _type = 'mac-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class Mutex(_Observable):
@@ -409,10 +419,11 @@ class Mutex(_Observable):
     _type = 'mutex'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["name"]
 
 
 class HTTPRequestExt(_Extension):
@@ -516,7 +527,7 @@ class NetworkTraffic(_Observable):
     _type = 'network-traffic'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
@@ -536,6 +547,7 @@ class NetworkTraffic(_Observable):
         ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["start", "src_ref", "dst_ref", "src_port", "dst_port", "protocols"]
 
     def _check_object_constraints(self):
         super(NetworkTraffic, self)._check_object_constraints()
@@ -651,6 +663,7 @@ class Process(_Observable):
         ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = []
 
     def _check_object_constraints(self):
         # no need to check windows-service-ext, since it has a required property
@@ -676,7 +689,7 @@ class Software(_Observable):
     _type = 'software'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
         ('languages', ListProperty(StringProperty)),
@@ -684,6 +697,7 @@ class Software(_Observable):
         ('version', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["name", "cpe", "vendor", "version"]
 
 
 class URL(_Observable):
@@ -695,10 +709,11 @@ class URL(_Observable):
     _type = 'url'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class UNIXAccountExt(_Extension):
@@ -725,7 +740,7 @@ class UserAccount(_Observable):
     _type = 'user-account'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('user_id', StringProperty()),
         ('credential', StringProperty()),
         ('account_login', StringProperty()),
@@ -742,6 +757,7 @@ class UserAccount(_Observable):
         ('account_last_login', TimestampProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["account_type", "user_id", "account_login"]
 
 
 class WindowsRegistryValueType(_STIXBase):
@@ -783,7 +799,7 @@ class WindowsRegistryKey(_Observable):
     _type = 'windows-registry-key'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('key', StringProperty()),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
         # this is not the modified timestamps of the object itself
@@ -792,6 +808,7 @@ class WindowsRegistryKey(_Observable):
         ('number_of_subkeys', IntegerProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["key", "values"]
 
     @property
     def values(self):
@@ -835,7 +852,7 @@ class X509Certificate(_Observable):
     _type = 'x509-certificate'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('is_self_signed', BooleanProperty()),
         ('hashes', HashesProperty(spec_version='2.1')),
         ('version', StringProperty()),
@@ -851,6 +868,7 @@ class X509Certificate(_Observable):
         ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
+    _id_contributing_properties = ["hashes", "serial_number"]
 
 
 def CustomObservable(type='x-custom-observable', properties=None):

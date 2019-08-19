@@ -3,9 +3,12 @@
 import collections
 import copy
 import datetime as dt
+import uuid
 
 import simplejson as json
 import six
+
+from stix2.org.webpki.json.Canonicalize import canonicalize
 
 from .exceptions import (
     AtLeastOnePropertyError, CustomContentError, DependentPropertiesError,
@@ -309,6 +312,11 @@ class _Observable(_STIXBase):
         self.__allow_custom = kwargs.get('allow_custom', False)
         self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
 
+        if 'id' not in kwargs:
+            possible_id = self._generate_id(kwargs)
+            if possible_id is not None:
+                kwargs['id'] = possible_id
+
         super(_Observable, self).__init__(**kwargs)
 
     def _check_ref(self, ref, prop, prop_name):
@@ -346,6 +354,45 @@ class _Observable(_STIXBase):
         elif prop_name.endswith('_refs'):
             for ref in kwargs[prop_name]:
                 self._check_ref(ref, prop, prop_name)
+
+    def _generate_id(self, kwargs):
+        required_prefix = self._type + "--"
+        namespace = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
+
+        properties_to_use = self._id_contributing_properties
+        if properties_to_use:
+            streamlined_object = {}
+            if "hashes" in kwargs and "hashes" in properties_to_use:
+                possible_hash = self._choose_one_hash(kwargs["hashes"])
+                if possible_hash:
+                    streamlined_object["hashes"] = possible_hash
+            for key in kwargs.keys():
+                if key in properties_to_use and key != "hashes":
+                    streamlined_object[key] = kwargs[key]
+
+            if streamlined_object:
+                data = canonicalize(streamlined_object)
+            else:
+                return None
+
+            return required_prefix + str(uuid.uuid5(namespace, str(data)))
+        else:
+            return None
+
+    def _choose_one_hash(self, hash_dict):
+        if "MD5" in hash_dict:
+            return {"MD5": hash_dict["MD5"]}
+        elif "SHA-1" in hash_dict:
+            return {"SHA-1": hash_dict["SHA-1"]}
+        elif "SHA-256" in hash_dict:
+            return {"SHA-256": hash_dict["SHA-256"]}
+        elif "SHA-512" in hash_dict:
+            return {"SHA-512": hash_dict["SHA-512"]}
+        else:
+            # Cheesy way to pick the first item in the dictionary, since its not indexable
+            for (k, v) in hash_dict.items():
+                break
+            return {k: v}
 
 
 class _Extension(_STIXBase):
