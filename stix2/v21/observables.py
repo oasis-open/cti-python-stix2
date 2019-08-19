@@ -648,7 +648,7 @@ class Process(_Observable):
     _type = 'process'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
         # this is not the created timestamps of the object itself

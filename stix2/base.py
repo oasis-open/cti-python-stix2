@@ -8,7 +8,7 @@ import uuid
 import simplejson as json
 import six
 
-from stix2.org.webpki.json.Canonicalize import canonicalize
+from stix2.canonicalization.Canonicalize import canonicalize
 
 from .exceptions import (
     AtLeastOnePropertyError, CustomContentError, DependentPropertiesError,
@@ -359,24 +359,23 @@ class _Observable(_STIXBase):
         required_prefix = self._type + "--"
         namespace = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
 
-        properties_to_use = self._id_contributing_properties
-        if properties_to_use:
-            streamlined_object = {}
-            if "hashes" in kwargs and "hashes" in properties_to_use:
-                possible_hash = self._choose_one_hash(kwargs["hashes"])
-                if possible_hash:
-                    streamlined_object["hashes"] = possible_hash
-            for key in kwargs.keys():
-                if key in properties_to_use and key != "hashes":
-                    streamlined_object[key] = kwargs[key]
+        try:
+            properties_to_use = self._id_contributing_properties
+            if properties_to_use:
+                streamlined_object = {}
+                if "hashes" in kwargs and "hashes" in properties_to_use:
+                    possible_hash = self._choose_one_hash(kwargs["hashes"])
+                    if possible_hash:
+                        streamlined_object["hashes"] = possible_hash
+                for key in kwargs.keys():
+                    if key in properties_to_use and key != "hashes":
+                        streamlined_object[key] = kwargs[key]
 
-            if streamlined_object:
-                data = canonicalize(streamlined_object)
-            else:
-                return None
-
-            return required_prefix + str(uuid.uuid5(namespace, str(data)))
-        else:
+                if streamlined_object:
+                    data = canonicalize(streamlined_object, utf8=False)
+                    return required_prefix + str(uuid.uuid5(namespace, str(data)))
+            return None
+        except AttributeError:
             return None
 
     def _choose_one_hash(self, hash_dict):
