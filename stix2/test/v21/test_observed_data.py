@@ -1410,6 +1410,14 @@ def test_deterministic_id_same_extra_prop_vals():
 
     assert email_addr_1.id == email_addr_2.id
 
+    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
+
 
 def test_deterministic_id_diff_extra_prop_vals():
     email_addr_1 = stix2.v21.EmailAddress(
@@ -1423,6 +1431,14 @@ def test_deterministic_id_diff_extra_prop_vals():
     )
 
     assert email_addr_1.id == email_addr_2.id
+
+    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
 
 
 def test_deterministic_id_diff_contributing_prop_vals():
@@ -1438,6 +1454,14 @@ def test_deterministic_id_diff_contributing_prop_vals():
 
     assert email_addr_1.id != email_addr_2.id
 
+    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
+
 
 def test_deterministic_id_no_contributing_props():
     email_msg_1 = stix2.v21.EmailMessage(
@@ -1450,10 +1474,10 @@ def test_deterministic_id_no_contributing_props():
 
     assert email_msg_1.id != email_msg_2.id
 
-    uuid_obj_1 = uuid.UUID(email_msg_1.id)
+    uuid_obj_1 = uuid.UUID(email_msg_1.id[-36:])
     assert uuid_obj_1.variant == uuid.RFC_4122
-    assert uuid_obj_1.version == 5
+    assert uuid_obj_1.version == 4
 
-    uuid_obj_2 = uuid.UUID(email_msg_2.id)
+    uuid_obj_2 = uuid.UUID(email_msg_2.id[-36:])
     assert uuid_obj_2.variant == uuid.RFC_4122
-    assert uuid_obj_2.version == 5
+    assert uuid_obj_2.version == 4
