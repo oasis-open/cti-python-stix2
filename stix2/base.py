@@ -382,7 +382,7 @@ class _Observable(_STIXBase):
                                     streamlined_object[key] = kwargs[key]
                         else:
                             if isinstance(kwargs[key], _STIXBase):
-                                    streamlined_object[key] = self._embed_obj_to_json(kwargs[key])
+                                streamlined_object[key] = self._embed_obj_to_json(kwargs[key])
                             else:
                                 streamlined_object[key] = kwargs[key]
 

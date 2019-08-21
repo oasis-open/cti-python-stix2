@@ -1396,15 +1396,15 @@ def test_objects_deprecation():
         )
 
 
-# def test_deterministic_id_same_extra_prop_vals():
-#     email_addr_1 = stix2.v21.EmailAddress(
-#         value="john@example.com",
-#         display_name="Johnny Doe"
-#     )
+def test_deterministic_id_same_extra_prop_vals():
+    email_addr_1 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
 
-#     email_addr_2 = stix2.v21.EmailAddress(
-#         value="john@example.com",
-#         display_name="Johnny Doe"
-#     )
+    email_addr_2 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
 
-#     assert email_addr_1.id == email_addr_2.id
+    assert email_addr_1.id == email_addr_2.id
