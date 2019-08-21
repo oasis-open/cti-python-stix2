@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+import uuid
 
 import pytest
 import pytz
@@ -1408,3 +1409,51 @@ def test_deterministic_id_same_extra_prop_vals():
     )
 
     assert email_addr_1.id == email_addr_2.id
+
+
+def test_deterministic_id_diff_extra_prop_vals():
+    email_addr_1 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
+
+    email_addr_2 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Janey Doe",
+    )
+
+    assert email_addr_1.id == email_addr_2.id
+
+
+def test_deterministic_id_diff_contributing_prop_vals():
+    email_addr_1 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
+
+    email_addr_2 = stix2.v21.EmailAddress(
+        value="jane@example.com",
+        display_name="Janey Doe",
+    )
+
+    assert email_addr_1.id != email_addr_2.id
+
+
+def test_deterministic_id_no_contributing_props():
+    email_msg_1 = stix2.v21.EmailMessage(
+        is_multipart=False,
+    )
+
+    email_msg_2 = stix2.v21.EmailMessage(
+        is_multipart=False,
+    )
+
+    assert email_msg_1.id != email_msg_2.id
+
+    uuid_obj_1 = uuid.UUID(email_msg_1.id)
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_msg_2.id)
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
