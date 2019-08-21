@@ -25,6 +25,7 @@ EXPECTED = """{
     "objects": {
         "0": {
             "type": "file",
+            "id": "file--500d9a03-9d03-5c31-82b2-2be8aacec481",
             "name": "foo.exe"
         }
     }
@@ -64,10 +65,12 @@ EXPECTED_WITH_REF = """{
     "objects": {
         "0": {
             "type": "file",
+            "id": "file--500d9a03-9d03-5c31-82b2-2be8aacec481",
             "name": "foo.exe"
         },
         "1": {
             "type": "directory",
+            "id": "directory--ed959127-2df3-5999-99b6-df7614398c1c",
             "path": "/usr/home",
             "contains_refs": [
                 "0"
@@ -1391,3 +1394,17 @@ def test_objects_deprecation():
                 },
             },
         )
+
+
+# def test_deterministic_id_same_extra_prop_vals():
+#     email_addr_1 = stix2.v21.EmailAddress(
+#         value="john@example.com",
+#         display_name="Johnny Doe"
+#     )
+
+#     email_addr_2 = stix2.v21.EmailAddress(
+#         value="john@example.com",
+#         display_name="Johnny Doe"
+#     )
+
+#     assert email_addr_1.id == email_addr_2.id

@@ -360,6 +360,7 @@ def _make_iterencode(
                     chunks = _iterencode_dict(value, _current_indent_level)
                 else:
                     chunks = _iterencode(value, _current_indent_level)
+                # Below line commented-out for python2 compatibility
                 # yield from chunks
                 for chunk in chunks:
                     yield chunk
@@ -441,6 +442,7 @@ def _make_iterencode(
                     chunks = _iterencode_dict(value, _current_indent_level)
                 else:
                     chunks = _iterencode(value, _current_indent_level)
+                # Below line commented-out for python2 compatibility
                 # yield from chunks
                 for chunk in chunks:
                     yield chunk
@@ -467,10 +469,12 @@ def _make_iterencode(
             # see comment for int/float in _make_iterencode
             yield convert2Es6Format(o)
         elif isinstance(o, (list, tuple)):
+            # Below line commented-out for python2 compatibility
             # yield from _iterencode_list(o, _current_indent_level)
             for thing in _iterencode_list(o, _current_indent_level):
                 yield thing
         elif isinstance(o, dict):
+            # Below line commented-out for python2 compatibility
             # yield from _iterencode_dict(o, _current_indent_level)
             for thing in _iterencode_dict(o, _current_indent_level):
                 yield thing
@@ -481,6 +485,7 @@ def _make_iterencode(
                     raise ValueError("Circular reference detected")
                 markers[markerid] = o
             o = _default(o)
+            # Below line commented-out for python2 compatibility
             # yield from _iterencode(o, _current_indent_level)
             for thing in _iterencode(o, _current_indent_level):
                 yield thing

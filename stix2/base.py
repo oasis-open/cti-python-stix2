@@ -128,6 +128,11 @@ class _STIXBase(collections.Mapping):
                 list_of_properties.remove('type')
         current_properties = self.properties_populated()
         list_of_properties_populated = set(list_of_properties).intersection(current_properties)
+
+        if list_of_properties_populated == set(['id']) and isinstance(self, _Observable):
+            # Do not count the auto-generated id as a user-specified property
+            list_of_properties_populated = None
+
         if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(['extensions'])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
@@ -369,13 +374,24 @@ class _Observable(_STIXBase):
                         streamlined_object["hashes"] = possible_hash
                 for key in kwargs.keys():
                     if key in properties_to_use and key != "hashes":
-                        streamlined_object[key] = kwargs[key]
+                        if type(kwargs[key]) is dict:
+                            for otherKey in kwargs[key]:
+                                if isinstance(kwargs[key][otherKey], _STIXBase):
+                                    streamlined_object[key] = self._embed_obj_to_json(kwargs[key][otherKey])
+                                else:
+                                    streamlined_object[key] = kwargs[key]
+                        else:
+                            if isinstance(kwargs[key], _STIXBase):
+                                    streamlined_object[key] = self._embed_obj_to_json(kwargs[key])
+                            else:
+                                streamlined_object[key] = kwargs[key]
 
                 if streamlined_object:
-                    data = canonicalize(streamlined_object, utf8=False)
+                    data = canonicalize(str(streamlined_object), utf8=False)
                     return required_prefix + str(uuid.uuid5(namespace, str(data)))
             return None
         except AttributeError:
+            # We ideally end up here if handling a 2.0 SCO
             return None
 
     def _choose_one_hash(self, hash_dict):
@@ -392,6 +408,12 @@ class _Observable(_STIXBase):
             for (k, v) in hash_dict.items():
                 break
             return {k: v}
+
+    def _embed_obj_to_json(self, obj):
+        tmp_obj = dict(copy.deepcopy(obj))
+        for prop_name in obj._defaulted_optional_properties:
+            del tmp_obj[prop_name]
+        return tmp_obj
 
 
 class _Extension(_STIXBase):
