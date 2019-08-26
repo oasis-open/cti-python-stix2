@@ -889,7 +889,7 @@ def test_parse_observable_with_custom_extension():
 def test_custom_and_spec_extension_mix():
     """
     Try to make sure that when allow_custom=True, encountering a custom
-    extension doesn't result in a partially-cleaned extensions property.
+    extension doesn't result in a completely uncleaned extensions property.
     """
 
     file_obs = stix2.v20.File(
