@@ -568,7 +568,10 @@ class ExtensionsProperty(DictionaryProperty):
                 else:
                     raise ValueError("Cannot determine extension type.")
             else:
-                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
+                if self.allow_custom:
+                    dictified[key] = subvalue
+                else:
+                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         return dictified
 
 

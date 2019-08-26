@@ -2,6 +2,7 @@ import pytest
 
 import stix2
 import stix2.base
+import stix2.v21
 
 from ...exceptions import InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
@@ -887,6 +888,49 @@ def test_parse_observable_with_custom_extension():
 
     parsed = stix2.parse_observable(input_str, version='2.1')
     assert parsed.extensions['x-new-ext'].property2 == 12
+
+
+def test_custom_and_spec_extension_mix():
+    """
+    Try to make sure that when allow_custom=True, encountering a custom
+    extension doesn't result in a partially-cleaned extensions property.
+    """
+
+    file_obs = stix2.v21.File(
+        name="my_file.dat",
+        extensions={
+            "x-custom1": {
+                "a": 1,
+                "b": 2,
+            },
+            "ntfs-ext": {
+                "sid": "S-1-whatever",
+            },
+            "x-custom2": {
+                "z": 99.9,
+                "y": False,
+            },
+            "raster-image-ext": {
+                "image_height": 1024,
+                "image_width": 768,
+                "bits_per_pixel": 32,
+            },
+        },
+        allow_custom=True,
+    )
+
+    assert file_obs.extensions["x-custom1"] == {"a": 1, "b": 2}
+    assert file_obs.extensions["x-custom2"] == {"y": False, "z": 99.9}
+    assert file_obs.extensions["ntfs-ext"].sid == "S-1-whatever"
+    assert file_obs.extensions["raster-image-ext"].image_height == 1024
+
+    # Both of these should have been converted to objects, not left as dicts.
+    assert isinstance(
+        file_obs.extensions["raster-image-ext"], stix2.v21.RasterImageExt,
+    )
+    assert isinstance(
+        file_obs.extensions["ntfs-ext"], stix2.v21.NTFSExt,
+    )
 
 
 @pytest.mark.parametrize(
