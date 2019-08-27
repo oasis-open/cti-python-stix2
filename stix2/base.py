@@ -11,10 +11,9 @@ import six
 from stix2.canonicalization.Canonicalize import canonicalize
 
 from .exceptions import (
-    AtLeastOnePropertyError, CustomContentError, DependentPropertiesError,
-    ExtraPropertiesError, ImmutableError, InvalidObjRefError,
-    InvalidValueError, MissingPropertiesError,
-    MutuallyExclusivePropertiesError,
+    AtLeastOnePropertyError, DependentPropertiesError, ExtraPropertiesError,
+    ImmutableError, InvalidObjRefError, InvalidValueError,
+    MissingPropertiesError, MutuallyExclusivePropertiesError,
 )
 from .markings.utils import validate
 from .utils import NOW, find_property_index, format_datetime, get_timestamp
@@ -96,14 +95,6 @@ class _STIXBase(collections.Mapping):
                 # No point in wrapping InvalidValueError in another
                 # InvalidValueError... so let those propagate.
                 raise
-            except CustomContentError as exc:
-                if not self.__allow_custom:
-                    six.raise_from(
-                        InvalidValueError(
-                            self.__class__, prop_name, reason=str(exc),
-                        ),
-                        exc,
-                    )
             except Exception as exc:
                 six.raise_from(
                     InvalidValueError(
