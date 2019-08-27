@@ -276,7 +276,7 @@ def test_boolean_property_invalid(value):
 
 
 def test_reference_property():
-    ref_prop = ReferenceProperty(spec_version="2.0")
+    ref_prop = ReferenceProperty(valid_types=None, spec_version="2.0")
 
     assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
     with pytest.raises(ValueError):
@@ -288,7 +288,7 @@ def test_reference_property():
 
 
 def test_reference_property_specific_type():
-    ref_prop = ReferenceProperty("my-type", spec_version="2.0")
+    ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
 
     with pytest.raises(ValueError):
         ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf")

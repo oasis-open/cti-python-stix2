@@ -417,12 +417,16 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, type=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
-        self.required_prefix = type + "--" if type else None
         self.spec_version = spec_version
+
+        if valid_types and type(valid_types) is not list:
+            valid_types = [valid_types]
+        self.valid_types = valid_types
+
         super(ReferenceProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -430,7 +434,10 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        _validate_id(value, self.spec_version, self.required_prefix)
+        if self.valid_types and value[:value.index('--')] in self.valid_types:
+            required_prefix = value[:value.index('--') + 2]
+
+        _validate_id(value, self.spec_version, required_prefix)
 
         return value
 

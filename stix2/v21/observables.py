@@ -7,16 +7,21 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 import itertools
+import warnings
 
 from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
-from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
+from ..exceptions import (
+    AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
+)
 from ..properties import (
     BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
-    ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    ObjectReferenceProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
 )
+from .common import GranularMarking
 
 
 class Artifact(_Observable):
@@ -36,6 +41,10 @@ class Artifact(_Observable):
         ('encryption_algorithm', StringProperty()),
         ('decryption_key', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["hashes", "payload_bin"]
 
@@ -59,6 +68,10 @@ class AutonomousSystem(_Observable):
         ('name', StringProperty()),
         ('rir', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["number"]
 
@@ -79,8 +92,12 @@ class Directory(_Observable):
         ('ctime', TimestampProperty()),
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),
-        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["path"]
 
@@ -96,10 +113,22 @@ class DomainName(_Observable):
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
+        ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name'], spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
+
+    def _check_object_constraints(self):
+        if self.get('resolves_to_refs'):
+            warnings.warn(
+                "The 'resolves_to_refs' property of domain-name is deprecated in "
+                "STIX 2.1. Use the 'resolves-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
 
 
 class EmailAddress(_Observable):
@@ -114,8 +143,12 @@ class EmailAddress(_Observable):
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
-        ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
+        ('belongs_to_ref', ReferenceProperty(valid_types='user-account', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
 
@@ -151,18 +184,23 @@ class EmailMessage(_Observable):
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
         ('content_type', StringProperty()),
-        ('from_ref', ObjectReferenceProperty(valid_types='email-addr')),
-        ('sender_ref', ObjectReferenceProperty(valid_types='email-addr')),
-        ('to_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
-        ('cc_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
-        ('bcc_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
+        ('from_ref', ReferenceProperty(valid_types='email-addr')),
+        ('sender_ref', ReferenceProperty(valid_types='email-addr')),
+        ('to_refs', ListProperty(ReferenceProperty(valid_types='email-addr'))),
+        ('cc_refs', ListProperty(ReferenceProperty(valid_types='email-addr'))),
+        ('bcc_refs', ListProperty(ReferenceProperty(valid_types='email-addr'))),
+        ('message_id', StringProperty()),
         ('subject', StringProperty()),
         ('received_lines', ListProperty(StringProperty)),
         ('additional_header_fields', DictionaryProperty(spec_version='2.1')),
         ('body', StringProperty()),
         ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
-        ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('raw_email_ref', ReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["from_ref", "subject", "body"]
 
@@ -346,10 +384,14 @@ class File(_Observable):
         ('ctime', TimestampProperty()),
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),
-        ('parent_directory_ref', ObjectReferenceProperty(valid_types='directory')),
-        ('contains_refs', ListProperty(ObjectReferenceProperty)),
-        ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('parent_directory_ref', ReferenceProperty(valid_types='directory')),
+        ('contains_refs', ListProperty(ReferenceProperty())),
+        ('content_ref', ReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["hashes", "name", "extensions"]
 
@@ -369,11 +411,30 @@ class IPv4Address(_Observable):
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
-        ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types='mac-addr'))),
+        ('belongs_to_refs', ListProperty(ReferenceProperty(valid_types='autonomous-system'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
+
+    def _check_object_constraints(self):
+        if self.get('resolves_to_refs'):
+            warnings.warn(
+                "The 'resolves_to_refs' property of ipv4-addr is deprecated in "
+                "STIX 2.1. Use the 'resolves-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
+
+        if self.get('belongs_to_refs'):
+            warnings.warn(
+                "The 'belongs_to_refs' property of ipv4-addr is deprecated in "
+                "STIX 2.1. Use the 'belongs-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
 
 
 class IPv6Address(_Observable):
@@ -387,11 +448,30 @@ class IPv6Address(_Observable):
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
-        ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types='mac-addr'))),
+        ('belongs_to_refs', ListProperty(ReferenceProperty(valid_types='autonomous-system'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
+
+    def _check_object_constraints(self):
+        if self.get('resolves_to_refs'):
+            warnings.warn(
+                "The 'resolves_to_refs' property of ipv6-addr is deprecated in "
+                "STIX 2.1. Use the 'resolves-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
+
+        if self.get('belongs_to_refs'):
+            warnings.warn(
+                "The 'belongs_to_refs' property of ipv6-addr is deprecated in "
+                "STIX 2.1. Use the 'belongs-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
 
 
 class MACAddress(_Observable):
@@ -406,6 +486,10 @@ class MACAddress(_Observable):
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
 
@@ -422,6 +506,10 @@ class Mutex(_Observable):
         ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["name"]
 
@@ -531,8 +619,8 @@ class NetworkTraffic(_Observable):
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
-        ('src_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
-        ('dst_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
+        ('src_ref', ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'], spec_version='2.1')),
+        ('dst_ref', ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'], spec_version='2.1')),
         ('src_port', IntegerProperty(min=0, max=65535)),
         ('dst_port', IntegerProperty(min=0, max=65535)),
         ('protocols', ListProperty(StringProperty, required=True)),
@@ -541,11 +629,15 @@ class NetworkTraffic(_Observable):
         ('src_packets', IntegerProperty(min=0)),
         ('dst_packets', IntegerProperty(min=0)),
         ('ipfix', DictionaryProperty(spec_version='2.1')),
-        ('src_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('encapsulates_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
-        ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
+        ('src_payload_ref', ReferenceProperty(valid_types='artifact')),
+        ('dst_payload_ref', ReferenceProperty(valid_types='artifact')),
+        ('encapsulates_refs', ListProperty(ReferenceProperty(valid_types='network-traffic'))),
+        ('encapsulated_by_ref', ReferenceProperty(valid_types='network-traffic')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["start", "src_ref", "dst_ref", "src_port", "dst_port", "protocols"]
 
@@ -652,16 +744,20 @@ class Process(_Observable):
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
         # this is not the created timestamps of the object itself
-        ('created', TimestampProperty()),
+        ('created_time', TimestampProperty()),
         ('cwd', StringProperty()),
         ('command_line', StringProperty()),
         ('environment_variables', DictionaryProperty(spec_version='2.1')),
-        ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
-        ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
-        ('image_ref', ObjectReferenceProperty(valid_types='file')),
-        ('parent_ref', ObjectReferenceProperty(valid_types='process')),
-        ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
+        ('opened_connection_refs', ListProperty(ReferenceProperty(valid_types='network-traffic'))),
+        ('creator_user_ref', ReferenceProperty(valid_types='user-account')),
+        ('image_ref', ReferenceProperty(valid_types='file')),
+        ('parent_ref', ReferenceProperty(valid_types='process')),
+        ('child_refs', ListProperty(ReferenceProperty(valid_types='process'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = []
 
@@ -696,6 +792,10 @@ class Software(_Observable):
         ('vendor', StringProperty()),
         ('version', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["name", "cpe", "vendor", "version"]
 
@@ -712,6 +812,10 @@ class URL(_Observable):
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
 
@@ -756,6 +860,10 @@ class UserAccount(_Observable):
         ('account_first_login', TimestampProperty()),
         ('account_last_login', TimestampProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["account_type", "user_id", "account_login"]
 
@@ -804,9 +912,13 @@ class WindowsRegistryKey(_Observable):
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
         # this is not the modified timestamps of the object itself
         ('modified_time', TimestampProperty()),
-        ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
+        ('creator_user_ref', ReferenceProperty(valid_types='user-account')),
         ('number_of_subkeys', IntegerProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["key", "values"]
 
@@ -867,6 +979,10 @@ class X509Certificate(_Observable):
         ('subject_public_key_exponent', IntegerProperty()),
         ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["hashes", "serial_number"]
 

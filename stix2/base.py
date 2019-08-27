@@ -317,10 +317,17 @@ class _Observable(_STIXBase):
         self.__allow_custom = kwargs.get('allow_custom', False)
         self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
 
-        if 'id' not in kwargs:
-            possible_id = self._generate_id(kwargs)
-            if possible_id is not None:
-                kwargs['id'] = possible_id
+        try:
+            # Since `spec_version` is optional, this is how we check for a 2.1 SCO
+            self._id_contributing_properties
+
+            if 'id' not in kwargs:
+                possible_id = self._generate_id(kwargs)
+                if possible_id is not None:
+                    kwargs['id'] = possible_id
+        except AttributeError:
+            # End up here if handling a 2.0 SCO, and don't need to do anything further
+            pass
 
         super(_Observable, self).__init__(**kwargs)
 
@@ -364,56 +371,28 @@ class _Observable(_STIXBase):
         required_prefix = self._type + "--"
         namespace = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
 
-        try:
-            properties_to_use = self._id_contributing_properties
-            if properties_to_use:
-                streamlined_object = {}
-                if "hashes" in kwargs and "hashes" in properties_to_use:
-                    possible_hash = self._choose_one_hash(kwargs["hashes"])
-                    if possible_hash:
-                        streamlined_object["hashes"] = possible_hash
-                for key in kwargs.keys():
-                    if key in properties_to_use and key != "hashes":
-                        if type(kwargs[key]) is dict:
-                            for otherKey in kwargs[key]:
-                                if isinstance(kwargs[key][otherKey], _STIXBase):
-                                    streamlined_object[key] = self._embed_obj_to_json(kwargs[key][otherKey])
-                                else:
-                                    streamlined_object[key] = kwargs[key]
-                        else:
-                            if isinstance(kwargs[key], _STIXBase):
-                                streamlined_object[key] = self._embed_obj_to_json(kwargs[key])
-                            else:
-                                streamlined_object[key] = kwargs[key]
+        properties_to_use = self._id_contributing_properties
+        if properties_to_use:
+            streamlined_obj_vals = []
+            if "hashes" in kwargs and "hashes" in properties_to_use:
+                possible_hash = _choose_one_hash(kwargs["hashes"])
+                if possible_hash:
+                    streamlined_obj_vals.append(possible_hash)
+            for key in properties_to_use:
+                if key != "hashes" and key in kwargs:
+                    if isinstance(kwargs[key], dict) or isinstance(kwargs[key], _STIXBase):
+                        temp_deep_copy = copy.deepcopy(dict(kwargs[key]))
+                        _recursive_stix_to_dict(temp_deep_copy)
+                        streamlined_obj_vals.append(temp_deep_copy)
+                    else:
+                        streamlined_obj_vals.append(kwargs[key])
 
-                if streamlined_object:
-                    data = canonicalize(str(streamlined_object), utf8=False)
-                    return required_prefix + str(uuid.uuid5(namespace, str(data)))
-            return None
-        except AttributeError:
-            # We ideally end up here if handling a 2.0 SCO
-            return None
+            if streamlined_obj_vals:
+                data = canonicalize(streamlined_obj_vals, utf8=False)
+                return required_prefix + six.text_type(uuid.uuid5(namespace, data))
 
-    def _choose_one_hash(self, hash_dict):
-        if "MD5" in hash_dict:
-            return {"MD5": hash_dict["MD5"]}
-        elif "SHA-1" in hash_dict:
-            return {"SHA-1": hash_dict["SHA-1"]}
-        elif "SHA-256" in hash_dict:
-            return {"SHA-256": hash_dict["SHA-256"]}
-        elif "SHA-512" in hash_dict:
-            return {"SHA-512": hash_dict["SHA-512"]}
-        else:
-            # Cheesy way to pick the first item in the dictionary, since its not indexable
-            for (k, v) in hash_dict.items():
-                break
-            return {k: v}
-
-    def _embed_obj_to_json(self, obj):
-        tmp_obj = dict(copy.deepcopy(obj))
-        for prop_name in obj._defaulted_optional_properties:
-            del tmp_obj[prop_name]
-        return tmp_obj
+        # We return None if there are no values specified for any of the id-contributing-properties
+        return None
 
 
 class _Extension(_STIXBase):
@@ -423,6 +402,34 @@ class _Extension(_STIXBase):
         self._check_at_least_one_property()
 
 
+def _choose_one_hash(hash_dict):
+        if "MD5" in hash_dict:
+            return {"MD5": hash_dict["MD5"]}
+        elif "SHA-1" in hash_dict:
+            return {"SHA-1": hash_dict["SHA-1"]}
+        elif "SHA-256" in hash_dict:
+            return {"SHA-256": hash_dict["SHA-256"]}
+        elif "SHA-512" in hash_dict:
+            return {"SHA-512": hash_dict["SHA-512"]}
+        else:
+            k = next(iter(hash_dict), None)
+            if k is not None:
+                return {k: hash_dict[k]}
+
+
 def _cls_init(cls, obj, kwargs):
     if getattr(cls, '__init__', object.__init__) is not object.__init__:
         cls.__init__(obj, **kwargs)
+
+
+def _recursive_stix_to_dict(input_dict):
+    for key in input_dict:
+        if isinstance(input_dict[key], dict):
+            _recursive_stix_to_dict(input_dict[key])
+        elif isinstance(input_dict[key], _STIXBase):
+            input_dict[key] = dict(input_dict[key])
+
+            # There may stil be nested _STIXBase objects
+            _recursive_stix_to_dict(input_dict[key])
+        else:
+            return
