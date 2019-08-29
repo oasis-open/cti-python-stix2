@@ -109,3 +109,11 @@ then look at the resulting report in ``htmlcov/index.html``.
 All commits pushed to the ``master`` branch or submitted as a pull request are
 tested with `Travis-CI <https://travis-ci.org/oasis-open/cti-python-stix2>`_
 automatically.
+
+Adding a dependency
+-------------------
+
+One of the pre-commit hooks we use in our develoment environment enforces a
+consistent ordering to imports. If you need to add a new library as a dependency
+please add it to the `known_third_party` section of `.isort.cfg` to make sure
+the import is sorted correctly.
