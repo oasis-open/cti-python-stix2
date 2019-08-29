@@ -444,7 +444,7 @@ class Malware(STIXDomainObject):
         ('architecture_execution_envs', ListProperty(StringProperty)),
         ('implementation_languages', ListProperty(StringProperty)),
         ('capabilities', ListProperty(StringProperty)),
-        ('sample_refs', ListProperty(ReferenceProperty(valid_types=None, spec_version='2.1'))),
+        ('sample_refs', ListProperty(ReferenceProperty(valid_types=['artifact', 'file'], spec_version='2.1'))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),

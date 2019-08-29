@@ -17,6 +17,8 @@ class Relationship(STIXRelationshipObject):
     `the STIX 2.1 specification <link here>`__.
     """
 
+    _invalid_source_target_types = ['bundle', 'language-content', 'marking-definition', 'relationship', 'sighting']
+
     _type = 'relationship'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
@@ -27,8 +29,8 @@ class Relationship(STIXRelationshipObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('relationship_type', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('source_ref', ReferenceProperty(valid_types=None, spec_version='2.1', required=True)),
-        ('target_ref', ReferenceProperty(valid_types=None, spec_version='2.1', required=True)),
+        ('source_ref', ReferenceProperty(valid_types=_invalid_source_target_types, spec_version='2.1', required=True)),
+        ('target_ref', ReferenceProperty(valid_types=_invalid_source_target_types, spec_version='2.1', required=True)),
         ('start_time', TimestampProperty()),
         ('stop_time', TimestampProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -84,7 +86,7 @@ class Sighting(STIXRelationshipObject):
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('count', IntegerProperty(min=0, max=999999999)),
-        ('sighting_of_ref', ReferenceProperty(valid_types=None, spec_version='2.1', required=True)),
+        ('sighting_of_ref', ReferenceProperty(valid_types="Left to user", spec_version='2.1', required=True)),
         ('observed_data_refs', ListProperty(ReferenceProperty(valid_types='observed-data', spec_version='2.1'))),
         ('where_sighted_refs', ListProperty(ReferenceProperty(valid_types='identity', spec_version='2.1'))),
         ('summary', BooleanProperty()),

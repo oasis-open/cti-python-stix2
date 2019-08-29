@@ -385,7 +385,7 @@ class File(_Observable):
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),
         ('parent_directory_ref', ReferenceProperty(valid_types='directory')),
-        ('contains_refs', ListProperty(ReferenceProperty())),
+        ('contains_refs', ListProperty(ReferenceProperty(invalid_types=[""]))),
         ('content_ref', ReferenceProperty(valid_types='artifact')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
         ('spec_version', StringProperty(fixed='2.1')),

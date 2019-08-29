@@ -77,7 +77,7 @@ class LanguageContent(_STIXBase):
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('object_ref', ReferenceProperty(valid_types=None, spec_version='2.1', required=True)),
+        ('object_ref', ReferenceProperty(invalid_types=[""], spec_version='2.1', required=True)),
         # TODO: 'object_modified' it MUST be an exact match for the modified time of the STIX Object (SRO or SDO) being referenced.
         ('object_modified', TimestampProperty(precision='millisecond')),
         # TODO: 'contents' https://docs.google.com/document/d/1ShNq4c3e1CkfANmD9O--mdZ5H0O_GLnjN28a_yrEaco/edit#heading=h.cfz5hcantmvx

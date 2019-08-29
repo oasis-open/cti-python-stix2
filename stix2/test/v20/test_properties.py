@@ -276,7 +276,7 @@ def test_boolean_property_invalid(value):
 
 
 def test_reference_property():
-    ref_prop = ReferenceProperty(valid_types=None, spec_version="2.0")
+    ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
 
     assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
     with pytest.raises(ValueError):

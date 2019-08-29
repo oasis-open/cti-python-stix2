@@ -15,7 +15,10 @@ import stix2
 
 from .base import _Observable, _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
-from .exceptions import CustomContentError, DictionaryKeyError
+from .exceptions import (
+    CustomContentError, DictionaryKeyError, MissingPropertiesError,
+    MutuallyExclusivePropertiesError,
+)
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 ERROR_INVALID_ID = (
@@ -417,15 +420,27 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, valid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
         self.spec_version = spec_version
 
+        # These checks need to be done prior to the STIX object finishing construction
+        # and thus we can't use base.py's _check_mutually_exclusive_properties()
+        # in the typical location of _check_object_constraints() in sdo.py
+        if valid_types and invalid_types:
+            raise MutuallyExclusivePropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+        elif valid_types is None and invalid_types is None:
+            raise MissingPropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+
         if valid_types and type(valid_types) is not list:
             valid_types = [valid_types]
+        elif invalid_types and type(invalid_types) is not list:
+            invalid_types = [invalid_types]
+
         self.valid_types = valid_types
+        self.invalid_types = invalid_types
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
@@ -434,8 +449,18 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        if self.valid_types and value[:value.index('--')] in self.valid_types:
-            required_prefix = value[:value.index('--') + 2]
+        possible_prefix = value[:value.index('--') + 2]
+
+        if self.valid_types:
+            if possible_prefix in self.valid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("The type-specifying prefix for this identifier is invalid")
+        elif self.invalid_types:
+            if possible_prefix not in self.invalid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("The type-specifying prefix for this identifier is invalid")
 
         _validate_id(value, self.spec_version, required_prefix)
 
