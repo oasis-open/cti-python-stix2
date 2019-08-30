@@ -67,7 +67,7 @@ class Sighting(STIXRelationshipObject):
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('count', IntegerProperty(min=0, max=999999999)),
-        ('sighting_of_ref', ReferenceProperty(valid_types="Left to user", spec_version='2.0', required=True)),
+        ('sighting_of_ref', ReferenceProperty(valid_types="only_SDO", spec_version='2.0', required=True)),
         ('observed_data_refs', ListProperty(ReferenceProperty(valid_types='observed-data', spec_version='2.0'))),
         ('where_sighted_refs', ListProperty(ReferenceProperty(valid_types='identity', spec_version='2.0'))),
         ('summary', BooleanProperty(default=lambda: False)),

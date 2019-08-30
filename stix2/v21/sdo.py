@@ -6,9 +6,11 @@ import warnings
 
 from six.moves.urllib.parse import quote_plus
 
-from ..core import STIXDomainObject
+from ..core import STIX2_OBJ_MAPS, STIXDomainObject
 from ..custom import _custom_object_builder
-from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
+from ..exceptions import (
+    InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
+)
 from ..properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, IDProperty, IntegerProperty, ListProperty,
@@ -149,7 +151,7 @@ class Grouping(STIXDomainObject):
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('context', StringProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
     ])
 
 
@@ -505,7 +507,7 @@ class MalwareAnalysis(STIXDomainObject):
         ('analysis_started', TimestampProperty()),
         ('analysis_ended', TimestampProperty()),
         ('av_result', StringProperty()),
-        ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types=None, spec_version='2.1'))),
+        ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="only_SCO", spec_version='2.1'))),
     ])
 
     def _check_object_constraints(self):
@@ -531,7 +533,7 @@ class Note(STIXDomainObject):
         ('abstract', StringProperty()),
         ('content', StringProperty(required=True)),
         ('authors', ListProperty(StringProperty)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -560,7 +562,7 @@ class ObservedData(STIXDomainObject):
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
         ('objects', ObservableProperty(spec_version='2.1')),
-        ('object_refs', ListProperty(ReferenceProperty(valid_types=None, spec_version="2.1"))),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types="only_SCO_&_SRO", spec_version="2.1"))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -597,6 +599,14 @@ class ObservedData(STIXDomainObject):
             ["objects", "object_refs"],
         )
 
+        if self.get('object_refs'):
+            for identifier in self.get('object_refs'):
+                identifier_prefix = identifier[:identifier.index('--') + 2]
+                if identifier_prefix in STIX2_OBJ_MAPS['v21']['observables'].keys():
+                    break
+            else:
+                raise InvalidValueError(self.__class__, 'object_refs', "At least one identifier must be of a SCO type if this property specified")
+
 
 class Opinion(STIXDomainObject):
     # TODO: Add link
@@ -625,7 +635,7 @@ class Opinion(STIXDomainObject):
                 ], required=True,
             ),
         ),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -654,7 +664,7 @@ class Report(STIXDomainObject):
         ('description', StringProperty()),
         ('report_types', ListProperty(StringProperty, required=True)),
         ('published', TimestampProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),

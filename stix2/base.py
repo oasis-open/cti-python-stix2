@@ -327,7 +327,8 @@ class _Observable(_STIXBase):
             return  # don't check if refs are valid
 
         if ref not in self._STIXBase__valid_refs:
-            raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+            if ref[:ref.index('--') + 2] not in self._STIXBase__valid_refs:
+                raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
 
         try:
             allowed_types = prop.contained.valid_types

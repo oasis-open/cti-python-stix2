@@ -452,15 +452,22 @@ class ReferenceProperty(Property):
         possible_prefix = value[:value.index('--') + 2]
 
         if self.valid_types:
-            if possible_prefix in self.valid_types:
+            if self.valid_types == ["only_SDO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['objects'].keys()
+            elif self.valid_types == ["only_SCO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys()
+            elif self.valid_types == ["only_SCO_&_SRO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys() + ['relationship', 'sighting']
+
+            if possible_prefix[:-2] in self.valid_types:
                 required_prefix = possible_prefix
             else:
-                raise ValueError("The type-specifying prefix for this identifier is invalid")
+                raise ValueError("The type-specifying prefix for this identifier is not valid")
         elif self.invalid_types:
-            if possible_prefix not in self.invalid_types:
+            if possible_prefix[:-2] not in self.invalid_types:
                 required_prefix = possible_prefix
             else:
-                raise ValueError("The type-specifying prefix for this identifier is invalid")
+                raise ValueError("An invalid type-specifying prefix was specified for this identifier")
 
         _validate_id(value, self.spec_version, required_prefix)
 
