@@ -125,15 +125,13 @@ def rel_fs_store():
 
 
 def test_filesystem_source_nonexistent_folder():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.FileSystemSource('nonexistent-folder')
-    assert "for STIX data does not exist" in str(excinfo)
 
 
 def test_filesystem_sink_nonexistent_folder():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         stix2.FileSystemSink('nonexistent-folder')
-    assert "for STIX data does not exist" in str(excinfo)
 
 
 def test_filesystem_source_bad_json_file(fs_source, bad_json_files):
@@ -441,9 +439,8 @@ def test_filesystem_attempt_stix_file_overwrite(fs_store):
     )
 
     # Now attempt to overwrite the existing file
-    with pytest.raises(DataSourceError) as excinfo:
+    with pytest.raises(DataSourceError):
         fs_store.add(camp8)
-    assert "Attempted to overwrite file" in str(excinfo)
 
     os.remove(filepath)
 
