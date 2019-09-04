@@ -26,7 +26,7 @@ EXPECTED = """{
     "objects": {
         "0": {
             "type": "file",
-            "id": "file--500d9a03-9d03-5c31-82b2-2be8aacec481",
+            "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
             "name": "foo.exe"
         }
     }
@@ -45,6 +45,7 @@ def test_observed_data_example():
         objects={
             "0": {
                 "name": "foo.exe",
+                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                 "type": "file",
             },
         },
@@ -66,15 +67,15 @@ EXPECTED_WITH_REF = """{
     "objects": {
         "0": {
             "type": "file",
-            "id": "file--500d9a03-9d03-5c31-82b2-2be8aacec481",
+            "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
             "name": "foo.exe"
         },
         "1": {
             "type": "directory",
-            "id": "directory--ed959127-2df3-5999-99b6-df7614398c1c",
+            "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
             "path": "/usr/home",
             "contains_refs": [
-                "0"
+                "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"
             ]
         }
     }
@@ -93,12 +94,14 @@ def test_observed_data_example_with_refs():
         objects={
             "0": {
                 "name": "foo.exe",
+                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                 "type": "file",
             },
             "1": {
                 "type": "directory",
+                "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
                 "path": "/usr/home",
-                "contains_refs": ["0"],
+                "contains_refs": ["file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"],
             },
         },
     )
@@ -117,9 +120,9 @@ EXPECTED_OBJECT_REFS = """{
     "last_observed": "2015-12-21T19:00:00Z",
     "number_observed": 50,
     "object_refs": [
-        "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
-        "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
-        "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c"
+        "file--758bf2c0-a6f1-56d1-872e-6b727467739a",
+        "url--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+        "mutex--eca0b3ba-8d76-11e9-a1fd-34415dabec0c"
     ]
 }"""
 
@@ -134,9 +137,9 @@ def test_observed_data_example_with_object_refs():
         last_observed="2015-12-21T19:00:00Z",
         number_observed=50,
         object_refs=[
-            "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
-            "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
-            "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
+            "file--758bf2c0-a6f1-56d1-872e-6b727467739a",
+            "url--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+            "mutex--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
         ],
     )
 
@@ -160,15 +163,15 @@ def test_observed_data_object_constraint():
                 },
             },
             object_refs=[
-                "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
-                "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
-                "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
+                "file--758bf2c0-a6f1-56d1-872e-6b727467739a",
+                "url--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+                "mutex--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
             ],
         )
 
 
 def test_observed_data_example_with_bad_refs():
-    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+    with pytest.raises(ValueError) as excinfo:
         stix2.v21.ObservedData(
             id=OBSERVED_DATA_ID,
             created_by_ref=IDENTITY_ID,
@@ -180,19 +183,20 @@ def test_observed_data_example_with_bad_refs():
             objects={
                 "0": {
                     "type": "file",
+                    "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                     "name": "foo.exe",
                 },
                 "1": {
                     "type": "directory",
                     "path": "/usr/home",
-                    "contains_refs": ["2"],
+                    "contains_refs": ["monkey--5956efbb-a7b0-566d-a7f9-a202eb05c70f"],
                 },
             },
         )
 
-    assert excinfo.value.cls == stix2.v21.ObservedData
-    assert excinfo.value.prop_name == "objects"
-    assert excinfo.value.reason == "Invalid object reference for 'Directory:contains_refs': '2' is not a valid object in local scope"
+    assert excinfo.value.cls == stix2.v21.Directory
+    assert excinfo.value.prop_name == "contains_refs"
+    assert "The type-specifying prefix 'monkey--' for the identifier" in excinfo.value.reason
 
 
 def test_observed_data_example_with_non_dictionary():
@@ -248,6 +252,7 @@ def test_observed_data_example_with_empty_dictionary():
                 "0": {
                     "name": "foo.exe",
                     "type": "file",
+                    "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                 },
             },
         },
@@ -640,16 +645,18 @@ def test_observed_data_with_process_example():
         objects={
             "0": {
                 "type": "file",
+                "id": "file--0d16c8d3-c177-5f5d-a022-b1bdac329bea",
                 "hashes": {
                     "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f",
                 },
             },
             "1": {
                 "type": "process",
+                "id": "process--f6c4a02c-23e1-4a6d-a0d7-d862e893817a",
                 "pid": 1221,
-                "created": "2016-01-20T14:11:25.55Z",
+                "created_time": "2016-01-20T14:11:25.55Z",
                 "command_line": "./gedit-bin --new-window",
-                "image_ref": "0",
+                "image_ref": "file--0d16c8d3-c177-5f5d-a022-b1bdac329bea",
             },
         },
     )
@@ -693,31 +700,33 @@ def test_artifact_mutual_exclusion_error():
 
 
 def test_directory_example():
-    dir = stix2.v21.Directory(
-        _valid_refs={"1": "file"},
+    f = stix2.v21.File(
+        name="penguin.exe",
+    )
+
+    dir1 = stix2.v21.Directory(
         path='/usr/lib',
         ctime="2015-12-21T19:00:00Z",
         mtime="2015-12-24T19:00:00Z",
         atime="2015-12-21T20:00:00Z",
-        contains_refs=["1"],
+        contains_refs=[str(f.id)],
     )
 
-    assert dir.path == '/usr/lib'
-    assert dir.ctime == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert dir.mtime == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
-    assert dir.atime == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
-    assert dir.contains_refs == ["1"]
+    assert dir1.path == '/usr/lib'
+    assert dir1.ctime == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
+    assert dir1.mtime == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
+    assert dir1.atime == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+    assert dir1.contains_refs == ["file--9d050a3b-72cd-5b57-bf18-024e74e1e5eb"]
 
 
 def test_directory_example_ref_error():
-    with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Directory(
-            _valid_refs=[],
             path='/usr/lib',
             ctime="2015-12-21T19:00:00Z",
             mtime="2015-12-24T19:00:00Z",
             atime="2015-12-21T20:00:00Z",
-            contains_refs=["1"],
+            contains_refs=["domain-name--02af94ea-7e38-5718-87c3-5cc023e3d49d"],
         )
 
     assert excinfo.value.cls == stix2.v21.Directory
@@ -725,22 +734,24 @@ def test_directory_example_ref_error():
 
 
 def test_domain_name_example():
-    dn = stix2.v21.DomainName(
-        _valid_refs={"1": 'domain-name'},
-        value="example.com",
-        resolves_to_refs=["1"],
+    dn1 = stix2.v21.DomainName(
+        value="mitre.org",
     )
 
-    assert dn.value == "example.com"
-    assert dn.resolves_to_refs == ["1"]
+    dn2 = stix2.v21.DomainName(
+        value="example.com",
+        resolves_to_refs=[str(dn1.id)],
+    )
+
+    assert dn2.value == "example.com"
+    assert dn2.resolves_to_refs == ["domain-name--02af94ea-7e38-5718-87c3-5cc023e3d49d"]
 
 
 def test_domain_name_example_invalid_ref_type():
-    with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.DomainName(
-            _valid_refs={"1": "file"},
             value="example.com",
-            resolves_to_refs=["1"],
+            resolves_to_refs=["file--44a431e6-764b-5556-a3f5-bf655930a581"],
         )
 
     assert excinfo.value.cls == stix2.v21.DomainName
@@ -882,6 +893,7 @@ RASTER_IMAGE_EXT = """{
 "objects": {
   "0": {
     "type": "file",
+    "id": "file--44a431e6-764b-5556-a3f5-bf655930a581",
     "name": "picture.jpg",
     "hashes": {
       "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
@@ -993,18 +1005,17 @@ def test_file_example_encryption_error():
     assert "At least one of the (hashes, name)" in str(excinfo.value)
 
 
-def test_ip4_address_example():
+def test_ipv4_address_example():
     ip4 = stix2.v21.IPv4Address(
-        _valid_refs={"4": "mac-addr", "5": "mac-addr"},
         value="198.51.100.3",
-        resolves_to_refs=["4", "5"],
+        resolves_to_refs=["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"],
     )
 
     assert ip4.value == "198.51.100.3"
-    assert ip4.resolves_to_refs == ["4", "5"]
+    assert ip4.resolves_to_refs == ["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"]
 
 
-def test_ip4_address_valid_refs():
+def test_ipv4_address_valid_refs():
     mac1 = stix2.v21.MACAddress(
         value="a1:b2:c3:d4:e5:f6",
     )
@@ -1013,22 +1024,21 @@ def test_ip4_address_valid_refs():
     )
 
     ip4 = stix2.v21.IPv4Address(
-        _valid_refs={"1": mac1, "2": mac2},
         value="177.60.40.7",
-        resolves_to_refs=["1", "2"],
+        resolves_to_refs=[str(mac1.id), str(mac2.id)],
     )
 
     assert ip4.value == "177.60.40.7"
-    assert ip4.resolves_to_refs == ["1", "2"]
+    assert ip4.resolves_to_refs == ["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"]
 
 
-def test_ip4_address_example_cidr():
+def test_ipv4_address_example_cidr():
     ip4 = stix2.v21.IPv4Address(value="198.51.100.0/24")
 
     assert ip4.value == "198.51.100.0/24"
 
 
-def test_ip6_address_example():
+def test_ipv6_address_example():
     ip6 = stix2.v21.IPv6Address(value="2001:0db8:85a3:0000:0000:8a2e:0370:7334")
 
     assert ip6.value == "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
@@ -1042,14 +1052,13 @@ def test_mac_address_example():
 
 def test_network_traffic_example():
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr", "1": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
-        dst_ref="1",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
+        dst_ref="ipv4-addr--6d39dd0b-1f74-5faf-8d76-d8762c2a57cb",
     )
     assert nt.protocols == ["tcp"]
-    assert nt.src_ref == "0"
-    assert nt.dst_ref == "1"
+    assert nt.src_ref == "ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88"
+    assert nt.dst_ref == "ipv4-addr--6d39dd0b-1f74-5faf-8d76-d8762c2a57cb"
 
 
 def test_network_traffic_http_request_example():
@@ -1064,9 +1073,8 @@ def test_network_traffic_http_request_example():
         },
     )
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'http-request-ext': h},
     )
     assert nt.extensions['http-request-ext'].request_method == "get"
@@ -1080,9 +1088,8 @@ def test_network_traffic_http_request_example():
 def test_network_traffic_icmp_example():
     h = stix2.v21.ICMPExt(icmp_type_hex="08", icmp_code_hex="00")
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'icmp-ext': h},
     )
     assert nt.extensions['icmp-ext'].icmp_type_hex == "08"
@@ -1097,9 +1104,8 @@ def test_network_traffic_socket_example():
         socket_type="SOCK_STREAM",
     )
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'socket-ext': h},
     )
     assert nt.extensions['socket-ext'].is_listening
@@ -1111,9 +1117,8 @@ def test_network_traffic_socket_example():
 def test_network_traffic_tcp_example():
     h = stix2.v21.TCPExt(src_flags_hex="00000002")
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'tcp-ext': h},
     )
     assert nt.extensions['tcp-ext'].src_flags_hex == "00000002"
@@ -1127,11 +1132,10 @@ def test_mutex_example():
 
 def test_process_example():
     p = stix2.v21.Process(
-        _valid_refs={"0": "file"},
         pid=1221,
-        created="2016-01-20T14:11:25.55Z",
+        created_time="2016-01-20T14:11:25.55Z",
         command_line="./gedit-bin --new-window",
-        image_ref="0",
+        image_ref="file--ea587d87-5ed2-5625-a9ac-01fd64161fd8",
     )
 
     assert p.command_line == "./gedit-bin --new-window"
@@ -1143,7 +1147,7 @@ def test_process_example_empty_error():
 
     assert excinfo.value.cls == stix2.v21.Process
     properties_of_process = list(stix2.v21.Process._properties.keys())
-    properties_of_process.remove("type")
+    properties_of_process = [prop for prop in properties_of_process if prop not in ["type", "id", "defanged", "spec_version"]]
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
     msg = msg.format(
@@ -1367,18 +1371,20 @@ def test_new_version_with_related_objects():
         objects={
             'src_ip': {
                 'type': 'ipv4-addr',
+                'id': 'ipv4-addr--2b94bc65-17d4-54f6-9ffe-7d103551bb9f',
                 'value': '127.0.0.1/32',
             },
             'domain': {
                 'type': 'domain-name',
+                'id': 'domain-name--220a2699-5ebf-5b57-bf02-424964bb19c0',
                 'value': 'example.com',
-                'resolves_to_refs': ['src_ip'],
+                'resolves_to_refs': ['ipv4-addr--2b94bc65-17d4-54f6-9ffe-7d103551bb9f'],
             },
         },
     )
     new_version = data.new_version(last_observed="2017-12-12T12:00:00Z")
     assert new_version.last_observed.year == 2017
-    assert new_version.objects['domain'].resolves_to_refs[0] == 'src_ip'
+    assert new_version.objects['domain'].resolves_to_refs[0] == 'ipv4-addr--2b94bc65-17d4-54f6-9ffe-7d103551bb9f'
 
 
 def test_objects_deprecation():

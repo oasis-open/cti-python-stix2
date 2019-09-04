@@ -151,7 +151,7 @@ class Grouping(STIXDomainObject):
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('context', StringProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
     ])
 
 
@@ -533,7 +533,7 @@ class Note(STIXDomainObject):
         ('abstract', StringProperty()),
         ('content', StringProperty(required=True)),
         ('authors', ListProperty(StringProperty)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -601,7 +601,7 @@ class ObservedData(STIXDomainObject):
 
         if self.get('object_refs'):
             for identifier in self.get('object_refs'):
-                identifier_prefix = identifier[:identifier.index('--') + 2]
+                identifier_prefix = identifier[:identifier.index('--')]
                 if identifier_prefix in STIX2_OBJ_MAPS['v21']['observables'].keys():
                     break
             else:
@@ -635,7 +635,7 @@ class Opinion(STIXDomainObject):
                 ], required=True,
             ),
         ),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -664,7 +664,7 @@ class Report(STIXDomainObject):
         ('description', StringProperty()),
         ('report_types', ListProperty(StringProperty, required=True)),
         ('published', TimestampProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""]), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),

@@ -115,14 +115,14 @@ class _STIXBase(collections.Mapping):
     def _check_at_least_one_property(self, list_of_properties=None):
         if not list_of_properties:
             list_of_properties = sorted(list(self.__class__._properties.keys()))
-            if 'type' in list_of_properties:
-                list_of_properties.remove('type')
+            if isinstance(self, _Observable):
+                props_to_remove = ["type", "id", "defanged", "spec_version"]
+            else:
+                props_to_remove = ["type"]
+
+            list_of_properties = [prop for prop in list_of_properties if prop not in props_to_remove]
         current_properties = self.properties_populated()
         list_of_properties_populated = set(list_of_properties).intersection(current_properties)
-
-        if list_of_properties_populated == set(['id']) and isinstance(self, _Observable):
-            # Do not count the auto-generated id as a user-specified property
-            list_of_properties_populated = None
 
         if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(['extensions'])):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
@@ -327,8 +327,7 @@ class _Observable(_STIXBase):
             return  # don't check if refs are valid
 
         if ref not in self._STIXBase__valid_refs:
-            if ref[:ref.index('--') + 2] not in self._STIXBase__valid_refs:
-                raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
+            raise InvalidObjRefError(self.__class__, prop_name, "'%s' is not a valid object in local scope" % ref)
 
         try:
             allowed_types = prop.contained.valid_types
@@ -352,12 +351,14 @@ class _Observable(_STIXBase):
         if prop_name not in kwargs:
             return
 
-        if prop_name.endswith('_ref'):
-            ref = kwargs[prop_name]
-            self._check_ref(ref, prop, prop_name)
-        elif prop_name.endswith('_refs'):
-            for ref in kwargs[prop_name]:
+        from .properties import ObjectReferenceProperty
+        if isinstance(prop, ObjectReferenceProperty):
+            if prop_name.endswith('_ref'):
+                ref = kwargs[prop_name]
                 self._check_ref(ref, prop, prop_name)
+            elif prop_name.endswith('_refs'):
+                for ref in kwargs[prop_name]:
+                    self._check_ref(ref, prop, prop_name)
 
     def _generate_id(self, kwargs):
         required_prefix = self._type + "--"
@@ -376,6 +377,11 @@ class _Observable(_STIXBase):
                         temp_deep_copy = copy.deepcopy(dict(kwargs[key]))
                         _recursive_stix_to_dict(temp_deep_copy)
                         streamlined_obj_vals.append(temp_deep_copy)
+                    elif isinstance(kwargs[key], list) and isinstance(kwargs[key][0], _STIXBase):
+                        for obj in kwargs[key]:
+                            temp_deep_copy = copy.deepcopy(dict(obj))
+                            _recursive_stix_to_dict(temp_deep_copy)
+                            streamlined_obj_vals.append(temp_deep_copy)
                     else:
                         streamlined_obj_vals.append(kwargs[key])
 
