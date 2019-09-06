@@ -457,7 +457,7 @@ class ReferenceProperty(Property):
             elif self.valid_types == ["only_SCO"]:
                 self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys()
             elif self.valid_types == ["only_SCO_&_SRO"]:
-                self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys() + ['relationship', 'sighting']
+                self.valid_types = list(STIX2_OBJ_MAPS['v21']['observables'].keys()) + ['relationship', 'sighting']
 
             if possible_prefix[:-2] in self.valid_types:
                 required_prefix = possible_prefix

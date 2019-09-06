@@ -364,17 +364,21 @@ def test_parse_autonomous_system_valid(data):
         "type": "email-addr",
         "value": "john@example.com",
         "display_name": "John Doe",
-        "belongs_to_ref": "0"
+        "belongs_to_ref": "user-account--fc07c1af-6b11-41f8-97a4-47920d866a91"
     }""",
     ],
 )
 def test_parse_email_address(data):
-    odata = stix2.parse_observable(data, {"0": "user-account"}, version='2.1')
+    odata = stix2.parse_observable(data, version='2.1')
     assert odata.type == "email-addr"
 
-    odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', data)
-    with pytest.raises(stix2.exceptions.InvalidObjRefError):
-        stix2.parse_observable(odata_str, {"0": "user-account"}, version='2.1')
+    odata_str = re.compile(
+        '"belongs_to_ref": "user-account--fc07c1af-6b11-41f8-97a4-47920d866a91"', re.DOTALL,
+    ).sub(
+        '"belongs_to_ref": "mutex--9be6365f-b89c-48c0-9340-6953f6595718"', data,
+    )
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        stix2.parse_observable(odata_str, version='2.1')
 
 
 @pytest.mark.parametrize(
@@ -385,12 +389,12 @@ def test_parse_email_address(data):
         "is_multipart": true,
         "content_type": "multipart/mixed",
         "date": "2016-06-19T14:20:40.000Z",
-        "from_ref": "1",
+        "from_ref": "email-addr--d4ef7e1f-086d-5ff4-bce4-312ddc3eae76",
         "to_refs": [
-          "2"
+          "email-addr--8b0eb924-208c-5efd-80e5-84e2d610e54b"
         ],
         "cc_refs": [
-          "3"
+          "email-addr--1766f860-5cf3-5697-8789-35f1242663d5"
         ],
         "subject": "Check out this picture of a cat!",
         "additional_header_fields": {
@@ -407,12 +411,12 @@ def test_parse_email_address(data):
           {
             "content_type": "image/png",
             "content_disposition": "attachment; filename=\\"tabby.png\\"",
-            "body_raw_ref": "4"
+            "body_raw_ref": "artifact--80b04ad8-db52-464b-a85a-a44a5f3a60c5"
           },
           {
             "content_type": "application/zip",
             "content_disposition": "attachment; filename=\\"tabby_pics.zip\\"",
-            "body_raw_ref": "5"
+            "body_raw_ref": "file--e63474fc-b386-5630-a003-1b555e22f99b"
           }
         ]
     }
@@ -420,15 +424,7 @@ def test_parse_email_address(data):
     ],
 )
 def test_parse_email_message(data):
-    valid_refs = {
-        "0": "email-message",
-        "1": "email-addr",
-        "2": "email-addr",
-        "3": "email-addr",
-        "4": "artifact",
-        "5": "file",
-    }
-    odata = stix2.parse_observable(data, valid_refs, version='2.1')
+    odata = stix2.parse_observable(data, version='2.1')
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
 
@@ -438,8 +434,8 @@ def test_parse_email_message(data):
         """
     {
          "type": "email-message",
-         "from_ref": "0",
-         "to_refs": ["1"],
+         "from_ref": "email-addr--d4ef7e1f-086d-5ff4-bce4-312ddc3eae76",
+         "to_refs": ["email-addr--8b0eb924-208c-5efd-80e5-84e2d610e54b"],
          "is_multipart": true,
          "date": "1997-11-21T15:55:06.000Z",
          "subject": "Saying Hello",
@@ -449,12 +445,8 @@ def test_parse_email_message(data):
     ],
 )
 def test_parse_email_message_not_multipart(data):
-    valid_refs = {
-        "0": "email-addr",
-        "1": "email-addr",
-    }
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.parse_observable(data, valid_refs, version='2.1')
+        stix2.parse_observable(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
     assert excinfo.value.dependencies == [("is_multipart", "body")]
@@ -464,18 +456,21 @@ def test_parse_email_message_not_multipart(data):
     "data", [
         """"0": {
             "type": "file",
+            "id": "file--ecd47d73-15e4-5250-afda-ef8897b22340",
             "hashes": {
                 "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
             }
         },
         "1": {
             "type": "file",
+            "id": "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
             "hashes": {
                 "SHA-256": "19c549ec2628b989382f6b280cbd7bb836a0b461332c0fe53511ce7d584b89d3"
             }
         },
         "2": {
             "type": "file",
+            "id": "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
             "hashes": {
                 "SHA-256": "0969de02ecf8a5f003e3f6d063d848c8a193aada092623f8ce408c15bcb5f038"
             }
@@ -490,9 +485,9 @@ def test_parse_email_message_not_multipart(data):
             "extensions": {
                 "archive-ext": {
                     "contains_refs": [
-                        "0",
-                        "1",
-                        "2"
+                        "file--ecd47d73-15e4-5250-afda-ef8897b22340",
+                        "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
+                        "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac"
                     ]
                 }
             }
@@ -503,7 +498,11 @@ def test_parse_file_archive(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
     assert all(x in odata.objects["3"].extensions['archive-ext'].contains_refs
-               for x in ["0", "1", "2"])
+               for x in [
+                   "file--ecd47d73-15e4-5250-afda-ef8897b22340",
+                   "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
+                   "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
+               ])
 
 
 @pytest.mark.parametrize(
@@ -514,12 +513,12 @@ def test_parse_file_archive(data):
         "is_multipart": true,
         "content_type": "multipart/mixed",
         "date": "2016-06-19T14:20:40.000Z",
-        "from_ref": "1",
+        "from_ref": "email-addr--d4ef7e1f-086d-5ff4-bce4-312ddc3eae76",
         "to_refs": [
-          "2"
+          "email-addr--8b0eb924-208c-5efd-80e5-84e2d610e54b"
         ],
         "cc_refs": [
-          "3"
+          "email-addr--1766f860-5cf3-5697-8789-35f1242663d5"
         ],
         "subject": "Check out this picture of a cat!",
         "additional_header_fields": {
@@ -540,7 +539,7 @@ def test_parse_file_archive(data):
           {
             "content_type": "application/zip",
             "content_disposition": "attachment; filename=\\"tabby_pics.zip\\"",
-            "body_raw_ref": "5"
+            "body_raw_ref": "file--e63474fc-b386-5630-a003-1b555e22f99b"
           }
         ]
     }
@@ -548,16 +547,8 @@ def test_parse_file_archive(data):
     ],
 )
 def test_parse_email_message_with_at_least_one_error(data):
-    valid_refs = {
-        "0": "email-message",
-        "1": "email-addr",
-        "2": "email-addr",
-        "3": "email-addr",
-        "4": "artifact",
-        "5": "file",
-    }
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.parse_observable(data, valid_refs, version='2.1')
+        stix2.parse_observable(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
     assert "At least one of the" in str(excinfo.value)
@@ -569,8 +560,8 @@ def test_parse_email_message_with_at_least_one_error(data):
         """
     {
         "type": "network-traffic",
-        "src_ref": "0",
-        "dst_ref": "1",
+        "src_ref": "ipv4-addr--e535b017-cc1c-566b-a3e2-f69f92ed9c4c",
+        "dst_ref": "ipv4-addr--78327430-9ad9-5632-ae3d-8e2fce8f5483",
         "protocols": [
           "tcp"
         ]
@@ -580,13 +571,12 @@ def test_parse_email_message_with_at_least_one_error(data):
 )
 def test_parse_basic_tcp_traffic(data):
     odata = stix2.parse_observable(
-        data, {"0": "ipv4-addr", "1": "ipv4-addr"},
-        version='2.1',
+        data, version='2.1',
     )
 
     assert odata.type == "network-traffic"
-    assert odata.src_ref == "0"
-    assert odata.dst_ref == "1"
+    assert odata.src_ref == "ipv4-addr--e535b017-cc1c-566b-a3e2-f69f92ed9c4c"
+    assert odata.dst_ref == "ipv4-addr--78327430-9ad9-5632-ae3d-8e2fce8f5483"
     assert odata.protocols == ["tcp"]
 
 
@@ -604,7 +594,7 @@ def test_parse_basic_tcp_traffic(data):
         "src_byte_count": 35779,
         "dst_byte_count": 935750,
         "encapsulates_refs": [
-          "4"
+          "network-traffic--016914c3-b680-5df2-81c4-bb9ccf8dc8b0"
         ]
   }
     """,
@@ -612,7 +602,7 @@ def test_parse_basic_tcp_traffic(data):
 )
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, {"4": "network-traffic"}, version='2.1')
+        stix2.parse_observable(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.NetworkTraffic
     assert excinfo.value.properties == ["dst_ref", "src_ref"]

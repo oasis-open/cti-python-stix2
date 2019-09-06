@@ -98,6 +98,15 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
                 print (filter_value)
                 print ('\n')
                 print ('$$$$$')
+                pass
+            else:
+                # print ('222222222')
+                # print (stix_obj_property)
+                # print ('\n')
+                # print (filter_value)
+                # print ('\n')
+                # print ('222222222')
+                pass
             return stix_obj_property == filter_value
         elif self.op == "!=":
             return stix_obj_property != filter_value
@@ -107,12 +116,21 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
             if isinstance(filter_value, dict):
                 boolB = filter_value in stix_obj_property.values()
                 if boolB is False:
-                    print ('$$$$$')
+                    print ('@@@@@@')
                     print (filter_value)
                     print ('\n')
                     print (stix_obj_property.values())
                     print ('\n')
-                    print ('$$$$$')
+                    print ('@@@@@@@')
+                    pass
+                else:
+                    # print ('55555555555')
+                    # print (filter_value)
+                    # print ('\n')
+                    # print (stix_obj_property.values())
+                    # print ('\n')
+                    # print ('55555555555')
+                    pass
                 return filter_value in stix_obj_property.values()
             else:
                 return filter_value in stix_obj_property
