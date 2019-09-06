@@ -323,6 +323,11 @@ class _Observable(_STIXBase):
         super(_Observable, self).__init__(**kwargs)
 
     def _check_ref(self, ref, prop, prop_name):
+        """
+        Only for checking `*_ref` or `*_refs` properties in spec_version 2.0
+        STIX Cyber Observables (SCOs)
+        """
+
         if '*' in self._STIXBase__valid_refs:
             return  # don't check if refs are valid
 

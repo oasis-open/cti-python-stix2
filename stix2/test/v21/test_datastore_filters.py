@@ -86,6 +86,7 @@ stix_objs = [
         "objects": {
             "0": {
                 "type": "file",
+                "spec_version": "2.1",
                 "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876",
                 "name": "HAL 9000.exe",
             },
@@ -110,8 +111,8 @@ filters = [
     Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9"),
     Filter("granular_markings.selectors", "in", "description"),
     Filter("external_references.source_name", "=", "CVE"),
-    Filter("objects", "=", {"0": {"type": "file", "name": "HAL 9000.exe", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876"}}),
-    Filter("objects", "contains", {"type": "file", "name": "HAL 9000.exe", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876"}),
+    Filter("objects", "=", {"0": {"type": "file", "spec_version": "2.1", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876", "name": "HAL 9000.exe"}}),
+    Filter("objects", "contains", {"type": "file", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876", "name": "HAL 9000.exe", "spec_version": "2.1"}),
     Filter("labels", "contains", "heartbleed"),
 ]
 

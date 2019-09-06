@@ -462,12 +462,12 @@ class ReferenceProperty(Property):
             if possible_prefix[:-2] in self.valid_types:
                 required_prefix = possible_prefix
             else:
-                raise ValueError("The type-specifying prefix '%s' for the identifier '%s' is not valid" % (possible_prefix, value))
+                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
         elif self.invalid_types:
             if possible_prefix[:-2] not in self.invalid_types:
                 required_prefix = possible_prefix
             else:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for the identifier '%s'" % (possible_prefix, value))
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
 
         _validate_id(value, self.spec_version, required_prefix)
 

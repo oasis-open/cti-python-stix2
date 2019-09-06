@@ -27,6 +27,7 @@ EXPECTED = """{
         "0": {
             "type": "file",
             "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+            "spec_version": "2.1",
             "name": "foo.exe"
         }
     }
@@ -44,14 +45,19 @@ def test_observed_data_example():
         number_observed=50,
         objects={
             "0": {
-                "name": "foo.exe",
-                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                 "type": "file",
+                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "name": "foo.exe",
             },
         },
     )
 
-    assert str(observed_data) == EXPECTED
+    assert observed_data.id == "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
+    assert observed_data.created_by_ref == "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
+    assert observed_data.created == observed_data.modified == dt.datetime(2016, 4, 6, 19, 58, 16, tzinfo=pytz.utc)
+    assert observed_data.first_observed == observed_data.last_observed == dt.datetime(2015, 12, 21, 19, 00, 00, tzinfo=pytz.utc)
+    assert observed_data.number_observed == 50
+    assert observed_data.objects['0'] == stix2.v21.File(name="foo.exe")
 
 
 EXPECTED_WITH_REF = """{
@@ -68,11 +74,13 @@ EXPECTED_WITH_REF = """{
         "0": {
             "type": "file",
             "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+            "spec_version": "2.1",
             "name": "foo.exe"
         },
         "1": {
             "type": "directory",
             "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
+            "spec_version": "2.1",
             "path": "/usr/home",
             "contains_refs": [
                 "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"
@@ -93,9 +101,9 @@ def test_observed_data_example_with_refs():
         number_observed=50,
         objects={
             "0": {
-                "name": "foo.exe",
-                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                 "type": "file",
+                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "name": "foo.exe",
             },
             "1": {
                 "type": "directory",
@@ -105,8 +113,13 @@ def test_observed_data_example_with_refs():
             },
         },
     )
-
-    assert str(observed_data) == EXPECTED_WITH_REF
+    assert observed_data.id == "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
+    assert observed_data.created_by_ref == "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
+    assert observed_data.created == observed_data.modified == dt.datetime(2016, 4, 6, 19, 58, 16, tzinfo=pytz.utc)
+    assert observed_data.first_observed == observed_data.last_observed == dt.datetime(2015, 12, 21, 19, 00, 00, tzinfo=pytz.utc)
+    assert observed_data.number_observed == 50
+    assert observed_data.objects['0'] == stix2.v21.File(name="foo.exe")
+    assert observed_data.objects['1'] == stix2.v21.Directory(path="/usr/home", contains_refs=["file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"])
 
 
 EXPECTED_OBJECT_REFS = """{
@@ -171,7 +184,7 @@ def test_observed_data_object_constraint():
 
 
 def test_observed_data_example_with_bad_refs():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.ObservedData(
             id=OBSERVED_DATA_ID,
             created_by_ref=IDENTITY_ID,
@@ -196,7 +209,7 @@ def test_observed_data_example_with_bad_refs():
 
     assert excinfo.value.cls == stix2.v21.Directory
     assert excinfo.value.prop_name == "contains_refs"
-    assert "The type-specifying prefix 'monkey--' for the identifier" in excinfo.value.reason
+    assert "The type-specifying prefix 'monkey--' for this property is not valid" in excinfo.value.reason
 
 
 def test_observed_data_example_with_non_dictionary():

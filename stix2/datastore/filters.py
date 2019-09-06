@@ -90,6 +90,14 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
             filter_value = self.value
 
         if self.op == "=":
+            boolA = stix_obj_property == filter_value
+            if boolA is False:
+                print ('$$$$$')
+                print (stix_obj_property)
+                print ('\n')
+                print (filter_value)
+                print ('\n')
+                print ('$$$$$')
             return stix_obj_property == filter_value
         elif self.op == "!=":
             return stix_obj_property != filter_value
@@ -97,6 +105,14 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
             return stix_obj_property in filter_value
         elif self.op == "contains":
             if isinstance(filter_value, dict):
+                boolB = filter_value in stix_obj_property.values()
+                if boolB is False:
+                    print ('$$$$$')
+                    print (filter_value)
+                    print ('\n')
+                    print (stix_obj_property.values())
+                    print ('\n')
+                    print ('$$$$$')
                 return filter_value in stix_obj_property.values()
             else:
                 return filter_value in stix_obj_property
