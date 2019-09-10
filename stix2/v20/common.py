@@ -128,6 +128,16 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
                 self._properties.update([
                     ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
                 ])
+            else:
+                try:
+                    #statement instances will match the precision given
+                    if kwargs['created'].rfind('.') != -1:
+                        self._properties = copy.deepcopy(self._properties)
+                        self._properties.update([
+                            ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                        ])
+                except AttributeError:
+                    pass
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])
