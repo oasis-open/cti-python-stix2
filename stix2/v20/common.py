@@ -14,6 +14,18 @@ from ..properties import (
 from ..utils import NOW, _get_dict
 
 
+def _should_set_millisecond(cr, marking_type):
+        if marking_type == TLPMarking:
+            return True
+        if type(cr) == str: 
+            if '.' in cr:
+                return True
+            else: 
+                return False
+        if cr.precision == 'millisecond':
+            return True
+        return False
+
 class ExternalReference(_STIXBase):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709261>`__.
@@ -122,22 +134,11 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
             except KeyError:
                 raise ValueError("definition_type must be a valid marking type")
 
-            if marking_type == TLPMarking:
-                # TLP instances in the spec have millisecond precision unlike other markings
+            if _should_set_millisecond(kwargs['created'], marking_type):
                 self._properties = copy.deepcopy(self._properties)
                 self._properties.update([
                     ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
                 ])
-            else:
-                try:
-                    #statement instances will match the precision given
-                    if kwargs['created'].rfind('.') != -1:
-                        self._properties = copy.deepcopy(self._properties)
-                        self._properties.update([
-                            ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                        ])
-                except AttributeError:
-                    pass
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])
