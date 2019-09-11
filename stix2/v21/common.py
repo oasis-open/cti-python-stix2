@@ -1,7 +1,6 @@
 """STIX 2.1 Common Data Types and Properties."""
 
 from collections import OrderedDict
-import copy
 
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
@@ -13,6 +12,7 @@ from ..properties import (
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW, _get_dict
+
 
 class ExternalReference(_STIXBase):
     # TODO: Add link

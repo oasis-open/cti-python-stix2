@@ -15,16 +15,16 @@ from ..utils import NOW, _get_dict
 
 
 def _should_set_millisecond(cr, marking_type):
-        if marking_type == TLPMarking:
+    if marking_type == TLPMarking:
+        return True
+    if type(cr) == str:
+        if '.' in cr:
             return True
-        if type(cr) == str: 
-            if '.' in cr:
-                return True
-            else: 
-                return False
-        if cr.precision == 'millisecond':
-            return True
-        return False
+        else:
+            return False
+    if cr.precision == 'millisecond':
+        return True
+    return False
 
 
 class ExternalReference(_STIXBase):
