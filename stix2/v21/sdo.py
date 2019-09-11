@@ -6,11 +6,9 @@ import warnings
 
 from six.moves.urllib.parse import quote_plus
 
-from ..core import STIX2_OBJ_MAPS, STIXDomainObject
+from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..exceptions import (
-    InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
-)
+from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
 from ..properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, IDProperty, IntegerProperty, ListProperty,
@@ -597,15 +595,8 @@ class ObservedData(STIXDomainObject):
 
         self._check_mutually_exclusive_properties(
             ["objects", "object_refs"],
+            at_least_one=False,
         )
-
-        if self.get('object_refs'):
-            for identifier in self.get('object_refs'):
-                identifier_prefix = identifier[:identifier.index('--')]
-                if identifier_prefix in STIX2_OBJ_MAPS['v21']['observables'].keys():
-                    break
-            else:
-                raise InvalidValueError(self.__class__, 'object_refs', "At least one identifier must be of a SCO type if this property specified")
 
 
 class Opinion(STIXDomainObject):

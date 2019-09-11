@@ -465,21 +465,21 @@ def test_parse_email_message_not_multipart(data):
             "type": "file",
             "id": "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
             "hashes": {
-                "SHA-256": "19c549ec2628b989382f6b280cbd7bb836a0b461332c0fe53511ce7d584b89d3"
+                "SHA-1": "6e71b3cac15d32fe2d36c270887df9479c25c640"
             }
         },
         "2": {
             "type": "file",
             "id": "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
             "hashes": {
-                "SHA-256": "0969de02ecf8a5f003e3f6d063d848c8a193aada092623f8ce408c15bcb5f038"
+                "SHA-512": "b7e98c78c24fb4c2c7b175e90474b21eae0ccf1b5ea4708b4e0f2d2940004419edc7161c18a1e71b2565df099ba017bcaa67a248e2989b6268ce078b88f2e210"
             }
         },
         "3": {
             "type": "file",
             "name": "foo.zip",
             "hashes": {
-                "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+                "SHA3-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
             },
             "mime_type": "application/zip",
             "extensions": {
@@ -1490,3 +1490,39 @@ def test_deterministic_id_no_contributing_props():
     uuid_obj_2 = uuid.UUID(email_msg_2.id[-36:])
     assert uuid_obj_2.variant == uuid.RFC_4122
     assert uuid_obj_2.version == 4
+
+
+def test_ipv4_resolves_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv4Address(
+            value="26.09.19.70",
+            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
+        )
+
+
+def test_ipv4_belongs_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv4Address(
+            value="21.12.19.64",
+            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
+        )
+
+
+def test_ipv6_resolves_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv6Address(
+            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
+        )
+
+
+def test_ipv6_belongs_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv6Address(
+            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
+        )
