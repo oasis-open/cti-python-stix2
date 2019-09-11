@@ -412,18 +412,18 @@ class _Extension(_STIXBase):
 
 
 def _choose_one_hash(hash_dict):
-        if "MD5" in hash_dict:
-            return {"MD5": hash_dict["MD5"]}
-        elif "SHA-1" in hash_dict:
-            return {"SHA-1": hash_dict["SHA-1"]}
-        elif "SHA-256" in hash_dict:
-            return {"SHA-256": hash_dict["SHA-256"]}
-        elif "SHA-512" in hash_dict:
-            return {"SHA-512": hash_dict["SHA-512"]}
-        else:
-            k = next(iter(hash_dict), None)
-            if k is not None:
-                return {k: hash_dict[k]}
+    if "MD5" in hash_dict:
+        return {"MD5": hash_dict["MD5"]}
+    elif "SHA-1" in hash_dict:
+        return {"SHA-1": hash_dict["SHA-1"]}
+    elif "SHA-256" in hash_dict:
+        return {"SHA-256": hash_dict["SHA-256"]}
+    elif "SHA-512" in hash_dict:
+        return {"SHA-512": hash_dict["SHA-512"]}
+    else:
+        k = next(iter(hash_dict), None)
+        if k is not None:
+            return {k: hash_dict[k]}
 
 
 def _cls_init(cls, obj, kwargs):
