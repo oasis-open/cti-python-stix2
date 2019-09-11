@@ -14,7 +14,6 @@ from ..properties import (
 )
 from ..utils import NOW, _get_dict
 
-
 class ExternalReference(_STIXBase):
     # TODO: Add link
     """For more detailed information on this object's properties, see
