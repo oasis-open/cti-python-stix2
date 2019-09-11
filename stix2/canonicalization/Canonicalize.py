@@ -24,6 +24,8 @@
 
 import re
 
+import six
+
 from stix2.canonicalization.NumberToJson import convert2Es6Format
 
 try:
@@ -395,7 +397,8 @@ def _make_iterencode(
         else:
             items = dct.items()
         for key, value in items:
-            if isinstance(key, str):
+            # Replaced isinstance(key, str) with below to enable simultaneous python 2 & 3 compatibility
+            if isinstance(key, six.string_types) or isinstance(key, six.binary_type):
                 pass
             # JavaScript is weakly typed for these, so it makes sense to
             # also allow them.  Many encoders seem to do something like this.
@@ -454,7 +457,8 @@ def _make_iterencode(
             del markers[markerid]
 
     def _iterencode(o, _current_indent_level):
-        if isinstance(o, str):
+        # Replaced isinstance(o, str) with below to enable simultaneous python 2 & 3 compatibility
+        if isinstance(o, six.string_types) or isinstance(o, six.binary_type):
             yield _encoder(o)
         elif o is None:
             yield 'null'

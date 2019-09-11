@@ -393,12 +393,12 @@ class _Observable(_STIXBase):
 
             if streamlined_obj_vals:
                 data = canonicalize(streamlined_obj_vals, utf8=False)
-                # print (str(type(data)))
+
+                # try/except here to enable python 2 compatibility
                 try:
                     return required_prefix + six.text_type(uuid.uuid5(namespace, data))
                 except UnicodeDecodeError:
                     return required_prefix + six.text_type(uuid.uuid5(namespace, six.binary_type(data)))
-                # return required_prefix + six.text_type(uuid.uuid5(namespace, data))
 
         # We return None if there are no values specified for any of the id-contributing-properties
         return None
