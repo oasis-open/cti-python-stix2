@@ -21,7 +21,7 @@ def _should_set_millisecond(cr, marking_type):
     if marking_type == TLPMarking:
         return True
     # otherwise,  precision is kept from how it was given
-    if isinstance(cr, six.text_type):
+    if isinstance(cr, six.string_types):
         if '.' in cr:
             return True
         else:
