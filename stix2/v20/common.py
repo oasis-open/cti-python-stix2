@@ -139,14 +139,12 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
             except KeyError:
                 raise ValueError("definition_type must be a valid marking type")
 
-            try:
+            if 'created' in kwargs:
                 if _should_set_millisecond(kwargs['created'], marking_type):
                     self._properties = copy.deepcopy(self._properties)
                     self._properties.update([
                         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
                     ])
-            except KeyError:
-                pass
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])
