@@ -3,6 +3,8 @@
 from collections import OrderedDict
 import copy
 
+import six
+
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
@@ -15,9 +17,11 @@ from ..utils import NOW, _get_dict
 
 
 def _should_set_millisecond(cr, marking_type):
+    # TLP instances in the 2.0 spec have millisecond precision unlike other markings
     if marking_type == TLPMarking:
         return True
-    if type(cr) == str:
+    # otherwise,  precision is kept from how it was given
+    if isinstance(cr, six.text_type):
         if '.' in cr:
             return True
         else:
@@ -135,11 +139,14 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
             except KeyError:
                 raise ValueError("definition_type must be a valid marking type")
 
-            if _should_set_millisecond(kwargs['created'], marking_type):
-                self._properties = copy.deepcopy(self._properties)
-                self._properties.update([
-                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ])
+            try:
+                if _should_set_millisecond(kwargs['created'], marking_type):
+                    self._properties = copy.deepcopy(self._properties)
+                    self._properties.update([
+                        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                    ])
+            except KeyError:
+                pass
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])
