@@ -203,7 +203,7 @@ class Environment(DataStoreMixin):
                 in the semantic equivalence process
 
         Returns:
-            float: A number between 0.0 and 1.0 as a measurement of equivalence.
+            float: A number between 0.0 and 100.0 as a measurement of equivalence.
 
         Warnings:
             Not all objects are supported.
@@ -256,7 +256,7 @@ class Environment(DataStoreMixin):
                 "external_references": 70,
             },
             "_internal": {
-                "tdelta": 1,
+                "tdelta": 1,  # One day interval
             },
         }
 
@@ -270,7 +270,7 @@ class Environment(DataStoreMixin):
         if type1 != type2:
             raise ValueError('The objects to compare must be of the same type!')
 
-        if obj1.get("spec_version", "") != obj2.get("spec_version", ""):
+        if obj1.get("spec_version", "2.0") != obj2.get("spec_version", "2.0"):
             raise ValueError('The objects to compare must be of the same spec version!')
 
         if type1 == "attack-pattern":
@@ -297,7 +297,8 @@ class Environment(DataStoreMixin):
                 matching_score += w * _partial_list_based(obj1["aliases"], obj2["aliases"])
 
         elif type1 == "course-of-action":
-            logger.warning("%s type is not supported for semantic equivalence", type1)
+            logger.warning("%s type has no semantic equivalence implementation", type1)
+            return 0
 
         elif type1 == "identity":
             if _check_property_present("name", obj1, obj2):
@@ -330,8 +331,9 @@ class Environment(DataStoreMixin):
                     _partial_timestamp_based(obj1["valid_from"], obj2["valid_from"], weigths["_internal"]["tdelta"])
                 )
 
-        elif type1 == "instrusion-set":
-            logger.warning("%s type is not supported for semantic equivalence", type1)
+        elif type1 == "intrusion-set":
+            logger.warning("%s type has no semantic equivalence implementation", type1)
+            return 0
 
         elif type1 == "location":
             if _check_property_present("latitude", obj1, obj2) and _check_property_present("longitude", obj1, obj2):
@@ -361,10 +363,12 @@ class Environment(DataStoreMixin):
                 matching_score += w * _partial_string_based(obj1["name"], obj2["name"])
 
         elif type1 == "observed-data":
-            logger.warning("%s type is not supported for semantic equivalence", type1)
+            logger.warning("%s type has no semantic equivalence implementation", type1)
+            return 0
 
         elif type1 == "report":
-            logger.warning("%s type is not supported for semantic equivalence", type1)
+            logger.warning("%s type has no semantic equivalence implementation", type1)
+            return 0
 
         elif type1 == "threat-actor":
             if _check_property_present("name", obj1, obj2):
@@ -400,6 +404,9 @@ class Environment(DataStoreMixin):
                 sum_weights += w
                 matching_score += w * _partial_external_reference_based(obj1["external_references"], obj2["external_references"])
 
+        if sum_weights <= 0:
+            return 0
+
         equivalence_score = (matching_score / sum_weights) * 100.0
         return equivalence_score
 
@@ -433,6 +440,7 @@ def _partial_string_based(str1, str2):
 
 
 def _custom_pattern_based(pattern1, pattern2):
+    logger.warning("Checking for Indicator pattern equivalence is currently not implemented!")
     return 0  # TODO: Needs to be implemented
 
 
