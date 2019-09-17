@@ -1,6 +1,7 @@
 import pytest
 
 import stix2
+import stix2.environment
 
 from .constants import (
     ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID, CAMPAIGN_KWARGS,
@@ -385,16 +386,41 @@ def test_semantic_equivalence_on_same_attack_pattern():
     assert round(env) == 100
 
 
-def test_semantic_equivalence_on_same_campaign():
+def test_semantic_equivalence_on_same_campaign1():
     camp1 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     camp2 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     env = stix2.Environment().semantically_equivalent(camp1, camp2)
     assert round(env) == 100
 
 
-def test_semantic_equivalence_on_same_identity():
+def test_semantic_equivalence_on_same_campaign2():
+    CAMP_KWARGS = dict(
+        name="Green Group Attacks Against Finance",
+        description="Campaign by Green Group against a series of targets in the financial services sector.",
+        aliases=["super-green", "some-green"],
+    )
+
+    camp1 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMP_KWARGS)
+    camp2 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMP_KWARGS)
+    env = stix2.Environment().semantically_equivalent(camp1, camp2)
+    assert round(env) == 100
+
+
+def test_semantic_equivalence_on_same_identity1():
     iden1 = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     iden2 = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    env = stix2.Environment().semantically_equivalent(iden1, iden2)
+    assert round(env) == 100
+
+
+def test_semantic_equivalence_on_same_identity2():
+    IDEN_KWARGS = dict(
+        name="John Smith",
+        identity_class="individual",
+        sectors=["government", "critical-infrastructure"],
+    )
+    iden1 = stix2.v21.Identity(id=IDENTITY_ID, **IDEN_KWARGS)
+    iden2 = stix2.v21.Identity(id=IDENTITY_ID, **IDEN_KWARGS)
     env = stix2.Environment().semantically_equivalent(iden1, iden2)
     assert round(env) == 100
 
@@ -406,8 +432,21 @@ def test_semantic_equivalence_on_same_indicator():
     assert round(env) == 20  # No support for pattern, hence the 20
 
 
-def test_semantic_equivalence_on_same_location():
+def test_semantic_equivalence_on_same_location1():
     LOCATION_KWARGS = dict(latitude=45, longitude=179)
+    loc1 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
+    loc2 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
+    env = stix2.Environment().semantically_equivalent(loc1, loc2)
+    assert round(env) == 100
+
+
+def test_semantic_equivalence_on_same_location2():
+    LOCATION_KWARGS = dict(
+        latitude=38.889,
+        longitude=-77.023,
+        region="northern-america",
+        country="us",
+    )
     loc1 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
     loc2 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
     env = stix2.Environment().semantically_equivalent(loc1, loc2)
@@ -421,9 +460,21 @@ def test_semantic_equivalence_on_same_malware():
     assert round(env) == 100
 
 
-def test_semantic_equivalence_on_same_threat_actor():
+def test_semantic_equivalence_on_same_threat_actor1():
     ta1 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
     ta2 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
+    env = stix2.Environment().semantically_equivalent(ta1, ta2)
+    assert round(env) == 100
+
+
+def test_semantic_equivalence_on_same_threat_actor2():
+    THREAT_KWARGS = dict(
+        threat_actor_types=["crime-syndicate"],
+        aliases=["super-evil"],
+        name="Evil Org",
+    )
+    ta1 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_KWARGS)
+    ta2 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_KWARGS)
     env = stix2.Environment().semantically_equivalent(ta1, ta2)
     assert round(env) == 100
 
@@ -435,11 +486,36 @@ def test_semantic_equivalence_on_same_tool():
     assert round(env) == 100
 
 
-def test_semantic_equivalence_on_same_vulnerability():
+def test_semantic_equivalence_on_same_vulnerability1():
     vul1 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
     vul2 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
     env = stix2.Environment().semantically_equivalent(vul1, vul2)
     assert round(env) == 100
+
+
+def test_semantic_equivalence_on_same_vulnerability2():
+    VULN_KWARGS1 = dict(
+        name="Heartbleed",
+        external_references=[
+            {
+                "url": "https://example",
+                "source_name": "some-source",
+            },
+        ],
+    )
+    VULN_KWARGS2 = dict(
+        name="Zot",
+        external_references=[
+            {
+                "url": "https://example2",
+                "source_name": "some-source2",
+            },
+        ],
+    )
+    vul1 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULN_KWARGS1)
+    vul2 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULN_KWARGS2)
+    env = stix2.Environment().semantically_equivalent(vul1, vul2)
+    assert round(env) == 0.0
 
 
 def test_semantic_equivalence_different_type_raises():
@@ -536,3 +612,88 @@ def test_semantic_equivalence_zero_match():
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **IND_KWARGS)
     env = stix2.Environment().semantically_equivalent(ind1, ind2, **weigths)
     assert round(env) == 0
+
+
+@pytest.mark.parametrize(
+    "refs1,refs2,ret_val", [
+        (
+            [
+                {
+                    "url": "https://attack.mitre.org/techniques/T1150",
+                    "source_name": "mitre-attack",
+                    "external_id": "T1150",
+                },
+                {
+                    "url": "https://researchcenter.paloaltonetworks.com/2016/09/unit42-sofacys-komplex-os-x-trojan/",
+                    "source_name": "Sofacy Komplex Trojan",
+                    "description": "Dani Creus, Tyler Halfpop, Robert Falcone. (2016, September 26). Sofacy's 'Komplex' OS X Trojan. Retrieved July 8, 2017.",
+                },
+            ],
+            [
+                {
+                    "url": "https://attack.mitre.org/techniques/T1129",
+                    "source_name": "mitre-attack",
+                    "external_id": "T1129",
+                },
+                {
+                    "url": "https://en.wikipedia.org/wiki/Microsoft_Windows_library_files",
+                    "source_name": "Wikipedia Windows Library Files",
+                    "description": "Wikipedia. (2017, January 31). Microsoft Windows library files. Retrieved February 13, 2017.",
+                },
+            ],
+            0.0,
+        ),
+        (
+            [
+                {
+                    "url": "https://attack.mitre.org/techniques/T1129",
+                    "source_name": "mitre-attack",
+                    "external_id": "T1129",
+                },
+            ],
+            [
+                {
+                    "url": "https://attack.mitre.org/techniques/T1129",
+                    "source_name": "mitre-attack",
+                    "external_id": "T1129",
+                },
+                {
+                    "url": "https://en.wikipedia.org/wiki/Microsoft_Windows_library_files",
+                    "source_name": "Wikipedia Windows Library Files",
+                    "description": "Wikipedia. (2017, January 31). Microsoft Windows library files. Retrieved February 13, 2017.",
+                },
+            ],
+            1.0,
+        ),
+        (
+            [
+                {
+                    "url": "https://example",
+                    "source_name": "some-source",
+                },
+            ],
+            [
+                {
+                    "url": "https://example",
+                    "source_name": "some-source",
+                },
+            ],
+            1.0,
+        ),
+    ],
+)
+def test_semantic_equivalence_external_references(refs1, refs2, ret_val):
+    value = stix2.environment._partial_external_reference_based(refs1, refs2)
+    assert value == ret_val
+
+
+def test_semantic_equivalence_timetamp():
+    t1 = "2018-10-17T00:14:20.652Z"
+    t2 = "2018-10-17T12:14:20.652Z"
+    assert stix2.environment._partial_timestamp_based(t1, t2, 1) == 0.5
+
+
+def test_semantic_equivalence_exact_match():
+    t1 = "2018-10-17T00:14:20.652Z"
+    t2 = "2018-10-17T12:14:20.652Z"
+    assert stix2.environment._exact_match(t1, t2) == 0.0
