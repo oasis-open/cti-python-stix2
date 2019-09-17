@@ -379,9 +379,25 @@ def test_related_to_by_target(ds):
     assert any(x['id'] == INDICATOR_ID for x in resp)
 
 
-def test_semantic_equivalence_on_same_attack_pattern():
+def test_semantic_equivalence_on_same_attack_pattern1():
     ap1 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
     ap2 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
+    env = stix2.Environment().semantically_equivalent(ap1, ap2)
+    assert round(env) == 100
+
+
+def test_semantic_equivalence_on_same_attack_pattern2():
+    ATTACK_KWARGS = dict(
+        name="Phishing",
+        external_references=[
+            {
+                "url": "https://example2",
+                "source_name": "some-source2",
+            },
+        ],
+    )
+    ap1 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_KWARGS)
+    ap2 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_KWARGS)
     env = stix2.Environment().semantically_equivalent(ap1, ap2)
     assert round(env) == 100
 
@@ -399,7 +415,6 @@ def test_semantic_equivalence_on_same_campaign2():
         description="Campaign by Green Group against a series of targets in the financial services sector.",
         aliases=["super-green", "some-green"],
     )
-
     camp1 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMP_KWARGS)
     camp2 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMP_KWARGS)
     env = stix2.Environment().semantically_equivalent(camp1, camp2)
