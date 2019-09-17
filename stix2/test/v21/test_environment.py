@@ -533,6 +533,35 @@ def test_semantic_equivalence_on_same_vulnerability2():
     assert round(env) == 0.0
 
 
+def test_semantic_equivalence_on_unknown_object():
+    CUSTOM_KWARGS1 = dict(
+        type="x-foobar",
+        id="x-foobar--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+        name="Heartbleed",
+        external_references=[
+            {
+                "url": "https://example",
+                "source_name": "some-source",
+            },
+        ],
+    )
+    CUSTOM_KWARGS2 = dict(
+        type="x-foobar",
+        id="x-foobar--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+        name="Zot",
+        external_references=[
+            {
+                "url": "https://example2",
+                "source_name": "some-source2",
+            },
+        ],
+    )
+    cust1 = stix2.parse(CUSTOM_KWARGS1, allow_custom=True)
+    cust2 = stix2.parse(CUSTOM_KWARGS2, allow_custom=True)
+    env = stix2.Environment().semantically_equivalent(cust1, cust2)
+    assert round(env) == 0
+
+
 def test_semantic_equivalence_different_type_raises():
     with pytest.raises(ValueError) as excinfo:
         vul1 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
