@@ -3,9 +3,11 @@
 import copy
 import logging
 import math
+import time
 
 from .core import parse as _parse
 from .datastore import CompositeDataSource, DataStoreMixin
+from .utils import STIXdatetime, parse_into_datetime
 
 logger = logging.getLogger(__name__)
 
@@ -418,9 +420,12 @@ def _check_property_present(prop, obj1, obj2):
 
 
 def _partial_timestamp_based(t1, t2, tdelta):
-    from .utils import parse_into_datetime
-    stix_t1, stix_t2 = parse_into_datetime(t1), parse_into_datetime(t2)
-    return 1 - min(abs(stix_t1.timestamp() - stix_t2.timestamp()) / (86400 * tdelta), 1)
+    if not isinstance(t1, STIXdatetime):
+        t1 = parse_into_datetime(t1)
+    if not isinstance(t2, STIXdatetime):
+        t2 = parse_into_datetime(t2)
+    t1, t2 = time.mktime(t1.timetuple()), time.mktime(t2.timetuple())
+    return 1 - min(abs(t1 - t2) / (86400 * tdelta), 1)
 
 
 def _partial_list_based(l1, l2):
