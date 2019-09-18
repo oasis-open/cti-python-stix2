@@ -127,7 +127,7 @@ def test_register_observable_with_default_version():
             "1": {
                 "type": "directory",
                 "path": "/usr/home",
-                "contains_refs": ["0"],
+                "contains_refs": ["file--420bc087-8b53-5ae9-8210-20d27d5e96c8"],
             },
         },
     )
@@ -165,7 +165,7 @@ def test_register_observable_extension_with_default_version():
             "1": {
                 "type": "directory",
                 "path": "/usr/home",
-                "contains_refs": ["0"],
+                "contains_refs": ["file--420bc087-8b53-5ae9-8210-20d27d5e96c8"],
             },
         },
     )
