@@ -595,7 +595,6 @@ class ObservedData(STIXDomainObject):
 
         self._check_mutually_exclusive_properties(
             ["objects", "object_refs"],
-            at_least_one=False,
         )
 
 
