@@ -50,7 +50,7 @@ class Artifact(_Observable):
 
     def _check_object_constraints(self):
         super(Artifact, self)._check_object_constraints()
-        self._check_mutually_exclusive_properties(['payload_bin', 'url'], at_least_one=False)
+        self._check_mutually_exclusive_properties(['payload_bin', 'url'])
         self._check_properties_dependency(['hashes'], ['url'])
 
 
