@@ -23,6 +23,7 @@ from .utils import revoke as _revoke
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
+SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
 
 
 class STIXJSONEncoder(json.JSONEncoder):
@@ -368,7 +369,6 @@ class _Observable(_STIXBase):
 
     def _generate_id(self, kwargs):
         required_prefix = self._type + "--"
-        namespace = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
 
         properties_to_use = self._id_contributing_properties
         if properties_to_use:
@@ -396,9 +396,9 @@ class _Observable(_STIXBase):
 
                 # try/except here to enable python 2 compatibility
                 try:
-                    return required_prefix + six.text_type(uuid.uuid5(namespace, data))
+                    return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, data))
                 except UnicodeDecodeError:
-                    return required_prefix + six.text_type(uuid.uuid5(namespace, six.binary_type(data)))
+                    return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, six.binary_type(data)))
 
         # We return None if there are no values specified for any of the id-contributing-properties
         return None
