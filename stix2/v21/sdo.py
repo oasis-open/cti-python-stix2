@@ -2,15 +2,18 @@
 
 from collections import OrderedDict
 import itertools
+import warnings
 
 from six.moves.urllib.parse import quote_plus
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
+from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
 from ..properties import (
-    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
-    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
-    StringProperty, TimestampProperty, TypeProperty,
+    BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
+    FloatProperty, IDProperty, IntegerProperty, ListProperty,
+    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
@@ -26,19 +29,20 @@ class AttackPattern(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -53,8 +57,8 @@ class Campaign(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
@@ -68,12 +72,12 @@ class Campaign(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Campaign, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -93,19 +97,59 @@ class CourseOfAction(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
+        ('action_type', StringProperty()),
+        ('os_execution_envs', ListProperty(StringProperty)),
+        ('action_bin', BinaryProperty()),
+        ('action_reference', EmbeddedObjectProperty(ExternalReference)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+    ])
+
+    def _check_object_constraints(self):
+        super(CourseOfAction, self)._check_object_constraints()
+
+        self._check_mutually_exclusive_properties(
+            ["action_bin", "action_reference"],
+            at_least_one=False,
+        )
+
+
+class Grouping(STIXDomainObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'grouping'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('name', StringProperty()),
+        ('description', StringProperty()),
+        ('context', StringProperty(required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
     ])
 
 
@@ -119,8 +163,8 @@ class Identity(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
@@ -134,7 +178,7 @@ class Identity(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -149,15 +193,17 @@ class Indicator(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('indicator_types', ListProperty(StringProperty, required=True)),
         ('pattern', PatternProperty(required=True)),
-        ('valid_from', TimestampProperty(default=lambda: NOW)),
+        ('pattern_type', StringProperty(required=True)),
+        ('pattern_version', StringProperty()),
+        ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -165,18 +211,59 @@ class Indicator(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Indicator, self)._check_object_constraints()
 
         valid_from = self.get('valid_from')
         valid_until = self.get('valid_until')
 
         if valid_from and valid_until and valid_until <= valid_from:
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
+            raise ValueError(msg.format(self))
+
+
+class Infrastructure(STIXDomainObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'infrastructure'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('infrastructure_types', ListProperty(StringProperty, required=True)),
+        ('aliases', ListProperty(StringProperty)),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
+    ])
+
+    def _check_object_constraints(self):
+        super(Infrastructure, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))
 
 
@@ -190,8 +277,8 @@ class IntrusionSet(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
@@ -208,12 +295,12 @@ class IntrusionSet(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(IntrusionSet, self)._check_object_constraints()
 
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
@@ -233,10 +320,11 @@ class Location(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('name', StringProperty()),
         ('description', StringProperty()),
         ('latitude', FloatProperty(min=-90.0, max=90.0)),
         ('longitude', FloatProperty(min=-180.0, max=180.0)),
@@ -252,18 +340,32 @@ class Location(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
+        super(Location, self)._check_object_constraints()
 
         if self.get('precision') is not None:
             self._check_properties_dependency(['longitude', 'latitude'], ['precision'])
 
         self._check_properties_dependency(['latitude'], ['longitude'])
         self._check_properties_dependency(['longitude'], ['latitude'])
+
+        if not (
+            'region' in self
+            or 'country' in self
+            or (
+                'latitude' in self
+                and 'longitude' in self
+            )
+        ):
+            raise PropertyPresenceError(
+                "Location objects must have the properties 'region', "
+                "'country', or 'latitude' and 'longitude'",
+                Location,
+            )
 
     def to_maps_url(self, map_engine="Google Maps"):
         """Return URL to this location in an online map engine.
@@ -326,22 +428,90 @@ class Malware(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('name', StringProperty(required=True)),
+        ('name', StringProperty()),
         ('description', StringProperty()),
         ('malware_types', ListProperty(StringProperty, required=True)),
+        ('is_family', BooleanProperty(required=True)),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
+        ('os_execution_envs', ListProperty(StringProperty)),
+        ('architecture_execution_envs', ListProperty(StringProperty)),
+        ('implementation_languages', ListProperty(StringProperty)),
+        ('capabilities', ListProperty(StringProperty)),
+        ('sample_refs', ListProperty(ReferenceProperty(valid_types=['artifact', 'file'], spec_version='2.1'))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        super(Malware, self)._check_object_constraints()
+
+        first_seen = self.get('first_seen')
+        last_seen = self.get('last_seen')
+
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
+            raise ValueError(msg.format(self))
+
+        if self.is_family and "name" not in self:
+            raise PropertyPresenceError(
+                "'name' is a required property for malware families",
+                Malware,
+            )
+
+
+class MalwareAnalysis(STIXDomainObject):
+    # TODO: Add link
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'malware-analysis'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('product', StringProperty(required=True)),
+        ('version', StringProperty()),
+        ('host_vm_ref', ReferenceProperty(valid_types='software', spec_version='2.1')),
+        ('operating_system_ref', ReferenceProperty(valid_types='software', spec_version='2.1')),
+        ('installed_software_refs', ListProperty(ReferenceProperty(valid_types='software', spec_version='2.1'))),
+        ('configuration_version', StringProperty()),
+        ('modules', ListProperty(StringProperty)),
+        ('analysis_engine_version', StringProperty()),
+        ('analysis_definition_version', StringProperty()),
+        ('submitted', TimestampProperty()),
+        ('analysis_started', TimestampProperty()),
+        ('analysis_ended', TimestampProperty()),
+        ('av_result', StringProperty()),
+        ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="only_SCO", spec_version='2.1'))),
+    ])
+
+    def _check_object_constraints(self):
+        super(MalwareAnalysis, self)._check_object_constraints()
+
+        self._check_at_least_one_property(["av_result", "analysis_sco_refs"])
 
 
 class Note(STIXDomainObject):
@@ -354,20 +524,20 @@ class Note(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('abstract', StringProperty()),
         ('content', StringProperty(required=True)),
         ('authors', ListProperty(StringProperty)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -382,20 +552,21 @@ class ObservedData(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
-        ('objects', ObservableProperty(spec_version='2.1', required=True)),
+        ('objects', ObservableProperty(spec_version='2.1')),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types="only_SCO_&_SRO", spec_version="2.1"))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -403,14 +574,17 @@ class ObservedData(STIXDomainObject):
         self.__allow_custom = kwargs.get('allow_custom', False)
         self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
+        if "objects" in kwargs:
+            warnings.warn(
+                "The 'objects' property of observed-data is deprecated in "
+                "STIX 2.1.",
+                STIXDeprecationWarning,
+            )
+
         super(ObservedData, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
-        super(self.__class__, self)._check_object_constraints()
-
-        if self.get('number_observed', 1) == 1:
-            self._check_properties_dependency(['first_observed'], ['last_observed'])
-            self._check_properties_dependency(['last_observed'], ['first_observed'])
+        super(ObservedData, self)._check_object_constraints()
 
         first_observed = self.get('first_observed')
         last_observed = self.get('last_observed')
@@ -418,6 +592,10 @@ class ObservedData(STIXDomainObject):
         if first_observed and last_observed and last_observed < first_observed:
             msg = "{0.id} 'last_observed' must be greater than or equal to 'first_observed'"
             raise ValueError(msg.format(self))
+
+        self._check_mutually_exclusive_properties(
+            ["objects", "object_refs"],
+        )
 
 
 class Opinion(STIXDomainObject):
@@ -430,13 +608,12 @@ class Opinion(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('explanation', StringProperty()),
         ('authors', ListProperty(StringProperty)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
         (
             'opinion', EnumProperty(
                 allowed=[
@@ -448,12 +625,13 @@ class Opinion(STIXDomainObject):
                 ], required=True,
             ),
         ),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -468,21 +646,21 @@ class Report(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('report_types', ListProperty(StringProperty, required=True)),
         ('published', TimestampProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -497,14 +675,16 @@ class ThreatActor(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('threat_actor_types', ListProperty(StringProperty, required=True)),
         ('aliases', ListProperty(StringProperty)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
         ('roles', ListProperty(StringProperty)),
         ('goals', ListProperty(StringProperty)),
         ('sophistication', StringProperty()),
@@ -517,9 +697,19 @@ class ThreatActor(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        super(ThreatActor, self)._check_object_constraints()
+
+        first_observed = self.get('first_seen')
+        last_observed = self.get('last_seen')
+
+        if first_observed and last_observed and last_observed < first_observed:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
+            raise ValueError(msg.format(self))
 
 
 class Tool(STIXDomainObject):
@@ -532,13 +722,14 @@ class Tool(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('tool_types', ListProperty(StringProperty, required=True)),
+        ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -546,7 +737,7 @@ class Tool(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -561,8 +752,8 @@ class Vulnerability(STIXDomainObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
@@ -572,7 +763,7 @@ class Vulnerability(STIXDomainObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -611,8 +802,8 @@ def CustomObject(type='x-custom-type', properties=None):
             [
                 ('type', TypeProperty(type)),
                 ('spec_version', StringProperty(fixed='2.1')),
-                ('id', IDProperty(type)),
-                ('created_by_ref', ReferenceProperty(type='identity')),
+                ('id', IDProperty(type, spec_version='2.1')),
+                ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
                 ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
             ],
@@ -623,7 +814,7 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('confidence', IntegerProperty()),
                 ('lang', StringProperty()),
                 ('external_references', ListProperty(ExternalReference)),
-                ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+                ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
                 ('granular_markings', ListProperty(GranularMarking)),
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),

@@ -17,18 +17,20 @@ class Relationship(STIXRelationshipObject):
     `the STIX 2.1 specification <link here>`__.
     """
 
+    _invalid_source_target_types = ['bundle', 'language-content', 'marking-definition', 'relationship', 'sighting']
+
     _type = 'relationship'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('relationship_type', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('source_ref', ReferenceProperty(required=True)),
-        ('target_ref', ReferenceProperty(required=True)),
+        ('source_ref', ReferenceProperty(invalid_types=_invalid_source_target_types, spec_version='2.1', required=True)),
+        ('target_ref', ReferenceProperty(invalid_types=_invalid_source_target_types, spec_version='2.1', required=True)),
         ('start_time', TimestampProperty()),
         ('stop_time', TimestampProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -36,7 +38,7 @@ class Relationship(STIXRelationshipObject):
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -76,23 +78,24 @@ class Sighting(STIXRelationshipObject):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('description', StringProperty()),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('count', IntegerProperty(min=0, max=999999999)),
-        ('sighting_of_ref', ReferenceProperty(required=True)),
-        ('observed_data_refs', ListProperty(ReferenceProperty(type='observed-data'))),
-        ('where_sighted_refs', ListProperty(ReferenceProperty(type='identity'))),
+        ('sighting_of_ref', ReferenceProperty(valid_types="only_SDO", spec_version='2.1', required=True)),
+        ('observed_data_refs', ListProperty(ReferenceProperty(valid_types='observed-data', spec_version='2.1'))),
+        ('where_sighted_refs', ListProperty(ReferenceProperty(valid_types='identity', spec_version='2.1'))),
         ('summary', BooleanProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 

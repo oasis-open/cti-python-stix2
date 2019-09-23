@@ -5,7 +5,8 @@ import pytest
 import stix2
 
 from .constants import (
-    FAKE_TIME, INDICATOR_KWARGS, MALWARE_KWARGS, RELATIONSHIP_KWARGS,
+    FAKE_TIME, GROUPING_KWARGS, INDICATOR_KWARGS, INFRASTRUCTURE_KWARGS,
+    MALWARE_KWARGS, RELATIONSHIP_KWARGS,
 )
 
 
@@ -40,6 +41,16 @@ def indicator(uuid4, clock):
 
 
 @pytest.fixture
+def infrastructure(uuid4, clock):
+    return stix2.v21.Infrastructure(**INFRASTRUCTURE_KWARGS)
+
+
+@pytest.fixture
+def grouping(uuid4, clock):
+    return stix2.v21.Grouping(**GROUPING_KWARGS)
+
+
+@pytest.fixture
 def malware(uuid4, clock):
     return stix2.v21.Malware(**MALWARE_KWARGS)
 
@@ -60,6 +71,7 @@ def stix_objs1():
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2017-01-27T13:49:53.935382Z",
@@ -73,6 +85,7 @@ def stix_objs1():
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2017-01-27T13:49:53.935382Z",
@@ -86,6 +99,7 @@ def stix_objs1():
         "modified": "2017-01-27T13:49:53.936Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2017-01-27T13:49:53.935382Z",
@@ -99,6 +113,7 @@ def stix_objs1():
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2017-01-27T13:49:53.935382Z",
@@ -112,6 +127,7 @@ def stix_objs1():
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2017-01-27T13:49:53.935382Z",
@@ -129,6 +145,7 @@ def stix_objs2():
         ],
         "modified": "2017-01-31T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
+        "pattern_type": "stix",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
@@ -142,6 +159,7 @@ def stix_objs2():
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
+        "pattern_type": "stix",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",
@@ -155,6 +173,7 @@ def stix_objs2():
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
+        "pattern_type": "stix",
         "pattern": "[url:value = 'http://x4z9arb.cn/4712']",
         "spec_version": "2.1",
         "type": "indicator",

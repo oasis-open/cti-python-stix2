@@ -1,7 +1,9 @@
 import pytest
 
 import stix2
+import stix2.v20
 
+from ...exceptions import InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v20.Identity(
@@ -95,7 +97,7 @@ def test_identity_custom_property_allowed():
 def test_parse_identity_custom_property(data):
     with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
         stix2.parse(data, version="2.0")
-    assert excinfo.value.cls == stix2.v20.Identity
+    assert issubclass(excinfo.value.cls, stix2.v20.Identity)
     assert excinfo.value.properties == ['foo']
     assert "Unexpected properties for" in str(excinfo.value)
 
@@ -133,7 +135,7 @@ def test_custom_property_dict_in_bundled_object():
         'identity_class': 'individual',
         'x_foo': 'bar',
     }
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(InvalidValueError):
         stix2.v20.Bundle(custom_identity)
 
     bundle = stix2.v20.Bundle(custom_identity, allow_custom=True)
@@ -199,7 +201,7 @@ def test_custom_property_object_in_observable_extension():
 
 
 def test_custom_property_dict_in_observable_extension():
-    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+    with pytest.raises(InvalidValueError):
         stix2.v20.File(
             name='test',
             extensions={
@@ -718,7 +720,7 @@ def test_custom_extension():
 def test_custom_extension_wrong_observable_type():
     # NewExtension is an extension of DomainName, not File
     ext = NewExtension(property1='something')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v20.File(
             name="abc.txt",
             extensions={
@@ -884,6 +886,49 @@ def test_parse_observable_with_custom_extension():
     assert parsed.extensions['x-new-ext'].property2 == 12
 
 
+def test_custom_and_spec_extension_mix():
+    """
+    Try to make sure that when allow_custom=True, encountering a custom
+    extension doesn't result in a completely uncleaned extensions property.
+    """
+
+    file_obs = stix2.v20.File(
+        name="my_file.dat",
+        extensions={
+            "x-custom1": {
+                "a": 1,
+                "b": 2,
+            },
+            "ntfs-ext": {
+                "sid": "S-1-whatever",
+            },
+            "x-custom2": {
+                "z": 99.9,
+                "y": False,
+            },
+            "raster-image-ext": {
+                "image_height": 1024,
+                "image_width": 768,
+                "bits_per_pixel": 32,
+            },
+        },
+        allow_custom=True,
+    )
+
+    assert file_obs.extensions["x-custom1"] == {"a": 1, "b": 2}
+    assert file_obs.extensions["x-custom2"] == {"y": False, "z": 99.9}
+    assert file_obs.extensions["ntfs-ext"].sid == "S-1-whatever"
+    assert file_obs.extensions["raster-image-ext"].image_height == 1024
+
+    # Both of these should have been converted to objects, not left as dicts.
+    assert isinstance(
+        file_obs.extensions["raster-image-ext"], stix2.v20.RasterImageExt,
+    )
+    assert isinstance(
+        file_obs.extensions["ntfs-ext"], stix2.v20.NTFSExt,
+    )
+
+
 @pytest.mark.parametrize(
     "data", [
         # URL is not in EXT_MAP
@@ -911,7 +956,7 @@ def test_parse_observable_with_custom_extension():
     ],
 )
 def test_parse_observable_with_unregistered_custom_extension(data):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.parse_observable(data, version='2.0')
     assert "Can't parse unknown extension type" in str(excinfo.value)
 

@@ -144,8 +144,8 @@ def test_deduplicate(stix_objs1):
                         "type": "network-traffic",
                         "src_ref": "1",
                         "protocols": [
-                          "tcp",
-                          "http",
+                            "tcp",
+                            "http",
                         ],
                         "extensions": {
                             "http-request-ext": {

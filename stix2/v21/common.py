@@ -53,7 +53,7 @@ class GranularMarking(_STIXBase):
 
     _properties = OrderedDict([
         ('lang', StringProperty()),
-        ('marking_ref', ReferenceProperty(type='marking-definition')),
+        ('marking_ref', ReferenceProperty(valid_types='marking-definition', spec_version='2.1')),
         ('selectors', ListProperty(SelectorProperty, required=True)),
     ])
 
@@ -72,20 +72,20 @@ class LanguageContent(_STIXBase):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('object_ref', ReferenceProperty(required=True)),
+        ('object_ref', ReferenceProperty(invalid_types=[""], spec_version='2.1', required=True)),
         # TODO: 'object_modified' it MUST be an exact match for the modified time of the STIX Object (SRO or SDO) being referenced.
-        ('object_modified', TimestampProperty(required=True, precision='millisecond')),
+        ('object_modified', TimestampProperty(precision='millisecond')),
         # TODO: 'contents' https://docs.google.com/document/d/1ShNq4c3e1CkfANmD9O--mdZ5H0O_GLnjN28a_yrEaco/edit#heading=h.cfz5hcantmvx
         ('contents', DictionaryProperty(spec_version='2.1', required=True)),
         ('revoked', BooleanProperty()),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
@@ -144,10 +144,10 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
         ('type', TypeProperty(_type)),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
-        ('created_by_ref', ReferenceProperty(type='identity')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('definition_type', StringProperty(required=True)),
         ('definition', MarkingProperty(required=True)),
