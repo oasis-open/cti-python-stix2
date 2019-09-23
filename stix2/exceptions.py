@@ -216,3 +216,10 @@ class TLPMarkingDefinitionError(STIXError, AssertionError):
     def __str__(self):
         msg = "Marking {0} does not match spec marking {1}!"
         return msg.format(self.user_obj, self.spec_obj)
+
+
+class SemanticEquivalenceUnsupportedTypeError(STIXError, TypeError):
+    """STIX object type not supported by the semantic equivalence approach."""
+
+    def __init__(self, msg):
+        super(SemanticEquivalenceUnsupportedTypeError, self).__init__(msg)

@@ -2,6 +2,7 @@ import pytest
 
 import stix2
 import stix2.environment
+import stix2.exceptions
 
 from .constants import (
     ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID, CAMPAIGN_KWARGS,
@@ -444,7 +445,7 @@ def test_semantic_equivalence_on_same_indicator():
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     env = stix2.Environment().semantically_equivalent(ind1, ind2)
-    assert round(env) == 20  # No support for pattern, hence the 20
+    assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_location1():
@@ -556,9 +557,36 @@ def test_semantic_equivalence_on_unknown_object():
             },
         ],
     )
+
+    def _x_foobar_checks(obj1, obj2, **weights):
+        matching_score = 0.0
+        sum_weights = 0.0
+        if stix2.environment.check_property_present("external_references", obj1, obj2):
+            w = weights["external_references"]
+            sum_weights += w
+            matching_score += w * stix2.environment.partial_external_reference_based(
+                obj1["external_references"],
+                obj2["external_references"],
+            )
+        if stix2.environment.check_property_present("name", obj1, obj2):
+            w = weights["name"]
+            sum_weights += w
+            matching_score += w * stix2.environment.partial_string_based(obj1["name"], obj2["name"])
+        return matching_score, sum_weights
+
+    weights = {
+        "x-foobar": {
+            "external_references": 40,
+            "name": 60,
+            "method": _x_foobar_checks,
+        },
+        "_internal": {
+            "ignore_spec_version": False,
+        },
+    }
     cust1 = stix2.parse(CUSTOM_KWARGS1, allow_custom=True)
     cust2 = stix2.parse(CUSTOM_KWARGS2, allow_custom=True)
-    env = stix2.Environment().semantically_equivalent(cust1, cust2)
+    env = stix2.Environment().semantically_equivalent(cust1, cust2, **weights)
     assert round(env) == 0
 
 
@@ -584,22 +612,35 @@ def test_semantic_equivalence_different_spec_version_raises():
     assert str(excinfo.value) == "The objects to compare must be of the same spec version!"
 
 
-def test_semantic_equivalence_on_unsupported_types():
-    coa1 = stix2.v21.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS)
-    ints1 = stix2.v21.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS)
-    obs1 = stix2.v21.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS)
-    rep1 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
-
-    coa2 = stix2.v21.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS)
-    ints2 = stix2.v21.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS)
-    obs2 = stix2.v21.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS)
-    rep2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
-
-    obj_list = [(coa1, coa2), (ints1, ints2), (obs1, obs2), (rep1, rep2)]
-
-    for obj1, obj2 in obj_list:
-        env = stix2.Environment().semantically_equivalent(obj1, obj2)
-        assert round(env) == 0
+@pytest.mark.parametrize(
+    "obj1,obj2,ret_val",
+    [
+        (
+             stix2.v21.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS),
+             stix2.v21.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS),
+             "course-of-action type has no semantic equivalence implementation!",
+        ),
+        (
+             stix2.v21.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS),
+             stix2.v21.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS),
+             "intrusion-set type has no semantic equivalence implementation!",
+        ),
+        (
+             stix2.v21.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS),
+             stix2.v21.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS),
+             "observed-data type has no semantic equivalence implementation!",
+        ),
+        (
+             stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS),
+             stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS),
+             "report type has no semantic equivalence implementation!",
+        ),
+    ],
+)
+def test_semantic_equivalence_on_unsupported_types(obj1, obj2, ret_val):
+    with pytest.raises(stix2.exceptions.SemanticEquivalenceUnsupportedTypeError) as excinfo:
+        stix2.Environment().semantically_equivalent(obj1, obj2)
+    assert ret_val == str(excinfo.value)
 
 
 def test_semantic_equivalence_zero_match():
@@ -607,54 +648,21 @@ def test_semantic_equivalence_zero_match():
         indicator_types=["APTX"],
         pattern="[ipv4-addr:value = '192.168.1.1']",
     )
-    weigths = {
-        "attack-pattern": {
-            "name": 30,
-            "external_references": 70,
-        },
-        "campaign": {
-            "name": 60,
-            "aliases": 40,
-        },
-        "identity": {
-            "name": 60,
-            "identity_class": 20,
-            "sectors": 20,
-        },
+    weights = {
         "indicator": {
             "indicator_types": 15,
-            "pattern": 85,
+            "pattern": 80,
             "valid_from": 0,
-        },
-        "location": {
-            "longitude_latitude": 34,
-            "region": 33,
-            "country": 33,
-        },
-        "malware": {
-            "malware_types": 20,
-            "name": 80,
-        },
-        "threat-actor": {
-            "name": 60,
-            "threat_actor_types": 20,
-            "aliases": 20,
-        },
-        "tool": {
-            "tool_types": 20,
-            "name": 80,
-        },
-        "vulnerability": {
-            "name": 30,
-            "external_references": 70,
+            "tdelta": 1,  # One day interval
+            "method": stix2.environment._indicator_checks,
         },
         "_internal": {
-            "tdelta": 1,
+            "ignore_spec_version": False,
         },
     }
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **IND_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ind1, ind2, **weigths)
+    env = stix2.Environment().semantically_equivalent(ind1, ind2, **weights)
     assert round(env) == 0
 
 
@@ -727,17 +735,17 @@ def test_semantic_equivalence_zero_match():
     ],
 )
 def test_semantic_equivalence_external_references(refs1, refs2, ret_val):
-    value = stix2.environment._partial_external_reference_based(refs1, refs2)
+    value = stix2.environment.partial_external_reference_based(refs1, refs2)
     assert value == ret_val
 
 
 def test_semantic_equivalence_timetamp():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
-    assert stix2.environment._partial_timestamp_based(t1, t2, 1) == 0.5
+    assert stix2.environment.partial_timestamp_based(t1, t2, 1) == 0.5
 
 
 def test_semantic_equivalence_exact_match():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
-    assert stix2.environment._exact_match(t1, t2) == 0.0
+    assert stix2.environment.exact_match(t1, t2) == 0.0
