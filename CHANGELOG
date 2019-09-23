@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+1.1.3 - 2019-08-12
+
+* #258 Ignores empty values for optional fields
+* #259 Adds support for lang granular markings
+* #261 Prevents instantiation or serialization of TLP marking-definitions that don't follow the spec
+* #262 Supports actual objects in _valid_refs instead of just strings
+* #264 Supports accessing objects in bundles via STIX Object IDs
+* #274 Fixes bug parsing bundle containing custom objects
+
 1.1.2 - 2019-02-13
 
 * #86 Adds helper function to Location objects to generate a URL to the location in an online map engine.
