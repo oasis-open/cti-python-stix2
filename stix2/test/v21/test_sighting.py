@@ -61,8 +61,6 @@ def test_sighting_bad_where_sighted_refs():
 
     assert excinfo.value.cls == stix2.v21.Sighting
     assert excinfo.value.prop_name == "where_sighted_refs"
-    assert excinfo.value.reason == "must start with 'identity'."
-    assert str(excinfo.value) == "Invalid value for Sighting 'where_sighted_refs': must start with 'identity'."
 
 
 def test_sighting_type_must_be_sightings():

@@ -4,6 +4,7 @@ import pytest
 
 import stix2
 
+from ...exceptions import InvalidValueError
 from .constants import IDENTITY_ID
 
 EXPECTED_BUNDLE = """{
@@ -20,6 +21,7 @@ EXPECTED_BUNDLE = """{
                 "malicious-activity"
             ],
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "pattern_type": "stix",
             "valid_from": "2017-01-01T12:34:56Z"
         },
         {
@@ -31,7 +33,8 @@ EXPECTED_BUNDLE = """{
             "name": "Cryptolocker",
             "malware_types": [
                 "ransomware"
-            ]
+            ],
+            "is_family": false
         },
         {
             "type": "relationship",
@@ -57,6 +60,7 @@ EXPECTED_BUNDLE_DICT = {
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "pattern_type": "stix",
             "valid_from": "2017-01-01T12:34:56Z",
             "indicator_types": [
                 "malicious-activity",
@@ -72,6 +76,7 @@ EXPECTED_BUNDLE_DICT = {
             "malware_types": [
                 "ransomware",
             ],
+            "is_family": False,
         },
         {
             "type": "relationship",
@@ -160,15 +165,15 @@ def test_create_bundle_with_arg_listarg_and_kwarg(indicator, malware, relationsh
 
 
 def test_create_bundle_invalid(indicator, malware, relationship):
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.Bundle(objects=[1])
     assert excinfo.value.reason == "This property may only contain a dictionary or object"
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.Bundle(objects=[{}])
     assert excinfo.value.reason == "This property may only contain a non-empty dictionary or object"
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v21.Bundle(objects=[{'type': 'bundle'}])
     assert excinfo.value.reason == 'This property may not contain a Bundle object'
 
@@ -179,7 +184,7 @@ def test_parse_bundle(version):
 
     assert bundle.type == "bundle"
     assert bundle.id.startswith("bundle--")
-    assert type(bundle.objects[0]) is stix2.v21.Indicator
+    assert isinstance(bundle.objects[0], stix2.v21.Indicator)
     assert bundle.objects[0].type == 'indicator'
     assert bundle.objects[1].type == 'malware'
     assert bundle.objects[2].type == 'relationship'
@@ -232,6 +237,7 @@ def test_bundle_obj_id_found():
                     "malicious-activity",
                 ],
                 "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+                "pattern_type": "stix",
                 "valid_from": "2017-01-01T12:34:56Z",
             },
             {
@@ -244,6 +250,7 @@ def test_bundle_obj_id_found():
                 "malware_types": [
                     "ransomware",
                 ],
+                "is_family": False,
             },
             {
                 "type": "malware",
@@ -255,6 +262,7 @@ def test_bundle_obj_id_found():
                 "malware_types": [
                     "ransomware",
                 ],
+                "is_family": False,
             },
             {
                 "type": "relationship",

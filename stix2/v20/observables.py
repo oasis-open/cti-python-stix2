@@ -31,7 +31,7 @@ class Artifact(_Observable):
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
         ('hashes', HashesProperty()),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -51,7 +51,7 @@ class AutonomousSystem(_Observable):
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
         ('rir', StringProperty()),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -70,7 +70,7 @@ class Directory(_Observable):
         ('modified', TimestampProperty()),
         ('accessed', TimestampProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -84,7 +84,7 @@ class DomainName(_Observable):
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -99,7 +99,7 @@ class EmailAddress(_Observable):
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -138,11 +138,11 @@ class EmailMessage(_Observable):
         ('bcc_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
         ('subject', StringProperty()),
         ('received_lines', ListProperty(StringProperty)),
-        ('additional_header_fields', DictionaryProperty()),
+        ('additional_header_fields', DictionaryProperty(spec_version="2.0")),
         ('body', StringProperty()),
         ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
         ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -199,7 +199,7 @@ class PDFExt(_Extension):
     _properties = OrderedDict([
         ('version', StringProperty()),
         ('is_optimized', BooleanProperty()),
-        ('document_info_dict', DictionaryProperty()),
+        ('document_info_dict', DictionaryProperty(spec_version="2.0")),
         ('pdfid0', StringProperty()),
         ('pdfid1', StringProperty()),
     ])
@@ -216,7 +216,7 @@ class RasterImageExt(_Extension):
         ('image_width', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
         ('image_compression_algorithm', StringProperty()),
-        ('exif_tags', DictionaryProperty()),
+        ('exif_tags', DictionaryProperty(spec_version="2.0")),
     ])
 
 
@@ -323,7 +323,7 @@ class File(_Observable):
         ('decryption_key', StringProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty)),
         ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -343,7 +343,7 @@ class IPv4Address(_Observable):
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -358,7 +358,7 @@ class IPv6Address(_Observable):
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -371,7 +371,7 @@ class MACAddress(_Observable):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -384,7 +384,7 @@ class Mutex(_Observable):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('name', StringProperty(required=True)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -398,7 +398,7 @@ class HTTPRequestExt(_Extension):
         ('request_method', StringProperty(required=True)),
         ('request_value', StringProperty(required=True)),
         ('request_version', StringProperty()),
-        ('request_header', DictionaryProperty()),
+        ('request_header', DictionaryProperty(spec_version="2.0")),
         ('message_body_length', IntegerProperty()),
         ('message_body_data_ref', ObjectReferenceProperty(valid_types='artifact')),
     ])
@@ -449,7 +449,7 @@ class SocketExt(_Extension):
                 "PF_NETROM",
             ]),
         ),
-        ('options', DictionaryProperty()),
+        ('options', DictionaryProperty(spec_version="2.0")),
         (
             'socket_type', EnumProperty(allowed=[
                 "SOCK_STREAM",
@@ -496,12 +496,12 @@ class NetworkTraffic(_Observable):
         ('dst_byte_count', IntegerProperty()),
         ('src_packets', IntegerProperty()),
         ('dst_packets', IntegerProperty()),
-        ('ipfix', DictionaryProperty()),
+        ('ipfix', DictionaryProperty(spec_version="2.0")),
         ('src_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('encapsulates_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -521,7 +521,7 @@ class WindowsProcessExt(_Extension):
         ('priority', StringProperty()),
         ('owner_sid', StringProperty()),
         ('window_title', StringProperty()),
-        ('startup_info', DictionaryProperty()),
+        ('startup_info', DictionaryProperty(spec_version="2.0")),
     ])
 
 
@@ -584,13 +584,13 @@ class Process(_Observable):
         ('cwd', StringProperty()),
         ('arguments', ListProperty(StringProperty)),
         ('command_line', StringProperty()),
-        ('environment_variables', DictionaryProperty()),
+        ('environment_variables', DictionaryProperty(spec_version="2.0")),
         ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('binary_ref', ObjectReferenceProperty(valid_types='file')),
         ('parent_ref', ObjectReferenceProperty(valid_types='process')),
         ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -621,7 +621,7 @@ class Software(_Observable):
         ('languages', ListProperty(StringProperty)),
         ('vendor', StringProperty()),
         ('version', StringProperty()),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -634,7 +634,7 @@ class URL(_Observable):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('value', StringProperty(required=True)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -673,7 +673,7 @@ class UserAccount(_Observable):
         ('password_last_changed', TimestampProperty()),
         ('account_first_login', TimestampProperty()),
         ('account_last_login', TimestampProperty()),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -720,7 +720,7 @@ class WindowsRegistryKey(_Observable):
         ('modified', TimestampProperty()),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('number_of_subkeys', IntegerProperty()),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
     @property
@@ -776,7 +776,7 @@ class X509Certificate(_Observable):
         ('subject_public_key_modulus', StringProperty()),
         ('subject_public_key_exponent', IntegerProperty()),
         ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
-        ('extensions', ExtensionsProperty(enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
 
@@ -798,7 +798,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type))],
             properties,
-            [('extensions', ExtensionsProperty(enclosing_type=type))],
+            [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
         ]))
         return _custom_observable_builder(cls, type, _properties, '2.0')
     return wrapper

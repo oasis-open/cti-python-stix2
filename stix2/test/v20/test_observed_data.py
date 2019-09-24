@@ -6,6 +6,7 @@ import pytz
 
 import stix2
 
+from ...exceptions import InvalidValueError
 from .constants import IDENTITY_ID, OBSERVED_DATA_ID
 
 OBJECTS_REGEX = re.compile('\"objects\": {(?:.*?)(?:(?:[^{]*?)|(?:{[^{]*?}))*}', re.DOTALL)
@@ -239,7 +240,7 @@ def test_parse_artifact_valid(data):
 )
 def test_parse_artifact_invalid(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueError):
         stix2.parse(odata_str, version="2.0")
 
 
@@ -468,11 +469,10 @@ def test_parse_email_message_with_at_least_one_error(data):
         "4": "artifact",
         "5": "file",
     }
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.parse_observable(data, valid_refs, version='2.0')
 
-    assert excinfo.value.cls == stix2.v20.EmailMIMEComponent
-    assert excinfo.value.properties == ["body", "body_raw_ref"]
+    assert excinfo.value.cls == stix2.v20.EmailMessage
     assert "At least one of the" in str(excinfo.value)
     assert "must be populated" in str(excinfo.value)
 
@@ -734,7 +734,7 @@ def test_file_example_with_NTFSExt():
 
 
 def test_file_example_with_empty_NTFSExt():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v20.File(
             name="abc.txt",
             extensions={
@@ -742,8 +742,7 @@ def test_file_example_with_empty_NTFSExt():
             },
         )
 
-    assert excinfo.value.cls == stix2.v20.NTFSExt
-    assert excinfo.value.properties == sorted(list(stix2.NTFSExt._properties.keys()))
+    assert excinfo.value.cls == stix2.v20.File
 
 
 def test_file_example_with_PDFExt():
@@ -1112,16 +1111,14 @@ def test_process_example_empty_error():
 
 
 def test_process_example_empty_with_extensions():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v20.Process(
             extensions={
                 "windows-process-ext": {},
             },
         )
 
-    assert excinfo.value.cls == stix2.v20.WindowsProcessExt
-    properties_of_extension = list(stix2.v20.WindowsProcessExt._properties.keys())
-    assert excinfo.value.properties == sorted(properties_of_extension)
+    assert excinfo.value.cls == stix2.v20.Process
 
 
 def test_process_example_windows_process_ext():
@@ -1144,7 +1141,7 @@ def test_process_example_windows_process_ext():
 
 
 def test_process_example_windows_process_ext_empty():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(InvalidValueError) as excinfo:
         stix2.v20.Process(
             pid=1221,
             name="gedit-bin",
@@ -1153,9 +1150,7 @@ def test_process_example_windows_process_ext_empty():
             },
         )
 
-    assert excinfo.value.cls == stix2.v20.WindowsProcessExt
-    properties_of_extension = list(stix2.v20.WindowsProcessExt._properties.keys())
-    assert excinfo.value.properties == sorted(properties_of_extension)
+    assert excinfo.value.cls == stix2.v20.Process
 
 
 def test_process_example_extensions_empty():
@@ -1289,7 +1284,7 @@ def test_user_account_unix_account_ext_example():
 
 
 def test_windows_registry_key_example():
-    with pytest.raises(ValueError):
+    with pytest.raises(InvalidValueError):
         stix2.v20.WindowsRegistryValueType(
             name="Foo",
             data="qwerty",
