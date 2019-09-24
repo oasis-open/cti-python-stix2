@@ -666,6 +666,29 @@ def test_semantic_equivalence_zero_match():
     assert round(env) == 0
 
 
+def test_semantic_equivalence_different_spec_version():
+    IND_KWARGS = dict(
+        labels=["APTX"],
+        pattern="[ipv4-addr:value = '192.168.1.1']",
+    )
+    weights = {
+        "indicator": {
+            "indicator_types": 15,
+            "pattern": 80,
+            "valid_from": 0,
+            "tdelta": 1,  # One day interval
+            "method": stix2.environment._indicator_checks,
+        },
+        "_internal": {
+            "ignore_spec_version": True,  # Disables spec_version check.
+        },
+    }
+    ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
+    ind2 = stix2.v20.Indicator(id=INDICATOR_ID, **IND_KWARGS)
+    env = stix2.Environment().semantically_equivalent(ind1, ind2, **weights)
+    assert round(env) == 0
+
+
 @pytest.mark.parametrize(
     "refs1,refs2,ret_val", [
         (
