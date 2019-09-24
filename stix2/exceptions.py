@@ -234,6 +234,7 @@ class STIXDeprecationWarning(DeprecationWarning):
     """
     pass
 
+
 class SemanticEquivalenceUnsupportedTypeError(STIXError, TypeError):
     """STIX object type not supported by the semantic equivalence approach."""
 

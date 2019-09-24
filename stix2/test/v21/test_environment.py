@@ -650,6 +650,8 @@ def test_semantic_equivalence_zero_match():
     IND_KWARGS = dict(
         indicator_types=["APTX"],
         pattern="[ipv4-addr:value = '192.168.1.1']",
+        pattern_type="stix",
+        valid_from="2019-01-01T12:34:56Z",
     )
     weights = {
         "indicator": {
