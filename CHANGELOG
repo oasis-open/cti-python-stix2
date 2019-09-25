@@ -1,6 +1,15 @@
 CHANGELOG
 =========
 
+1.2.0 - 2019-09-25
+
+* #268, #271, #273, #275, #283, #285, #290 Changes support of STIX 2.1 to WD05 (CSD02), for all object types
+* #269 Updates id properties to take a spec_version parameter
+* #283 Changes the exception class hierarchy
+* #289 Adds functions for calculating semantic equivalence of two objects
+* #286 Fixes handling of custom observable extensions
+* #287 Fixes bug with timestamp precision preservation in MarkingDefinition objects
+
 1.1.3 - 2019-08-12
 
 * #258 Ignores empty values for optional fields
