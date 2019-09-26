@@ -1,6 +1,6 @@
 bumpversion
 ipython
-mkdocs<=1.0.4
+mkdocs>=1.0.4
 nbsphinx==0.3.2
 pre-commit
 pytest
