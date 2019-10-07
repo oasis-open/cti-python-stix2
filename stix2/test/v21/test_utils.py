@@ -135,14 +135,16 @@ def test_deduplicate(stix_objs1):
                     "0": {
                         "name": "foo.exe",
                         "type": "file",
+                        "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                     },
                     "1": {
                         "type": "ipv4-addr",
                         "value": "198.51.100.3",
+                        "id": "ipv4-addr--1f8f4d63-9f33-5353-a3e3-e1b84c83a7b5",
                     },
                     "2": {
                         "type": "network-traffic",
-                        "src_ref": "1",
+                        "src_ref": "ipv4-addr--1f8f4d63-9f33-5353-a3e3-e1b84c83a7b5",
                         "protocols": [
                           "tcp",
                           "http",
@@ -161,7 +163,7 @@ def test_deduplicate(stix_objs1):
                         },
                     },
                 },
-            ), ('1', {"type": "ipv4-addr", "value": "198.51.100.3"}), 1,
+            ), ('1', {"type": "ipv4-addr", "value": "198.51.100.3", "id": "ipv4-addr--1f8f4d63-9f33-5353-a3e3-e1b84c83a7b5"}), 1,
         ),
         (
             {

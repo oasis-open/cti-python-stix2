@@ -1,5 +1,6 @@
 import datetime as dt
 import re
+import uuid
 
 import pytest
 import pytz
@@ -25,6 +26,8 @@ EXPECTED = """{
     "objects": {
         "0": {
             "type": "file",
+            "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+            "spec_version": "2.1",
             "name": "foo.exe"
         }
     }
@@ -42,13 +45,19 @@ def test_observed_data_example():
         number_observed=50,
         objects={
             "0": {
-                "name": "foo.exe",
                 "type": "file",
+                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "name": "foo.exe",
             },
         },
     )
 
-    assert str(observed_data) == EXPECTED
+    assert observed_data.id == "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
+    assert observed_data.created_by_ref == "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
+    assert observed_data.created == observed_data.modified == dt.datetime(2016, 4, 6, 19, 58, 16, tzinfo=pytz.utc)
+    assert observed_data.first_observed == observed_data.last_observed == dt.datetime(2015, 12, 21, 19, 00, 00, tzinfo=pytz.utc)
+    assert observed_data.number_observed == 50
+    assert observed_data.objects['0'] == stix2.v21.File(name="foo.exe")
 
 
 EXPECTED_WITH_REF = """{
@@ -64,13 +73,17 @@ EXPECTED_WITH_REF = """{
     "objects": {
         "0": {
             "type": "file",
+            "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+            "spec_version": "2.1",
             "name": "foo.exe"
         },
         "1": {
             "type": "directory",
+            "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
+            "spec_version": "2.1",
             "path": "/usr/home",
             "contains_refs": [
-                "0"
+                "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"
             ]
         }
     }
@@ -88,18 +101,25 @@ def test_observed_data_example_with_refs():
         number_observed=50,
         objects={
             "0": {
-                "name": "foo.exe",
                 "type": "file",
+                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "name": "foo.exe",
             },
             "1": {
                 "type": "directory",
+                "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
                 "path": "/usr/home",
-                "contains_refs": ["0"],
+                "contains_refs": ["file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"],
             },
         },
     )
-
-    assert str(observed_data) == EXPECTED_WITH_REF
+    assert observed_data.id == "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
+    assert observed_data.created_by_ref == "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
+    assert observed_data.created == observed_data.modified == dt.datetime(2016, 4, 6, 19, 58, 16, tzinfo=pytz.utc)
+    assert observed_data.first_observed == observed_data.last_observed == dt.datetime(2015, 12, 21, 19, 00, 00, tzinfo=pytz.utc)
+    assert observed_data.number_observed == 50
+    assert observed_data.objects['0'] == stix2.v21.File(name="foo.exe")
+    assert observed_data.objects['1'] == stix2.v21.Directory(path="/usr/home", contains_refs=["file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"])
 
 
 EXPECTED_OBJECT_REFS = """{
@@ -113,9 +133,9 @@ EXPECTED_OBJECT_REFS = """{
     "last_observed": "2015-12-21T19:00:00Z",
     "number_observed": 50,
     "object_refs": [
-        "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
-        "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
-        "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c"
+        "file--758bf2c0-a6f1-56d1-872e-6b727467739a",
+        "url--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+        "mutex--eca0b3ba-8d76-11e9-a1fd-34415dabec0c"
     ]
 }"""
 
@@ -130,9 +150,9 @@ def test_observed_data_example_with_object_refs():
         last_observed="2015-12-21T19:00:00Z",
         number_observed=50,
         object_refs=[
-            "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
-            "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
-            "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
+            "file--758bf2c0-a6f1-56d1-872e-6b727467739a",
+            "url--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+            "mutex--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
         ],
     )
 
@@ -156,9 +176,9 @@ def test_observed_data_object_constraint():
                 },
             },
             object_refs=[
-                "foo--758bf2c0-a6f1-56d1-872e-6b727467739a",
-                "bar--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
-                "baz--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
+                "file--758bf2c0-a6f1-56d1-872e-6b727467739a",
+                "url--d97ed5c4-3f33-46d9-b25b-c3d7b94d1457",
+                "mutex--eca0b3ba-8d76-11e9-a1fd-34415dabec0c",
             ],
         )
 
@@ -176,19 +196,20 @@ def test_observed_data_example_with_bad_refs():
             objects={
                 "0": {
                     "type": "file",
+                    "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                     "name": "foo.exe",
                 },
                 "1": {
                     "type": "directory",
                     "path": "/usr/home",
-                    "contains_refs": ["2"],
+                    "contains_refs": ["monkey--5956efbb-a7b0-566d-a7f9-a202eb05c70f"],
                 },
             },
         )
 
-    assert excinfo.value.cls == stix2.v21.ObservedData
-    assert excinfo.value.prop_name == "objects"
-    assert excinfo.value.reason == "Invalid object reference for 'Directory:contains_refs': '2' is not a valid object in local scope"
+    assert excinfo.value.cls == stix2.v21.Directory
+    assert excinfo.value.prop_name == "contains_refs"
+    assert "The type-specifying prefix 'monkey--' for this property is not valid" in excinfo.value.reason
 
 
 def test_observed_data_example_with_non_dictionary():
@@ -244,6 +265,7 @@ def test_observed_data_example_with_empty_dictionary():
                 "0": {
                     "name": "foo.exe",
                     "type": "file",
+                    "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
                 },
             },
         },
@@ -305,7 +327,7 @@ def test_parse_artifact_valid(data):
 )
 def test_parse_artifact_invalid(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
-    with pytest.raises(ValueError):
+    with pytest.raises(stix2.exceptions.InvalidValueError):
         stix2.parse(odata_str, version="2.1")
 
 
@@ -342,17 +364,21 @@ def test_parse_autonomous_system_valid(data):
         "type": "email-addr",
         "value": "john@example.com",
         "display_name": "John Doe",
-        "belongs_to_ref": "0"
+        "belongs_to_ref": "user-account--fc07c1af-6b11-41f8-97a4-47920d866a91"
     }""",
     ],
 )
 def test_parse_email_address(data):
-    odata = stix2.parse_observable(data, {"0": "user-account"}, version='2.1')
+    odata = stix2.parse_observable(data, version='2.1')
     assert odata.type == "email-addr"
 
-    odata_str = re.compile('"belongs_to_ref": "0"', re.DOTALL).sub('"belongs_to_ref": "3"', data)
-    with pytest.raises(stix2.exceptions.InvalidObjRefError):
-        stix2.parse_observable(odata_str, {"0": "user-account"}, version='2.1')
+    odata_str = re.compile(
+        '"belongs_to_ref": "user-account--fc07c1af-6b11-41f8-97a4-47920d866a91"', re.DOTALL,
+    ).sub(
+        '"belongs_to_ref": "mutex--9be6365f-b89c-48c0-9340-6953f6595718"', data,
+    )
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        stix2.parse_observable(odata_str, version='2.1')
 
 
 @pytest.mark.parametrize(
@@ -363,12 +389,12 @@ def test_parse_email_address(data):
         "is_multipart": true,
         "content_type": "multipart/mixed",
         "date": "2016-06-19T14:20:40.000Z",
-        "from_ref": "1",
+        "from_ref": "email-addr--d4ef7e1f-086d-5ff4-bce4-312ddc3eae76",
         "to_refs": [
-          "2"
+          "email-addr--8b0eb924-208c-5efd-80e5-84e2d610e54b"
         ],
         "cc_refs": [
-          "3"
+          "email-addr--1766f860-5cf3-5697-8789-35f1242663d5"
         ],
         "subject": "Check out this picture of a cat!",
         "additional_header_fields": {
@@ -385,12 +411,12 @@ def test_parse_email_address(data):
           {
             "content_type": "image/png",
             "content_disposition": "attachment; filename=\\"tabby.png\\"",
-            "body_raw_ref": "4"
+            "body_raw_ref": "artifact--80b04ad8-db52-464b-a85a-a44a5f3a60c5"
           },
           {
             "content_type": "application/zip",
             "content_disposition": "attachment; filename=\\"tabby_pics.zip\\"",
-            "body_raw_ref": "5"
+            "body_raw_ref": "file--e63474fc-b386-5630-a003-1b555e22f99b"
           }
         ]
     }
@@ -398,15 +424,7 @@ def test_parse_email_address(data):
     ],
 )
 def test_parse_email_message(data):
-    valid_refs = {
-        "0": "email-message",
-        "1": "email-addr",
-        "2": "email-addr",
-        "3": "email-addr",
-        "4": "artifact",
-        "5": "file",
-    }
-    odata = stix2.parse_observable(data, valid_refs, version='2.1')
+    odata = stix2.parse_observable(data, version='2.1')
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
 
@@ -416,8 +434,8 @@ def test_parse_email_message(data):
         """
     {
          "type": "email-message",
-         "from_ref": "0",
-         "to_refs": ["1"],
+         "from_ref": "email-addr--d4ef7e1f-086d-5ff4-bce4-312ddc3eae76",
+         "to_refs": ["email-addr--8b0eb924-208c-5efd-80e5-84e2d610e54b"],
          "is_multipart": true,
          "date": "1997-11-21T15:55:06.000Z",
          "subject": "Saying Hello",
@@ -427,12 +445,8 @@ def test_parse_email_message(data):
     ],
 )
 def test_parse_email_message_not_multipart(data):
-    valid_refs = {
-        "0": "email-addr",
-        "1": "email-addr",
-    }
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.parse_observable(data, valid_refs, version='2.1')
+        stix2.parse_observable(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
     assert excinfo.value.dependencies == [("is_multipart", "body")]
@@ -442,35 +456,38 @@ def test_parse_email_message_not_multipart(data):
     "data", [
         """"0": {
             "type": "file",
+            "id": "file--ecd47d73-15e4-5250-afda-ef8897b22340",
             "hashes": {
                 "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
             }
         },
         "1": {
             "type": "file",
+            "id": "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
             "hashes": {
-                "SHA-256": "19c549ec2628b989382f6b280cbd7bb836a0b461332c0fe53511ce7d584b89d3"
+                "SHA-1": "6e71b3cac15d32fe2d36c270887df9479c25c640"
             }
         },
         "2": {
             "type": "file",
+            "id": "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
             "hashes": {
-                "SHA-256": "0969de02ecf8a5f003e3f6d063d848c8a193aada092623f8ce408c15bcb5f038"
+                "SHA-512": "b7e98c78c24fb4c2c7b175e90474b21eae0ccf1b5ea4708b4e0f2d2940004419edc7161c18a1e71b2565df099ba017bcaa67a248e2989b6268ce078b88f2e210"
             }
         },
         "3": {
             "type": "file",
             "name": "foo.zip",
             "hashes": {
-                "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+                "SHA3-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
             },
             "mime_type": "application/zip",
             "extensions": {
                 "archive-ext": {
                     "contains_refs": [
-                        "0",
-                        "1",
-                        "2"
+                        "file--ecd47d73-15e4-5250-afda-ef8897b22340",
+                        "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
+                        "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac"
                     ]
                 }
             }
@@ -481,7 +498,11 @@ def test_parse_file_archive(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
     assert all(x in odata.objects["3"].extensions['archive-ext'].contains_refs
-               for x in ["0", "1", "2"])
+               for x in [
+                   "file--ecd47d73-15e4-5250-afda-ef8897b22340",
+                   "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
+                   "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
+               ])
 
 
 @pytest.mark.parametrize(
@@ -492,12 +513,12 @@ def test_parse_file_archive(data):
         "is_multipart": true,
         "content_type": "multipart/mixed",
         "date": "2016-06-19T14:20:40.000Z",
-        "from_ref": "1",
+        "from_ref": "email-addr--d4ef7e1f-086d-5ff4-bce4-312ddc3eae76",
         "to_refs": [
-          "2"
+          "email-addr--8b0eb924-208c-5efd-80e5-84e2d610e54b"
         ],
         "cc_refs": [
-          "3"
+          "email-addr--1766f860-5cf3-5697-8789-35f1242663d5"
         ],
         "subject": "Check out this picture of a cat!",
         "additional_header_fields": {
@@ -518,7 +539,7 @@ def test_parse_file_archive(data):
           {
             "content_type": "application/zip",
             "content_disposition": "attachment; filename=\\"tabby_pics.zip\\"",
-            "body_raw_ref": "5"
+            "body_raw_ref": "file--e63474fc-b386-5630-a003-1b555e22f99b"
           }
         ]
     }
@@ -526,19 +547,10 @@ def test_parse_file_archive(data):
     ],
 )
 def test_parse_email_message_with_at_least_one_error(data):
-    valid_refs = {
-        "0": "email-message",
-        "1": "email-addr",
-        "2": "email-addr",
-        "3": "email-addr",
-        "4": "artifact",
-        "5": "file",
-    }
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, valid_refs, version='2.1')
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.parse_observable(data, version='2.1')
 
-    assert excinfo.value.cls == stix2.v21.EmailMIMEComponent
-    assert excinfo.value.properties == ["body", "body_raw_ref"]
+    assert excinfo.value.cls == stix2.v21.EmailMessage
     assert "At least one of the" in str(excinfo.value)
     assert "must be populated" in str(excinfo.value)
 
@@ -548,8 +560,8 @@ def test_parse_email_message_with_at_least_one_error(data):
         """
     {
         "type": "network-traffic",
-        "src_ref": "0",
-        "dst_ref": "1",
+        "src_ref": "ipv4-addr--e535b017-cc1c-566b-a3e2-f69f92ed9c4c",
+        "dst_ref": "ipv4-addr--78327430-9ad9-5632-ae3d-8e2fce8f5483",
         "protocols": [
           "tcp"
         ]
@@ -559,13 +571,12 @@ def test_parse_email_message_with_at_least_one_error(data):
 )
 def test_parse_basic_tcp_traffic(data):
     odata = stix2.parse_observable(
-        data, {"0": "ipv4-addr", "1": "ipv4-addr"},
-        version='2.1',
+        data, version='2.1',
     )
 
     assert odata.type == "network-traffic"
-    assert odata.src_ref == "0"
-    assert odata.dst_ref == "1"
+    assert odata.src_ref == "ipv4-addr--e535b017-cc1c-566b-a3e2-f69f92ed9c4c"
+    assert odata.dst_ref == "ipv4-addr--78327430-9ad9-5632-ae3d-8e2fce8f5483"
     assert odata.protocols == ["tcp"]
 
 
@@ -583,7 +594,7 @@ def test_parse_basic_tcp_traffic(data):
         "src_byte_count": 35779,
         "dst_byte_count": 935750,
         "encapsulates_refs": [
-          "4"
+          "network-traffic--016914c3-b680-5df2-81c4-bb9ccf8dc8b0"
         ]
   }
     """,
@@ -591,7 +602,7 @@ def test_parse_basic_tcp_traffic(data):
 )
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, {"4": "network-traffic"}, version='2.1')
+        stix2.parse_observable(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.NetworkTraffic
     assert excinfo.value.properties == ["dst_ref", "src_ref"]
@@ -637,16 +648,18 @@ def test_observed_data_with_process_example():
         objects={
             "0": {
                 "type": "file",
+                "id": "file--0d16c8d3-c177-5f5d-a022-b1bdac329bea",
                 "hashes": {
                     "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f",
                 },
             },
             "1": {
                 "type": "process",
+                "id": "process--f6c4a02c-23e1-4a6d-a0d7-d862e893817a",
                 "pid": 1221,
-                "created": "2016-01-20T14:11:25.55Z",
+                "created_time": "2016-01-20T14:11:25.55Z",
                 "command_line": "./gedit-bin --new-window",
-                "image_ref": "0",
+                "image_ref": "file--0d16c8d3-c177-5f5d-a022-b1bdac329bea",
             },
         },
     )
@@ -690,31 +703,33 @@ def test_artifact_mutual_exclusion_error():
 
 
 def test_directory_example():
-    dir = stix2.v21.Directory(
-        _valid_refs={"1": "file"},
-        path='/usr/lib',
-        created="2015-12-21T19:00:00Z",
-        modified="2015-12-24T19:00:00Z",
-        accessed="2015-12-21T20:00:00Z",
-        contains_refs=["1"],
+    f = stix2.v21.File(
+        name="penguin.exe",
     )
 
-    assert dir.path == '/usr/lib'
-    assert dir.created == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert dir.modified == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
-    assert dir.accessed == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
-    assert dir.contains_refs == ["1"]
+    dir1 = stix2.v21.Directory(
+        path='/usr/lib',
+        ctime="2015-12-21T19:00:00Z",
+        mtime="2015-12-24T19:00:00Z",
+        atime="2015-12-21T20:00:00Z",
+        contains_refs=[str(f.id)],
+    )
+
+    assert dir1.path == '/usr/lib'
+    assert dir1.ctime == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
+    assert dir1.mtime == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
+    assert dir1.atime == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+    assert dir1.contains_refs == ["file--9d050a3b-72cd-5b57-bf18-024e74e1e5eb"]
 
 
 def test_directory_example_ref_error():
-    with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Directory(
-            _valid_refs=[],
             path='/usr/lib',
-            created="2015-12-21T19:00:00Z",
-            modified="2015-12-24T19:00:00Z",
-            accessed="2015-12-21T20:00:00Z",
-            contains_refs=["1"],
+            ctime="2015-12-21T19:00:00Z",
+            mtime="2015-12-24T19:00:00Z",
+            atime="2015-12-21T20:00:00Z",
+            contains_refs=["domain-name--02af94ea-7e38-5718-87c3-5cc023e3d49d"],
         )
 
     assert excinfo.value.cls == stix2.v21.Directory
@@ -722,22 +737,24 @@ def test_directory_example_ref_error():
 
 
 def test_domain_name_example():
-    dn = stix2.v21.DomainName(
-        _valid_refs={"1": 'domain-name'},
-        value="example.com",
-        resolves_to_refs=["1"],
+    dn1 = stix2.v21.DomainName(
+        value="mitre.org",
     )
 
-    assert dn.value == "example.com"
-    assert dn.resolves_to_refs == ["1"]
+    dn2 = stix2.v21.DomainName(
+        value="example.com",
+        resolves_to_refs=[str(dn1.id)],
+    )
+
+    assert dn2.value == "example.com"
+    assert dn2.resolves_to_refs == ["domain-name--02af94ea-7e38-5718-87c3-5cc023e3d49d"]
 
 
 def test_domain_name_example_invalid_ref_type():
-    with pytest.raises(stix2.exceptions.InvalidObjRefError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.DomainName(
-            _valid_refs={"1": "file"},
             value="example.com",
-            resolves_to_refs=["1"],
+            resolves_to_refs=["file--44a431e6-764b-5556-a3f5-bf655930a581"],
         )
 
     assert excinfo.value.cls == stix2.v21.DomainName
@@ -753,9 +770,9 @@ def test_file_example():
         size=100,
         magic_number_hex="1C",
         mime_type="application/msword",
-        created="2016-12-21T19:00:00Z",
-        modified="2016-12-24T19:00:00Z",
-        accessed="2016-12-21T20:00:00Z",
+        ctime="2016-12-21T19:00:00Z",
+        mtime="2016-12-24T19:00:00Z",
+        atime="2016-12-21T20:00:00Z",
     )
 
     assert f.name == "qwerty.dll"
@@ -763,9 +780,9 @@ def test_file_example():
     assert f.magic_number_hex == "1C"
     assert f.hashes["SHA-256"] == "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
     assert f.mime_type == "application/msword"
-    assert f.created == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
-    assert f.modified == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
-    assert f.accessed == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+    assert f.ctime == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
+    assert f.mtime == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
+    assert f.atime == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
 
 
 def test_file_example_with_NTFSExt():
@@ -788,7 +805,7 @@ def test_file_example_with_NTFSExt():
 
 
 def test_file_example_with_empty_NTFSExt():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.File(
             name="abc.txt",
             extensions={
@@ -796,8 +813,7 @@ def test_file_example_with_empty_NTFSExt():
             },
         )
 
-    assert excinfo.value.cls == stix2.v21.NTFSExt
-    assert excinfo.value.properties == sorted(list(stix2.NTFSExt._properties.keys()))
+    assert excinfo.value.cls == stix2.v21.File
 
 
 def test_file_example_with_PDFExt():
@@ -880,6 +896,7 @@ RASTER_IMAGE_EXT = """{
 "objects": {
   "0": {
     "type": "file",
+    "id": "file--44a431e6-764b-5556-a3f5-bf655930a581",
     "name": "picture.jpg",
     "hashes": {
       "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
@@ -991,18 +1008,17 @@ def test_file_example_encryption_error():
     assert "At least one of the (hashes, name)" in str(excinfo.value)
 
 
-def test_ip4_address_example():
+def test_ipv4_address_example():
     ip4 = stix2.v21.IPv4Address(
-        _valid_refs={"4": "mac-addr", "5": "mac-addr"},
         value="198.51.100.3",
-        resolves_to_refs=["4", "5"],
+        resolves_to_refs=["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"],
     )
 
     assert ip4.value == "198.51.100.3"
-    assert ip4.resolves_to_refs == ["4", "5"]
+    assert ip4.resolves_to_refs == ["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"]
 
 
-def test_ip4_address_valid_refs():
+def test_ipv4_address_valid_refs():
     mac1 = stix2.v21.MACAddress(
         value="a1:b2:c3:d4:e5:f6",
     )
@@ -1011,22 +1027,21 @@ def test_ip4_address_valid_refs():
     )
 
     ip4 = stix2.v21.IPv4Address(
-        _valid_refs={"1": mac1, "2": mac2},
         value="177.60.40.7",
-        resolves_to_refs=["1", "2"],
+        resolves_to_refs=[str(mac1.id), str(mac2.id)],
     )
 
     assert ip4.value == "177.60.40.7"
-    assert ip4.resolves_to_refs == ["1", "2"]
+    assert ip4.resolves_to_refs == ["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"]
 
 
-def test_ip4_address_example_cidr():
+def test_ipv4_address_example_cidr():
     ip4 = stix2.v21.IPv4Address(value="198.51.100.0/24")
 
     assert ip4.value == "198.51.100.0/24"
 
 
-def test_ip6_address_example():
+def test_ipv6_address_example():
     ip6 = stix2.v21.IPv6Address(value="2001:0db8:85a3:0000:0000:8a2e:0370:7334")
 
     assert ip6.value == "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
@@ -1040,14 +1055,13 @@ def test_mac_address_example():
 
 def test_network_traffic_example():
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr", "1": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
-        dst_ref="1",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
+        dst_ref="ipv4-addr--6d39dd0b-1f74-5faf-8d76-d8762c2a57cb",
     )
     assert nt.protocols == ["tcp"]
-    assert nt.src_ref == "0"
-    assert nt.dst_ref == "1"
+    assert nt.src_ref == "ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88"
+    assert nt.dst_ref == "ipv4-addr--6d39dd0b-1f74-5faf-8d76-d8762c2a57cb"
 
 
 def test_network_traffic_http_request_example():
@@ -1062,9 +1076,8 @@ def test_network_traffic_http_request_example():
         },
     )
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'http-request-ext': h},
     )
     assert nt.extensions['http-request-ext'].request_method == "get"
@@ -1078,9 +1091,8 @@ def test_network_traffic_http_request_example():
 def test_network_traffic_icmp_example():
     h = stix2.v21.ICMPExt(icmp_type_hex="08", icmp_code_hex="00")
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'icmp-ext': h},
     )
     assert nt.extensions['icmp-ext'].icmp_type_hex == "08"
@@ -1095,9 +1107,8 @@ def test_network_traffic_socket_example():
         socket_type="SOCK_STREAM",
     )
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'socket-ext': h},
     )
     assert nt.extensions['socket-ext'].is_listening
@@ -1109,9 +1120,8 @@ def test_network_traffic_socket_example():
 def test_network_traffic_tcp_example():
     h = stix2.v21.TCPExt(src_flags_hex="00000002")
     nt = stix2.v21.NetworkTraffic(
-        _valid_refs={"0": "ipv4-addr"},
-        protocols="tcp",
-        src_ref="0",
+        protocols=["tcp"],
+        src_ref="ipv4-addr--29a591d9-533a-5ecd-a5a1-cadee4411e88",
         extensions={'tcp-ext': h},
     )
     assert nt.extensions['tcp-ext'].src_flags_hex == "00000002"
@@ -1125,11 +1135,10 @@ def test_mutex_example():
 
 def test_process_example():
     p = stix2.v21.Process(
-        _valid_refs={"0": "file"},
         pid=1221,
-        created="2016-01-20T14:11:25.55Z",
+        created_time="2016-01-20T14:11:25.55Z",
         command_line="./gedit-bin --new-window",
-        image_ref="0",
+        image_ref="file--ea587d87-5ed2-5625-a9ac-01fd64161fd8",
     )
 
     assert p.command_line == "./gedit-bin --new-window"
@@ -1141,7 +1150,7 @@ def test_process_example_empty_error():
 
     assert excinfo.value.cls == stix2.v21.Process
     properties_of_process = list(stix2.v21.Process._properties.keys())
-    properties_of_process.remove("type")
+    properties_of_process = [prop for prop in properties_of_process if prop not in ["type", "id", "defanged", "spec_version"]]
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
     msg = msg.format(
@@ -1152,14 +1161,12 @@ def test_process_example_empty_error():
 
 
 def test_process_example_empty_with_extensions():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Process(extensions={
             "windows-process-ext": {},
         })
 
-    assert excinfo.value.cls == stix2.v21.WindowsProcessExt
-    properties_of_extension = list(stix2.v21.WindowsProcessExt._properties.keys())
-    assert excinfo.value.properties == sorted(properties_of_extension)
+    assert excinfo.value.cls == stix2.v21.Process
 
 
 def test_process_example_windows_process_ext():
@@ -1181,7 +1188,7 @@ def test_process_example_windows_process_ext():
 
 
 def test_process_example_windows_process_ext_empty():
-    with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Process(
             pid=1221,
             extensions={
@@ -1189,9 +1196,7 @@ def test_process_example_windows_process_ext_empty():
             },
         )
 
-    assert excinfo.value.cls == stix2.v21.WindowsProcessExt
-    properties_of_extension = list(stix2.v21.WindowsProcessExt._properties.keys())
-    assert excinfo.value.properties == sorted(properties_of_extension)
+    assert excinfo.value.cls == stix2.v21.Process
 
 
 def test_process_example_extensions_empty():
@@ -1324,7 +1329,7 @@ def test_user_account_unix_account_ext_example():
 
 
 def test_windows_registry_key_example():
-    with pytest.raises(ValueError):
+    with pytest.raises(stix2.exceptions.InvalidValueError):
         stix2.v21.WindowsRegistryValueType(
             name="Foo",
             data="qwerty",
@@ -1369,15 +1374,155 @@ def test_new_version_with_related_objects():
         objects={
             'src_ip': {
                 'type': 'ipv4-addr',
+                'id': 'ipv4-addr--2b94bc65-17d4-54f6-9ffe-7d103551bb9f',
                 'value': '127.0.0.1/32',
             },
             'domain': {
                 'type': 'domain-name',
+                'id': 'domain-name--220a2699-5ebf-5b57-bf02-424964bb19c0',
                 'value': 'example.com',
-                'resolves_to_refs': ['src_ip'],
+                'resolves_to_refs': ['ipv4-addr--2b94bc65-17d4-54f6-9ffe-7d103551bb9f'],
             },
         },
     )
     new_version = data.new_version(last_observed="2017-12-12T12:00:00Z")
     assert new_version.last_observed.year == 2017
-    assert new_version.objects['domain'].resolves_to_refs[0] == 'src_ip'
+    assert new_version.objects['domain'].resolves_to_refs[0] == 'ipv4-addr--2b94bc65-17d4-54f6-9ffe-7d103551bb9f'
+
+
+def test_objects_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.ObservedData(
+            first_observed="2016-03-12T12:00:00Z",
+            last_observed="2016-03-12T12:00:00Z",
+            number_observed=1,
+            objects={
+                "0": {
+                    "type": "file",
+                    "name": "foo",
+                },
+            },
+        )
+
+
+def test_deterministic_id_same_extra_prop_vals():
+    email_addr_1 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
+
+    email_addr_2 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
+
+    assert email_addr_1.id == email_addr_2.id
+
+    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
+
+
+def test_deterministic_id_diff_extra_prop_vals():
+    email_addr_1 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
+
+    email_addr_2 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Janey Doe",
+    )
+
+    assert email_addr_1.id == email_addr_2.id
+
+    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
+
+
+def test_deterministic_id_diff_contributing_prop_vals():
+    email_addr_1 = stix2.v21.EmailAddress(
+        value="john@example.com",
+        display_name="Johnny Doe",
+    )
+
+    email_addr_2 = stix2.v21.EmailAddress(
+        value="jane@example.com",
+        display_name="Janey Doe",
+    )
+
+    assert email_addr_1.id != email_addr_2.id
+
+    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 5
+
+    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 5
+
+
+def test_deterministic_id_no_contributing_props():
+    email_msg_1 = stix2.v21.EmailMessage(
+        is_multipart=False,
+    )
+
+    email_msg_2 = stix2.v21.EmailMessage(
+        is_multipart=False,
+    )
+
+    assert email_msg_1.id != email_msg_2.id
+
+    uuid_obj_1 = uuid.UUID(email_msg_1.id[-36:])
+    assert uuid_obj_1.variant == uuid.RFC_4122
+    assert uuid_obj_1.version == 4
+
+    uuid_obj_2 = uuid.UUID(email_msg_2.id[-36:])
+    assert uuid_obj_2.variant == uuid.RFC_4122
+    assert uuid_obj_2.version == 4
+
+
+def test_ipv4_resolves_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv4Address(
+            value="26.09.19.70",
+            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
+        )
+
+
+def test_ipv4_belongs_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv4Address(
+            value="21.12.19.64",
+            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
+        )
+
+
+def test_ipv6_resolves_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv6Address(
+            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
+        )
+
+
+def test_ipv6_belongs_to_refs_deprecation():
+    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
+
+        stix2.v21.IPv6Address(
+            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
+            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
+        )

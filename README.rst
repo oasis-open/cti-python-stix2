@@ -1,4 +1,4 @@
-|Build_Status| |Coverage| |Version| |Downloads_Badge|
+|Build_Status| |Coverage| |Version| |Downloads_Badge| |Documentation_Status|
 
 cti-python-stix2
 ================
@@ -170,3 +170,6 @@ to repository-cla@oasis-open.org.
 .. |Downloads_Badge| image:: https://img.shields.io/pypi/dm/stix2.svg?maxAge=3600
    :target: https://pypi.python.org/pypi/stix2/
    :alt: Downloads
+.. |Documentation_Status| image:: https://readthedocs.org/projects/stix2/badge/?version=latest
+   :target: https://stix2.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status

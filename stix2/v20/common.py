@@ -3,6 +3,8 @@
 from collections import OrderedDict
 import copy
 
+import six
+
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
@@ -12,6 +14,21 @@ from ..properties import (
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW, _get_dict
+
+
+def _should_set_millisecond(cr, marking_type):
+    # TLP instances in the 2.0 spec have millisecond precision unlike other markings
+    if marking_type == TLPMarking:
+        return True
+    # otherwise,  precision is kept from how it was given
+    if isinstance(cr, six.string_types):
+        if '.' in cr:
+            return True
+        else:
+            return False
+    if cr.precision == 'millisecond':
+        return True
+    return False
 
 
 class ExternalReference(_STIXBase):
@@ -49,7 +66,7 @@ class GranularMarking(_STIXBase):
     """
 
     _properties = OrderedDict([
-        ('marking_ref', ReferenceProperty(required=True, spec_version='2.0', type='marking-definition')),
+        ('marking_ref', ReferenceProperty(valid_types='marking-definition', spec_version='2.0', required=True)),
         ('selectors', ListProperty(SelectorProperty, required=True)),
     ])
 
@@ -105,10 +122,10 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
         ('id', IDProperty(_type, spec_version='2.0')),
-        ('created_by_ref', ReferenceProperty(type='identity', spec_version='2.0')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW)),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(type='marking-definition', spec_version='2.0'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('definition_type', StringProperty(required=True)),
         ('definition', MarkingProperty(required=True)),
@@ -122,12 +139,12 @@ class MarkingDefinition(_STIXBase, _MarkingsMixin):
             except KeyError:
                 raise ValueError("definition_type must be a valid marking type")
 
-            if marking_type == TLPMarking:
-                # TLP instances in the spec have millisecond precision unlike other markings
-                self._properties = copy.deepcopy(self._properties)
-                self._properties.update([
-                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ])
+            if 'created' in kwargs:
+                if _should_set_millisecond(kwargs['created'], marking_type):
+                    self._properties = copy.deepcopy(self._properties)
+                    self._properties.update([
+                        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                    ])
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])

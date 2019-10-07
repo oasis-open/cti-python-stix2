@@ -1,10 +1,10 @@
 bumpversion
 ipython
-nbsphinx==0.3.2
+nbsphinx==0.4.3
 pre-commit
 pytest
 pytest-cov
-sphinx<1.6
+sphinx<2
 sphinx-prompt
 tox
 

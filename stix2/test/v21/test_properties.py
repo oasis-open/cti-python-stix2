@@ -1,7 +1,9 @@
 import pytest
 
 import stix2
-from stix2.exceptions import AtLeastOnePropertyError, DictionaryKeyError
+from stix2.exceptions import (
+    AtLeastOnePropertyError, CustomContentError, DictionaryKeyError,
+)
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
@@ -269,7 +271,7 @@ def test_boolean_property_invalid(value):
 
 
 def test_reference_property():
-    ref_prop = ReferenceProperty(spec_version="2.1")
+    ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.1")
 
     assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
     with pytest.raises(ValueError):
@@ -281,7 +283,7 @@ def test_reference_property():
 
 
 def test_reference_property_specific_type():
-    ref_prop = ReferenceProperty("my-type", spec_version="2.1")
+    ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.1")
 
     with pytest.raises(ValueError):
         ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf")
@@ -474,23 +476,27 @@ def test_extension_property_valid():
     })
 
 
-@pytest.mark.parametrize(
-    "data", [
-        1,
-        {'foobar-ext': {
-            'pe_type': 'exe',
-        }},
-    ],
-)
-def test_extension_property_invalid(data):
+def test_extension_property_invalid1():
     ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
     with pytest.raises(ValueError):
-        ext_prop.clean(data)
+        ext_prop.clean(1)
+
+
+def test_extension_property_invalid2():
+    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
+    with pytest.raises(CustomContentError):
+        ext_prop.clean(
+            {
+                'foobar-ext': {
+                    'pe_type': 'exe',
+                },
+            },
+        )
 
 
 def test_extension_property_invalid_type():
     ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='indicator')
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(CustomContentError) as excinfo:
         ext_prop.clean(
             {
                 'windows-pebinary-ext': {

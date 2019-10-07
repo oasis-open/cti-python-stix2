@@ -15,7 +15,10 @@ import stix2
 
 from .base import _Observable, _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
-from .exceptions import CustomContentError, DictionaryKeyError
+from .exceptions import (
+    CustomContentError, DictionaryKeyError, MissingPropertiesError,
+    MutuallyExclusivePropertiesError,
+)
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 ERROR_INVALID_ID = (
@@ -102,7 +105,7 @@ class Property(object):
         - Return a value that is valid for this property. If ``value`` is not
           valid for this property, this will attempt to transform it first. If
           ``value`` is not valid and no such transformation is possible, it
-          should raise a ValueError.
+          should raise an exception.
     - ``def default(self):``
         - provide a default value for this property.
         - ``default()`` can return the special value ``NOW`` to use the current
@@ -417,12 +420,28 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, type=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
-        self.required_prefix = type + "--" if type else None
         self.spec_version = spec_version
+
+        # These checks need to be done prior to the STIX object finishing construction
+        # and thus we can't use base.py's _check_mutually_exclusive_properties()
+        # in the typical location of _check_object_constraints() in sdo.py
+        if valid_types and invalid_types:
+            raise MutuallyExclusivePropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+        elif valid_types is None and invalid_types is None:
+            raise MissingPropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+
+        if valid_types and type(valid_types) is not list:
+            valid_types = [valid_types]
+        elif invalid_types and type(invalid_types) is not list:
+            invalid_types = [invalid_types]
+
+        self.valid_types = valid_types
+        self.invalid_types = invalid_types
+
         super(ReferenceProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -430,7 +449,27 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        _validate_id(value, self.spec_version, self.required_prefix)
+        possible_prefix = value[:value.index('--') + 2]
+
+        if self.valid_types:
+            if self.valid_types == ["only_SDO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['objects'].keys()
+            elif self.valid_types == ["only_SCO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys()
+            elif self.valid_types == ["only_SCO_&_SRO"]:
+                self.valid_types = list(STIX2_OBJ_MAPS['v21']['observables'].keys()) + ['relationship', 'sighting']
+
+            if possible_prefix[:-2] in self.valid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
+        elif self.invalid_types:
+            if possible_prefix[:-2] not in self.invalid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
+
+        _validate_id(value, self.spec_version, required_prefix)
 
         return value
 
@@ -568,7 +607,10 @@ class ExtensionsProperty(DictionaryProperty):
                 else:
                     raise ValueError("Cannot determine extension type.")
             else:
-                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
+                if self.allow_custom:
+                    dictified[key] = subvalue
+                else:
+                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         return dictified
 
 

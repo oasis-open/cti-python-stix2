@@ -29,6 +29,7 @@ stix_objs = [
         "modified": "2014-05-08T09:00:00.000Z",
         "name": "File hash for Poison Ivy variant",
         "pattern": "[file:hashes.'SHA-256' = 'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c']",
+        "pattern_type": "stix",
         "spec_version": "2.1",
         "type": "indicator",
         "valid_from": "2014-05-08T09:00:00.000000Z",
@@ -85,7 +86,10 @@ stix_objs = [
         "objects": {
             "0": {
                 "type": "file",
+                "spec_version": "2.1",
+                "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876",
                 "name": "HAL 9000.exe",
+                "defanged": False,
             },
         },
 
@@ -108,8 +112,14 @@ filters = [
     Filter("object_marking_refs", "=", "marking-definition--613f2e26-0000-4000-8000-b8e91df99dc9"),
     Filter("granular_markings.selectors", "in", "description"),
     Filter("external_references.source_name", "=", "CVE"),
-    Filter("objects", "=", {"0": {"type": "file", "name": "HAL 9000.exe"}}),
-    Filter("objects", "contains", {"type": "file", "name": "HAL 9000.exe"}),
+    Filter(
+        "objects", "=",
+        {"0": {"type": "file", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876", "name": "HAL 9000.exe", "spec_version": "2.1", "defanged": False}},
+    ),
+    Filter(
+        "objects", "contains",
+        {"type": "file", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876", "name": "HAL 9000.exe", "spec_version": "2.1", "defanged": False},
+    ),
     Filter("labels", "contains", "heartbleed"),
 ]
 
