@@ -66,8 +66,10 @@ INDICATOR_KWARGS = dict(
     id=INDICATOR_ID,
     labels=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+    pattern_type="stix",
     created_by_ref=IDENTITY_ID,
     indicator_types=["malicious-activity"],
+    valid_from="2016-04-06T20:03:00.000Z"
 )
 
 INTRUSION_SET_KWARGS = dict(
@@ -87,6 +89,7 @@ MALWARE_KWARGS = dict(
     description="A ransomware related to ...",
     created_by_ref=IDENTITY_ID,
     malware_types=["malicious-activity"],
+    is_family=False
 )
 
 MARKING_DEFINITION_KWARGS = dict(
