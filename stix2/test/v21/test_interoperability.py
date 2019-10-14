@@ -184,7 +184,7 @@ if __name__ == '__main__':
     relationship = stix2.v21.Relationship(**RELATIONSHIP_KWARGS, interoperability=True)
     sighting = stix2.v21.Sighting(**SIGHTING_KWARGS, interoperability=True)
     threat_actor = stix2.v21.ThreatActor(**THREAT_ACTOR_KWARGS, interoperability=True)
-    tool = stix2.v21.Tool(**TOOL_KWARGS)#, interoperability=True),
+    tool = stix2.v21.Tool(**TOOL_KWARGS)
     vulnerability = stix2.v21.Vulnerability(**VULNERABILITY_KWARGS, interoperability=True)
     report = stix2.v21.Report(**REPORT_KWARGS, interoperability=True)
     bundle = stix2.v21.Bundle(**BUNDLE_KWARGS, interoperability=True,
