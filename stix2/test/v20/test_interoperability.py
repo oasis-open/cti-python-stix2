@@ -181,8 +181,8 @@ if __name__ == '__main__':
     vulnerability = stix2.v20.Vulnerability(**VULNERABILITY_KWARGS, interoperability=True)
     report = stix2.v20.Report(**REPORT_KWARGS, interoperability=True)
     bundle = stix2.v20.Bundle(**BUNDLE_KWARGS, interoperability=True,
-                          objects=[attack_pattern, campaign, course_of_action, identity, indicator,
-                                   intrusion_set, malware, marking_definition, observed_data, tool,
-                                   relationship, sighting, threat_actor, vulnerability, report])
+                              objects=[attack_pattern, campaign, course_of_action, identity, indicator,
+                                       intrusion_set, malware, marking_definition, observed_data, tool,
+                                       relationship, sighting, threat_actor, vulnerability, report])
     stix2.parse(dict(bundle), interoperability=True)
     print("All interoperability tests passed !")
