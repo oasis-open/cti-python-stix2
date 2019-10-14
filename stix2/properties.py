@@ -479,7 +479,7 @@ class ReferenceProperty(Property):
             else:
                 raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
         interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
-        _validate_id(value, self.spec_version, required_prefix)
+        _validate_id(value, self.spec_version, required_prefix, interoperability)
 
         return value
 
