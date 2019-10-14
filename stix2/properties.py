@@ -11,34 +11,80 @@ import uuid
 from six import string_types, text_type
 from stix2patterns.validator import run_validator
 
+import stix2
+
 from .base import _Observable, _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
-from .exceptions import CustomContentError, DictionaryKeyError
+from .exceptions import (
+    CustomContentError, DictionaryKeyError, MissingPropertiesError,
+    MutuallyExclusivePropertiesError,
+)
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
-# This uses the regular expression for a RFC 4122, Version 4 UUID. In the
-# 8-4-4-4-12 hexadecimal representation, the first hex digit of the third
-# component must be a 4, and the first hex digit of the fourth component
-# must be 8, 9, a, or b (10xx bit pattern).
-ID_REGEX = re.compile(
-    r"^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
-    "[0-9a-fA-F]{8}-"
-    "[0-9a-fA-F]{4}-"
-    "4[0-9a-fA-F]{3}-"
-    "[89abAB][0-9a-fA-F]{3}-"
-    "[0-9a-fA-F]{12}$",
-)
-
-ID_REGEX_interoperability = re.compile(r"^[a-z0-9][a-z0-9-]+[a-z0-9]--"  # object type
-                                       "[0-9a-fA-F]{8}-"
+ID_REGEX_interoperability = re.compile(r"[0-9a-fA-F]{8}-"
                                        "[0-9a-fA-F]{4}-"
                                        "[0-9a-fA-F]{4}-"
                                        "[0-9a-fA-F]{4}-"
                                        "[0-9a-fA-F]{12}$")
 
 ERROR_INVALID_ID = (
-    "not a valid STIX identifier, must match <object-type>--<UUIDv4>"
+    "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )
+
+
+def _check_uuid(uuid_str, spec_version, interoperability):
+    """
+    Check whether the given UUID string is valid with respect to the given STIX
+    spec version.  STIX 2.0 requires UUIDv4; 2.1 only requires the RFC 4122
+    variant.
+
+    :param uuid_str: A UUID as a string
+    :param spec_version: The STIX spec version
+    :return: True if the UUID is valid, False if not
+    :raises ValueError: If uuid_str is malformed
+    """
+    if interoperability:
+        return ID_REGEX_interoperability.match(uuid_str)
+
+    uuid_obj = uuid.UUID(uuid_str)
+
+    ok = uuid_obj.variant == uuid.RFC_4122
+    if ok and spec_version == "2.0":
+        ok = uuid_obj.version == 4
+
+    return ok
+
+
+def _validate_id(id_, spec_version, required_prefix, interoperability):
+    """
+    Check the STIX identifier for correctness, raise an exception if there are
+    errors.
+
+    :param id_: The STIX identifier
+    :param spec_version: The STIX specification version to use
+    :param required_prefix: The required prefix on the identifier, if any.
+        This function doesn't add a "--" suffix to the prefix, so callers must
+        add it if it is important.  Pass None to skip the prefix check.
+    :raises ValueError: If there are any errors with the identifier
+    """
+    if required_prefix:
+        if not id_.startswith(required_prefix):
+            raise ValueError("must start with '{}'.".format(required_prefix))
+
+    try:
+        if required_prefix:
+            uuid_part = id_[len(required_prefix):]
+        else:
+            idx = id_.index("--")
+            uuid_part = id_[idx+2:]
+
+        result = _check_uuid(uuid_part, spec_version, interoperability)
+    except ValueError:
+        # replace their ValueError with ours
+        raise ValueError(ERROR_INVALID_ID.format(id_))
+
+    if not result:
+        raise ValueError(ERROR_INVALID_ID.format(id_))
 
 
 class Property(object):
@@ -68,7 +114,7 @@ class Property(object):
         - Return a value that is valid for this property. If ``value`` is not
           valid for this property, this will attempt to transform it first. If
           ``value`` is not valid and no such transformation is possible, it
-          should raise a ValueError.
+          should raise an exception.
     - ``def default(self):``
         - provide a default value for this property.
         - ``default()`` can return the special value ``NOW`` to use the current
@@ -206,19 +252,14 @@ class TypeProperty(Property):
 
 class IDProperty(Property):
 
-    def __init__(self, type):
+    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
         self.required_prefix = type + "--"
+        self.spec_version = spec_version
         super(IDProperty, self).__init__()
 
     def clean(self, value):
-        if not value.startswith(self.required_prefix):
-            raise ValueError("must start with '{}'.".format(self.required_prefix))
-        if hasattr(self, 'interoperability') and self.interoperability:
-            if not ID_REGEX_interoperability.match(value):
-                raise ValueError(ERROR_INVALID_ID)
-        else:
-            if not ID_REGEX.match(value):
-                raise ValueError(ERROR_INVALID_ID)
+        interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
+        _validate_id(value, self.spec_version, self.required_prefix, interoperability)
         return value
 
     def default(self):
@@ -307,7 +348,7 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version='2.0', **kwargs):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -389,26 +430,57 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, type=None, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
-        self.type = type
+        self.spec_version = spec_version
+
+        # These checks need to be done prior to the STIX object finishing construction
+        # and thus we can't use base.py's _check_mutually_exclusive_properties()
+        # in the typical location of _check_object_constraints() in sdo.py
+        if valid_types and invalid_types:
+            raise MutuallyExclusivePropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+        elif valid_types is None and invalid_types is None:
+            raise MissingPropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+
+        if valid_types and type(valid_types) is not list:
+            valid_types = [valid_types]
+        elif invalid_types and type(invalid_types) is not list:
+            invalid_types = [invalid_types]
+
+        self.valid_types = valid_types
+        self.invalid_types = invalid_types
+
         super(ReferenceProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
-        if self.type:
-            if not value.startswith(self.type):
-                raise ValueError("must start with '{}'.".format(self.type))
-        if hasattr(self, 'interoperability') and self.interoperability:
-            if not ID_REGEX_interoperability.match(value):
-                raise ValueError(ERROR_INVALID_ID)
-        else:
-            if not ID_REGEX.match(value):
-                raise ValueError(ERROR_INVALID_ID)
+
+        possible_prefix = value[:value.index('--') + 2]
+
+        if self.valid_types:
+            if self.valid_types == ["only_SDO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['objects'].keys()
+            elif self.valid_types == ["only_SCO"]:
+                self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys()
+            elif self.valid_types == ["only_SCO_&_SRO"]:
+                self.valid_types = list(STIX2_OBJ_MAPS['v21']['observables'].keys()) + ['relationship', 'sighting']
+
+            if possible_prefix[:-2] in self.valid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
+        elif self.invalid_types:
+            if possible_prefix[:-2] not in self.invalid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
+        interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
+        _validate_id(value, self.spec_version, required_prefix)
+
         return value
 
 
@@ -477,7 +549,7 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version='2.0', allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
@@ -512,7 +584,7 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version='2.0', allow_custom=False, enclosing_type=None, required=False):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
         self.allow_custom = allow_custom
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
@@ -545,13 +617,16 @@ class ExtensionsProperty(DictionaryProperty):
                 else:
                     raise ValueError("Cannot determine extension type.")
             else:
-                raise CustomContentError("Can't parse unknown extension type: {}".format(key))
+                if self.allow_custom:
+                    dictified[key] = subvalue
+                else:
+                    raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         return dictified
 
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version='2.0', allow_custom=False, interoperability=False, *args, **kwargs):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, interoperability=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         self.interoperability = interoperability

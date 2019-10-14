@@ -16,6 +16,7 @@ BUNDLE = {
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+            "pattern_type": "stix",
             "valid_from": "2017-01-01T12:34:56Z",
             "indicator_types": [
                 "malicious-activity",
@@ -31,6 +32,7 @@ BUNDLE = {
             "malware_types": [
                 "ransomware",
             ],
+            "is_family": False,
         },
         {
             "type": "relationship",
@@ -77,7 +79,7 @@ def test_register_object_with_version():
     v = 'v21'
 
     assert bundle.objects[0].type in core.STIX2_OBJ_MAPS[v]['objects']
-    assert v in str(bundle.objects[0].__class__)
+    assert bundle.objects[0].spec_version == "2.1"
 
 
 def test_register_marking_with_version():
@@ -125,7 +127,7 @@ def test_register_observable_with_default_version():
             "1": {
                 "type": "directory",
                 "path": "/usr/home",
-                "contains_refs": ["0"],
+                "contains_refs": ["file--420bc087-8b53-5ae9-8210-20d27d5e96c8"],
             },
         },
     )
@@ -163,7 +165,7 @@ def test_register_observable_extension_with_default_version():
             "1": {
                 "type": "directory",
                 "path": "/usr/home",
-                "contains_refs": ["0"],
+                "contains_refs": ["file--420bc087-8b53-5ae9-8210-20d27d5e96c8"],
             },
         },
     )

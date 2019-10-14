@@ -64,5 +64,6 @@ setup(
     },
     extras_require={
         'taxii': ['taxii2-client'],
+        'semantic': ['haversine', 'pyjarowinkler'],
     },
 )

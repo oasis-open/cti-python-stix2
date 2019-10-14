@@ -5,7 +5,15 @@ class STIXError(Exception):
     """Base class for errors generated in the stix2 library."""
 
 
-class InvalidValueError(STIXError, ValueError):
+class ObjectConfigurationError(STIXError):
+    """
+    Represents specification violations regarding the composition of STIX
+    objects.
+    """
+    pass
+
+
+class InvalidValueError(ObjectConfigurationError):
     """An invalid value was provided to a STIX object's ``__init__``."""
 
     def __init__(self, cls, prop_name, reason):
@@ -19,52 +27,89 @@ class InvalidValueError(STIXError, ValueError):
         return msg.format(self)
 
 
-class MissingPropertiesError(STIXError, ValueError):
+class PropertyPresenceError(ObjectConfigurationError):
+    """
+    Represents an invalid combination of properties on a STIX object.  This
+    class can be used directly when the object requirements are more
+    complicated and none of the more specific exception subclasses apply.
+    """
+    def __init__(self, message, cls):
+        super(PropertyPresenceError, self).__init__(message)
+        self.cls = cls
+
+
+class MissingPropertiesError(PropertyPresenceError):
     """Missing one or more required properties when constructing STIX object."""
 
     def __init__(self, cls, properties):
-        super(MissingPropertiesError, self).__init__()
-        self.cls = cls
-        self.properties = sorted(list(properties))
+        self.properties = sorted(properties)
 
-    def __str__(self):
-        msg = "No values for required properties for {0}: ({1})."
-        return msg.format(
-            self.cls.__name__,
+        msg = "No values for required properties for {0}: ({1}).".format(
+            cls.__name__,
             ", ".join(x for x in self.properties),
         )
 
+        super(MissingPropertiesError, self).__init__(msg, cls)
 
-class ExtraPropertiesError(STIXError, TypeError):
+
+class ExtraPropertiesError(PropertyPresenceError):
     """One or more extra properties were provided when constructing STIX object."""
 
     def __init__(self, cls, properties):
-        super(ExtraPropertiesError, self).__init__()
-        self.cls = cls
-        self.properties = sorted(list(properties))
+        self.properties = sorted(properties)
 
-    def __str__(self):
-        msg = "Unexpected properties for {0}: ({1})."
-        return msg.format(
-            self.cls.__name__,
+        msg = "Unexpected properties for {0}: ({1}).".format(
+            cls.__name__,
             ", ".join(x for x in self.properties),
         )
 
-
-class ImmutableError(STIXError, ValueError):
-    """Attempted to modify an object after creation."""
-
-    def __init__(self, cls, key):
-        super(ImmutableError, self).__init__()
-        self.cls = cls
-        self.key = key
-
-    def __str__(self):
-        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
-        return msg.format(self)
+        super(ExtraPropertiesError, self).__init__(msg, cls)
 
 
-class DictionaryKeyError(STIXError, ValueError):
+class MutuallyExclusivePropertiesError(PropertyPresenceError):
+    """Violating interproperty mutually exclusive constraint of a STIX object type."""
+
+    def __init__(self, cls, properties):
+        self.properties = sorted(properties)
+
+        msg = "The ({1}) properties for {0} are mutually exclusive.".format(
+            cls.__name__,
+            ", ".join(x for x in self.properties),
+        )
+
+        super(MutuallyExclusivePropertiesError, self).__init__(msg, cls)
+
+
+class DependentPropertiesError(PropertyPresenceError):
+    """Violating interproperty dependency constraint of a STIX object type."""
+
+    def __init__(self, cls, dependencies):
+        self.dependencies = dependencies
+
+        msg = "The property dependencies for {0}: ({1}) are not met.".format(
+            cls.__name__,
+            ", ".join(name for x in self.dependencies for name in x),
+        )
+
+        super(DependentPropertiesError, self).__init__(msg, cls)
+
+
+class AtLeastOnePropertyError(PropertyPresenceError):
+    """Violating a constraint of a STIX object type that at least one of the given properties must be populated."""
+
+    def __init__(self, cls, properties):
+        self.properties = sorted(properties)
+
+        msg = "At least one of the ({1}) properties for {0} must be " \
+              "populated.".format(
+                   cls.__name__,
+                   ", ".join(x for x in self.properties),
+              )
+
+        super(AtLeastOnePropertyError, self).__init__(msg, cls)
+
+
+class DictionaryKeyError(ObjectConfigurationError):
     """Dictionary key does not conform to the correct format."""
 
     def __init__(self, key, reason):
@@ -77,7 +122,7 @@ class DictionaryKeyError(STIXError, ValueError):
         return msg.format(self)
 
 
-class InvalidObjRefError(STIXError, ValueError):
+class InvalidObjRefError(ObjectConfigurationError):
     """A STIX Cyber Observable Object contains an invalid object reference."""
 
     def __init__(self, cls, prop_name, reason):
@@ -91,95 +136,7 @@ class InvalidObjRefError(STIXError, ValueError):
         return msg.format(self)
 
 
-class UnmodifiablePropertyError(STIXError, ValueError):
-    """Attempted to modify an unmodifiable property of object when creating a new version."""
-
-    def __init__(self, unchangable_properties):
-        super(UnmodifiablePropertyError, self).__init__()
-        self.unchangable_properties = unchangable_properties
-
-    def __str__(self):
-        msg = "These properties cannot be changed when making a new version: {0}."
-        return msg.format(", ".join(self.unchangable_properties))
-
-
-class MutuallyExclusivePropertiesError(STIXError, TypeError):
-    """Violating interproperty mutually exclusive constraint of a STIX object type."""
-
-    def __init__(self, cls, properties):
-        super(MutuallyExclusivePropertiesError, self).__init__()
-        self.cls = cls
-        self.properties = sorted(list(properties))
-
-    def __str__(self):
-        msg = "The ({1}) properties for {0} are mutually exclusive."
-        return msg.format(
-            self.cls.__name__,
-            ", ".join(x for x in self.properties),
-        )
-
-
-class DependentPropertiesError(STIXError, TypeError):
-    """Violating interproperty dependency constraint of a STIX object type."""
-
-    def __init__(self, cls, dependencies):
-        super(DependentPropertiesError, self).__init__()
-        self.cls = cls
-        self.dependencies = dependencies
-
-    def __str__(self):
-        msg = "The property dependencies for {0}: ({1}) are not met."
-        return msg.format(
-            self.cls.__name__,
-            ", ".join(name for x in self.dependencies for name in x),
-        )
-
-
-class AtLeastOnePropertyError(STIXError, TypeError):
-    """Violating a constraint of a STIX object type that at least one of the given properties must be populated."""
-
-    def __init__(self, cls, properties):
-        super(AtLeastOnePropertyError, self).__init__()
-        self.cls = cls
-        self.properties = sorted(list(properties))
-
-    def __str__(self):
-        msg = "At least one of the ({1}) properties for {0} must be populated."
-        return msg.format(
-            self.cls.__name__,
-            ", ".join(x for x in self.properties),
-        )
-
-
-class RevokeError(STIXError, ValueError):
-    """Attempted to an operation on a revoked object."""
-
-    def __init__(self, called_by):
-        super(RevokeError, self).__init__()
-        self.called_by = called_by
-
-    def __str__(self):
-        if self.called_by == "revoke":
-            return "Cannot revoke an already revoked object."
-        else:
-            return "Cannot create a new version of a revoked object."
-
-
-class ParseError(STIXError, ValueError):
-    """Could not parse object."""
-
-    def __init__(self, msg):
-        super(ParseError, self).__init__(msg)
-
-
-class CustomContentError(STIXError, ValueError):
-    """Custom STIX Content (SDO, Observable, Extension, etc.) detected."""
-
-    def __init__(self, msg):
-        super(CustomContentError, self).__init__(msg)
-
-
-class InvalidSelectorError(STIXError, AssertionError):
+class InvalidSelectorError(ObjectConfigurationError):
     """Granular Marking selector violation. The selector must resolve into an existing STIX object property."""
 
     def __init__(self, cls, key):
@@ -192,7 +149,73 @@ class InvalidSelectorError(STIXError, AssertionError):
         return msg.format(self.key, self.cls.__class__.__name__)
 
 
-class MarkingNotFoundError(STIXError, AssertionError):
+class TLPMarkingDefinitionError(ObjectConfigurationError):
+    """Marking violation. The marking-definition for TLP MUST follow the mandated instances from the spec."""
+
+    def __init__(self, user_obj, spec_obj):
+        super(TLPMarkingDefinitionError, self).__init__()
+        self.user_obj = user_obj
+        self.spec_obj = spec_obj
+
+    def __str__(self):
+        msg = "Marking {0} does not match spec marking {1}!"
+        return msg.format(self.user_obj, self.spec_obj)
+
+
+class ImmutableError(STIXError):
+    """Attempted to modify an object after creation."""
+
+    def __init__(self, cls, key):
+        super(ImmutableError, self).__init__()
+        self.cls = cls
+        self.key = key
+
+    def __str__(self):
+        msg = "Cannot modify '{0.key}' property in '{0.cls.__name__}' after creation."
+        return msg.format(self)
+
+
+class UnmodifiablePropertyError(STIXError):
+    """Attempted to modify an unmodifiable property of object when creating a new version."""
+
+    def __init__(self, unchangable_properties):
+        super(UnmodifiablePropertyError, self).__init__()
+        self.unchangable_properties = unchangable_properties
+
+    def __str__(self):
+        msg = "These properties cannot be changed when making a new version: {0}."
+        return msg.format(", ".join(self.unchangable_properties))
+
+
+class RevokeError(STIXError):
+    """Attempted an operation on a revoked object."""
+
+    def __init__(self, called_by):
+        super(RevokeError, self).__init__()
+        self.called_by = called_by
+
+    def __str__(self):
+        if self.called_by == "revoke":
+            return "Cannot revoke an already revoked object."
+        else:
+            return "Cannot create a new version of a revoked object."
+
+
+class ParseError(STIXError):
+    """Could not parse object."""
+
+    def __init__(self, msg):
+        super(ParseError, self).__init__(msg)
+
+
+class CustomContentError(STIXError):
+    """Custom STIX Content (SDO, Observable, Extension, etc.) detected."""
+
+    def __init__(self, msg):
+        super(CustomContentError, self).__init__(msg)
+
+
+class MarkingNotFoundError(STIXError):
     """Marking violation. The marking reference must be present in SDO or SRO."""
 
     def __init__(self, cls, key):
@@ -205,14 +228,15 @@ class MarkingNotFoundError(STIXError, AssertionError):
         return msg.format(self.key, self.cls.__class__.__name__)
 
 
-class TLPMarkingDefinitionError(STIXError, AssertionError):
-    """Marking violation. The marking-definition for TLP MUST follow the mandated instances from the spec."""
+class STIXDeprecationWarning(DeprecationWarning):
+    """
+    Represents usage of a deprecated component of a STIX specification.
+    """
+    pass
 
-    def __init__(self, user_obj, spec_obj):
-        super(TLPMarkingDefinitionError, self).__init__()
-        self.user_obj = user_obj
-        self.spec_obj = spec_obj
 
-    def __str__(self):
-        msg = "Marking {0} does not match spec marking {1}!"
-        return msg.format(self.user_obj, self.spec_obj)
+class SemanticEquivalenceUnsupportedTypeError(STIXError, TypeError):
+    """STIX object type not supported by the semantic equivalence approach."""
+
+    def __init__(self, msg):
+        super(SemanticEquivalenceUnsupportedTypeError, self).__init__(msg)

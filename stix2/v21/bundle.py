@@ -17,7 +17,7 @@ class Bundle(_STIXBase):
     _type = 'bundle'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('objects', ListProperty(STIXObjectProperty(spec_version='2.1'))),
     ])
 
