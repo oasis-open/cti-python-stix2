@@ -1,5 +1,7 @@
 import datetime
+
 import pytz
+
 import stix2
 
 FAKE_TIME = datetime.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
@@ -21,21 +23,23 @@ THREAT_ACTOR_ID = "threat-actor--e5313ad6-6b11-3c07-8ace-7dc52824e063"
 TOOL_ID = "tool--bf0895d6-7626-361f-89dd-d404aa340bc2"
 VULNERABILITY_ID = "vulnerability--20296e55-98b9-5988-851a-51eddd5022c8"
 
-OBJECT_REFS = [ATTACK_PATTERN_ID, CAMPAIGN_ID, COURSE_OF_ACTION_ID, INDICATOR_ID, INTRUSION_SET_ID,
-               MALWARE_ID, MARKING_DEFINITION_ID, OBSERVED_DATA_ID, RELATIONSHIP_ID, SIGHTING_ID,
-               THREAT_ACTOR_ID, TOOL_ID, VULNERABILITY_ID]
+OBJECT_REFS = [
+    ATTACK_PATTERN_ID, CAMPAIGN_ID, COURSE_OF_ACTION_ID, INDICATOR_ID, INTRUSION_SET_ID,
+    MALWARE_ID, MARKING_DEFINITION_ID, OBSERVED_DATA_ID, RELATIONSHIP_ID, SIGHTING_ID,
+    THREAT_ACTOR_ID, TOOL_ID, VULNERABILITY_ID,
+]
 
 ATTACK_PATTERN_KWARGS = dict(
     type='attack-pattern',
     id=ATTACK_PATTERN_ID,
     name="Phishing",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 BUNDLE_KWARGS = dict(
     type='bundle',
     id=BUNDLE_ID,
-    spec_version='2.0'
+    spec_version='2.0',
 )
 
 CAMPAIGN_KWARGS = dict(
@@ -52,7 +56,7 @@ COURSE_OF_ACTION_KWARGS = dict(
     type='course-of-action',
     id=COURSE_OF_ACTION_ID,
     name="Block",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 IDENTITY_KWARGS = dict(
@@ -67,14 +71,14 @@ INDICATOR_KWARGS = dict(
     id=INDICATOR_ID,
     labels=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 INTRUSION_SET_KWARGS = dict(
     type='intrusion-set',
     id=INTRUSION_SET_ID,
     name="Bobcat Breakin",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 MALWARE_KWARGS = dict(
@@ -85,7 +89,7 @@ MALWARE_KWARGS = dict(
     labels=['ransomware'],
     name="Cryptolocker",
     description="A ransomware related to ...",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 MARKING_DEFINITION_KWARGS = dict(
@@ -93,7 +97,7 @@ MARKING_DEFINITION_KWARGS = dict(
     id=MARKING_DEFINITION_ID,
     definition_type='statement',
     definition={'statement': "Copyright 2016, Example Corp"},
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 OBSERVED_DATA_KWARGS = dict(
@@ -106,9 +110,9 @@ OBSERVED_DATA_KWARGS = dict(
         "0": {
             "type": "windows-registry-key",
             "key": "HKEY_LOCAL_MACHINE\\System\\Foo\\Bar",
-        }
+        },
     },
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 REPORT_KWARGS = dict(
@@ -118,7 +122,7 @@ REPORT_KWARGS = dict(
     name="Bad Cybercrime",
     published=FAKE_TIME,
     object_refs=OBJECT_REFS,
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 RELATIONSHIP_KWARGS = dict(
@@ -127,7 +131,7 @@ RELATIONSHIP_KWARGS = dict(
     relationship_type="indicates",
     source_ref=INDICATOR_ID,
     target_ref=MALWARE_ID,
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 SIGHTING_KWARGS = dict(
@@ -136,7 +140,7 @@ SIGHTING_KWARGS = dict(
     sighting_of_ref=INDICATOR_ID,
     created_by_ref=IDENTITY_ID,
     observed_data_refs=[OBSERVED_DATA_ID],
-    where_sighted_refs=[IDENTITY_ID]
+    where_sighted_refs=[IDENTITY_ID],
 )
 
 THREAT_ACTOR_KWARGS = dict(
@@ -144,7 +148,7 @@ THREAT_ACTOR_KWARGS = dict(
     id=THREAT_ACTOR_ID,
     labels=["crime-syndicate"],
     name="Evil Org",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 TOOL_KWARGS = dict(
@@ -153,14 +157,14 @@ TOOL_KWARGS = dict(
     labels=["remote-access"],
     name="VNC",
     created_by_ref=IDENTITY_ID,
-    interoperability=True
+    interoperability=True,
 )
 
 VULNERABILITY_KWARGS = dict(
     type='vulnerability',
     id=VULNERABILITY_ID,
     name="Heartbleed",
-    created_by_ref=IDENTITY_ID
+    created_by_ref=IDENTITY_ID,
 )
 
 
@@ -180,9 +184,13 @@ if __name__ == '__main__':
     tool = stix2.v20.Tool(**TOOL_KWARGS)
     vulnerability = stix2.v20.Vulnerability(**VULNERABILITY_KWARGS, interoperability=True)
     report = stix2.v20.Report(**REPORT_KWARGS, interoperability=True)
-    bundle = stix2.v20.Bundle(**BUNDLE_KWARGS, interoperability=True,
-                              objects=[attack_pattern, campaign, course_of_action, identity, indicator,
-                                       intrusion_set, malware, marking_definition, observed_data, tool,
-                                       relationship, sighting, threat_actor, vulnerability, report])
+    bundle = stix2.v20.Bundle(
+        **BUNDLE_KWARGS, interoperability=True,
+        objects=[
+            attack_pattern, campaign, course_of_action, identity, indicator,
+            intrusion_set, malware, marking_definition, observed_data, tool,
+            relationship, sighting, threat_actor, vulnerability, report,
+        ]
+    )
     stix2.parse(dict(bundle), interoperability=True)
     print("All interoperability tests passed !")
