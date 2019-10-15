@@ -7,9 +7,9 @@ import stix2.exceptions
 from .constants import (
     ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID, CAMPAIGN_KWARGS,
     FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-    LOCATION_ID, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS, THREAT_ACTOR_ID,
-    THREAT_ACTOR_KWARGS, TOOL_ID, TOOL_KWARGS, VULNERABILITY_ID,
-    VULNERABILITY_KWARGS,
+    LOCATION_ID, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS, REPORT_ID,
+    REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID, TOOL_KWARGS,
+    VULNERABILITY_ID, VULNERABILITY_KWARGS,
 )
 
 
@@ -744,3 +744,9 @@ def test_semantic_equivalence_exact_match():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
     assert stix2.environment.exact_match(t1, t2) == 0.0
+
+
+def test_non_existent_config_for_object():
+    r1 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
+    r2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
+    assert stix2.Environment().semantically_equivalent(r1, r2) == 0.0
