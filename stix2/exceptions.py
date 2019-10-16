@@ -233,10 +233,3 @@ class STIXDeprecationWarning(DeprecationWarning):
     Represents usage of a deprecated component of a STIX specification.
     """
     pass
-
-
-class SemanticEquivalenceUnsupportedTypeError(STIXError, TypeError):
-    """STIX object type not supported by the semantic equivalence approach."""
-
-    def __init__(self, msg):
-        super(SemanticEquivalenceUnsupportedTypeError, self).__init__(msg)

@@ -6,10 +6,8 @@ import stix2.exceptions
 
 from .constants import (
     ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID, CAMPAIGN_KWARGS,
-    COURSE_OF_ACTION_ID, COURSE_OF_ACTION_KWARGS, FAKE_TIME, IDENTITY_ID,
-    IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS, INTRUSION_SET_ID,
-    INTRUSION_SET_KWARGS, LOCATION_ID, MALWARE_ID, MALWARE_KWARGS,
-    OBSERVED_DATA_ID, OBSERVED_DATA_KWARGS, RELATIONSHIP_IDS, REPORT_ID,
+    FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
+    LOCATION_ID, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS, REPORT_ID,
     REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID, TOOL_KWARGS,
     VULNERABILITY_ID, VULNERABILITY_KWARGS,
 )
@@ -615,37 +613,6 @@ def test_semantic_equivalence_different_spec_version_raises():
     assert str(excinfo.value) == "The objects to compare must be of the same spec version!"
 
 
-@pytest.mark.parametrize(
-    "obj1,obj2,ret_val",
-    [
-        (
-             stix2.v21.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS),
-             stix2.v21.CourseOfAction(id=COURSE_OF_ACTION_ID, **COURSE_OF_ACTION_KWARGS),
-             "course-of-action type has no semantic equivalence implementation!",
-        ),
-        (
-             stix2.v21.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS),
-             stix2.v21.IntrusionSet(id=INTRUSION_SET_ID, **INTRUSION_SET_KWARGS),
-             "intrusion-set type has no semantic equivalence implementation!",
-        ),
-        (
-             stix2.v21.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS),
-             stix2.v21.ObservedData(id=OBSERVED_DATA_ID, **OBSERVED_DATA_KWARGS),
-             "observed-data type has no semantic equivalence implementation!",
-        ),
-        (
-             stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS),
-             stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS),
-             "report type has no semantic equivalence implementation!",
-        ),
-    ],
-)
-def test_semantic_equivalence_on_unsupported_types(obj1, obj2, ret_val):
-    with pytest.raises(stix2.exceptions.SemanticEquivalenceUnsupportedTypeError) as excinfo:
-        stix2.Environment().semantically_equivalent(obj1, obj2)
-    assert ret_val == str(excinfo.value)
-
-
 def test_semantic_equivalence_zero_match():
     IND_KWARGS = dict(
         indicator_types=["APTX"],
@@ -767,7 +734,7 @@ def test_semantic_equivalence_external_references(refs1, refs2, ret_val):
     assert value == ret_val
 
 
-def test_semantic_equivalence_timetamp():
+def test_semantic_equivalence_timestamp():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
     assert stix2.environment.partial_timestamp_based(t1, t2, 1) == 0.5
@@ -777,3 +744,9 @@ def test_semantic_equivalence_exact_match():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
     assert stix2.environment.exact_match(t1, t2) == 0.0
+
+
+def test_non_existent_config_for_object():
+    r1 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
+    r2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
+    assert stix2.Environment().semantically_equivalent(r1, r2) == 0.0
