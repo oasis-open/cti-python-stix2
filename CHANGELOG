@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+1.2.1 - 2019-10-16
+
+* #301 Adds more detailed debugging semantic equivalence output
+* #301 Updates semantic equivalence errors
+* #300 Fixes bug with deterministic IDs for SCOs containing unicode
+
 1.2.0 - 2019-09-25
 
 * #268, #271, #273, #275, #283, #285, #290 Changes support of STIX 2.1 to WD05 (CSD02), for all object types
