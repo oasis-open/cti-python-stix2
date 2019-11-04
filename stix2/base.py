@@ -394,11 +394,14 @@ class _Observable(_STIXBase):
             if streamlined_obj_vals:
                 data = canonicalize(streamlined_obj_vals, utf8=False)
 
-                # try/except here to enable python 2 compatibility
-                try:
+                # The situation is complicated w.r.t. python 2/3 behavior, so
+                # I'd rather not rely on particular exceptions being raised to
+                # determine what to do.  Better to just check the python version
+                # directly.
+                if six.PY3:
                     return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, data))
-                except UnicodeDecodeError:
-                    return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, six.binary_type(data)))
+                else:
+                    return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, data.encode("utf-8")))
 
         # We return None if there are no values specified for any of the id-contributing-properties
         return None
