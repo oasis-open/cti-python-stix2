@@ -8,7 +8,7 @@ import re
 import stix2
 
 from .base import _STIXBase
-from .exceptions import CustomContentError, ParseError
+from .exceptions import ParseError
 from .markings import _MarkingsMixin
 from .utils import _get_dict
 
@@ -109,7 +109,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         # '2.0' representation.
         v = 'v20'
 
-    OBJ_MAP = STIX2_OBJ_MAPS[v]['objects']
+    OBJ_MAP = dict(STIX2_OBJ_MAPS[v]['objects'], **STIX2_OBJ_MAPS[v]['observables'])
 
     try:
         obj_class = OBJ_MAP[stix_dict['type']]
@@ -166,8 +166,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX observable object, just returned as is
             return obj
-        raise CustomContentError("Can't parse unknown observable type '%s'! For custom observables, "
-                                 "use the CustomObservable decorator." % obj['type'])
+        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, " "use the CustomObservable decorator." % obj['type'])
 
     return obj_class(allow_custom=allow_custom, **obj)
 
