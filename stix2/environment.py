@@ -218,55 +218,46 @@ class Environment(DataStoreMixin):
         # default weights used for the semantic equivalence process
         weights = {
             "attack-pattern": {
-                "name": 30,
-                "external_references": 70,
-                "method": _attack_pattern_checks,
+                "name": (30, partial_string_based),
+                "external_references": (70, partial_external_reference_based),
             },
             "campaign": {
-                "name": 60,
-                "aliases": 40,
-                "method": _campaign_checks,
+                "name": (60, partial_string_based),
+                "aliases": (40, partial_list_based),
             },
             "identity": {
-                "name": 60,
-                "identity_class": 20,
-                "sectors": 20,
-                "method": _identity_checks,
+                "name": (60, partial_string_based),
+                "identity_class": (20, exact_match),
+                "sectors": (20, partial_list_based),
             },
             "indicator": {
-                "indicator_types": 15,
-                "pattern": 80,
-                "valid_from": 5,
+                "indicator_types": (15, partial_list_based),
+                "pattern": (80, custom_pattern_based),
+                "valid_from": (5, partial_timestamp_based),
                 "tdelta": 1,  # One day interval
-                "method": _indicator_checks,
             },
             "location": {
-                "longitude_latitude": 34,
-                "region": 33,
-                "country": 33,
+                "longitude_latitude": (34, partial_location_distance),
+                "region": (33, exact_match),
+                "country": (33, exact_match),
                 "threshold": 1000.0,
-                "method": _location_checks,
             },
             "malware": {
-                "malware_types": 20,
-                "name": 80,
-                "method": _malware_checks,
+                "malware_types": (20, partial_list_based),
+                "name": (80, partial_string_based),
             },
             "threat-actor": {
-                "name": 60,
-                "threat_actor_types": 20,
-                "aliases": 20,
-                "method": _threat_actor_checks,
+                "name": (60, partial_string_based),
+                "threat_actor_types": (20, partial_list_based),
+                "aliases": (20, partial_list_based),
             },
             "tool": {
-                "tool_types": 20,
-                "name": 80,
-                "method": _tool_checks,
+                "tool_types": (20, partial_list_based),
+                "name": (80, partial_string_based),
             },
             "vulnerability": {
-                "name": 30,
-                "external_references": 70,
-                "method": _vulnerability_checks,
+                "name": (30, partial_string_based),
+                "external_references": (70, partial_external_reference_based),
             },
             "_internal": {
                 "ignore_spec_version": False,
@@ -288,8 +279,37 @@ class Environment(DataStoreMixin):
         try:
             method = weights[type1]["method"]
         except KeyError:
-            logger.warning("'%s' type has no semantic equivalence method to call!", type1)
-            sum_weights = matching_score = 0
+            try:
+                weights[type1]
+            except KeyError:
+                logger.warning("'%s' type has no semantic equivalence method to call!", type1)
+                sum_weights = matching_score = 0
+            else:
+                matching_score = 0.0
+                sum_weights = 0.0
+                prop_scores = {}
+
+                for prop in weights[type1]:
+                    if check_property_present(prop, obj1, obj2) or prop == "longitude_latitude":
+                        w = weights[type1][prop][0]
+                        comp_funct = weights[type1][prop][1]
+
+                        if comp_funct == partial_timestamp_based:
+                            contributing_score = w * comp_funct(obj1[prop], obj2[prop], weights[type1]["tdelta"])
+                        elif comp_funct == partial_location_distance:
+                            threshold = weights[type1]["threshold"]
+                            contributing_score = w * comp_funct(obj1["latitude"], obj1["longitude"], obj2["latitude"], obj2["longitude"], threshold)
+                        else:
+                            contributing_score = w * comp_funct(obj1[prop], obj2[prop])
+
+                        sum_weights += w
+                        matching_score += contributing_score
+
+                        prop_scores[prop] = (w, contributing_score)
+                        logger.debug("'%s' check -- weight: %s, contributing score: %s", prop, w, contributing_score)
+
+                prop_scores["matching_score"] = matching_score
+                prop_scores["sum_weights"] = sum_weights
         else:
             logger.debug("Starting semantic equivalence process between: '%s' and '%s'", obj1["id"], obj2["id"])
             matching_score, sum_weights = method(obj1, obj2, **weights[type1])
