@@ -90,8 +90,6 @@ def test_report_example_objects_in_object_refs_with_bad_id():
 
     assert excinfo.value.cls == stix2.v20.Report
     assert excinfo.value.prop_name == "object_refs"
-    assert excinfo.value.reason == stix2.properties.ERROR_INVALID_ID
-    assert str(excinfo.value) == "Invalid value for Report 'object_refs': " + stix2.properties.ERROR_INVALID_ID
 
 
 @pytest.mark.parametrize(

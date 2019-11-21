@@ -7,16 +7,21 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 import itertools
+import warnings
 
 from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
-from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
+from ..exceptions import (
+    AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
+)
 from ..properties import (
     BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
-    HashesProperty, HexProperty, IntegerProperty, ListProperty,
-    ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
+    ObjectReferenceProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
 )
+from .common import GranularMarking
 
 
 class Artifact(_Observable):
@@ -28,6 +33,7 @@ class Artifact(_Observable):
     _type = 'artifact'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
@@ -35,7 +41,12 @@ class Artifact(_Observable):
         ('encryption_algorithm', StringProperty()),
         ('decryption_key', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["hashes", "payload_bin"]
 
     def _check_object_constraints(self):
         super(Artifact, self)._check_object_constraints()
@@ -52,11 +63,17 @@ class AutonomousSystem(_Observable):
     _type = 'autonomous-system'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
         ('rir', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["number"]
 
 
 class Directory(_Observable):
@@ -68,15 +85,21 @@ class Directory(_Observable):
     _type = 'directory'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
         # these are not the created/modified timestamps of the object itself
-        ('created', TimestampProperty()),
-        ('modified', TimestampProperty()),
-        ('accessed', TimestampProperty()),
-        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
+        ('ctime', TimestampProperty()),
+        ('mtime', TimestampProperty()),
+        ('atime', TimestampProperty()),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["path"]
 
 
 class DomainName(_Observable):
@@ -88,10 +111,24 @@ class DomainName(_Observable):
     _type = 'domain-name'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
+        ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name'], spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["value"]
+
+    def _check_object_constraints(self):
+        if self.get('resolves_to_refs'):
+            warnings.warn(
+                "The 'resolves_to_refs' property of domain-name is deprecated in "
+                "STIX 2.1. Use the 'resolves-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
 
 
 class EmailAddress(_Observable):
@@ -103,11 +140,17 @@ class EmailAddress(_Observable):
     _type = 'email-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
-        ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
+        ('belongs_to_ref', ReferenceProperty(valid_types='user-account', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class EmailMIMEComponent(_STIXBase):
@@ -137,22 +180,29 @@ class EmailMessage(_Observable):
     _type = 'email-message'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
         ('content_type', StringProperty()),
-        ('from_ref', ObjectReferenceProperty(valid_types='email-addr')),
-        ('sender_ref', ObjectReferenceProperty(valid_types='email-addr')),
-        ('to_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
-        ('cc_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
-        ('bcc_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
+        ('from_ref', ReferenceProperty(valid_types='email-addr', spec_version='2.1')),
+        ('sender_ref', ReferenceProperty(valid_types='email-addr', spec_version='2.1')),
+        ('to_refs', ListProperty(ReferenceProperty(valid_types='email-addr', spec_version='2.1'))),
+        ('cc_refs', ListProperty(ReferenceProperty(valid_types='email-addr', spec_version='2.1'))),
+        ('bcc_refs', ListProperty(ReferenceProperty(valid_types='email-addr', spec_version='2.1'))),
+        ('message_id', StringProperty()),
         ('subject', StringProperty()),
         ('received_lines', ListProperty(StringProperty)),
         ('additional_header_fields', DictionaryProperty(spec_version='2.1')),
         ('body', StringProperty()),
         ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
-        ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('raw_email_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["from_ref", "subject", "body"]
 
     def _check_object_constraints(self):
         super(EmailMessage, self)._check_object_constraints()
@@ -170,7 +220,7 @@ class ArchiveExt(_Extension):
 
     _type = 'archive-ext'
     _properties = OrderedDict([
-        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types='file'), required=True)),
+        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']), required=True)),
         ('comment', StringProperty()),
     ])
 
@@ -323,6 +373,7 @@ class File(_Observable):
     _type = 'file'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('hashes', HashesProperty(spec_version='2.1')),
         ('size', IntegerProperty(min=0)),
         ('name', StringProperty()),
@@ -330,14 +381,19 @@ class File(_Observable):
         ('magic_number_hex', HexProperty()),
         ('mime_type', StringProperty()),
         # these are not the created/modified timestamps of the object itself
-        ('created', TimestampProperty()),
-        ('modified', TimestampProperty()),
-        ('accessed', TimestampProperty()),
-        ('parent_directory_ref', ObjectReferenceProperty(valid_types='directory')),
-        ('contains_refs', ListProperty(ObjectReferenceProperty)),
-        ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('ctime', TimestampProperty()),
+        ('mtime', TimestampProperty()),
+        ('atime', TimestampProperty()),
+        ('parent_directory_ref', ReferenceProperty(valid_types='directory', spec_version='2.1')),
+        ('contains_refs', ListProperty(ReferenceProperty(invalid_types="", spec_version='2.1'))),
+        ('content_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["hashes", "name", "extensions"]
 
     def _check_object_constraints(self):
         super(File, self)._check_object_constraints()
@@ -353,11 +409,32 @@ class IPv4Address(_Observable):
     _type = 'ipv4-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
-        ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types='mac-addr', spec_version='2.1'))),
+        ('belongs_to_refs', ListProperty(ReferenceProperty(valid_types='autonomous-system', spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["value"]
+
+    def _check_object_constraints(self):
+        if self.get('resolves_to_refs'):
+            warnings.warn(
+                "The 'resolves_to_refs' property of ipv4-addr is deprecated in "
+                "STIX 2.1. Use the 'resolves-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
+
+        if self.get('belongs_to_refs'):
+            warnings.warn(
+                "The 'belongs_to_refs' property of ipv4-addr is deprecated in "
+                "STIX 2.1. Use the 'belongs-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
 
 
 class IPv6Address(_Observable):
@@ -369,11 +446,32 @@ class IPv6Address(_Observable):
     _type = 'ipv6-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
-        ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
-        ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
+        ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types='mac-addr', spec_version='2.1'))),
+        ('belongs_to_refs', ListProperty(ReferenceProperty(valid_types='autonomous-system', spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["value"]
+
+    def _check_object_constraints(self):
+        if self.get('resolves_to_refs'):
+            warnings.warn(
+                "The 'resolves_to_refs' property of ipv6-addr is deprecated in "
+                "STIX 2.1. Use the 'resolves-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
+
+        if self.get('belongs_to_refs'):
+            warnings.warn(
+                "The 'belongs_to_refs' property of ipv6-addr is deprecated in "
+                "STIX 2.1. Use the 'belongs-to' relationship type instead",
+                STIXDeprecationWarning,
+            )
 
 
 class MACAddress(_Observable):
@@ -385,9 +483,15 @@ class MACAddress(_Observable):
     _type = 'mac-addr'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class Mutex(_Observable):
@@ -399,9 +503,15 @@ class Mutex(_Observable):
     _type = 'mutex'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["name"]
 
 
 class HTTPRequestExt(_Extension):
@@ -505,11 +615,12 @@ class NetworkTraffic(_Observable):
     _type = 'network-traffic'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
-        ('src_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
-        ('dst_ref', ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'])),
+        ('src_ref', ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'], spec_version='2.1')),
+        ('dst_ref', ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'mac-addr', 'domain-name'], spec_version='2.1')),
         ('src_port', IntegerProperty(min=0, max=65535)),
         ('dst_port', IntegerProperty(min=0, max=65535)),
         ('protocols', ListProperty(StringProperty, required=True)),
@@ -518,12 +629,17 @@ class NetworkTraffic(_Observable):
         ('src_packets', IntegerProperty(min=0)),
         ('dst_packets', IntegerProperty(min=0)),
         ('ipfix', DictionaryProperty(spec_version='2.1')),
-        ('src_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('encapsulates_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
-        ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
+        ('src_payload_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
+        ('dst_payload_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
+        ('encapsulates_refs', ListProperty(ReferenceProperty(valid_types='network-traffic', spec_version='2.1'))),
+        ('encapsulated_by_ref', ReferenceProperty(valid_types='network-traffic', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["start", "src_ref", "dst_ref", "src_port", "dst_port", "protocols"]
 
     def _check_object_constraints(self):
         super(NetworkTraffic, self)._check_object_constraints()
@@ -624,20 +740,26 @@ class Process(_Observable):
     _type = 'process'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
         # this is not the created timestamps of the object itself
-        ('created', TimestampProperty()),
+        ('created_time', TimestampProperty()),
         ('cwd', StringProperty()),
         ('command_line', StringProperty()),
         ('environment_variables', DictionaryProperty(spec_version='2.1')),
-        ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
-        ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
-        ('image_ref', ObjectReferenceProperty(valid_types='file')),
-        ('parent_ref', ObjectReferenceProperty(valid_types='process')),
-        ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
+        ('opened_connection_refs', ListProperty(ReferenceProperty(valid_types='network-traffic', spec_version='2.1'))),
+        ('creator_user_ref', ReferenceProperty(valid_types='user-account', spec_version='2.1')),
+        ('image_ref', ReferenceProperty(valid_types='file', spec_version='2.1')),
+        ('parent_ref', ReferenceProperty(valid_types='process', spec_version='2.1')),
+        ('child_refs', ListProperty(ReferenceProperty(valid_types='process', spec_version='2.1'))),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = []
 
     def _check_object_constraints(self):
         # no need to check windows-service-ext, since it has a required property
@@ -663,13 +785,19 @@ class Software(_Observable):
     _type = 'software'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
         ('languages', ListProperty(StringProperty)),
         ('vendor', StringProperty()),
         ('version', StringProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["name", "cpe", "vendor", "version"]
 
 
 class URL(_Observable):
@@ -681,9 +809,15 @@ class URL(_Observable):
     _type = 'url'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["value"]
 
 
 class UNIXAccountExt(_Extension):
@@ -710,6 +844,7 @@ class UserAccount(_Observable):
     _type = 'user-account'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('user_id', StringProperty()),
         ('credential', StringProperty()),
         ('account_login', StringProperty()),
@@ -725,7 +860,12 @@ class UserAccount(_Observable):
         ('account_first_login', TimestampProperty()),
         ('account_last_login', TimestampProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["account_type", "user_id", "account_login"]
 
 
 class WindowsRegistryValueType(_STIXBase):
@@ -767,14 +907,20 @@ class WindowsRegistryKey(_Observable):
     _type = 'windows-registry-key'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('key', StringProperty()),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
         # this is not the modified timestamps of the object itself
-        ('modified', TimestampProperty()),
-        ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
+        ('modified_time', TimestampProperty()),
+        ('creator_user_ref', ReferenceProperty(valid_types='user-account', spec_version='2.1')),
         ('number_of_subkeys', IntegerProperty()),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["key", "values"]
 
     @property
     def values(self):
@@ -818,6 +964,7 @@ class X509Certificate(_Observable):
     _type = 'x509-certificate'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('is_self_signed', BooleanProperty()),
         ('hashes', HashesProperty(spec_version='2.1')),
         ('version', StringProperty()),
@@ -832,7 +979,12 @@ class X509Certificate(_Observable):
         ('subject_public_key_exponent', IntegerProperty()),
         ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('defanged', BooleanProperty(default=lambda: False)),
     ])
+    _id_contributing_properties = ["hashes", "serial_number"]
 
 
 def CustomObservable(type='x-custom-observable', properties=None):

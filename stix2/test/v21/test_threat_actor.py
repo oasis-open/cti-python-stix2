@@ -4,6 +4,7 @@ import pytest
 import pytz
 
 import stix2
+import stix2.v21
 
 from .constants import IDENTITY_ID, THREAT_ACTOR_ID
 
@@ -66,5 +67,27 @@ def test_parse_threat_actor(data):
     assert actor.description == "The Evil Org threat actor group"
     assert actor.name == "Evil Org"
     assert actor.threat_actor_types == ["crime-syndicate"]
+
+
+def test_seen_ordering_constraint():
+    """
+    Test first_seen/last_seen value co-constraint.
+    """
+    with pytest.raises(ValueError):
+        stix2.v21.ThreatActor(
+            name="Bad Person",
+            threat_actor_types=["bad person", "evil person"],
+            first_seen="2010-04-21T09:31:11Z",
+            last_seen="2009-02-06T03:39:31Z",
+        )
+
+    # equal timestamps is okay.
+    stix2.v21.ThreatActor(
+        name="Bad Person",
+        threat_actor_types=["bad person", "evil person"],
+        first_seen="2010-04-21T09:31:11Z",
+        last_seen="2010-04-21T09:31:11Z",
+    )
+
 
 # TODO: Add other examples

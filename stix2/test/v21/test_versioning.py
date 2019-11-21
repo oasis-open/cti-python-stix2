@@ -230,6 +230,7 @@ def test_remove_custom_stix_property():
         malware_types=["rootkit"],
         x_custom="armada",
         allow_custom=True,
+        is_family=False,
     )
 
     mal_nc = stix2.utils.remove_custom_stix(mal)

@@ -112,8 +112,6 @@ def test_indicator_created_ref_invalid_format():
 
     assert excinfo.value.cls == stix2.v20.Indicator
     assert excinfo.value.prop_name == "created_by_ref"
-    assert excinfo.value.reason == "must start with 'identity'."
-    assert str(excinfo.value) == "Invalid value for Indicator 'created_by_ref': must start with 'identity'."
 
 
 def test_indicator_revoked_invalid():
