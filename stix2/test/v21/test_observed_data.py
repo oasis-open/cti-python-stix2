@@ -1366,6 +1366,17 @@ def test_x509_certificate_example():
     assert x509.subject == "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org"  # noqa
 
 
+def test_x509_certificate_error():
+
+    with pytest.raises(stix2.exceptions.PropertyPresenceError) as excinfo:
+        stix2.v21.X509Certificate(
+            defanged=True,
+        )
+
+    assert excinfo.value.cls == stix2.v21.X509Certificate
+    assert "X.509 Certificate objects must contain at least one object specific property" in str(excinfo.value)
+
+
 def test_new_version_with_related_objects():
     data = stix2.v21.ObservedData(
         first_observed="2016-03-12T12:00:00Z",

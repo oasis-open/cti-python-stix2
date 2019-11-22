@@ -12,7 +12,8 @@ import warnings
 from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import (
-    AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
+    AtLeastOnePropertyError, DependentPropertiesError, PropertyPresenceError,
+    STIXDeprecationWarning,
 )
 from ..properties import (
     BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
@@ -592,6 +593,18 @@ class SocketExt(_Extension):
         ('socket_handle', IntegerProperty()),
     ])
 
+    def _check_object_constraints(self):
+        super(SocketExt, self)._check_object_constraints()
+
+        options = self.get('options')
+
+        if options is not None:
+            for key, val in options.items():
+                if key[:3] != "SO_":
+                    raise ValueError("Incorrect options key")
+                if not isinstance(val, int):
+                    raise ValueError("Options value must be an integer")
+
 
 class TCPExt(_Extension):
     # TODO: Add link
@@ -985,6 +998,26 @@ class X509Certificate(_Observable):
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["hashes", "serial_number"]
+
+    def _check_object_constraints(self):
+        super(X509Certificate, self)._check_object_constraints()
+
+        if (
+                self.get('is_self_signed') is None and
+                self.get('hashes') is None and
+                self.get('version') is None and
+                self.get('serial_number') is None and
+                self.get('signature_algorithm') is None and
+                self.get('issuer') is None and
+                self.get('validity_not_before') is None and
+                self.get('validity_not_after') is None and
+                self.get('subject') is None and
+                self.get('subject_public_key_algorithm') is None and
+                self.get('subject_public_key_modulus') is None and
+                self.get('subject_public_key_exponent') is None and
+                self.get('x509_v3_extensions') is None
+        ):
+            raise PropertyPresenceError("X.509 Certificate objects must contain at least one object specific property", X509Certificate)
 
 
 def CustomObservable(type='x-custom-observable', properties=None):

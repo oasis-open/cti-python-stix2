@@ -220,10 +220,15 @@ class Indicator(STIXDomainObject):
 
         valid_from = self.get('valid_from')
         valid_until = self.get('valid_until')
+        pattern_type = self.get('pattern_type')
+        pattern_version = self.get('pattern_version')
 
         if valid_from and valid_until and valid_until <= valid_from:
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
             raise ValueError(msg.format(self))
+
+        if not pattern_version and pattern_type == 'stix':
+            self._inner['pattern_version'] = self.get('spec_version')
 
 
 class Infrastructure(STIXDomainObject):
