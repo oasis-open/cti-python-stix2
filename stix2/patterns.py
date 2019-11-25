@@ -135,6 +135,7 @@ _HASH_REGEX = {
     "SHA3512": ("^[a-fA-F0-9]{128}$", "SHA3-512"),
     "SSDEEP": ("^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
     "WHIRLPOOL": ("^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+    "TLSH": ("^[a-fA-F0-9]{70}$", "TLSH"),
 }
 
 
