@@ -193,7 +193,7 @@ class Environment(DataStoreMixin):
             return None
 
     @staticmethod
-    def semantically_equivalent(obj1, obj2, **weight_dict):
+    def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
         """This method is meant to verify if two objects of the same type are
         semantically equivalent.
 
@@ -277,17 +277,16 @@ class Environment(DataStoreMixin):
             raise ValueError('The objects to compare must be of the same spec version!')
 
         try:
-            method = weights[type1]["method"]
+            weights[type1]
         except KeyError:
+            logger.warning("'%s' type has no 'weights' dict specified in the semantic equivalence method call!", type1)
+            sum_weights = matching_score = 0
+        else:
             try:
-                weights[type1]
+                method = weights[type1]["method"]
             except KeyError:
-                logger.warning("'%s' type has no semantic equivalence method to call!", type1)
-                sum_weights = matching_score = 0
-            else:
                 matching_score = 0.0
                 sum_weights = 0.0
-                prop_scores = {}
 
                 for prop in weights[type1]:
                     if check_property_present(prop, obj1, obj2) or prop == "longitude_latitude":
@@ -310,13 +309,15 @@ class Environment(DataStoreMixin):
 
                 prop_scores["matching_score"] = matching_score
                 prop_scores["sum_weights"] = sum_weights
-        else:
-            logger.debug("Starting semantic equivalence process between: '%s' and '%s'", obj1["id"], obj2["id"])
-            matching_score, sum_weights = method(obj1, obj2, **weights[type1])
+            else:
+                logger.debug("Starting semantic equivalence process between: '%s' and '%s'", obj1["id"], obj2["id"])
+                try:
+                    matching_score, sum_weights = method(obj1, obj2, prop_scores, **weights[type1])
+                except TypeError:
+                    matching_score, sum_weights = method(obj1, obj2, **weights[type1])
 
         if sum_weights <= 0:
             return 0
-
         equivalence_score = (matching_score / sum_weights) * 100.0
         return equivalence_score
 
@@ -503,31 +504,3 @@ def partial_location_distance(lat1, long1, lat2, long2, threshold):
         (lat1, long1), (lat2, long2), threshold, result,
     )
     return result
-
-
-def _indicator_checks(obj1, obj2, **weights):
-    matching_score = 0.0
-    sum_weights = 0.0
-    if check_property_present("indicator_types", obj1, obj2):
-        w = weights["indicator_types"]
-        contributing_score = w * partial_list_based(obj1["indicator_types"], obj2["indicator_types"])
-        sum_weights += w
-        matching_score += contributing_score
-        logger.debug("'indicator_types' check -- weight: %s, contributing score: %s", w, contributing_score)
-    if check_property_present("pattern", obj1, obj2):
-        w = weights["pattern"]
-        contributing_score = w * custom_pattern_based(obj1["pattern"], obj2["pattern"])
-        sum_weights += w
-        matching_score += contributing_score
-        logger.debug("'pattern' check -- weight: %s, contributing score: %s", w, contributing_score)
-    if check_property_present("valid_from", obj1, obj2):
-        w = weights["valid_from"]
-        contributing_score = (
-                w *
-                partial_timestamp_based(obj1["valid_from"], obj2["valid_from"], weights["tdelta"])
-        )
-        sum_weights += w
-        matching_score += contributing_score
-        logger.debug("'valid_from' check -- weight: %s, contributing score: %s", w, contributing_score)
-    logger.debug("Matching Score: %s, Sum of Weights: %s", matching_score, sum_weights)
-    return matching_score, sum_weights
