@@ -215,20 +215,22 @@ class Indicator(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def __init__(self, *args, **kwargs):
+
+        if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
+            kwargs['pattern_version'] = '2.1'
+
+        super(STIXDomainObject, self).__init__(*args, **kwargs)
+
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
 
         valid_from = self.get('valid_from')
         valid_until = self.get('valid_until')
-        pattern_type = self.get('pattern_type')
-        pattern_version = self.get('pattern_version')
 
         if valid_from and valid_until and valid_until <= valid_from:
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
             raise ValueError(msg.format(self))
-
-        if not pattern_version and pattern_type == 'stix':
-            self._inner['pattern_version'] = self.get('spec_version')
 
 
 class Infrastructure(STIXDomainObject):

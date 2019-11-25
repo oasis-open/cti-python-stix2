@@ -12,8 +12,7 @@ import warnings
 from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import (
-    AtLeastOnePropertyError, DependentPropertiesError, PropertyPresenceError,
-    STIXDeprecationWarning,
+    AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
 )
 from ..properties import (
     BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
@@ -1002,22 +1001,14 @@ class X509Certificate(_Observable):
     def _check_object_constraints(self):
         super(X509Certificate, self)._check_object_constraints()
 
-        if (
-                self.get('is_self_signed') is None and
-                self.get('hashes') is None and
-                self.get('version') is None and
-                self.get('serial_number') is None and
-                self.get('signature_algorithm') is None and
-                self.get('issuer') is None and
-                self.get('validity_not_before') is None and
-                self.get('validity_not_after') is None and
-                self.get('subject') is None and
-                self.get('subject_public_key_algorithm') is None and
-                self.get('subject_public_key_modulus') is None and
-                self.get('subject_public_key_exponent') is None and
-                self.get('x509_v3_extensions') is None
-        ):
-            raise PropertyPresenceError("X.509 Certificate objects must contain at least one object specific property", X509Certificate)
+        att_list = [
+                'is_self_signed', 'hashes', 'version', 'serial_number',
+                'signature_algorithm', 'issuer', 'validity_not_before',
+                'validity_not_after', 'subject', 'subject_public_key_algorithm',
+                'subject_public_key_modulus', 'subject_public_key_exponent',
+                'x509_v3_extensions',
+        ]
+        self._check_at_least_one_property(att_list)
 
 
 def CustomObservable(type='x-custom-observable', properties=None):

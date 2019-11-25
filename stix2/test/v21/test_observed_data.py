@@ -1117,6 +1117,28 @@ def test_network_traffic_socket_example():
     assert nt.extensions['socket-ext'].socket_type == "SOCK_STREAM"
 
 
+def test_incorrect_socket_options():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.v21.SocketExt(
+            is_listening=True,
+            address_family="AF_INET",
+            protocol_family="PF_INET",
+            socket_type="SOCK_STREAM",
+            options={"RCVTIMEO": 100},
+        )
+    assert "Incorrect options key" == str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.v21.SocketExt(
+            is_listening=True,
+            address_family="AF_INET",
+            protocol_family="PF_INET",
+            socket_type="SOCK_STREAM",
+            options={"SO_RCVTIMEO": '100'},
+        )
+    assert "Options value must be an integer" == str(excinfo.value)
+
+
 def test_network_traffic_tcp_example():
     h = stix2.v21.TCPExt(src_flags_hex="00000002")
     nt = stix2.v21.NetworkTraffic(
@@ -1374,7 +1396,8 @@ def test_x509_certificate_error():
         )
 
     assert excinfo.value.cls == stix2.v21.X509Certificate
-    assert "X.509 Certificate objects must contain at least one object specific property" in str(excinfo.value)
+    assert "At least one of the" in str(excinfo.value)
+    assert "properties for X509Certificate must be populated." in str(excinfo.value)
 
 
 def test_new_version_with_related_objects():
