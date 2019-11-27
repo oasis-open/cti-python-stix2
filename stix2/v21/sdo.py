@@ -215,6 +215,13 @@ class Indicator(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def __init__(self, *args, **kwargs):
+
+        if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
+            kwargs['pattern_version'] = '2.1'
+
+        super(STIXDomainObject, self).__init__(*args, **kwargs)
+
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
 

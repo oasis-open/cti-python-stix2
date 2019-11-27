@@ -363,6 +363,10 @@ class DictionaryProperty(Property):
                     "underscore (_)"
                 )
                 raise DictionaryKeyError(k, msg)
+
+        if len(dictified) < 1:
+            raise ValueError("must not be empty.")
+
         return dictified
 
 
@@ -381,6 +385,7 @@ HASHES_REGEX = {
     "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
     "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
     "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+    "TLSH": (r"^[a-fA-F0-9]{70}$", "TLSH"),
 }
 
 

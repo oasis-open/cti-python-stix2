@@ -19,6 +19,7 @@ EXPECTED_INDICATOR = """{
     ],
     "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     "pattern_type": "stix",
+    "pattern_version": "2.1",
     "valid_from": "1970-01-01T00:00:01Z"
 }"""
 
@@ -31,6 +32,7 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
     indicator_types=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     pattern_type='stix',
+    pattern_version='2.1',
     valid_from='1970-01-01T00:00:01Z'
 """.split()) + ")"
 

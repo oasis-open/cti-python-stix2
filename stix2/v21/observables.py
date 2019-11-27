@@ -592,6 +592,18 @@ class SocketExt(_Extension):
         ('socket_handle', IntegerProperty()),
     ])
 
+    def _check_object_constraints(self):
+        super(SocketExt, self)._check_object_constraints()
+
+        options = self.get('options')
+
+        if options is not None:
+            for key, val in options.items():
+                if key[:3] != "SO_":
+                    raise ValueError("Incorrect options key")
+                if not isinstance(val, int):
+                    raise ValueError("Options value must be an integer")
+
 
 class TCPExt(_Extension):
     # TODO: Add link
@@ -985,6 +997,18 @@ class X509Certificate(_Observable):
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["hashes", "serial_number"]
+
+    def _check_object_constraints(self):
+        super(X509Certificate, self)._check_object_constraints()
+
+        att_list = [
+                'is_self_signed', 'hashes', 'version', 'serial_number',
+                'signature_algorithm', 'issuer', 'validity_not_before',
+                'validity_not_after', 'subject', 'subject_public_key_algorithm',
+                'subject_public_key_modulus', 'subject_public_key_exponent',
+                'x509_v3_extensions',
+        ]
+        self._check_at_least_one_property(att_list)
 
 
 def CustomObservable(type='x-custom-observable', properties=None):
