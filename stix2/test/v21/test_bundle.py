@@ -22,6 +22,7 @@ EXPECTED_BUNDLE = """{
             ],
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
             "pattern_type": "stix",
+            "pattern_version": "2.1",
             "valid_from": "2017-01-01T12:34:56Z"
         },
         {
@@ -61,6 +62,7 @@ EXPECTED_BUNDLE_DICT = {
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
             "pattern_type": "stix",
+            "pattern_version": "2.1",
             "valid_from": "2017-01-01T12:34:56Z",
             "indicator_types": [
                 "malicious-activity",
