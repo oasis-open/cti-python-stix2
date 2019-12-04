@@ -279,12 +279,13 @@ class Environment(DataStoreMixin):
         try:
             weights[type1]
         except KeyError:
-            logger.warning("'%s' type has no 'weights' dict specified in the semantic equivalence method call!", type1)
+            logger.warning("'%s' type has no 'weights' dict specified & thus no semantic equivalence method to call!", type1)
             sum_weights = matching_score = 0
         else:
             try:
                 method = weights[type1]["method"]
             except KeyError:
+                logger.debug("Starting semantic equivalence process between: '%s' and '%s'", obj1["id"], obj2["id"])
                 matching_score = 0.0
                 sum_weights = 0.0
 
@@ -309,12 +310,14 @@ class Environment(DataStoreMixin):
 
                 prop_scores["matching_score"] = matching_score
                 prop_scores["sum_weights"] = sum_weights
+                logger.debug("Matching Score: %s, Sum of Weights: %s", matching_score, sum_weights)
             else:
                 logger.debug("Starting semantic equivalence process between: '%s' and '%s'", obj1["id"], obj2["id"])
                 try:
                     matching_score, sum_weights = method(obj1, obj2, prop_scores, **weights[type1])
                 except TypeError:
                     matching_score, sum_weights = method(obj1, obj2, **weights[type1])
+                logger.debug("Matching Score: %s, Sum of Weights: %s", matching_score, sum_weights)
 
         if sum_weights <= 0:
             return 0
