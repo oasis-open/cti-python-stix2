@@ -1,6 +1,9 @@
 """Utility functions and classes for the STIX2 library."""
 
-from collections import Mapping
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 import copy
 import datetime as dt
 import json
