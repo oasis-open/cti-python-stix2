@@ -472,6 +472,14 @@ class ReferenceProperty(Property):
 
 
 def enumerate_types(types, spec_version):
+    """
+    `types` is meant to be a list; it may contain specific object types and/or
+        the any of the words "SCO", "SDO", or "SRO"
+
+    Since "SCO", "SDO", and "SRO" are general types that encompass various specific object types,
+        once each of those words is being processed, that word will be removed from `return_types`,
+        so as not to mistakenly allow objects to be created of types "SCO", "SDO", or "SRO"
+    """
     return_types = []
     return_types += types
 
