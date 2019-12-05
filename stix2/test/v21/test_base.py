@@ -29,7 +29,6 @@ def test_encode_json_object():
 
 def test_deterministic_id_unicode():
     mutex = {'name': u'D*Fl#Ed*\u00a3\u00a8', 'type': 'mutex'}
-    # CHANGED-parse_observable
     obs = stix2.parse(mutex, version="2.1")
 
     dd_idx = obs.id.index("--")

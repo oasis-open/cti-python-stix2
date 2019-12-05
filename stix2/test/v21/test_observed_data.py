@@ -369,7 +369,6 @@ def test_parse_autonomous_system_valid(data):
     ],
 )
 def test_parse_email_address(data):
-    # CHANGED-parse_observable
     odata = stix2.parse(data, version='2.1')
     assert odata.type == "email-addr"
 
@@ -379,7 +378,6 @@ def test_parse_email_address(data):
         '"belongs_to_ref": "mutex--9be6365f-b89c-48c0-9340-6953f6595718"', data,
     )
     with pytest.raises(stix2.exceptions.InvalidValueError):
-        # CHANGED-parse_observable
         stix2.parse(odata_str, version='2.1')
 
 
@@ -426,7 +424,6 @@ def test_parse_email_address(data):
     ],
 )
 def test_parse_email_message(data):
-    # CHANGED-parse_observable
     odata = stix2.parse(data, version='2.1')
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
@@ -449,7 +446,6 @@ def test_parse_email_message(data):
 )
 def test_parse_email_message_not_multipart(data):
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
@@ -552,7 +548,6 @@ def test_parse_file_archive(data):
 )
 def test_parse_email_message_with_at_least_one_error(data):
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
@@ -575,7 +570,6 @@ def test_parse_email_message_with_at_least_one_error(data):
     ],
 )
 def test_parse_basic_tcp_traffic(data):
-    # CHANGED-parse_observable
     odata = stix2.parse(
         data, version='2.1',
     )
@@ -608,7 +602,6 @@ def test_parse_basic_tcp_traffic(data):
 )
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.NetworkTraffic

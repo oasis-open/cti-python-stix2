@@ -535,25 +535,6 @@ def test_custom_observable_object_invalid_refs_list_property():
     assert "is named like a reference list property but is not a ListProperty containing ReferenceProperty" in str(excinfo.value)
 
 
-# def test_custom_observable_object_invalid_valid_refs():
-#     @stix2.v21.CustomObservable(
-#         'x-new-obs', [
-#             ('property1', stix2.properties.StringProperty(required=True)),
-#             ('property_ref', stix2.properties.ReferenceProperty(valid_types='email-addr')),
-#         ],
-#     )
-#     class NewObs():
-#         pass
-
-#     with pytest.raises(Exception) as excinfo:
-#         NewObs(
-#             _valid_refs=['1'],
-#             property1='something',
-#             property_ref='1',
-#         )
-#     assert "must be created with _valid_refs as a dict, not a list" in str(excinfo.value)
-
-
 def test_custom_no_properties_raises_exception():
     with pytest.raises(TypeError):
 
@@ -575,7 +556,6 @@ def test_parse_custom_observable_object():
         "type": "x-new-observable",
         "property1": "something"
     }"""
-    # CHANGED-parse_observable
     nt = stix2.parse(nt_string, [], version='2.1')
     assert isinstance(nt, stix2.base._STIXBase)
     assert nt.property1 == 'something'
@@ -588,10 +568,8 @@ def test_parse_unregistered_custom_observable_object():
     }"""
 
     with pytest.raises(stix2.exceptions.ParseError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(nt_string, version='2.1')
     assert "Can't parse unknown object type" in str(excinfo.value)
-    # CHANGED-parse_observable
     parsed_custom = stix2.parse(nt_string, allow_custom=True, version='2.1')
     assert parsed_custom['property1'] == 'something'
     with pytest.raises(AttributeError) as excinfo:
@@ -605,7 +583,6 @@ def test_parse_unregistered_custom_observable_object_with_no_type():
     }"""
 
     with pytest.raises(stix2.exceptions.ParseError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(nt_string, allow_custom=True, version='2.1')
     assert "Can't parse object with no 'type' property" in str(excinfo.value)
 
@@ -636,7 +613,6 @@ def test_parse_invalid_custom_observable_object():
     }"""
 
     with pytest.raises(stix2.exceptions.ParseError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(nt_string, version='2.1')
     assert "Can't parse object with no 'type' property" in str(excinfo.value)
 
@@ -888,7 +864,6 @@ def test_parse_observable_with_custom_extension():
             }
         }
     }"""
-    # CHANGED-parse_observable
     parsed = stix2.parse(input_str, version='2.1')
     assert parsed.extensions['x-new-ext'].property2 == 12
 
@@ -964,10 +939,8 @@ def test_custom_and_spec_extension_mix():
 )
 def test_parse_observable_with_unregistered_custom_extension(data):
     with pytest.raises(InvalidValueError) as excinfo:
-        # CHANGED-parse_observable
         stix2.parse(data, version='2.1')
     assert "Can't parse unknown extension type" in str(excinfo.value)
-    # CHANGED-parse_observable
     parsed_ob = stix2.parse(data, allow_custom=True, version='2.1')
     assert parsed_ob['extensions']['x-foobar-ext']['property1'] == 'foo'
     assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.base._STIXBase)
