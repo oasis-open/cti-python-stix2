@@ -67,19 +67,34 @@ def _custom_observable_builder(cls, type, properties, version):
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
-        # Check properties ending in "_ref/s" are ObjectReferenceProperties
-        for prop_name, prop in properties:
-            if prop_name.endswith('_ref') and ('ObjectReferenceProperty' not in get_class_hierarchy_names(prop)):
-                raise ValueError(
-                    "'%s' is named like an object reference property but "
-                    "is not an ObjectReferenceProperty." % prop_name,
-                )
-            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop)
-                                                   or 'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
-                raise ValueError(
-                    "'%s' is named like an object reference list property but "
-                    "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
-                )
+        if version == "2.0":
+            # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
+            for prop_name, prop in properties:
+                if prop_name.endswith('_ref') and ('ObjectReferenceProperty' not in get_class_hierarchy_names(prop)):
+                    raise ValueError(
+                        "'%s' is named like an object reference property but "
+                        "is not an ObjectReferenceProperty." % prop_name,
+                    )
+                elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
+                                                       'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+                    raise ValueError(
+                        "'%s' is named like an object reference list property but "
+                        "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
+                    )
+        else:
+            # If using STIX2.1 (or newer...), check properties ending in "_ref/s" are ReferenceProperties
+            for prop_name, prop in properties:
+                if prop_name.endswith('_ref') and ('ReferenceProperty' not in get_class_hierarchy_names(prop)):
+                    raise ValueError(
+                        "'%s' is named like a reference property but "
+                        "is not a ReferenceProperty." % prop_name,
+                    )
+                elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
+                                                       'ReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+                    raise ValueError(
+                        "'%s' is named like a reference list property but "
+                        "is not a ListProperty containing ReferenceProperty." % prop_name,
+                    )
 
         _type = type
         _properties = OrderedDict(properties)
