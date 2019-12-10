@@ -385,7 +385,7 @@ class File(_Observable):
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),
         ('parent_directory_ref', ReferenceProperty(valid_types='directory', spec_version='2.1')),
-        ('contains_refs', ListProperty(ReferenceProperty(invalid_types="", spec_version='2.1'))),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=["SCO"], spec_version='2.1'))),
         ('content_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
         ('spec_version', StringProperty(fixed='2.1')),
@@ -1028,6 +1028,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type))],
+            [('id', IDProperty(type, spec_version='2.1'))],
             properties,
             [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
         ]))
