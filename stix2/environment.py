@@ -211,58 +211,16 @@ class Environment(DataStoreMixin):
             by this implementation. Indicator pattern check is also limited.
 
         Note:
+            Default weights_dict:
+
+            .. include:: ../default_sem_eq_weights.rst
+
+        Note:
             This implementation follows the Committee Note on semantic equivalence.
             see `the Committee Note <link here>`__.
 
         """
-        # default weights used for the semantic equivalence process
-        weights = {
-            "attack-pattern": {
-                "name": (30, partial_string_based),
-                "external_references": (70, partial_external_reference_based),
-            },
-            "campaign": {
-                "name": (60, partial_string_based),
-                "aliases": (40, partial_list_based),
-            },
-            "identity": {
-                "name": (60, partial_string_based),
-                "identity_class": (20, exact_match),
-                "sectors": (20, partial_list_based),
-            },
-            "indicator": {
-                "indicator_types": (15, partial_list_based),
-                "pattern": (80, custom_pattern_based),
-                "valid_from": (5, partial_timestamp_based),
-                "tdelta": 1,  # One day interval
-            },
-            "location": {
-                "longitude_latitude": (34, partial_location_distance),
-                "region": (33, exact_match),
-                "country": (33, exact_match),
-                "threshold": 1000.0,
-            },
-            "malware": {
-                "malware_types": (20, partial_list_based),
-                "name": (80, partial_string_based),
-            },
-            "threat-actor": {
-                "name": (60, partial_string_based),
-                "threat_actor_types": (20, partial_list_based),
-                "aliases": (20, partial_list_based),
-            },
-            "tool": {
-                "tool_types": (20, partial_list_based),
-                "name": (80, partial_string_based),
-            },
-            "vulnerability": {
-                "name": (30, partial_string_based),
-                "external_references": (70, partial_external_reference_based),
-            },
-            "_internal": {
-                "ignore_spec_version": False,
-            },
-        }
+        weights = WEIGHTS.copy()
 
         if weight_dict:
             weights.update(weight_dict)
@@ -316,6 +274,7 @@ class Environment(DataStoreMixin):
                 try:
                     matching_score, sum_weights = method(obj1, obj2, prop_scores, **weights[type1])
                 except TypeError:
+                    # method doesn't support detailed output with prop_scores
                     matching_score, sum_weights = method(obj1, obj2, **weights[type1])
                 logger.debug("Matching Score: %s, Sum of Weights: %s", matching_score, sum_weights)
 
@@ -507,3 +466,53 @@ def partial_location_distance(lat1, long1, lat2, long2, threshold):
         (lat1, long1), (lat2, long2), threshold, result,
     )
     return result
+
+
+# default weights used for the semantic equivalence process
+WEIGHTS = {
+    "attack-pattern": {
+        "name": (30, partial_string_based),
+        "external_references": (70, partial_external_reference_based),
+    },
+    "campaign": {
+        "name": (60, partial_string_based),
+        "aliases": (40, partial_list_based),
+    },
+    "identity": {
+        "name": (60, partial_string_based),
+        "identity_class": (20, exact_match),
+        "sectors": (20, partial_list_based),
+    },
+    "indicator": {
+        "indicator_types": (15, partial_list_based),
+        "pattern": (80, custom_pattern_based),
+        "valid_from": (5, partial_timestamp_based),
+        "tdelta": 1,  # One day interval
+    },
+    "location": {
+        "longitude_latitude": (34, partial_location_distance),
+        "region": (33, exact_match),
+        "country": (33, exact_match),
+        "threshold": 1000.0,
+    },
+    "malware": {
+        "malware_types": (20, partial_list_based),
+        "name": (80, partial_string_based),
+    },
+    "threat-actor": {
+        "name": (60, partial_string_based),
+        "threat_actor_types": (20, partial_list_based),
+        "aliases": (20, partial_list_based),
+    },
+    "tool": {
+        "tool_types": (20, partial_list_based),
+        "name": (80, partial_string_based),
+    },
+    "vulnerability": {
+        "name": (30, partial_string_based),
+        "external_references": (70, partial_external_reference_based),
+    },
+    "_internal": {
+        "ignore_spec_version": False,
+    },
+}  #: :autodoc-skip:
