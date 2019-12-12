@@ -149,7 +149,7 @@ class Grouping(STIXDomainObject):
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('context', StringProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
     ])
 
 
@@ -214,6 +214,13 @@ class Indicator(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def __init__(self, *args, **kwargs):
+
+        if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
+            kwargs['pattern_version'] = '2.1'
+
+        super(STIXDomainObject, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
@@ -505,7 +512,7 @@ class MalwareAnalysis(STIXDomainObject):
         ('analysis_started', TimestampProperty()),
         ('analysis_ended', TimestampProperty()),
         ('av_result', StringProperty()),
-        ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="only_SCO", spec_version='2.1'))),
+        ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="SCO", spec_version='2.1'))),
     ])
 
     def _check_object_constraints(self):
@@ -531,7 +538,7 @@ class Note(STIXDomainObject):
         ('abstract', StringProperty()),
         ('content', StringProperty(required=True)),
         ('authors', ListProperty(StringProperty)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -560,7 +567,7 @@ class ObservedData(STIXDomainObject):
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
         ('objects', ObservableProperty(spec_version='2.1')),
-        ('object_refs', ListProperty(ReferenceProperty(valid_types="only_SCO_&_SRO", spec_version="2.1"))),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SRO"], spec_version="2.1"))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -625,7 +632,7 @@ class Opinion(STIXDomainObject):
                 ], required=True,
             ),
         ),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -654,7 +661,7 @@ class Report(STIXDomainObject):
         ('description', StringProperty()),
         ('report_types', ListProperty(StringProperty, required=True)),
         ('published', TimestampProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[""], spec_version='2.1'), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),

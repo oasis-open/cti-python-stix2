@@ -385,7 +385,7 @@ class File(_Observable):
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),
         ('parent_directory_ref', ReferenceProperty(valid_types='directory', spec_version='2.1')),
-        ('contains_refs', ListProperty(ReferenceProperty(invalid_types="", spec_version='2.1'))),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=["SCO"], spec_version='2.1'))),
         ('content_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
         ('spec_version', StringProperty(fixed='2.1')),
@@ -591,6 +591,18 @@ class SocketExt(_Extension):
         ('socket_descriptor', IntegerProperty(min=0)),
         ('socket_handle', IntegerProperty()),
     ])
+
+    def _check_object_constraints(self):
+        super(SocketExt, self)._check_object_constraints()
+
+        options = self.get('options')
+
+        if options is not None:
+            for key, val in options.items():
+                if key[:3] != "SO_":
+                    raise ValueError("Incorrect options key")
+                if not isinstance(val, int):
+                    raise ValueError("Options value must be an integer")
 
 
 class TCPExt(_Extension):
@@ -986,6 +998,18 @@ class X509Certificate(_Observable):
     ])
     _id_contributing_properties = ["hashes", "serial_number"]
 
+    def _check_object_constraints(self):
+        super(X509Certificate, self)._check_object_constraints()
+
+        att_list = [
+                'is_self_signed', 'hashes', 'version', 'serial_number',
+                'signature_algorithm', 'issuer', 'validity_not_before',
+                'validity_not_after', 'subject', 'subject_public_key_algorithm',
+                'subject_public_key_modulus', 'subject_public_key_exponent',
+                'x509_v3_extensions',
+        ]
+        self._check_at_least_one_property(att_list)
+
 
 def CustomObservable(type='x-custom-observable', properties=None):
     """Custom STIX Cyber Observable Object type decorator.
@@ -1004,6 +1028,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type))],
+            [('id', IDProperty(type, spec_version='2.1'))],
             properties,
             [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
         ]))

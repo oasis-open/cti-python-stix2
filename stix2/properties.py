@@ -373,6 +373,10 @@ class DictionaryProperty(Property):
                     "underscore (_)"
                 )
                 raise DictionaryKeyError(k, msg)
+
+        if len(dictified) < 1:
+            raise ValueError("must not be empty.")
+
         return dictified
 
 
@@ -391,6 +395,7 @@ HASHES_REGEX = {
     "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
     "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
     "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+    "TLSH": (r"^[a-fA-F0-9]{70}$", "TLSH"),
 }
 
 
@@ -459,22 +464,19 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        possible_prefix = value[:value.index('--') + 2]
+        possible_prefix = value[:value.index('--')]
 
         if self.valid_types:
-            if self.valid_types == ["only_SDO"]:
-                self.valid_types = STIX2_OBJ_MAPS['v21']['objects'].keys()
-            elif self.valid_types == ["only_SCO"]:
-                self.valid_types = STIX2_OBJ_MAPS['v21']['observables'].keys()
-            elif self.valid_types == ["only_SCO_&_SRO"]:
-                self.valid_types = list(STIX2_OBJ_MAPS['v21']['observables'].keys()) + ['relationship', 'sighting']
+            ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
 
-            if possible_prefix[:-2] in self.valid_types:
+            if possible_prefix in ref_valid_types:
                 required_prefix = possible_prefix
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
         elif self.invalid_types:
-            if possible_prefix[:-2] not in self.invalid_types:
+            ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
+
+            if possible_prefix not in ref_invalid_types:
                 required_prefix = possible_prefix
             else:
                 raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
@@ -482,6 +484,31 @@ class ReferenceProperty(Property):
         _validate_id(value, self.spec_version, required_prefix, interoperability)
 
         return value
+
+
+def enumerate_types(types, spec_version):
+    """
+    `types` is meant to be a list; it may contain specific object types and/or
+        the any of the words "SCO", "SDO", or "SRO"
+
+    Since "SCO", "SDO", and "SRO" are general types that encompass various specific object types,
+        once each of those words is being processed, that word will be removed from `return_types`,
+        so as not to mistakenly allow objects to be created of types "SCO", "SDO", or "SRO"
+    """
+    return_types = []
+    return_types += types
+
+    if "SDO" in types:
+        return_types.remove("SDO")
+        return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
+    if "SCO" in types:
+        return_types.remove("SCO")
+        return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
+    if "SRO" in types:
+        return_types.remove("SRO")
+        return_types += ['relationship', 'sighting']
+
+    return return_types
 
 
 SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")

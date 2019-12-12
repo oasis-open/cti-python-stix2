@@ -72,6 +72,14 @@ def test_list_property():
         p.clean([])
 
 
+def test_dictionary_property():
+    p = DictionaryProperty(StringProperty)
+
+    assert p.clean({'spec_version': '2.1'})
+    with pytest.raises(ValueError):
+        p.clean({})
+
+
 def test_string_property():
     prop = StringProperty()
 
@@ -411,6 +419,7 @@ def test_property_list_of_dictionary():
     "value", [
         {"sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b"},
         [('MD5', '2dfb1bcc980200c6706feee399d41b3f'), ('RIPEMD-160', 'b3a8cd8a27c90af79b3c81754f267780f443dfef')],
+        [('TLSH', '6FF02BEF718027B0160B4391212923ED7F1A463D563B1549B86CF62973B197AD2731F8')],
     ],
 )
 def test_hashes_property_valid(value):
@@ -422,6 +431,7 @@ def test_hashes_property_valid(value):
     "value", [
         {"MD5": "a"},
         {"SHA-256": "2dfb1bcc980200c6706feee399d41b3f"},
+        {"TLSH": "6FF02BEF718027B0160B4391212923ED7F1A463D563B1549B86CF62973B197AD2731F"},
     ],
 )
 def test_hashes_property_invalid(value):

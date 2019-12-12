@@ -583,7 +583,7 @@ def test_parse_unregistered_custom_observable_object():
         "property1": "something"
     }"""
 
-    with pytest.raises(stix2.exceptions.CustomContentError) as excinfo:
+    with pytest.raises(stix2.exceptions.ParseError) as excinfo:
         stix2.parse_observable(nt_string, version='2.0')
     assert "Can't parse unknown observable type" in str(excinfo.value)
 

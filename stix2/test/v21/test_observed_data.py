@@ -209,7 +209,7 @@ def test_observed_data_example_with_bad_refs():
 
     assert excinfo.value.cls == stix2.v21.Directory
     assert excinfo.value.prop_name == "contains_refs"
-    assert "The type-specifying prefix 'monkey--' for this property is not valid" in excinfo.value.reason
+    assert "The type-specifying prefix 'monkey' for this property is not valid" in excinfo.value.reason
 
 
 def test_observed_data_example_with_non_dictionary():
@@ -369,7 +369,7 @@ def test_parse_autonomous_system_valid(data):
     ],
 )
 def test_parse_email_address(data):
-    odata = stix2.parse_observable(data, version='2.1')
+    odata = stix2.parse(data, version='2.1')
     assert odata.type == "email-addr"
 
     odata_str = re.compile(
@@ -378,7 +378,7 @@ def test_parse_email_address(data):
         '"belongs_to_ref": "mutex--9be6365f-b89c-48c0-9340-6953f6595718"', data,
     )
     with pytest.raises(stix2.exceptions.InvalidValueError):
-        stix2.parse_observable(odata_str, version='2.1')
+        stix2.parse(odata_str, version='2.1')
 
 
 @pytest.mark.parametrize(
@@ -424,7 +424,7 @@ def test_parse_email_address(data):
     ],
 )
 def test_parse_email_message(data):
-    odata = stix2.parse_observable(data, version='2.1')
+    odata = stix2.parse(data, version='2.1')
     assert odata.type == "email-message"
     assert odata.body_multipart[0].content_disposition == "inline"
 
@@ -446,7 +446,7 @@ def test_parse_email_message(data):
 )
 def test_parse_email_message_not_multipart(data):
     with pytest.raises(stix2.exceptions.DependentPropertiesError) as excinfo:
-        stix2.parse_observable(data, version='2.1')
+        stix2.parse(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
     assert excinfo.value.dependencies == [("is_multipart", "body")]
@@ -548,7 +548,7 @@ def test_parse_file_archive(data):
 )
 def test_parse_email_message_with_at_least_one_error(data):
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.parse_observable(data, version='2.1')
+        stix2.parse(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.EmailMessage
     assert "At least one of the" in str(excinfo.value)
@@ -570,7 +570,7 @@ def test_parse_email_message_with_at_least_one_error(data):
     ],
 )
 def test_parse_basic_tcp_traffic(data):
-    odata = stix2.parse_observable(
+    odata = stix2.parse(
         data, version='2.1',
     )
 
@@ -602,7 +602,7 @@ def test_parse_basic_tcp_traffic(data):
 )
 def test_parse_basic_tcp_traffic_with_error(data):
     with pytest.raises(stix2.exceptions.AtLeastOnePropertyError) as excinfo:
-        stix2.parse_observable(data, version='2.1')
+        stix2.parse(data, version='2.1')
 
     assert excinfo.value.cls == stix2.v21.NetworkTraffic
     assert excinfo.value.properties == ["dst_ref", "src_ref"]
@@ -1117,6 +1117,28 @@ def test_network_traffic_socket_example():
     assert nt.extensions['socket-ext'].socket_type == "SOCK_STREAM"
 
 
+def test_incorrect_socket_options():
+    with pytest.raises(ValueError) as excinfo:
+        stix2.v21.SocketExt(
+            is_listening=True,
+            address_family="AF_INET",
+            protocol_family="PF_INET",
+            socket_type="SOCK_STREAM",
+            options={"RCVTIMEO": 100},
+        )
+    assert "Incorrect options key" == str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        stix2.v21.SocketExt(
+            is_listening=True,
+            address_family="AF_INET",
+            protocol_family="PF_INET",
+            socket_type="SOCK_STREAM",
+            options={"SO_RCVTIMEO": '100'},
+        )
+    assert "Options value must be an integer" == str(excinfo.value)
+
+
 def test_network_traffic_tcp_example():
     h = stix2.v21.TCPExt(src_flags_hex="00000002")
     nt = stix2.v21.NetworkTraffic(
@@ -1364,6 +1386,18 @@ def test_x509_certificate_example():
     assert x509.type == "x509-certificate"
     assert x509.issuer == "C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com"  # noqa
     assert x509.subject == "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org"  # noqa
+
+
+def test_x509_certificate_error():
+
+    with pytest.raises(stix2.exceptions.PropertyPresenceError) as excinfo:
+        stix2.v21.X509Certificate(
+            defanged=True,
+        )
+
+    assert excinfo.value.cls == stix2.v21.X509Certificate
+    assert "At least one of the" in str(excinfo.value)
+    assert "properties for X509Certificate must be populated." in str(excinfo.value)
 
 
 def test_new_version_with_related_objects():
