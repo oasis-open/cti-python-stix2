@@ -16,8 +16,8 @@ import stix2
 from .base import _Observable, _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import (
-    CustomContentError, DictionaryKeyError, ExtraPropertiesError,
-    MissingPropertiesError, MutuallyExclusivePropertiesError,
+    CustomContentError, DictionaryKeyError, MissingPropertiesError,
+    MutuallyExclusivePropertiesError,
 )
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
@@ -201,8 +201,10 @@ class ListProperty(Property):
 
             if isinstance(valid, collections.Mapping):
                 try:
+                    valid._allow_custom
+                except AttributeError:
                     result.append(obj_type(**valid))
-                except ExtraPropertiesError:
+                else:
                     result.append(obj_type(allow_custom=True, **valid))
             else:
                 result.append(obj_type(valid))
