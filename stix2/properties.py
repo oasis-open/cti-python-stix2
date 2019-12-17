@@ -200,7 +200,12 @@ class ListProperty(Property):
                 obj_type = self.contained
 
             if isinstance(valid, collections.Mapping):
-                result.append(obj_type(**valid))
+                try:
+                    valid._allow_custom
+                except AttributeError:
+                    result.append(obj_type(**valid))
+                else:
+                    result.append(obj_type(allow_custom=True, **valid))
             else:
                 result.append(obj_type(valid))
 
