@@ -598,8 +598,9 @@ class SocketExt(_Extension):
         options = self.get('options')
 
         if options is not None:
+            acceptable_prefixes = ["SO", "ICMP", "ICMP6", "IP", "IPV6", "MCAST", "TCP", "IRLMP"]
             for key, val in options.items():
-                if key[:3] != "SO_":
+                if key[:key.find('_')] not in acceptable_prefixes:
                     raise ValueError("Incorrect options key")
                 if not isinstance(val, int):
                     raise ValueError("Options value must be an integer")
