@@ -200,7 +200,7 @@ class Indicator(STIXDomainObject):
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('indicator_types', ListProperty(StringProperty, required=True)),
-        ('pattern', PatternProperty(required=True)),
+        ('pattern', PatternProperty(required=True, spec_version='2.1')),
         ('pattern_type', StringProperty(required=True)),
         ('pattern_version', StringProperty()),
         ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
