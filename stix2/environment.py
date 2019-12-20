@@ -263,7 +263,10 @@ class Environment(DataStoreMixin):
                         sum_weights += w
                         matching_score += contributing_score
 
-                        prop_scores[prop] = (w, contributing_score)
+                        prop_scores[prop] = {
+                            "weight": w,
+                            "contributing_score": contributing_score,
+                        }
                         logger.debug("'%s' check -- weight: %s, contributing score: %s", prop, w, contributing_score)
 
                 prop_scores["matching_score"] = matching_score

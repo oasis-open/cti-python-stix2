@@ -755,6 +755,7 @@ def custom_semantic_equivalence_method(obj1, obj2, **weights):
 
 
 def test_semantic_equivalence_method_provided():
+    # Because `method` is provided, `partial_list_based` will be ignored
     TOOL2_KWARGS = dict(
         name="Random Software",
         tool_types=["information-gathering"],
@@ -780,18 +781,11 @@ def test_semantic_equivalence_prop_scores():
         tool_types=["information-gathering"],
     )
 
-    weights = {
-        "tool": {
-            "tool_types": (20, stix2.environment.partial_list_based),
-            "name": (80, stix2.environment.partial_string_based),
-        },
-    }
-
     prop_scores = {}
 
     tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
-    stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores, **weights)
+    stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores)
     assert len(prop_scores) == 4
     assert round(prop_scores["matching_score"], 1) == 37.6
     assert round(prop_scores["sum_weights"], 1) == 100.0
@@ -811,8 +805,8 @@ def test_semantic_equivalence_prop_scores_method_provided():
 
     weights = {
         "tool": {
-            "tool_types": (20, stix2.environment.partial_list_based),
-            "name": (80, stix2.environment.partial_string_based),
+            "tool_types": 20,
+            "name": 80,
             "method": custom_semantic_equivalence_method_prop_scores,
         },
     }
