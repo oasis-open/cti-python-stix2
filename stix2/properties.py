@@ -558,9 +558,13 @@ class EnumProperty(StringProperty):
 
 class PatternProperty(StringProperty):
 
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+        self.spec_version = spec_version
+        super(PatternProperty, self).__init__(**kwargs)
+
     def clean(self, value):
         cleaned_value = super(PatternProperty, self).clean(value)
-        errors = run_validator(cleaned_value)
+        errors = run_validator(cleaned_value, self.spec_version)
         if errors:
             raise ValueError(str(errors[0]))
 

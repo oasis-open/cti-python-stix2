@@ -124,7 +124,7 @@ class Indicator(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('pattern', PatternProperty(required=True)),
+        ('pattern', PatternProperty(required=True, spec_version='2.0')),
         ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
