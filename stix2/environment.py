@@ -363,10 +363,10 @@ def partial_string_based(str1, str2):
         float: Number between 0.0 and 1.0 depending on match criteria.
 
     """
-    from pyjarowinkler import distance
-    result = distance.get_jaro_distance(str1, str2)
+    from fuzzywuzzy import fuzz
+    result = fuzz.token_sort_ratio(str1, str2, force_ascii=False)
     logger.debug("--\t\tpartial_string_based '%s' '%s'\tresult: '%s'", str1, str2, result)
-    return result
+    return result / 100.0
 
 
 def custom_pattern_based(pattern1, pattern2):

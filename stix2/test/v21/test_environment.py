@@ -521,7 +521,7 @@ def test_semantic_equivalence_on_same_vulnerability2():
         ],
     )
     VULN_KWARGS2 = dict(
-        name="Zot",
+        name="Foo",
         external_references=[
             {
                 "url": "https://example2",
@@ -550,7 +550,7 @@ def test_semantic_equivalence_on_unknown_object():
     CUSTOM_KWARGS2 = dict(
         type="x-foobar",
         id="x-foobar--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
-        name="Zot",
+        name="Foo",
         external_references=[
             {
                 "url": "https://example2",
@@ -787,7 +787,7 @@ def test_semantic_equivalence_prop_scores():
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
     stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores)
     assert len(prop_scores) == 4
-    assert round(prop_scores["matching_score"], 1) == 37.6
+    assert round(prop_scores["matching_score"], 1) == 8.8
     assert round(prop_scores["sum_weights"], 1) == 100.0
 
 
