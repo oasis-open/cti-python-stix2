@@ -521,7 +521,7 @@ def test_semantic_equivalence_on_same_vulnerability2():
         ],
     )
     VULN_KWARGS2 = dict(
-        name="Zot",
+        name="Foo",
         external_references=[
             {
                 "url": "https://example2",
@@ -550,7 +550,7 @@ def test_semantic_equivalence_on_unknown_object():
     CUSTOM_KWARGS2 = dict(
         type="x-foobar",
         id="x-foobar--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
-        name="Zot",
+        name="Foo",
         external_references=[
             {
                 "url": "https://example2",
@@ -622,11 +622,10 @@ def test_semantic_equivalence_zero_match():
     )
     weights = {
         "indicator": {
-            "indicator_types": 15,
-            "pattern": 80,
-            "valid_from": 0,
+            "indicator_types": (15, stix2.environment.partial_list_based),
+            "pattern": (80, stix2.environment.custom_pattern_based),
+            "valid_from": (5, stix2.environment.partial_timestamp_based),
             "tdelta": 1,  # One day interval
-            "method": stix2.environment._indicator_checks,
         },
         "_internal": {
             "ignore_spec_version": False,
@@ -645,11 +644,10 @@ def test_semantic_equivalence_different_spec_version():
     )
     weights = {
         "indicator": {
-            "indicator_types": 15,
-            "pattern": 80,
-            "valid_from": 0,
+            "indicator_types": (15, stix2.environment.partial_list_based),
+            "pattern": (80, stix2.environment.custom_pattern_based),
+            "valid_from": (5, stix2.environment.partial_timestamp_based),
             "tdelta": 1,  # One day interval
-            "method": stix2.environment._indicator_checks,
         },
         "_internal": {
             "ignore_spec_version": True,  # Disables spec_version check.
@@ -750,3 +748,75 @@ def test_non_existent_config_for_object():
     r1 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
     r2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
     assert stix2.Environment().semantically_equivalent(r1, r2) == 0.0
+
+
+def custom_semantic_equivalence_method(obj1, obj2, **weights):
+    return 96.0, 100.0
+
+
+def test_semantic_equivalence_method_provided():
+    # Because `method` is provided, `partial_list_based` will be ignored
+    TOOL2_KWARGS = dict(
+        name="Random Software",
+        tool_types=["information-gathering"],
+    )
+
+    weights = {
+        "tool": {
+            "tool_types": (20, stix2.environment.partial_list_based),
+            "name": (80, stix2.environment.partial_string_based),
+            "method": custom_semantic_equivalence_method,
+        },
+    }
+
+    tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
+    tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
+    env = stix2.Environment().semantically_equivalent(tool1, tool2, **weights)
+    assert round(env) == 96
+
+
+def test_semantic_equivalence_prop_scores():
+    TOOL2_KWARGS = dict(
+        name="Random Software",
+        tool_types=["information-gathering"],
+    )
+
+    prop_scores = {}
+
+    tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
+    tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
+    stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores)
+    assert len(prop_scores) == 4
+    assert round(prop_scores["matching_score"], 1) == 8.8
+    assert round(prop_scores["sum_weights"], 1) == 100.0
+
+
+def custom_semantic_equivalence_method_prop_scores(obj1, obj2, prop_scores, **weights):
+    prop_scores["matching_score"] = 96.0
+    prop_scores["sum_weights"] = 100.0
+    return 96.0, 100.0
+
+
+def test_semantic_equivalence_prop_scores_method_provided():
+    TOOL2_KWARGS = dict(
+        name="Random Software",
+        tool_types=["information-gathering"],
+    )
+
+    weights = {
+        "tool": {
+            "tool_types": 20,
+            "name": 80,
+            "method": custom_semantic_equivalence_method_prop_scores,
+        },
+    }
+
+    prop_scores = {}
+
+    tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
+    tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
+    env = stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores, **weights)
+    assert round(env) == 96
+    assert len(prop_scores) == 2
+    assert prop_scores["matching_score"] == 96.0
+    assert prop_scores["sum_weights"] == 100.0
