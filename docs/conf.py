@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import re
 import sys
@@ -7,6 +8,7 @@ from six import class_types
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
+from stix2.environment import WEIGHTS
 from stix2.version import __version__
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -58,6 +60,14 @@ latex_elements = {}
 latex_documents = [
     (master_doc, 'stix2.tex', 'stix2 Documentation', 'OASIS', 'manual'),
 ]
+
+# Add a formatted version of environment.WEIGHTS
+default_sem_eq_weights = json.dumps(WEIGHTS, indent=4, default=lambda o: o.__name__)
+default_sem_eq_weights = default_sem_eq_weights.replace('\n', '\n    ')
+default_sem_eq_weights = default_sem_eq_weights.replace('               "', '               ')
+default_sem_eq_weights = default_sem_eq_weights.replace('"\n', '\n')
+with open('default_sem_eq_weights.rst', 'w') as f:
+    f.write(".. code-block:: py\n\n   {}\n\n".format(default_sem_eq_weights))
 
 
 def get_property_type(prop):
