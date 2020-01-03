@@ -198,20 +198,6 @@ def test_indicator_stix21_invalid_pattern():
     now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
     epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
 
-    ind1 = stix2.v21.Indicator(
-        type="indicator",
-        id=INDICATOR_ID,
-        created=now,
-        modified=now,
-        pattern="[EXISTS windows-registry-key:values]",
-        pattern_type="stix",
-        valid_from=epoch,
-        indicator_types=['malicious-activity'],
-    )
-
-    assert ind1.id == INDICATOR_ID
-    assert ind1.pattern == "[EXISTS windows-registry-key:values]"
-
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v20.Indicator(
             type="indicator",

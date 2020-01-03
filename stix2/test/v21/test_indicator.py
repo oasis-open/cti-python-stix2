@@ -257,19 +257,6 @@ def test_indicator_stix20_invalid_pattern():
     now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
     epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
 
-    ind1 = stix2.v20.Indicator(
-        type="indicator",
-        id=INDICATOR_ID,
-        created=now,
-        modified=now,
-        pattern="[win-registry-key:key = 'hkey_local_machine\\\\foo\\\\bar'] WITHIN 5 SECONDS WITHIN 6 SECONDS",
-        valid_from=epoch,
-        labels=["malicious-activity"],
-    )
-
-    assert ind1.id == INDICATOR_ID
-    assert ind1.pattern == "[win-registry-key:key = 'hkey_local_machine\\\\foo\\\\bar'] WITHIN 5 SECONDS WITHIN 6 SECONDS"
-
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Indicator(
             type="indicator",
