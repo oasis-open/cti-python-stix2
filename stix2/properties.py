@@ -556,10 +556,7 @@ class EnumProperty(StringProperty):
 
 
 class PatternProperty(StringProperty):
-
-    def clean(self, value):
-        cleaned_value = super(PatternProperty, self).clean(value)
-        return cleaned_value
+    pass
 
 
 class ObservableProperty(Property):
