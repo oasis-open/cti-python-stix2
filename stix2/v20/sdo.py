@@ -3,8 +3,11 @@
 from collections import OrderedDict
 import itertools
 
+from stix2patterns.validator import run_validator
+
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
+from ..exceptions import InvalidValueError
 from ..properties import (
     BooleanProperty, IDProperty, IntegerProperty, ListProperty,
     ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
@@ -124,7 +127,7 @@ class Indicator(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('pattern', PatternProperty(required=True, spec_version='2.0')),
+        ('pattern', PatternProperty(required=True)),
         ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
@@ -134,6 +137,11 @@ class Indicator(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
+
+    def _check_object_constraints(self):
+        errors = run_validator(self.get('pattern'), '2.0')
+        if errors:
+            raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
 
 
 class IntrusionSet(STIXDomainObject):
