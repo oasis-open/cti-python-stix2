@@ -5,10 +5,13 @@ import itertools
 import warnings
 
 from six.moves.urllib.parse import quote_plus
+from stix2patterns.validator import run_validator
 
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
+from ..exceptions import (
+    InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
+)
 from ..properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, IDProperty, IntegerProperty, ListProperty,
@@ -200,7 +203,7 @@ class Indicator(STIXDomainObject):
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('indicator_types', ListProperty(StringProperty, required=True)),
-        ('pattern', PatternProperty(required=True, spec_version='2.1')),
+        ('pattern', PatternProperty(required=True)),
         ('pattern_type', StringProperty(required=True)),
         ('pattern_version', StringProperty()),
         ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
@@ -231,6 +234,16 @@ class Indicator(STIXDomainObject):
         if valid_from and valid_until and valid_until <= valid_from:
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
             raise ValueError(msg.format(self))
+
+        if self.get('pattern_type') == "stix":
+            try:
+                pat_ver = self.get('pattern_version')
+            except AttributeError:
+                pat_ver = '2.1'
+
+            errors = run_validator(self.get('pattern'), pat_ver)
+            if errors:
+                raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
 
 
 class Infrastructure(STIXDomainObject):
