@@ -1,6 +1,5 @@
 """Base classes for type definitions in the STIX2 library."""
 
-import collections
 import copy
 import datetime as dt
 import uuid
@@ -19,6 +18,12 @@ from .markings.utils import validate
 from .utils import NOW, find_property_index, format_datetime, get_timestamp
 from .utils import new_version as _new_version
 from .utils import revoke as _revoke
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
@@ -68,7 +73,7 @@ def get_required_properties(properties):
     return (k for k, v in properties.items() if v.required)
 
 
-class _STIXBase(collections.Mapping):
+class _STIXBase(Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):

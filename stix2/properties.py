@@ -2,7 +2,6 @@
 
 import base64
 import binascii
-import collections
 import copy
 import inspect
 import re
@@ -19,6 +18,11 @@ from .exceptions import (
     MutuallyExclusivePropertiesError,
 )
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
@@ -198,7 +202,7 @@ class ListProperty(Property):
             else:
                 obj_type = self.contained
 
-            if isinstance(valid, collections.Mapping):
+            if isinstance(valid, Mapping):
                 try:
                     valid._allow_custom
                 except AttributeError:

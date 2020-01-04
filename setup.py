@@ -46,6 +46,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
     ],
     keywords='stix stix2 json cti cyber threat intelligence',
     packages=find_packages(exclude=['*.test', '*.test.*']),
