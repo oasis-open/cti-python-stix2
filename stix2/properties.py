@@ -401,7 +401,7 @@ class HashesProperty(DictionaryProperty):
 
     def clean(self, value):
         clean_dict = super(HashesProperty, self).clean(value)
-        for k, v in clean_dict.items():
+        for k, v in copy.deepcopy(clean_dict).items():
             key = k.upper().replace('-', '')
             if key in HASHES_REGEX:
                 vocab_key = HASHES_REGEX[key][1]
