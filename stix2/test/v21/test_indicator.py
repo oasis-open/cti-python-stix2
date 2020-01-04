@@ -251,3 +251,42 @@ def test_indicator_with_custom_embed_objs_extra_props_error():
     assert excinfo.value.cls == stix2.v21.Indicator
     assert excinfo.value.properties == ['bad_custom_prop']
     assert str(excinfo.value) == "Unexpected properties for Indicator: (bad_custom_prop)."
+
+
+def test_indicator_stix20_invalid_pattern():
+    now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    patrn = "[win-registry-key:key = 'hkey_local_machine\\\\foo\\\\bar'] WITHIN 5 SECONDS WITHIN 6 SECONDS"
+
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v21.Indicator(
+            type="indicator",
+            id=INDICATOR_ID,
+            created=now,
+            modified=now,
+            pattern=patrn,
+            pattern_type="stix",
+            valid_from=epoch,
+            indicator_types=['malicious-activity'],
+        )
+
+    assert excinfo.value.cls == stix2.v21.Indicator
+    assert "FAIL: The same qualifier is used more than once" in str(excinfo.value)
+
+    ind = stix2.v21.Indicator(
+        type="indicator",
+        id=INDICATOR_ID,
+        created=now,
+        modified=now,
+        pattern=patrn,
+        pattern_type="stix",
+        pattern_version="2.0",
+        valid_from=epoch,
+        indicator_types=['malicious-activity'],
+    )
+
+    assert ind.id == INDICATOR_ID
+    assert ind.indicator_types == ['malicious-activity']
+    assert ind.pattern == patrn
+    assert ind.pattern_type == "stix"
+    assert ind.pattern_version == "2.0"

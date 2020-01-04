@@ -9,7 +9,6 @@ import re
 import uuid
 
 from six import string_types, text_type
-from stix2patterns.validator import run_validator
 
 import stix2
 
@@ -557,14 +556,7 @@ class EnumProperty(StringProperty):
 
 
 class PatternProperty(StringProperty):
-
-    def clean(self, value):
-        cleaned_value = super(PatternProperty, self).clean(value)
-        errors = run_validator(cleaned_value)
-        if errors:
-            raise ValueError(str(errors[0]))
-
-        return cleaned_value
+    pass
 
 
 class ObservableProperty(Property):
