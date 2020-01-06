@@ -106,7 +106,7 @@ STIX_OBJ_DOCS = """
 """.format(
     _environ.creator_of.__doc__,
     _environ.relationships.__doc__,
-    _environ.related_to.__doc__
+    _environ.related_to.__doc__,
 )
 
 

@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+1.3.0 - 2020-01-04
+
+* #305 Updates support of STIX 2.1 to WD06
+* #304 Updates semantic equivalence to latest draft, and allows programmatic
+  detailed logging
+* Adds Python 3.8 support
+* #297 Fixes bug with File.contains_refs
+* #311 Fixes several DeprecationWarnings
+* #315 Fixes parsing embedded external references with custom properties
+* #316 Fix socket extension key checking
+* #317 Fixes checking of Indicator's pattern property based on pattern_version
+
 1.2.1 - 2019-10-16
 
 * #301 Adds more detailed debugging semantic equivalence output
