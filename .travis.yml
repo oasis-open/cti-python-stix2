@@ -11,6 +11,8 @@ python:
   - "3.8"
 install:
   - pip install -U pip setuptools
+  # remove pyyaml line when we drop py3.4 support
+  - pip install "pyyaml<5.3"
   - pip install tox-travis pre-commit
   - pip install codecov
 script:
