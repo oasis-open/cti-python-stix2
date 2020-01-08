@@ -26,9 +26,9 @@ ID_REGEX_interoperability = re.compile(r"[0-9a-fA-F]{8}-"
                                        "[0-9a-fA-F]{12}$")
 
 try:
-    from collections.abc import Mapping
+    from collections.abc import Mapping, defaultdict
 except ImportError:
-    from collections import Mapping
+    from collections import Mapping, defaultdict
 
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
@@ -633,7 +633,7 @@ class ExtensionsProperty(DictionaryProperty):
         for key, subvalue in dictified.items():
             if key in specific_type_map:
                 cls = specific_type_map[key]
-                if type(subvalue) is dict:
+                if isinstance(subvalue, (dict, defaultdict)):
                     if self.allow_custom:
                         subvalue['allow_custom'] = True
                         dictified[key] = cls(**subvalue)
