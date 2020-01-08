@@ -478,14 +478,14 @@ class ReferenceProperty(Property):
             ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
 
             if possible_prefix in ref_valid_types:
-                required_prefix = possible_prefix
+                required_prefix = possible_prefix + '--'
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
         elif self.invalid_types:
             ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
 
             if possible_prefix not in ref_invalid_types:
-                required_prefix = possible_prefix
+                required_prefix = possible_prefix + '--'
             else:
                 raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
         interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
