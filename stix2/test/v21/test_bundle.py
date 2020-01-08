@@ -317,3 +317,69 @@ def test_bundle_getitem_overload_obj_id_not_found():
     with pytest.raises(KeyError) as excinfo:
         bundle['non existent']
     assert "neither a property on the bundle nor does it match the id property" in str(excinfo.value)
+
+@pytest.mark.parametrize(
+    "bundle_data", [{
+        "id": "bundle--cc0ca596-70e6-4dac-9bef-603166d17db8",
+        "objects": [
+            {
+                "id": "directory--4aa982e3-4aac-5d5b-a699-d08c8c11f5f3",
+                "path": "/usr/local",
+                "type": "directory"
+            },
+            {
+                "hashes": {
+                    "SHA-256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+                },
+                "id": "file--d430772f-bd71-550b-b1c4-107085a1d0b9",
+                "name": "fred.doc",
+                "parent_directory_ref": "directory--4aa982e3-4aac-5d5b-a699-d08c8c11f5f3",
+                "type": "file"
+            },
+            {
+                "hashes": {
+                    "MD5": "5d8129be965fab8115eca34fc84bd7f0"
+                },
+                "id": "file--5439248a-519f-5963-8abb-bbe52987b661",
+                "type": "file"
+            },
+            {
+                "extensions": {
+                    "archive-ext": {
+                        "contains_refs": [
+                            "file--d430772f-bd71-550b-b1c4-107085a1d0b9",
+                            "directory--4aa982e3-4aac-5d5b-a699-d08c8c11f5f3",
+                            "file--5439248a-519f-5963-8abb-bbe52987b661"
+                        ]
+                    }
+                },
+                "id": "file--e8b2f5bc-0302-51c8-bf89-51b60e47fb20",
+                "name": "iprip32.zip",
+                "parent_directory_ref": "directory--4aa982e3-4aac-5d5b-a699-d08c8c11f5f3",
+                "type": "file"
+            },
+            {
+                "created": "2019-12-19T13:16:43.501Z",
+                "first_observed": "2019-12-19T13:16:43.501Z",
+                "id": "observed-data--c8c32b6e-2ea8-4678-8446-7f5218072f27",
+                "last_observed": "2019-12-19T13:16:43.501Z",
+                "modified": "2019-12-19T13:16:43.501Z",
+                "number_observed": 1,
+                "object_refs": [
+                    "file--e8b2f5bc-0302-51c8-bf89-51b60e47fb20",
+                    "directory--4aa982e3-4aac-5d5b-a699-d08c8c11f5f3",
+                    "file--d430772f-bd71-550b-b1c4-107085a1d0b9",
+                    "file--5439248a-519f-5963-8abb-bbe52987b661"
+                ],
+                "spec_version": "2.1",
+                "type": "observed-data"
+            }
+        ],
+        "type": "bundle"
+    }]
+)
+def test_bundle_sco_with_no_spec_version(bundle_data):
+    bundle = stix2.parse(bundle_data)
+
+    file_obj = bundle.get_obj("file--e8b2f5bc-0302-51c8-bf89-51b60e47fb20")[0]
+    assert file_obj["parent_directory_ref"] == "directory--4aa982e3-4aac-5d5b-a699-d08c8c11f5f3"

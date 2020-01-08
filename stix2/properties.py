@@ -682,6 +682,6 @@ class STIXObjectProperty(Property):
                 "containing objects of a different spec version.",
             )
 
-        parsed_obj = parse(dictified, allow_custom=self.allow_custom)
+        parsed_obj = parse(dictified, allow_custom=self.allow_custom, version=self.spec_version)
 
         return parsed_obj
