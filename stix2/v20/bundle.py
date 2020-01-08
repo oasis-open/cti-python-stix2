@@ -32,7 +32,7 @@ class Bundle(_STIXBase):
                 kwargs['objects'] = list(args) + kwargs.get('objects', [])
 
         allow_custom = kwargs.get('allow_custom', False)
-        self.__allow_custom = allow_custom
+        self._allow_custom = allow_custom
         self._properties['objects'].contained.allow_custom = allow_custom
         interoperability = kwargs.get('interoperability', False)
         self.__interoperability = interoperability

@@ -2,14 +2,12 @@
 
 import base64
 import binascii
-import collections
 import copy
 import inspect
 import re
 import uuid
 
 from six import string_types, text_type
-from stix2patterns.validator import run_validator
 
 import stix2
 
@@ -26,6 +24,11 @@ ID_REGEX_interoperability = re.compile(r"[0-9a-fA-F]{8}-"
                                        "[0-9a-fA-F]{4}-"
                                        "[0-9a-fA-F]{4}-"
                                        "[0-9a-fA-F]{12}$")
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
@@ -208,8 +211,13 @@ class ListProperty(Property):
             else:
                 obj_type = self.contained
 
-            if isinstance(valid, collections.Mapping):
-                result.append(obj_type(**valid))
+            if isinstance(valid, Mapping):
+                try:
+                    valid._allow_custom
+                except AttributeError:
+                    result.append(obj_type(**valid))
+                else:
+                    result.append(obj_type(allow_custom=True, **valid))
             else:
                 result.append(obj_type(valid))
 
@@ -403,7 +411,7 @@ class HashesProperty(DictionaryProperty):
 
     def clean(self, value):
         clean_dict = super(HashesProperty, self).clean(value)
-        for k, v in clean_dict.items():
+        for k, v in copy.deepcopy(clean_dict).items():
             key = k.upper().replace('-', '')
             if key in HASHES_REGEX:
                 vocab_key = HASHES_REGEX[key][1]
@@ -562,14 +570,7 @@ class EnumProperty(StringProperty):
 
 
 class PatternProperty(StringProperty):
-
-    def clean(self, value):
-        cleaned_value = super(PatternProperty, self).clean(value)
-        errors = run_validator(cleaned_value)
-        if errors:
-            raise ValueError(str(errors[0]))
-
-        return cleaned_value
+    pass
 
 
 class ObservableProperty(Property):

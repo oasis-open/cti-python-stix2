@@ -207,3 +207,86 @@ def test_invalid_indicator_pattern():
     assert excinfo.value.cls == stix2.v21.Indicator
     assert excinfo.value.prop_name == 'pattern'
     assert 'mismatched input' in excinfo.value.reason
+
+
+def test_indicator_with_custom_embedded_objs():
+    now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+
+    ext_ref = stix2.v21.ExternalReference(
+        source_name="Test",
+        description="Example Custom Ext Ref",
+        random_custom_prop="This is a custom property",
+        allow_custom=True,
+    )
+
+    ind = stix2.v21.Indicator(
+        type="indicator",
+        id=INDICATOR_ID,
+        created=now,
+        modified=now,
+        pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+        pattern_type="stix",
+        valid_from=epoch,
+        indicator_types=['malicious-activity'],
+        external_references=[ext_ref],
+    )
+
+    assert ind.indicator_types == ['malicious-activity']
+    assert len(ind.external_references) == 1
+    assert ind.external_references[0] == ext_ref
+
+
+def test_indicator_with_custom_embed_objs_extra_props_error():
+    ext_ref = stix2.v21.ExternalReference(
+        source_name="Test",
+        description="Example Custom Ext Ref",
+        random_custom_prop="This is a custom property",
+        allow_custom=True,
+    )
+
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError) as excinfo:
+        stix2.v21.Indicator(external_references=[ext_ref], bad_custom_prop="shouldn't be here", **INDICATOR_KWARGS)
+
+    assert excinfo.value.cls == stix2.v21.Indicator
+    assert excinfo.value.properties == ['bad_custom_prop']
+    assert str(excinfo.value) == "Unexpected properties for Indicator: (bad_custom_prop)."
+
+
+def test_indicator_stix20_invalid_pattern():
+    now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    patrn = "[win-registry-key:key = 'hkey_local_machine\\\\foo\\\\bar'] WITHIN 5 SECONDS WITHIN 6 SECONDS"
+
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v21.Indicator(
+            type="indicator",
+            id=INDICATOR_ID,
+            created=now,
+            modified=now,
+            pattern=patrn,
+            pattern_type="stix",
+            valid_from=epoch,
+            indicator_types=['malicious-activity'],
+        )
+
+    assert excinfo.value.cls == stix2.v21.Indicator
+    assert "FAIL: The same qualifier is used more than once" in str(excinfo.value)
+
+    ind = stix2.v21.Indicator(
+        type="indicator",
+        id=INDICATOR_ID,
+        created=now,
+        modified=now,
+        pattern=patrn,
+        pattern_type="stix",
+        pattern_version="2.0",
+        valid_from=epoch,
+        indicator_types=['malicious-activity'],
+    )
+
+    assert ind.id == INDICATOR_ID
+    assert ind.indicator_types == ['malicious-activity']
+    assert ind.pattern == patrn
+    assert ind.pattern_type == "stix"
+    assert ind.pattern_version == "2.0"

@@ -192,3 +192,23 @@ def test_invalid_indicator_pattern():
     assert excinfo.value.cls == stix2.v20.Indicator
     assert excinfo.value.prop_name == 'pattern'
     assert 'mismatched input' in excinfo.value.reason
+
+
+def test_indicator_stix21_invalid_pattern():
+    now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    patrn = "[EXISTS windows-registry-key:values]"
+
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v20.Indicator(
+            type="indicator",
+            id=INDICATOR_ID,
+            created=now,
+            modified=now,
+            pattern=patrn,
+            valid_from=epoch,
+            labels=["malicious-activity"],
+        )
+
+    assert excinfo.value.cls == stix2.v20.Indicator
+    assert "FAIL: Error found at line 1:8. no viable alternative at input 'EXISTS" in str(excinfo.value)

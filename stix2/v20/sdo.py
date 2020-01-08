@@ -3,8 +3,11 @@
 from collections import OrderedDict
 import itertools
 
+from stix2patterns.validator import run_validator
+
 from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
+from ..exceptions import InvalidValueError
 from ..properties import (
     BooleanProperty, IDProperty, IntegerProperty, ListProperty,
     ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
@@ -135,6 +138,11 @@ class Indicator(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
+    def _check_object_constraints(self):
+        errors = run_validator(self.get('pattern'), '2.0')
+        if errors:
+            raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
+
 
 class IntrusionSet(STIXDomainObject):
     """For more detailed information on this object's properties, see
@@ -212,7 +220,7 @@ class ObservedData(STIXDomainObject):
     ])
 
     def __init__(self, *args, **kwargs):
-        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._allow_custom = kwargs.get('allow_custom', False)
         self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
         super(ObservedData, self).__init__(*args, **kwargs)

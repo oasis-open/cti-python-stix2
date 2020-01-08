@@ -1,6 +1,5 @@
 """Base classes for type definitions in the STIX2 library."""
 
-import collections
 import copy
 import datetime as dt
 import uuid
@@ -19,6 +18,12 @@ from .markings.utils import validate
 from .utils import NOW, find_property_index, format_datetime, get_timestamp
 from .utils import new_version as _new_version
 from .utils import revoke as _revoke
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 
 __all__ = ['STIXJSONEncoder', '_STIXBase']
 
@@ -68,7 +73,7 @@ def get_required_properties(properties):
     return (k for k, v in properties.items() if v.required)
 
 
-class _STIXBase(collections.Mapping):
+class _STIXBase(Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):
@@ -143,7 +148,7 @@ class _STIXBase(collections.Mapping):
 
     def __init__(self, allow_custom=False, interoperability=False, **kwargs):
         cls = self.__class__
-        self.__allow_custom = allow_custom
+        self._allow_custom = allow_custom
         self.__interoperability = interoperability
 
         # Use the same timestamp for any auto-generated datetimes
@@ -153,12 +158,12 @@ class _STIXBase(collections.Mapping):
         custom_props = kwargs.pop('custom_properties', {})
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
-        if not self.__allow_custom:
+        if not self._allow_custom:
             extra_kwargs = list(set(kwargs) - set(self._properties))
             if extra_kwargs:
                 raise ExtraPropertiesError(cls, extra_kwargs)
         if custom_props:
-            self.__allow_custom = True
+            self._allow_custom = True
 
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}
@@ -236,7 +241,7 @@ class _STIXBase(collections.Mapping):
         if isinstance(self, _Observable):
             # Assume: valid references in the original object are still valid in the new version
             new_inner['_valid_refs'] = {'*': '*'}
-        new_inner['allow_custom'] = self.__allow_custom
+        new_inner['allow_custom'] = self._allow_custom
         new_inner['interoperability'] = self.__interoperability
         return cls(**new_inner)
 
@@ -308,7 +313,7 @@ class _Observable(_STIXBase):
         # the constructor might be called independently of an observed data object
         self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
 
-        self.__allow_custom = kwargs.get('allow_custom', False)
+        self._allow_custom = kwargs.get('allow_custom', False)
         self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
 
         try:
