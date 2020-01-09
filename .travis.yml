@@ -11,10 +11,11 @@ python:
   - "3.8"
 install:
   - pip install -U pip setuptools
-  - pip install tox-travis pre-commit
+  - pip install tox-travis
   - pip install codecov
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.4 ]]; then pip install pre-commit; fi
 script:
   - tox
-  - pre-commit run --all-files
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.4 ]]; then pre-commit run --all-files; fi
 after_success:
   - codecov
