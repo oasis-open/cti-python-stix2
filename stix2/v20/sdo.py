@@ -250,6 +250,7 @@ class Report(STIXDomainObject):
     ])
 
     def __init__(self, *args, **kwargs):
+        self._properties['object_refs'].contained.allow_custom = kwargs.get('allow_custom', False)
         self._properties['object_refs'].contained.interoperability = kwargs.get('interoperability', False)
 
         super(Report, self).__init__(*args, **kwargs)

@@ -477,7 +477,7 @@ class ReferenceProperty(Property):
         if self.valid_types:
             ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
 
-            if possible_prefix in ref_valid_types:
+            if possible_prefix in ref_valid_types or self.allow_custom:
                 required_prefix = possible_prefix + '--'
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
