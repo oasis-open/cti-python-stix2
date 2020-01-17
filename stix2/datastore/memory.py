@@ -359,8 +359,8 @@ class MemorySource(DataSource):
 
         return all_data
 
-    def load_from_file(self, file_path, version=None):
-        with io.open(os.path.abspath(file_path), "r") as f:
+    def load_from_file(self, file_path, version=None, encoding='utf-8'):
+        with io.open(os.path.abspath(file_path), "r", encoding=encoding) as f:
             stix_data = json.load(f)
 
         _add(self, stix_data, self.allow_custom, version)
