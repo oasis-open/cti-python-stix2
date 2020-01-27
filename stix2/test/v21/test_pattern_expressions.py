@@ -510,3 +510,8 @@ def test_parsing_qualified_expression():
 def test_list_constant():
     patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]")
     assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
+
+
+def test_parsing_multiple_slashes_quotes():
+    patt_obj = create_pattern_object("[ file:name = 'weird_name\\'' ]")
+    assert str(patt_obj) == "[file:name = 'weird_name\\'']"
