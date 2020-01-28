@@ -2,7 +2,9 @@ import importlib
 import inspect
 
 from antlr4 import CommonTokenStream, InputStream
+from antlr4.tree.Trees import Trees
 import six
+from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternLexer import STIXPatternLexer
 from stix2patterns.grammars.STIXPatternParser import (
     STIXPatternParser, TerminalNode,
@@ -305,7 +307,10 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
         elif node.symbol.type == STIXPatternParser.BinaryLiteral:
             return BinaryConstant(node.getText(), from_parse_tree=True)
         elif node.symbol.type == STIXPatternParser.StringLiteral:
-            return StringConstant(node.getText().strip('\''), from_parse_tree=True)
+            if node.getText()[0] == "'" and node.getText()[-1] == "'":
+                return StringConstant(node.getText()[1:-1], from_parse_tree=True)
+            else:
+                raise ParseException("The pattern does not start and end with a single quote")
         elif node.symbol.type == STIXPatternParser.BoolLiteral:
             return BooleanConstant(node.getText())
         elif node.symbol.type == STIXPatternParser.TimestampLiteral:
@@ -345,6 +350,7 @@ def create_pattern_object(pattern, module_suffix="", module_name=""):
     stream = CommonTokenStream(lexer)
 
     parser = STIXPatternParser(stream)
+
     parser.buildParseTrees = True
     # it always adds a console listener by default... remove it.
     parser.removeErrorListeners()
