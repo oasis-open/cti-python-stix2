@@ -16,6 +16,7 @@ EXPECTED_TLP_MARKING_DEFINITION = """{
     "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "created": "2017-01-20T00:00:00.000Z",
     "definition_type": "tlp",
+    "name": "TLP:WHITE",
     "definition": {
         "tlp": "white"
     }

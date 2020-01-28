@@ -271,8 +271,8 @@ def check_tlp_marking(marking_obj, spec_version):
             else:
                 w = (
                     '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "white"}, "definition_type": "tlp",'
-                    ' "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9", "type": "marking-definition",'
-                    ' "spec_version": "2.1"}'
+                    ' "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9", "name": "TLP:WHITE",'
+                    ' "type": "marking-definition", "spec_version": "2.1"}'
                 )
             if marking_obj["id"] != "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9":
                 raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], w)
@@ -288,8 +288,8 @@ def check_tlp_marking(marking_obj, spec_version):
             else:
                 g = (
                     '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "green"}, "definition_type": "tlp",'
-                    ' "id": "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da", "type": "marking-definition",'
-                    ' "spec_version": "2.1"}'
+                    ' "id": "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da", "name": "TLP:GREEN",'
+                    ' "type": "marking-definition", "spec_version": "2.1"}'
                 )
             if marking_obj["id"] != "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da":
                 raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], g)
@@ -305,8 +305,8 @@ def check_tlp_marking(marking_obj, spec_version):
             else:
                 a = (
                     '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "amber"}, "definition_type": "tlp",'
-                    ' "id": "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82", "type": "marking-definition",'
-                    ' "spec_version": "2.1"}'
+                    ' "id": "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82", "name": "TLP:AMBER",'
+                    ' "type": "marking-definition", "spec_version": "2.1"}'
                 )
             if marking_obj["id"] != "marking-definition--f88d31f6-486f-44da-b317-01333bde0b82":
                 raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], a)
@@ -322,8 +322,8 @@ def check_tlp_marking(marking_obj, spec_version):
             else:
                 r = (
                     '{"created": "2017-01-20T00:00:00.000Z", "definition": {"tlp": "red"}, "definition_type": "tlp",'
-                    ' "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed", "type": "marking-definition",'
-                    ' "spec_version": "2.1"}'
+                    ' "id": "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed", "name": "TLP:RED",'
+                    ' "type": "marking-definition", "spec_version": "2.1"}'
                 )
             if marking_obj["id"] != "marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed":
                 raise exceptions.TLPMarkingDefinitionError(marking_obj["id"], r)
