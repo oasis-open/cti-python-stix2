@@ -12,6 +12,7 @@ def test_bad_id_marking_tlp_white():
         MarkingDefinition(
             id='marking-definition--4c9faac1-3558-43d2-919e-95c88d3bc332',
             definition_type='tlp',
+            name='TLP:WHITE',
             definition=TLPMarking(tlp='white'),
         )
 
@@ -21,6 +22,7 @@ def test_bad_id_marking_tlp_green():
         MarkingDefinition(
             id='marking-definition--93023361-d3cf-4666-bca2-8c017948dc3d',
             definition_type='tlp',
+            name='TLP:GREEN',
             definition=TLPMarking(tlp='green'),
         )
 
@@ -30,6 +32,7 @@ def test_bad_id_marking_tlp_amber():
         MarkingDefinition(
             id='marking-definition--05e32101-a940-42ba-8fe9-39283b999ce4',
             definition_type='tlp',
+            name='TLP:AMBER',
             definition=TLPMarking(tlp='amber'),
         )
 
@@ -39,6 +42,7 @@ def test_bad_id_marking_tlp_red():
         MarkingDefinition(
             id='marking-definition--9eceb00c-c158-43f4-87f8-1e3648de17e2',
             definition_type='tlp',
+            name='TLP:RED',
             definition=TLPMarking(tlp='red'),
         )
 
@@ -48,6 +52,7 @@ def test_bad_created_marking_tlp_white():
         MarkingDefinition(
             id='marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
             definition_type='tlp',
+            name='TLP:WHITE',
             definition=TLPMarking(tlp='white'),
         )
 
@@ -57,6 +62,7 @@ def test_bad_created_marking_tlp_green():
         MarkingDefinition(
             id='marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
             definition_type='tlp',
+            name='TLP:GREEN',
             definition=TLPMarking(tlp='green'),
         )
 
@@ -66,6 +72,7 @@ def test_bad_created_marking_tlp_amber():
         MarkingDefinition(
             id='marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
             definition_type='tlp',
+            name='TLP:AMBER',
             definition=TLPMarking(tlp='amber'),
         )
 
@@ -75,6 +82,7 @@ def test_bad_created_marking_tlp_red():
         MarkingDefinition(
             id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
             definition_type='tlp',
+            name='TLP:RED',
             definition=TLPMarking(tlp='red'),
         )
 
@@ -86,6 +94,7 @@ def test_successful_tlp_white():
         id='marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
+        name='TLP:WHITE',
         definition=TLPMarking(tlp='white'),
     )
 
@@ -97,6 +106,7 @@ def test_successful_tlp_green():
         id='marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
+        name='TLP:GREEN',
         definition=TLPMarking(tlp='green'),
     )
 
@@ -108,6 +118,7 @@ def test_successful_tlp_amber():
         id='marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
+        name='TLP:AMBER',
         definition=TLPMarking(tlp='amber'),
     )
 
@@ -119,6 +130,7 @@ def test_successful_tlp_red():
         id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
         created='2017-01-20T00:00:00.000Z',
         definition_type='tlp',
+        name='TLP:RED',
         definition=TLPMarking(tlp='red'),
     )
 
