@@ -15,7 +15,7 @@ from ..exceptions import (
     AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
 )
 from ..properties import (
-    BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
+    BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
     ObjectReferenceProperty, ReferenceProperty, StringProperty,
@@ -934,11 +934,6 @@ class WindowsRegistryKey(_Observable):
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["key", "values"]
-
-    @property
-    def values(self):
-        # Needed because 'values' is a property on collections.Mapping objects
-        return CallableValues(self, self._inner['values'])
 
 
 class X509V3ExtenstionsType(_STIXBase):

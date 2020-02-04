@@ -1301,9 +1301,9 @@ def test_windows_registry_key_example():
         values=[v],
     )
     assert w.key == "hkey_local_machine\\system\\bar\\foo"
-    assert w.values[0].name == "Foo"
-    assert w.values[0].data == "qwerty"
-    assert w.values[0].data_type == "REG_SZ"
+    assert w["values"][0].name == "Foo"
+    assert w["values"][0].data == "qwerty"
+    assert w["values"][0].data_type == "REG_SZ"
     # ensure no errors in serialization because of 'values'
     assert "Foo" in str(w)
 
