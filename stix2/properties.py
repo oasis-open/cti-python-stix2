@@ -11,7 +11,7 @@ from six import string_types, text_type
 
 import stix2
 
-from .base import _Observable, _STIXBase
+from .base import _STIXBase
 from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
@@ -226,19 +226,6 @@ class ListProperty(Property):
             raise ValueError("must not be empty.")
 
         return result
-
-
-class CallableValues(list):
-    """Wrapper to allow `values()` method on WindowsRegistryKey objects.
-    Needed because `values` is also a property.
-    """
-
-    def __init__(self, parent_instance, *args, **kwargs):
-        self.parent_instance = parent_instance
-        super(CallableValues, self).__init__(*args, **kwargs)
-
-    def __call__(self):
-        return _Observable.values(self.parent_instance)
 
 
 class StringProperty(Property):

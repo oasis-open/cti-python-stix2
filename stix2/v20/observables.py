@@ -12,7 +12,7 @@ from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
-    BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
+    BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IntegerProperty, ListProperty,
     ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
@@ -722,11 +722,6 @@ class WindowsRegistryKey(_Observable):
         ('number_of_subkeys', IntegerProperty()),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
-
-    @property
-    def values(self):
-        # Needed because 'values' is a property on collections.Mapping objects
-        return CallableValues(self, self._inner['values'])
 
 
 class X509V3ExtenstionsType(_STIXBase):
