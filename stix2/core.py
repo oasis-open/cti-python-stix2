@@ -58,6 +58,47 @@ def parse(data, allow_custom=False, version=None):
     return obj
 
 
+def _detect_spec_version(stix_dict):
+    """
+    Given a dict representing a STIX object, try to detect what spec version
+    it is likely to comply with.
+
+    :param stix_dict: A dict with some STIX content.  Must at least have a
+        "type" property.
+    :return: A string in "vXX" format, where "XX" indicates the spec version,
+        e.g. "v20", "v21", etc.
+    """
+
+    obj_type = stix_dict["type"]
+
+    if 'spec_version' in stix_dict:
+        # For STIX 2.0, applies to bundles only.
+        # For STIX 2.1+, applies to SCOs, SDOs, SROs, and markings only.
+        v = 'v' + stix_dict['spec_version'].replace('.', '')
+    elif "id" not in stix_dict:
+        # Only 2.0 SCOs don't have ID properties
+        v = "v20"
+    elif obj_type == 'bundle':
+        # Bundle without a spec_version property: must be 2.1.  But to
+        # future-proof, use max version over all contained SCOs, with 2.1
+        # minimum.
+        v = max(
+            "v21",
+            max(
+                _detect_spec_version(obj) for obj in stix_dict["objects"]
+            )
+        )
+    elif obj_type in STIX2_OBJ_MAPS["v21"]["observables"]:
+        # Non-bundle object with an ID and without spec_version.  Could be a
+        # 2.1 SCO or 2.0 SDO/SRO/marking.  Check for 2.1 SCO...
+        v = "v21"
+    else:
+        # Not a 2.1 SCO; must be a 2.0 object.
+        v = "v20"
+
+    return v
+
+
 def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     """convert dictionary to full python-stix2 object
 
@@ -93,21 +134,8 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     if version:
         # If the version argument was passed, override other approaches.
         v = 'v' + version.replace('.', '')
-    elif 'spec_version' in stix_dict:
-        # For STIX 2.0, applies to bundles only.
-        # For STIX 2.1+, applies to SDOs, SROs, and markings only.
-        v = 'v' + stix_dict['spec_version'].replace('.', '')
-    elif stix_dict['type'] == 'bundle':
-        # bundles without spec_version are ambiguous.
-        if any('spec_version' in x for x in stix_dict['objects']):
-            # Only on 2.1 we are allowed to have 'spec_version' in SDOs/SROs.
-            v = 'v21'
-        else:
-            v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
     else:
-        # The spec says that SDO/SROs without spec_version will default to a
-        # '2.0' representation.
-        v = 'v20'
+        v = _detect_spec_version(stix_dict)
 
     OBJ_MAP = dict(STIX2_OBJ_MAPS[v]['objects'], **STIX2_OBJ_MAPS[v]['observables'])
 
@@ -142,6 +170,10 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
 
     """
     obj = _get_dict(data)
+
+    if 'type' not in obj:
+        raise ParseError("Can't parse observable with no 'type' property: %s" % str(obj))
+
     # get deep copy since we are going modify the dict and might
     # modify the original dict as _get_dict() does not return new
     # dict when passed a dict
@@ -153,11 +185,8 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
         # If the version argument was passed, override other approaches.
         v = 'v' + version.replace('.', '')
     else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+        v = _detect_spec_version(obj)
 
-    if 'type' not in obj:
-        raise ParseError("Can't parse observable with no 'type' property: %s" % str(obj))
     try:
         OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
