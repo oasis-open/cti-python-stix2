@@ -86,7 +86,7 @@ def _detect_spec_version(stix_dict):
             "v21",
             max(
                 _detect_spec_version(obj) for obj in stix_dict["objects"]
-            )
+            ),
         )
     elif obj_type in STIX2_OBJ_MAPS["v21"]["observables"]:
         # Non-bundle object with an ID and without spec_version.  Could be a
