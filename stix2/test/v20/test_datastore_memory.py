@@ -432,8 +432,8 @@ def test_unversioned_objects(mem_store):
         "created": "1988-01-02T16:44:04.000Z",
         "definition_type": "statement",
         "definition": {
-            "statement": "Copyright (C) ACME Corp."
-        }
+            "statement": "Copyright (C) ACME Corp.",
+        },
     }
 
     mem_store.add(marking)
