@@ -438,3 +438,38 @@ def test_object_family_internal_components(mem_source):
 
     assert "latest=2017-01-27 13:49:53.936000+00:00>>" in str_representation
     assert "latest=2017-01-27 13:49:53.936000+00:00>>" in repr_representation
+
+
+def test_unversioned_objects(mem_store):
+    marking = {
+        "type": "marking-definition",
+        "spec_version": "2.1",
+        "id": "marking-definition--48e83cde-e902-4404-85b3-6e81f75ccb62",
+        "created": "1988-01-02T16:44:04.000Z",
+        "definition_type": "statement",
+        "definition": {
+            "statement": "Copyright (C) ACME Corp.",
+        },
+    }
+
+    file_sco = {
+        "type": "file",
+        "id": "file--bbd59c0c-1aa4-44f1-96de-80b8325372c7",
+        "name": "cats.png",
+    }
+
+    mem_store.add([marking, file_sco])
+
+    obj = mem_store.get(marking["id"])
+    assert obj["id"] == marking["id"]
+
+    obj = mem_store.get(file_sco["id"])
+    assert obj["id"] == file_sco["id"]
+
+    objs = mem_store.all_versions(marking["id"])
+    assert len(objs) == 1
+    assert objs[0]["id"] == marking["id"]
+
+    objs = mem_store.all_versions(file_sco["id"])
+    assert len(objs) == 1
+    assert objs[0]["id"] == file_sco["id"]
