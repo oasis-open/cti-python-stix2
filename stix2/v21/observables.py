@@ -7,13 +7,10 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 import itertools
-import warnings
 
 from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
-from ..exceptions import (
-    AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
-)
+from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
