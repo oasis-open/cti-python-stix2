@@ -1,11 +1,7 @@
 import importlib
 import inspect
 
-from antlr4 import BailErrorStrategy, CommonTokenStream, InputStream
-import antlr4.error.Errors
-import six
-from stix2patterns.exceptions import ParseException, ParserErrorListener
-from stix2patterns.grammars.STIXPatternLexer import STIXPatternLexer
+from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternParser import (
     STIXPatternParser, TerminalNode,
 )
