@@ -10,6 +10,7 @@ from stix2patterns.grammars.STIXPatternParser import (
     STIXPatternParser, TerminalNode,
 )
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
+from stix2patterns.v20.pattern import Pattern
 
 from .patterns import *
 from .patterns import _BooleanExpression
@@ -330,40 +331,6 @@ def create_pattern_object(pattern, module_suffix="", module_name=""):
     Create a STIX pattern AST from a pattern string.
     """
 
-    pattern = InputStream(pattern)
-
-    parseErrListener = ParserErrorListener()
-
-    lexer = STIXPatternLexer(pattern)
-    # it always adds a console listener by default... remove it.
-    lexer.removeErrorListeners()
-
-    stream = CommonTokenStream(lexer)
-
-    parser = STIXPatternParser(stream)
-    parser._errHandler = BailErrorStrategy()
-
-    parser.buildParseTrees = True
-    # it always adds a console listener by default... remove it.
-    parser.removeErrorListeners()
-    parser.addErrorListener(parseErrListener)
-
-    # To improve error messages, replace "<INVALID>" in the literal
-    # names with symbolic names.  This is a hack, but seemed like
-    # the simplest workaround.
-    for i, lit_name in enumerate(parser.literalNames):
-        if lit_name == u"<INVALID>":
-            parser.literalNames[i] = parser.symbolicNames[i]
-
-    try:
-        tree = parser.pattern()
-    except antlr4.error.Errors.ParseCancellationException as e:
-        real_exc = e.args[0]
-        parser._errHandler.reportError(parser, real_exc)
-        six.raise_from(
-            ParseException(parseErrListener.error_message),
-            real_exc,
-        )
-
+    pattern_obj = Pattern(pattern)
     builder = STIXPatternVisitorForSTIX2(module_suffix, module_name)
-    return builder.visit(tree)
+    return pattern_obj.visit(builder)
