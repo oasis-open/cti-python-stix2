@@ -8,42 +8,23 @@ import stix2.utils
 
 COA_WITH_BIN_JSON = """{
     "type": "course-of-action",
-    "spec_version": "2.1",
     "id": "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
     "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T20:03:48.000Z",
     "modified": "2016-04-06T20:03:48.000Z",
     "name": "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
-    "action_type": "textual:text/plain",
-    "os_execution_envs": [
-        "a",
-        "b",
-        "c"
-    ],
-    "action_bin": "aGVsbG8gd29ybGQ="
+    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ..."
 }"""
 
 
 COA_WITH_REF_JSON = """{
     "type": "course-of-action",
-    "spec_version": "2.1",
     "id": "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
     "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T20:03:48.000Z",
     "modified": "2016-04-06T20:03:48.000Z",
     "name": "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
-    "action_type": "textual:text/plain",
-    "os_execution_envs": [
-        "a",
-        "b",
-        "c"
-    ],
-    "action_reference": {
-        "source_name": "a source",
-        "description": "description of a source"
-    }
+    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ..."
 }"""
 
 
@@ -83,16 +64,5 @@ def test_parse_course_of_action(sdo_json, sdo_dict):
 
             assert getattr(coa, attr_name) == cmp_value
 
-
-def test_course_of_action_constraint():
-    with pytest.raises(stix2.exceptions.MutuallyExclusivePropertiesError):
-        stix2.v21.CourseOfAction(
-            name="Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-            action_bin="aGVsbG8gd29ybGQ=",
-            action_reference=stix2.v21.ExternalReference(
-                source_name="a source",
-                description="description of a source",
-            ),
-        )
 
 # TODO: Add other examples

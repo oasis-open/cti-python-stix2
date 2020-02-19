@@ -13,10 +13,9 @@ from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
 )
 from ..properties import (
-    BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, IDProperty, IntegerProperty, ListProperty,
-    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
+    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
+    StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
@@ -99,23 +98,16 @@ class CourseOfAction(STIXDomainObject):
     _type = 'course-of-action'
     _properties = OrderedDict([
         ('type', TypeProperty(_type)),
-        ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type, spec_version='2.1')),
-        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('id', IDProperty(_type, spec_version='2.0')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('action_type', StringProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
-        ('action_bin', BinaryProperty()),
-        ('action_reference', EmbeddedObjectProperty(ExternalReference)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
-        ('confidence', IntegerProperty()),
-        ('lang', StringProperty()),
         ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
