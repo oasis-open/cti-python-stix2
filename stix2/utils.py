@@ -285,7 +285,7 @@ def new_version(data, **kwargs):
     cls = type(data)
     if 'modified' not in kwargs:
         old_modified = parse_into_datetime(
-            data["modified"], precision="millisecond"
+            data["modified"], precision="millisecond",
         )
         new_modified = get_timestamp()
         # Ensure the new is newer than the old!
