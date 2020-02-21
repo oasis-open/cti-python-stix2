@@ -7,13 +7,10 @@ Observable and do not have a ``_type`` attribute.
 
 from collections import OrderedDict
 import itertools
-import warnings
 
 from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
-from ..exceptions import (
-    AtLeastOnePropertyError, DependentPropertiesError, STIXDeprecationWarning,
-)
+from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
@@ -121,14 +118,6 @@ class DomainName(_Observable):
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
-
-    def _check_object_constraints(self):
-        if self.get('resolves_to_refs'):
-            warnings.warn(
-                "The 'resolves_to_refs' property of domain-name is deprecated in "
-                "STIX 2.1. Use the 'resolves-to' relationship type instead",
-                STIXDeprecationWarning,
-            )
 
 
 class EmailAddress(_Observable):
@@ -421,21 +410,6 @@ class IPv4Address(_Observable):
     ])
     _id_contributing_properties = ["value"]
 
-    def _check_object_constraints(self):
-        if self.get('resolves_to_refs'):
-            warnings.warn(
-                "The 'resolves_to_refs' property of ipv4-addr is deprecated in "
-                "STIX 2.1. Use the 'resolves-to' relationship type instead",
-                STIXDeprecationWarning,
-            )
-
-        if self.get('belongs_to_refs'):
-            warnings.warn(
-                "The 'belongs_to_refs' property of ipv4-addr is deprecated in "
-                "STIX 2.1. Use the 'belongs-to' relationship type instead",
-                STIXDeprecationWarning,
-            )
-
 
 class IPv6Address(_Observable):
     # TODO: Add link
@@ -457,21 +431,6 @@ class IPv6Address(_Observable):
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
     _id_contributing_properties = ["value"]
-
-    def _check_object_constraints(self):
-        if self.get('resolves_to_refs'):
-            warnings.warn(
-                "The 'resolves_to_refs' property of ipv6-addr is deprecated in "
-                "STIX 2.1. Use the 'resolves-to' relationship type instead",
-                STIXDeprecationWarning,
-            )
-
-        if self.get('belongs_to_refs'):
-            warnings.warn(
-                "The 'belongs_to_refs' property of ipv6-addr is deprecated in "
-                "STIX 2.1. Use the 'belongs-to' relationship type instead",
-                STIXDeprecationWarning,
-            )
 
 
 class MACAddress(_Observable):
