@@ -284,11 +284,14 @@ def new_version(data, **kwargs):
 
     cls = type(data)
     if 'modified' not in kwargs:
-        old_modified = parse_into_datetime(data["modified"])
+        old_modified = parse_into_datetime(
+            data["modified"], precision="millisecond"
+        )
         new_modified = get_timestamp()
         # Ensure the new is newer than the old!
-        if new_modified <= old_modified:
-            new_modified = old_modified + dt.timedelta(microseconds=1000)
+        one_ms = dt.timedelta(milliseconds=1)
+        if new_modified - old_modified < one_ms:
+            new_modified = old_modified + one_ms
         kwargs['modified'] = new_modified
     elif 'modified' in data:
         old_modified_property = parse_into_datetime(data.get('modified'), precision='millisecond')
