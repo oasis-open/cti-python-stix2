@@ -394,7 +394,6 @@ class _Observable(_STIXBase):
                         streamlined_obj_vals.append(temp_deep_copy)
                     else:
                         streamlined_obj_vals.append(kwargs[key])
-
             if streamlined_obj_vals:
                 data = canonicalize(streamlined_obj_vals, utf8=False)
 
@@ -450,7 +449,7 @@ def _recursive_stix_to_dict(input_dict):
         elif isinstance(input_dict[key], list):
             _recursive_stix_list_to_dict(input_dict[key])
         else:
-            return
+            pass
 
 
 def _recursive_stix_list_to_dict(input_list):
