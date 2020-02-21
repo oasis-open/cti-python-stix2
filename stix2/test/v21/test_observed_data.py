@@ -1540,42 +1540,6 @@ def test_deterministic_id_no_contributing_props():
     assert uuid_obj_2.version == 4
 
 
-def test_ipv4_resolves_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv4Address(
-            value="26.09.19.70",
-            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
-        )
-
-
-def test_ipv4_belongs_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv4Address(
-            value="21.12.19.64",
-            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
-        )
-
-
-def test_ipv6_resolves_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv6Address(
-            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
-        )
-
-
-def test_ipv6_belongs_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv6Address(
-            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
-        )
-
-
 def test_id_gen_recursive_dict_conversion_1():
     file_observable = stix2.v21.File(
         name="example.exe",
