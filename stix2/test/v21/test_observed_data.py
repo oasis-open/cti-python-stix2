@@ -1538,3 +1538,47 @@ def test_deterministic_id_no_contributing_props():
     uuid_obj_2 = uuid.UUID(email_msg_2.id[-36:])
     assert uuid_obj_2.variant == uuid.RFC_4122
     assert uuid_obj_2.version == 4
+
+
+def test_id_gen_recursive_dict_conversion_1():
+    file_observable = stix2.v21.File(
+        name="example.exe",
+        size=68 * 1000,
+        magic_number_hex="50000000",
+        hashes={
+            "SHA-256": "841a8921140aba50671ebb0770fecc4ee308c4952cfeff8de154ab14eeef4649",
+        },
+        extensions={
+            "windows-pebinary-ext": stix2.v21.WindowsPEBinaryExt(
+                pe_type="exe",
+                machine_hex="014c",
+                sections=[
+                    stix2.v21.WindowsPESection(
+                        name=".data",
+                        size=4096,
+                        entropy=7.980693,
+                        hashes={"SHA-256": "6e3b6f3978e5cd96ba7abee35c24e867b7e64072e2ecb22d0ee7a6e6af6894d0"},
+                    ),
+                ],
+            ),
+        },
+    )
+
+    assert file_observable.id == "file--5219d93d-13c1-5f1f-896b-039f10ec67ea"
+
+
+def test_id_gen_recursive_dict_conversion_2():
+    wrko = stix2.v21.WindowsRegistryKey(
+        values=[
+            stix2.v21.WindowsRegistryValueType(
+                name="Foo",
+                data="qwerty",
+            ),
+            stix2.v21.WindowsRegistryValueType(
+                name="Bar",
+                data="42",
+            ),
+        ],
+    )
+
+    assert wrko.id == "windows-registry-key--c087d9fe-a03e-5922-a1cd-da116e5b8a7b"
