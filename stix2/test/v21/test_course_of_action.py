@@ -8,6 +8,7 @@ import stix2.utils
 
 COA_WITH_BIN_JSON = """{
     "type": "course-of-action",
+    "spec_version": "2.1",
     "id": "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
     "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T20:03:48.000Z",
@@ -19,6 +20,7 @@ COA_WITH_BIN_JSON = """{
 
 COA_WITH_REF_JSON = """{
     "type": "course-of-action",
+    "spec_version": "2.1",
     "id": "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
     "created_by_ref": "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
     "created": "2016-04-06T20:03:48.000Z",
