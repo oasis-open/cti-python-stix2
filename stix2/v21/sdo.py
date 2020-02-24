@@ -112,14 +112,6 @@ class CourseOfAction(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
-    def _check_object_constraints(self):
-        super(CourseOfAction, self)._check_object_constraints()
-
-        self._check_mutually_exclusive_properties(
-            ["action_bin", "action_reference"],
-            at_least_one=False,
-        )
-
 
 class Grouping(STIXDomainObject):
     # TODO: Add link
