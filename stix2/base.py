@@ -388,14 +388,12 @@ class _Observable(_STIXBase):
                         temp_deep_copy = copy.deepcopy(dict(kwargs[key]))
                         _recursive_stix_to_dict(temp_deep_copy)
                         streamlined_obj_vals.append(temp_deep_copy)
-                    elif isinstance(kwargs[key], list) and isinstance(kwargs[key][0], _STIXBase):
-                        for obj in kwargs[key]:
-                            temp_deep_copy = copy.deepcopy(dict(obj))
-                            _recursive_stix_to_dict(temp_deep_copy)
-                            streamlined_obj_vals.append(temp_deep_copy)
+                    elif isinstance(kwargs[key], list):
+                        temp_deep_copy = copy.deepcopy(kwargs[key])
+                        _recursive_stix_list_to_dict(temp_deep_copy)
+                        streamlined_obj_vals.append(temp_deep_copy)
                     else:
                         streamlined_obj_vals.append(kwargs[key])
-
             if streamlined_obj_vals:
                 data = canonicalize(streamlined_obj_vals, utf8=False)
 
@@ -448,5 +446,20 @@ def _recursive_stix_to_dict(input_dict):
 
             # There may stil be nested _STIXBase objects
             _recursive_stix_to_dict(input_dict[key])
+        elif isinstance(input_dict[key], list):
+            _recursive_stix_list_to_dict(input_dict[key])
         else:
-            return
+            pass
+
+
+def _recursive_stix_list_to_dict(input_list):
+    for i in range(len(input_list)):
+        if isinstance(input_list[i], _STIXBase):
+            input_list[i] = dict(input_list[i])
+        elif isinstance(input_list[i], dict):
+            pass
+        elif isinstance(input_list[i], list):
+            _recursive_stix_list_to_dict(input_list[i])
+        else:
+            continue
+        _recursive_stix_to_dict(input_list[i])
