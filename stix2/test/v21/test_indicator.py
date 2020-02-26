@@ -14,9 +14,6 @@ EXPECTED_INDICATOR = """{
     "id": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
     "created": "2017-01-01T00:00:01.000Z",
     "modified": "2017-01-01T00:00:01.000Z",
-    "indicator_types": [
-        "malicious-activity"
-    ],
     "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     "pattern_type": "stix",
     "pattern_version": "2.1",
@@ -29,7 +26,6 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
     id='indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7',
     created='2017-01-01T00:00:01.000Z',
     modified='2017-01-01T00:00:01.000Z',
-    indicator_types=['malicious-activity'],
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     pattern_type='stix',
     pattern_version='2.1',
@@ -49,7 +45,6 @@ def test_indicator_with_all_required_properties():
         pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
         pattern_type="stix",
         valid_from=epoch,
-        indicator_types=['malicious-activity'],
     )
 
     assert ind.revoked is False
@@ -103,8 +98,8 @@ def test_indicator_required_properties():
         stix2.v21.Indicator()
 
     assert excinfo.value.cls == stix2.v21.Indicator
-    assert excinfo.value.properties == ["indicator_types", "pattern", "pattern_type", "valid_from"]
-    assert str(excinfo.value) == "No values for required properties for Indicator: (indicator_types, pattern, pattern_type, valid_from)."
+    assert excinfo.value.properties == ["pattern", "pattern_type", "valid_from"]
+    assert str(excinfo.value) == "No values for required properties for Indicator: (pattern, pattern_type, valid_from)."
 
 
 def test_indicator_required_property_pattern():
@@ -163,9 +158,6 @@ def test_created_modified_time_are_identical_by_default():
             "id": INDICATOR_ID,
             "created": "2017-01-01T00:00:01Z",
             "modified": "2017-01-01T00:00:01Z",
-            "indicator_types": [
-                "malicious-activity",
-            ],
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
             "pattern_type": "stix",
             "valid_from": "1970-01-01T00:00:01Z",
@@ -181,7 +173,6 @@ def test_parse_indicator(data):
     assert idctr.created == dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
     assert idctr.modified == dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
     assert idctr.valid_from == dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
-    assert idctr.indicator_types[0] == "malicious-activity"
     assert idctr.pattern == "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']"
 
 
