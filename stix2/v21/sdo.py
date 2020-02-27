@@ -524,14 +524,15 @@ class MalwareAnalysis(STIXDomainObject):
         ('submitted', TimestampProperty()),
         ('analysis_started', TimestampProperty()),
         ('analysis_ended', TimestampProperty()),
-        ('av_result', StringProperty()),
+        ('result_name', StringProperty()),
+        ('result', StringProperty()),
         ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="SCO", spec_version='2.1'))),
     ])
 
     def _check_object_constraints(self):
         super(MalwareAnalysis, self)._check_object_constraints()
 
-        self._check_at_least_one_property(["av_result", "analysis_sco_refs"])
+        self._check_at_least_one_property(["result", "analysis_sco_refs"])
 
 
 class Note(STIXDomainObject):
