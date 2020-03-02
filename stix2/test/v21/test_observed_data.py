@@ -1300,6 +1300,7 @@ def test_software_example():
     s = stix2.v21.Software(
         name="Word",
         cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
+        swid="e2489b43-a436-47fd-9ea5-165ff0316114",
         version="2002",
         vendor="Microsoft",
     )
