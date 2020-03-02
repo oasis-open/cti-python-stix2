@@ -10,7 +10,6 @@ from stix2.base import _STIXBase
 from stix2.core import parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import FilterSet, apply_common_filters
-from stix2.utils import is_marking
 
 
 def _add(store, stix_data, allow_custom=True, version=None):
@@ -47,12 +46,10 @@ def _add(store, stix_data, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        # Map ID directly to the object, if it is a marking.  Otherwise,
-        # map to a family, so we can track multiple versions.
-        if is_marking(stix_obj):
-            store._data[stix_obj["id"]] = stix_obj
-
-        else:
+        # Map ID to a _ObjectFamily if the object is versioned, so we can track
+        # multiple versions.  Otherwise, map directly to the object.  All
+        # versioned objects should have a "modified" property.
+        if "modified" in stix_obj:
             if stix_obj["id"] in store._data:
                 obj_family = store._data[stix_obj["id"]]
             else:
@@ -60,6 +57,9 @@ def _add(store, stix_data, allow_custom=True, version=None):
                 store._data[stix_obj["id"]] = obj_family
 
             obj_family.add(stix_obj)
+
+        else:
+            store._data[stix_obj["id"]] = stix_obj
 
 
 class _ObjectFamily(object):
@@ -267,12 +267,12 @@ class MemorySource(DataSource):
         """
         stix_obj = None
 
-        if is_marking(stix_id):
-            stix_obj = self._data.get(stix_id)
-        else:
-            object_family = self._data.get(stix_id)
-            if object_family:
-                stix_obj = object_family.latest_version
+        mapped_value = self._data.get(stix_id)
+        if mapped_value:
+            if isinstance(mapped_value, _ObjectFamily):
+                stix_obj = mapped_value.latest_version
+            else:
+                stix_obj = mapped_value
 
         if stix_obj:
             all_filters = list(
@@ -300,17 +300,13 @@ class MemorySource(DataSource):
 
         """
         results = []
-        stix_objs_to_filter = None
-        if is_marking(stix_id):
-            stix_obj = self._data.get(stix_id)
-            if stix_obj:
-                stix_objs_to_filter = [stix_obj]
-        else:
-            object_family = self._data.get(stix_id)
-            if object_family:
-                stix_objs_to_filter = object_family.all_versions.values()
+        mapped_value = self._data.get(stix_id)
+        if mapped_value:
+            if isinstance(mapped_value, _ObjectFamily):
+                stix_objs_to_filter = mapped_value.all_versions.values()
+            else:
+                stix_objs_to_filter = [mapped_value]
 
-        if stix_objs_to_filter:
             all_filters = list(
                 itertools.chain(
                     _composite_filters or [],
