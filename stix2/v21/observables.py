@@ -980,9 +980,6 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
         ...     pass
 
     """
-    if id_contrib_props is None:
-        id_contrib_props = []
-
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type))],

@@ -54,6 +54,9 @@ def _custom_marking_builder(cls, type, properties, version):
 
 
 def _custom_observable_builder(cls, type, properties, version, id_contrib_props=None):
+    if id_contrib_props is None:
+        id_contrib_props = []
+
     class _CustomObservable(cls, _Observable):
 
         if not re.match(TYPE_REGEX, type):
