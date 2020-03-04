@@ -966,7 +966,7 @@ class X509Certificate(_Observable):
         self._check_at_least_one_property(att_list)
 
 
-def CustomObservable(type='x-custom-observable', properties=None, id_contrib_props=[]):
+def CustomObservable(type='x-custom-observable', properties=None, id_contrib_props=None):
     """Custom STIX Cyber Observable Object type decorator.
 
     Example:
@@ -980,6 +980,9 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
         ...     pass
 
     """
+    if id_contrib_props is None:
+        id_contrib_props = []
+
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type))],

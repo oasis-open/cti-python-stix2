@@ -53,7 +53,7 @@ def _custom_marking_builder(cls, type, properties, version):
     return _CustomMarking
 
 
-def _custom_observable_builder(cls, type, properties, version, id_contrib_props=[]):
+def _custom_observable_builder(cls, type, properties, version, id_contrib_props=None):
     class _CustomObservable(cls, _Observable):
 
         if not re.match(TYPE_REGEX, type):
