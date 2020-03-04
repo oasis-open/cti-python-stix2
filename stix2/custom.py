@@ -53,7 +53,10 @@ def _custom_marking_builder(cls, type, properties, version):
     return _CustomMarking
 
 
-def _custom_observable_builder(cls, type, properties, version):
+def _custom_observable_builder(cls, type, properties, version, id_contrib_props=None):
+    if id_contrib_props is None:
+        id_contrib_props = []
+
     class _CustomObservable(cls, _Observable):
 
         if not re.match(TYPE_REGEX, type):
@@ -98,6 +101,8 @@ def _custom_observable_builder(cls, type, properties, version):
 
         _type = type
         _properties = OrderedDict(properties)
+        if version != '2.0':
+            _id_contributing_properties = id_contrib_props
 
         def __init__(self, **kwargs):
             _Observable.__init__(self, **kwargs)

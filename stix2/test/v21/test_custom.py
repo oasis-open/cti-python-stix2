@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 import stix2
@@ -663,6 +665,76 @@ def test_observed_data_with_custom_observable_object():
         allow_custom=True,
     )
     assert ob_data.objects['0'].property1 == 'something'
+
+
+def test_custom_observable_object_det_id_1():
+    @stix2.v21.CustomObservable(
+        'x-det-id-observable-1', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ], [
+            'property1',
+        ],
+    )
+    class DetIdObs1():
+        pass
+
+    dio_1 = DetIdObs1(property1='I am property1!', property2=42)
+    dio_2 = DetIdObs1(property1='I am property1!', property2=24)
+    assert dio_1.property1 == dio_2.property1 == 'I am property1!'
+    assert dio_1.id == dio_2.id
+
+    uuid_obj = uuid.UUID(dio_1.id[-36:])
+    assert uuid_obj.variant == uuid.RFC_4122
+    assert uuid_obj.version == 5
+
+    dio_3 = DetIdObs1(property1='I am property1!', property2=42)
+    dio_4 = DetIdObs1(property1='I am also property1!', property2=24)
+    assert dio_3.property1 == 'I am property1!'
+    assert dio_4.property1 == 'I am also property1!'
+    assert dio_3.id != dio_4.id
+
+
+def test_custom_observable_object_det_id_2():
+    @stix2.v21.CustomObservable(
+        'x-det-id-observable-2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ], [
+            'property1', 'property2',
+        ],
+    )
+    class DetIdObs2():
+        pass
+
+    dio_1 = DetIdObs2(property1='I am property1!', property2=42)
+    dio_2 = DetIdObs2(property1='I am property1!', property2=42)
+    assert dio_1.property1 == dio_2.property1 == 'I am property1!'
+    assert dio_1.property2 == dio_2.property2 == 42
+    assert dio_1.id == dio_2.id
+
+    dio_3 = DetIdObs2(property1='I am property1!', property2=42)
+    dio_4 = DetIdObs2(property1='I am also property1!', property2=42)
+    assert dio_3.property1 == 'I am property1!'
+    assert dio_4.property1 == 'I am also property1!'
+    assert dio_3.property2 == dio_4.property2 == 42
+    assert dio_3.id != dio_4.id
+
+
+def test_custom_observable_object_no_id_contrib_props():
+    @stix2.v21.CustomObservable(
+        'x-det-id-observable-3', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    )
+    class DetIdObs3():
+        pass
+
+    dio = DetIdObs3(property1="I am property1!")
+
+    uuid_obj = uuid.UUID(dio.id[-36:])
+    assert uuid_obj.variant == uuid.RFC_4122
+    assert uuid_obj.version == 4
 
 
 @stix2.v21.CustomExtension(
