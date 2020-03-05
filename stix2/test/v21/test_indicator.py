@@ -271,7 +271,7 @@ def test_indicator_stix20_invalid_pattern():
         )
 
     assert excinfo.value.cls == stix2.v21.Indicator
-    assert "FAIL: Duplicate qualifier type encountered" in str(excinfo.value)
+    assert "FAIL: Duplicate qualifier type encountered: WITHIN" in str(excinfo.value)
 
     ind = stix2.v21.Indicator(
         type="indicator",
