@@ -126,6 +126,7 @@ def test_external_reference_bad_hash():
     with pytest.raises(stix2.exceptions.InvalidValueError):
         stix2.v21.ExternalReference(
             source_name="ACME Threat Intel",
+            description="Threat report",
             hashes={
                 "SHA-123": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
             }
