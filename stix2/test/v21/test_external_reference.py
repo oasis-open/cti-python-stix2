@@ -120,3 +120,13 @@ def test_external_reference_source_required():
 
     assert excinfo.value.cls == stix2.v21.ExternalReference
     assert excinfo.value.properties == ["source_name"]
+
+
+def test_external_reference_bad_hash():
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        stix2.v21.ExternalReference(
+            source_name="ACME Threat Intel",
+            hashes={
+                "SHA-123": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            }
+        )
