@@ -15,7 +15,7 @@ from stix2.datastore import (
     DataSink, DataSource, DataSourceError, DataStoreMixin,
 )
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
-from stix2.utils import format_datetime, get_type_from_id, is_marking
+from stix2.utils import format_datetime, get_type_from_id
 
 
 def _timestamp2filename(timestamp):
@@ -329,11 +329,50 @@ def _check_object_from_file(query, filepath, allow_custom, version, encoding):
     return result
 
 
+def _is_versioned_type_dir(type_path, type_name):
+    """
+    Try to detect whether the given directory is for a versioned type of STIX
+    object.  This is done by looking for a directory whose name is a STIX ID
+    of the appropriate type.  If found, treat this type as versioned.  This
+    doesn't work when a versioned type directory is empty (it will be
+    mis-classified as unversioned), but this detection is only necessary when
+    reading/querying data.  If a directory is empty, you'll get no results
+    either way.
+
+    Args:
+        type_path: A path to a directory containing one type of STIX object.
+        type_name: The STIX type name.
+
+    Returns:
+        True if the directory looks like it contains versioned objects; False
+        if not.
+
+    Raises:
+        OSError: If there are errors accessing directory contents or stat()'ing
+            files
+    """
+    id_regex = re.compile(
+        r"^" + re.escape(type_name) +
+        r"--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}"
+        r"-[0-9a-f]{12}$",
+        re.I,
+    )
+
+    for entry in os.listdir(type_path):
+        s = os.stat(os.path.join(type_path, entry))
+        if stat.S_ISDIR(s.st_mode) and id_regex.match(entry):
+            is_versioned = True
+            break
+    else:
+        is_versioned = False
+
+    return is_versioned
+
+
 def _search_versioned(query, type_path, auth_ids, allow_custom, version, encoding):
     """
     Searches the given directory, which contains data for STIX objects of a
-    particular versioned type (i.e. not markings), and return any which match
-    the query.
+    particular versioned type, and return any which match the query.
 
     Args:
         query: The query to match against
@@ -390,36 +429,24 @@ def _search_versioned(query, type_path, auth_ids, allow_custom, version, encodin
 
     # For backward-compatibility, also search for plain files named after
     # object IDs, in the type directory.
-    id_files = _get_matching_dir_entries(
-        type_path, auth_ids, stat.S_ISREG,
-        ".json",
+    backcompat_results = _search_unversioned(
+        query, type_path, auth_ids, allow_custom, version, encoding,
     )
-    for id_file in id_files:
-        id_path = os.path.join(type_path, id_file)
-
-        try:
-            stix_obj = _check_object_from_file(
-                query, id_path, allow_custom,
-                version, encoding,
-            )
-            if stix_obj:
-                results.append(stix_obj)
-        except IOError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            # else, file-not-found is ok, just skip
+    results.extend(backcompat_results)
 
     return results
 
 
-def _search_markings(query, markings_path, auth_ids, allow_custom, version, encoding):
+def _search_unversioned(
+    query, type_path, auth_ids, allow_custom, version, encoding,
+):
     """
-    Searches the given directory, which contains markings data, and return any
-    which match the query.
+    Searches the given directory, which contains unversioned data, and return
+    any objects which match the query.
 
     Args:
         query: The query to match against
-        markings_path: The directory with STIX markings files
+        type_path: The directory with STIX files of unversioned type
         auth_ids: Search optimization based on object ID
         allow_custom (bool): Whether to allow custom properties as well unknown
             custom objects.
@@ -441,11 +468,11 @@ def _search_markings(query, markings_path, auth_ids, allow_custom, version, enco
     """
     results = []
     id_files = _get_matching_dir_entries(
-        markings_path, auth_ids, stat.S_ISREG,
+        type_path, auth_ids, stat.S_ISREG,
         ".json",
     )
     for id_file in id_files:
-        id_path = os.path.join(markings_path, id_file)
+        id_path = os.path.join(type_path, id_file)
 
         try:
             stix_obj = _check_object_from_file(
@@ -530,12 +557,14 @@ class FileSystemSink(DataSink):
         """Write the given STIX object to a file in the STIX file directory.
         """
         type_dir = os.path.join(self._stix_dir, stix_obj["type"])
-        if is_marking(stix_obj):
-            filename = stix_obj["id"]
-            obj_dir = type_dir
-        else:
+
+        # All versioned objects should have a "modified" property.
+        if "modified" in stix_obj:
             filename = _timestamp2filename(stix_obj["modified"])
             obj_dir = os.path.join(type_dir, stix_obj["id"])
+        else:
+            filename = stix_obj["id"]
+            obj_dir = type_dir
 
         file_path = os.path.join(obj_dir, filename + ".json")
 
@@ -649,12 +678,14 @@ class FileSystemSource(DataSource):
         all_data = self.all_versions(stix_id, version=version, _composite_filters=_composite_filters)
 
         if all_data:
-            if is_marking(stix_id):
-                # Markings are unversioned; there shouldn't be more than one
-                # result.
-                stix_obj = all_data[0]
-            else:
+            # Simple check for a versioned STIX type: see if the objects have a
+            # "modified" property.  (Need only check one, since they are all of
+            # the same type.)
+            is_versioned = "modified" in all_data[0]
+            if is_versioned:
                 stix_obj = sorted(all_data, key=lambda k: k['modified'])[-1]
+            else:
+                stix_obj = all_data[0]
         else:
             stix_obj = None
 
@@ -720,14 +751,15 @@ class FileSystemSource(DataSource):
         )
         for type_dir in type_dirs:
             type_path = os.path.join(self._stix_dir, type_dir)
-            if type_dir == "marking-definition":
-                type_results = _search_markings(
+            type_is_versioned = _is_versioned_type_dir(type_path, type_dir)
+            if type_is_versioned:
+                type_results = _search_versioned(
                     query, type_path, auth_ids,
                     self.allow_custom, version,
                     self.encoding,
                 )
             else:
-                type_results = _search_versioned(
+                type_results = _search_unversioned(
                     query, type_path, auth_ids,
                     self.allow_custom, version,
                     self.encoding,
