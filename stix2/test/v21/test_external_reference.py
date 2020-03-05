@@ -128,6 +128,6 @@ def test_external_reference_bad_hash():
             source_name="ACME Threat Intel",
             description="Threat report",
             hashes={
-                "SHA-123": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            }
+                "SHA-123": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            },
         )
