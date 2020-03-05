@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+from stix2patterns.exceptions import ParseException
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
@@ -515,3 +516,8 @@ def test_list_constant():
 def test_parsing_multiple_slashes_quotes():
     patt_obj = create_pattern_object("[ file:name = 'weird_name\\'' ]")
     assert str(patt_obj) == "[file:name = 'weird_name\\'']"
+
+
+def test_parse_error():
+    with pytest.raises(ParseException):
+        create_pattern_object("[ file: name = 'weirdname]")
