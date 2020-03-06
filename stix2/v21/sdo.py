@@ -460,7 +460,7 @@ class Malware(STIXDomainObject):
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
+        ('operating_system_refs', ListProperty(ReferenceProperty(valid_types='software', spec_version='2.1'))),
         ('architecture_execution_envs', ListProperty(StringProperty)),
         ('implementation_languages', ListProperty(StringProperty)),
         ('capabilities', ListProperty(StringProperty)),
