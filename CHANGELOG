@@ -1,6 +1,19 @@
 CHANGELOG
 =========
 
+1.3.1 - 2020-03-06
+
+* #322 Adds encoding option FileSystemSource and MemorySource
+* #354 Adds ability to specify id-contributing properties on custom SCOs
+* #346 Certain SCO properties are no longer deprecated
+* #327 Fixes missing 'name' property on Marking Definitions
+* #303 Fixes bug with escaping quotes in patterns
+* #331 Fixes crashing bug of property names that conflict with Mapping methods
+* #337 Fixes bug with detecting STIX version of content when parsing
+* #342, #343 Fixes bug when adding SCOs to Memory or FileSystem Stores
+* #348 Fixes bug with generating deterministic IDs for SCOs
+* #344 Fixes bug with propagating errors from the pattern validator
+
 1.3.0 - 2020-01-04
 
 * #305 Updates support of STIX 2.1 to WD06
