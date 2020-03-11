@@ -259,7 +259,7 @@ def _register_observable(new_observable, version=None):
 
 
 def _register_observable_extension(
-    observable, new_extension, version=stix2.DEFAULT_VERSION
+    observable, new_extension, version=stix2.DEFAULT_VERSION,
 ):
     """Register a custom extension to a STIX Cyber Observable type.
 
