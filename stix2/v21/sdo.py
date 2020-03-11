@@ -526,6 +526,7 @@ class MalwareAnalysis(STIXDomainObject):
         ('analysis_ended', TimestampProperty()),
         ('av_result', StringProperty()),
         ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="SCO", spec_version='2.1'))),
+        ('sample_ref', ReferenceProperty(valid_types="SCO", spec_version="2.1")),
     ])
 
     def _check_object_constraints(self):
