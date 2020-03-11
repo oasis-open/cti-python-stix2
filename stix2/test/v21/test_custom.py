@@ -800,7 +800,7 @@ def test_custom_extension_wrong_observable_type():
 )
 def test_custom_extension_with_list_and_dict_properties_observable_type(data):
     @stix2.v21.CustomExtension(
-        stix2.v21.UserAccount, 'some-extension', [
+        stix2.v21.UserAccount, 'some-extension-ext', [
             ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
         ],
     )
@@ -876,32 +876,29 @@ def test_custom_extension_invalid_type_name():
 
 
 def test_custom_extension_no_properties():
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new-ext2', None)
+    with pytest.raises(ValueError):
+        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', None)
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_empty_properties():
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new-ext2', [])
+    with pytest.raises(ValueError):
+        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', [])
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_dict_properties():
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new-ext2', {})
+    with pytest.raises(ValueError):
+        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', {})
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_no_init_1():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new-extension', [
+        stix2.v21.DomainName, 'x-new-extension-ext', [
             ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
@@ -914,7 +911,7 @@ def test_custom_extension_no_init_1():
 
 def test_custom_extension_no_init_2():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new-ext2', [
+        stix2.v21.DomainName, 'x-new2-ext', [
             ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
@@ -949,14 +946,14 @@ def test_custom_and_spec_extension_mix():
     file_obs = stix2.v21.File(
         name="my_file.dat",
         extensions={
-            "x-custom1": {
+            "custom1-ext": {
                 "a": 1,
                 "b": 2,
             },
             "ntfs-ext": {
                 "sid": "S-1-whatever",
             },
-            "x-custom2": {
+            "custom2-ext": {
                 "z": 99.9,
                 "y": False,
             },
@@ -969,8 +966,8 @@ def test_custom_and_spec_extension_mix():
         allow_custom=True,
     )
 
-    assert file_obs.extensions["x-custom1"] == {"a": 1, "b": 2}
-    assert file_obs.extensions["x-custom2"] == {"y": False, "z": 99.9}
+    assert file_obs.extensions["custom1-ext"] == {"a": 1, "b": 2}
+    assert file_obs.extensions["custom2-ext"] == {"y": False, "z": 99.9}
     assert file_obs.extensions["ntfs-ext"].sid == "S-1-whatever"
     assert file_obs.extensions["raster-image-ext"].image_height == 1024
 

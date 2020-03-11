@@ -821,27 +821,24 @@ def test_custom_extension_invalid_type_name():
 
 
 def test_custom_extension_no_properties():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         @stix2.v20.CustomExtension(stix2.v20.DomainName, 'x-new-ext2', None)
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_empty_properties():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         @stix2.v20.CustomExtension(stix2.v20.DomainName, 'x-new-ext2', [])
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_dict_properties():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         @stix2.v20.CustomExtension(stix2.v20.DomainName, 'x-new-ext2', {})
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_no_init_1():

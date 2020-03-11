@@ -26,6 +26,7 @@ NOW = object()
 STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
 
 TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
+SCO21_EXT_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-ext$'
 
 
 class STIXdatetime(dt.datetime):
