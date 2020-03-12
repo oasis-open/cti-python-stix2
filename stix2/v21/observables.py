@@ -382,7 +382,7 @@ class File(_Observable):
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
-    _id_contributing_properties = ["hashes", "name", "extensions"]
+    _id_contributing_properties = ["hashes", "name", "parent_directory_ref", "extensions"]
 
     def _check_object_constraints(self):
         super(File, self)._check_object_constraints()
