@@ -800,7 +800,7 @@ def test_custom_extension_wrong_observable_type():
 )
 def test_custom_extension_with_list_and_dict_properties_observable_type(data):
     @stix2.v21.CustomExtension(
-        stix2.v21.UserAccount, 'some-extension-ext', [
+        stix2.v21.UserAccount, 'x-some-extension-ext', [
             ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
         ],
     )
@@ -946,14 +946,14 @@ def test_custom_and_spec_extension_mix():
     file_obs = stix2.v21.File(
         name="my_file.dat",
         extensions={
-            "custom1-ext": {
+            "x-custom1-ext": {
                 "a": 1,
                 "b": 2,
             },
             "ntfs-ext": {
                 "sid": "S-1-whatever",
             },
-            "custom2-ext": {
+            "x-custom2-ext": {
                 "z": 99.9,
                 "y": False,
             },
@@ -966,8 +966,8 @@ def test_custom_and_spec_extension_mix():
         allow_custom=True,
     )
 
-    assert file_obs.extensions["custom1-ext"] == {"a": 1, "b": 2}
-    assert file_obs.extensions["custom2-ext"] == {"y": False, "z": 99.9}
+    assert file_obs.extensions["x-custom1-ext"] == {"a": 1, "b": 2}
+    assert file_obs.extensions["x-custom2-ext"] == {"y": False, "z": 99.9}
     assert file_obs.extensions["ntfs-ext"].sid == "S-1-whatever"
     assert file_obs.extensions["raster-image-ext"].image_height == 1024
 
