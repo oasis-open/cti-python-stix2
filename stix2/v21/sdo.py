@@ -13,10 +13,9 @@ from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
 )
 from ..properties import (
-    BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, IDProperty, IntegerProperty, ListProperty,
-    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
+    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
+    StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
@@ -106,10 +105,6 @@ class CourseOfAction(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('action_type', StringProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
-        ('action_bin', BinaryProperty()),
-        ('action_reference', EmbeddedObjectProperty(ExternalReference)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -118,14 +113,6 @@ class CourseOfAction(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
-
-    def _check_object_constraints(self):
-        super(CourseOfAction, self)._check_object_constraints()
-
-        self._check_mutually_exclusive_properties(
-            ["action_bin", "action_reference"],
-            at_least_one=False,
-        )
 
 
 class Grouping(STIXDomainObject):
