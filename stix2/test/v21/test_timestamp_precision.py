@@ -62,14 +62,14 @@ def test_stix_datetime():
 
 @pytest.mark.parametrize(
     "us, precision, precision_constraint, expected_truncated_us", [
-    (123456, Precision.ANY, PrecisionConstraint.EXACT, 123456),
-    (123456, Precision.SECOND, PrecisionConstraint.EXACT, 0),
-    (123456, Precision.SECOND, PrecisionConstraint.MIN, 123456),
-    (123456, Precision.MILLISECOND, PrecisionConstraint.EXACT, 123000),
-    (123456, Precision.MILLISECOND, PrecisionConstraint.MIN, 123456),
-    (1234, Precision.MILLISECOND, PrecisionConstraint.EXACT, 1000),
-    (123, Precision.MILLISECOND, PrecisionConstraint.EXACT, 0),
-],
+        (123456, Precision.ANY, PrecisionConstraint.EXACT, 123456),
+        (123456, Precision.SECOND, PrecisionConstraint.EXACT, 0),
+        (123456, Precision.SECOND, PrecisionConstraint.MIN, 123456),
+        (123456, Precision.MILLISECOND, PrecisionConstraint.EXACT, 123000),
+        (123456, Precision.MILLISECOND, PrecisionConstraint.MIN, 123456),
+        (1234, Precision.MILLISECOND, PrecisionConstraint.EXACT, 1000),
+        (123, Precision.MILLISECOND, PrecisionConstraint.EXACT, 0),
+    ],
 )
 def test_parse_datetime(
     us, precision, precision_constraint, expected_truncated_us,
@@ -91,24 +91,24 @@ def test_parse_datetime(
 
 @pytest.mark.parametrize(
     "us, precision, precision_constraint, expected_us_str", [
-    (123456, Precision.ANY, PrecisionConstraint.EXACT, ".123456"),
-    (123456, Precision.SECOND, PrecisionConstraint.EXACT, ""),
-    (123456, Precision.SECOND, PrecisionConstraint.MIN, ".123456"),
-    (123456, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".123"),
-    (123456, Precision.MILLISECOND, PrecisionConstraint.MIN, ".123456"),
-    (0, Precision.SECOND, PrecisionConstraint.MIN, ""),
-    (0, Precision.MILLISECOND, PrecisionConstraint.MIN, ".000"),
-    (0, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".000"),
-    (1000, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".001"),
-    (10000, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".010"),
-    (100000, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".100"),
-    (1000, Precision.ANY, PrecisionConstraint.EXACT, ".001"),
-    (10000, Precision.ANY, PrecisionConstraint.EXACT, ".01"),
-    (100000, Precision.ANY, PrecisionConstraint.EXACT, ".1"),
-    (1001, Precision.MILLISECOND, PrecisionConstraint.MIN, ".001001"),
-    (10010, Precision.MILLISECOND, PrecisionConstraint.MIN, ".01001"),
-    (100100, Precision.MILLISECOND, PrecisionConstraint.MIN, ".1001"),
-],
+        (123456, Precision.ANY, PrecisionConstraint.EXACT, ".123456"),
+        (123456, Precision.SECOND, PrecisionConstraint.EXACT, ""),
+        (123456, Precision.SECOND, PrecisionConstraint.MIN, ".123456"),
+        (123456, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".123"),
+        (123456, Precision.MILLISECOND, PrecisionConstraint.MIN, ".123456"),
+        (0, Precision.SECOND, PrecisionConstraint.MIN, ""),
+        (0, Precision.MILLISECOND, PrecisionConstraint.MIN, ".000"),
+        (0, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".000"),
+        (1000, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".001"),
+        (10000, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".010"),
+        (100000, Precision.MILLISECOND, PrecisionConstraint.EXACT, ".100"),
+        (1000, Precision.ANY, PrecisionConstraint.EXACT, ".001"),
+        (10000, Precision.ANY, PrecisionConstraint.EXACT, ".01"),
+        (100000, Precision.ANY, PrecisionConstraint.EXACT, ".1"),
+        (1001, Precision.MILLISECOND, PrecisionConstraint.MIN, ".001001"),
+        (10010, Precision.MILLISECOND, PrecisionConstraint.MIN, ".01001"),
+        (100100, Precision.MILLISECOND, PrecisionConstraint.MIN, ".1001"),
+    ],
 )
 def test_format_datetime(us, precision, precision_constraint, expected_us_str):
 
@@ -130,9 +130,9 @@ def test_sdo_extra_precision():
         "type": "identity",
         "id": "identity--4a457eeb-6639-4aa3-be81-5930a3000c39",
         "created": "2015-12-21T19:59:11.000Z",
-        "modified" :"2015-12-21T19:59:11.0001Z",
-        "name" :"John Smith",
-        "identity_class" :"individual",
+        "modified": "2015-12-21T19:59:11.0001Z",
+        "name": "John Smith",
+        "identity_class": "individual",
         "spec_version": "2.1",
     }
 
