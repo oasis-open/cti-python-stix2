@@ -331,7 +331,7 @@ class TimestampProperty(Property):
 
     def clean(self, value):
         return parse_into_datetime(
-            value, self.precision, self.precision_constraint
+            value, self.precision, self.precision_constraint,
         )
 
 

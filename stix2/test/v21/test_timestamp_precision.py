@@ -1,11 +1,12 @@
 import datetime
-import pytest
-from stix2.utils import (
-    Precision, PrecisionConstraint, _to_enum, parse_into_datetime,
-    format_datetime, STIXdatetime
-)
-import stix2
 
+import pytest
+
+import stix2
+from stix2.utils import (
+    Precision, PrecisionConstraint, STIXdatetime, _to_enum, format_datetime,
+    parse_into_datetime,
+)
 
 _DT = datetime.datetime.utcnow()
 # intentionally omit microseconds from the following.  We add it in as
@@ -13,24 +14,30 @@ _DT = datetime.datetime.utcnow()
 _DT_STR = _DT.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-@pytest.mark.parametrize("value, enum_type, enum_default, enum_expected", [
-    ("second", Precision, None, Precision.SECOND),
-    ("eXaCt", PrecisionConstraint, PrecisionConstraint.MIN,
-     PrecisionConstraint.EXACT),
-    (None, Precision, Precision.MILLISECOND, Precision.MILLISECOND),
-    (Precision.ANY, Precision, None, Precision.ANY)
-])
+@pytest.mark.parametrize(
+    "value, enum_type, enum_default, enum_expected", [
+        ("second", Precision, None, Precision.SECOND),
+        (
+            "eXaCt", PrecisionConstraint, PrecisionConstraint.MIN,
+            PrecisionConstraint.EXACT
+        ),
+        (None, Precision, Precision.MILLISECOND, Precision.MILLISECOND),
+        (Precision.ANY, Precision, None, Precision.ANY),
+    ],
+)
 def test_to_enum(value, enum_type, enum_default, enum_expected):
     result = _to_enum(value, enum_type, enum_default)
     assert result == enum_expected
 
 
-@pytest.mark.parametrize("value, err_type", [
-    ("foo", KeyError),
-    (1, TypeError),
-    (PrecisionConstraint.EXACT, TypeError),
-    (None, TypeError)
-])
+@pytest.mark.parametrize(
+    "value, err_type", [
+        ("foo", KeyError),
+        (1, TypeError),
+        (PrecisionConstraint.EXACT, TypeError),
+        (None, TypeError),
+    ],
+)
 def test_to_enum_errors(value, err_type):
     with pytest.raises(err_type):
         _to_enum(value, Precision)
@@ -47,7 +54,7 @@ def test_stix_datetime():
 
     sdt = STIXdatetime(
         dt,
-        precision_constraint=PrecisionConstraint.EXACT
+        precision_constraint=PrecisionConstraint.EXACT,
     )
     assert sdt.precision_constraint is PrecisionConstraint.EXACT
     assert sdt == dt
@@ -61,10 +68,11 @@ def test_stix_datetime():
     (123456, Precision.MILLISECOND, PrecisionConstraint.EXACT, 123000),
     (123456, Precision.MILLISECOND, PrecisionConstraint.MIN, 123456),
     (1234, Precision.MILLISECOND, PrecisionConstraint.EXACT, 1000),
-    (123, Precision.MILLISECOND, PrecisionConstraint.EXACT, 0)
-])
+    (123, Precision.MILLISECOND, PrecisionConstraint.EXACT, 0),
+],
+)
 def test_parse_datetime(
-    us, precision, precision_constraint, expected_truncated_us
+    us, precision, precision_constraint, expected_truncated_us,
 ):
 
     # complete the datetime string with microseconds
@@ -73,7 +81,7 @@ def test_parse_datetime(
     sdt = parse_into_datetime(
         dt_us_str,
         precision=precision,
-        precision_constraint=precision_constraint
+        precision_constraint=precision_constraint,
     )
 
     assert sdt.precision is precision
@@ -100,7 +108,8 @@ def test_parse_datetime(
     (1001, Precision.MILLISECOND, PrecisionConstraint.MIN, ".001001"),
     (10010, Precision.MILLISECOND, PrecisionConstraint.MIN, ".01001"),
     (100100, Precision.MILLISECOND, PrecisionConstraint.MIN, ".1001"),
-])
+],
+)
 def test_format_datetime(us, precision, precision_constraint, expected_us_str):
 
     dt = _DT.replace(microsecond=us)
@@ -109,7 +118,7 @@ def test_format_datetime(us, precision, precision_constraint, expected_us_str):
     sdt = STIXdatetime(
         dt,
         precision=precision,
-        precision_constraint=precision_constraint
+        precision_constraint=precision_constraint,
     )
     s = format_datetime(sdt)
     assert s == expected_dt_str
@@ -124,7 +133,7 @@ def test_sdo_extra_precision():
         "modified" :"2015-12-21T19:59:11.0001Z",
         "name" :"John Smith",
         "identity_class" :"individual",
-        "spec_version": "2.1"
+        "spec_version": "2.1",
     }
 
     identity_obj = stix2.parse(identity_dict)

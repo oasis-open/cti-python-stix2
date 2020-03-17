@@ -8,10 +8,10 @@ import copy
 import datetime as dt
 import enum
 import json
-import six
 
 from dateutil import parser
 import pytz
+import six
 
 import stix2.base
 
@@ -82,7 +82,7 @@ def _to_enum(value, enum_type, enum_default=None):
             value = enum_type[value.upper()]
         else:
             raise TypeError("Not a valid {}: {}".format(
-                enum_type.__name__, value
+                enum_type.__name__, value,
             ))
 
     return value
@@ -97,11 +97,11 @@ class STIXdatetime(dt.datetime):
     def __new__(cls, *args, **kwargs):
         precision = _to_enum(
             kwargs.pop("precision", Precision.ANY),
-            Precision
+            Precision,
         )
         precision_constraint = _to_enum(
             kwargs.pop("precision_constraint", PrecisionConstraint.EXACT),
-            PrecisionConstraint
+            PrecisionConstraint,
         )
 
         if isinstance(args[0], dt.datetime):  # Allow passing in a datetime object
@@ -176,7 +176,7 @@ def format_datetime(dttm):
     ts = zoned.strftime('%Y-%m-%dT%H:%M:%S')
     precision = getattr(dttm, 'precision', Precision.ANY)
     precision_constraint = getattr(
-        dttm, 'precision_constraint', PrecisionConstraint.EXACT
+        dttm, 'precision_constraint', PrecisionConstraint.EXACT,
     )
 
     frac_seconds_str = ""
@@ -212,7 +212,7 @@ def format_datetime(dttm):
     ts = "{}{}{}Z".format(
         ts,
         "." if frac_seconds_str else "",
-        frac_seconds_str
+        frac_seconds_str,
     )
 
     return ts
@@ -220,7 +220,7 @@ def format_datetime(dttm):
 
 def parse_into_datetime(
     value, precision=Precision.ANY,
-    precision_constraint=PrecisionConstraint.EXACT
+    precision_constraint=PrecisionConstraint.EXACT,
 ):
     """
     Parse a value into a valid STIX timestamp object.  Also, optionally adjust
@@ -280,7 +280,7 @@ def parse_into_datetime(
     # else, precision == Precision.ANY: nothing for us to do.
 
     return STIXdatetime(
-        ts, precision=precision, precision_constraint=precision_constraint
+        ts, precision=precision, precision_constraint=precision_constraint,
     )
 
 
@@ -455,7 +455,7 @@ def new_version(data, **kwargs):
     if 'modified' not in kwargs:
         old_modified = parse_into_datetime(
             data["modified"], precision="millisecond",
-            precision_constraint=precision_constraint
+            precision_constraint=precision_constraint,
         )
 
         new_modified = get_timestamp()
@@ -466,11 +466,11 @@ def new_version(data, **kwargs):
     elif 'modified' in data:
         old_modified_property = parse_into_datetime(
             data.get('modified'), precision='millisecond',
-            precision_constraint=precision_constraint
+            precision_constraint=precision_constraint,
         )
         new_modified_property = parse_into_datetime(
             kwargs['modified'], precision='millisecond',
-            precision_constraint=precision_constraint
+            precision_constraint=precision_constraint,
         )
         if new_modified_property <= old_modified_property:
             raise InvalidValueError(
