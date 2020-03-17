@@ -19,7 +19,7 @@ _DT_STR = _DT.strftime("%Y-%m-%dT%H:%M:%S")
         ("second", Precision, None, Precision.SECOND),
         (
             "eXaCt", PrecisionConstraint, PrecisionConstraint.MIN,
-            PrecisionConstraint.EXACT
+            PrecisionConstraint.EXACT,
         ),
         (None, Precision, Precision.MILLISECOND, Precision.MILLISECOND),
         (Precision.ANY, Precision, None, Precision.ANY),
