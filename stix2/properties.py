@@ -323,12 +323,16 @@ class BooleanProperty(Property):
 
 class TimestampProperty(Property):
 
-    def __init__(self, precision=None, **kwargs):
+    def __init__(self, precision="any", precision_constraint="exact", **kwargs):
         self.precision = precision
+        self.precision_constraint = precision_constraint
+
         super(TimestampProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        return parse_into_datetime(value, self.precision)
+        return parse_into_datetime(
+            value, self.precision, self.precision_constraint
+        )
 
 
 class DictionaryProperty(Property):

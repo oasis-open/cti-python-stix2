@@ -88,8 +88,8 @@ def test_attack_pattern_invalid_labels():
 def test_overly_precise_timestamps():
     ap = stix2.v21.AttackPattern(
         id=ATTACK_PATTERN_ID,
-        created="2016-05-12T08:17:27.0000342Z",
-        modified="2016-05-12T08:17:27.000287Z",
+        created="2016-05-12T08:17:27.000000342Z",
+        modified="2016-05-12T08:17:27.000000287Z",
         name="Spear Phishing",
         external_references=[{
             "source_name": "capec",

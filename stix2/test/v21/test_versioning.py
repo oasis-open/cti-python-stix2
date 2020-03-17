@@ -1,6 +1,8 @@
+import datetime
 import pytest
 
 import stix2
+import stix2.utils
 
 from .constants import CAMPAIGN_MORE_KWARGS
 
@@ -236,8 +238,7 @@ def test_remove_custom_stix_property():
     mal_nc = stix2.utils.remove_custom_stix(mal)
 
     assert "x_custom" not in mal_nc
-    assert (stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") <
-            stix2.utils.parse_into_datetime(mal_nc["modified"], precision="millisecond"))
+    assert mal["modified"] < mal_nc["modified"]
 
 
 def test_remove_custom_stix_object():
@@ -264,3 +265,31 @@ def test_remove_custom_stix_no_custom():
     assert len(campaign_v1.keys()) == len(campaign_v2.keys())
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.description == campaign_v2.description
+
+
+@pytest.mark.parametrize("old, candidate_new, expected_new, use_stix21", [
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.001Z", "1999-08-15T00:19:07.001Z", False),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.001Z", False),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.000Z", "1999-08-15T00:19:07.001Z", False),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.999Z", "1999-08-15T00:19:07.001Z", False),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.0001Z", "1999-08-15T00:19:07.001Z", False),
+    ("1999-08-15T00:19:07.999Z", "1999-08-15T00:19:07.9999Z", "1999-08-15T00:19:08.000Z", False),
+
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.001Z", "1999-08-15T00:19:07.001Z", True),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000001Z", True),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.000Z", "1999-08-15T00:19:07.000001Z", True),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.999999Z", "1999-08-15T00:19:07.000001Z", True),
+    ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000001Z", "1999-08-15T00:19:07.000001Z", True),
+    ("1999-08-15T00:19:07.999Z", "1999-08-15T00:19:07.999999Z", "1999-08-15T00:19:07.999999Z", True),
+])
+def test_fudge_modified(old, candidate_new, expected_new, use_stix21):
+    old_dt = datetime.datetime.strptime(old, "%Y-%m-%dT%H:%M:%S.%fZ")
+    candidate_new_dt = datetime.datetime.strptime(
+        candidate_new, "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
+    expected_new_dt = datetime.datetime.strptime(
+        expected_new, "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
+
+    fudged = stix2.utils._fudge_modified(old_dt, candidate_new_dt, use_stix21)
+    assert fudged == expected_new_dt

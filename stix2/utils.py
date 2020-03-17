@@ -6,7 +6,9 @@ except ImportError:
     from collections import Mapping
 import copy
 import datetime as dt
+import enum
 import json
+import six
 
 from dateutil import parser
 import pytz
@@ -29,9 +31,79 @@ TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
 SCO21_EXT_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-ext$'
 
 
+class Precision(enum.Enum):
+    """
+    Timestamp format precisions.
+    """
+    # auto() wasn't introduced until Python 3.6.
+    ANY = 1
+    SECOND = 2
+    MILLISECOND = 3
+
+
+class PrecisionConstraint(enum.Enum):
+    """
+    Timestamp precision constraints.  These affect how the Precision
+    values are applied when formatting a timestamp.
+
+    These constraints don't really make sense with the ANY precision, so they
+    have no effect in that case.
+    """
+    EXACT = 1  # format must have exactly the given precision
+    MIN = 2  # format must have at least the given precision
+    #  no need for a MAX constraint yet
+
+
+def _to_enum(value, enum_type, enum_default=None):
+    """
+    Detect and convert strings to enums and None to a default enum.  This
+    allows use of strings and None in APIs, while enforcing the enum type: if
+    you use a string, it must name a valid enum value.  This implementation is
+    case-insensitive.
+
+    :param value: A value to be interpreted as an enum (string, Enum instance,
+        or None).  If an Enum instance, it must be an instance of enum_type.
+    :param enum_type: The enum type which strings will be interpreted against
+    :param enum_default: The default enum to use if value is None.  Must be
+        an instance of enum_type, or None.  If None, you are disallowing a
+        default and requiring that value be non-None.
+    :return: An instance of enum_type
+    :raises TypeError: If value was neither an instance of enum_type, None, nor
+        a string
+    :raises KeyError: If value was a string which couldn't be interpreted as an
+        enum value from enum_type
+    """
+    assert enum_default is None or isinstance(enum_default, enum_type)
+
+    if not isinstance(value, enum_type):
+        if value is None and enum_default is not None:
+            value = enum_default
+        elif isinstance(value, six.string_types):
+            value = enum_type[value.upper()]
+        else:
+            raise TypeError("Not a valid {}: {}".format(
+                enum_type.__name__, value
+            ))
+
+    return value
+
+
 class STIXdatetime(dt.datetime):
+    """
+    Bundle a datetime with some format-related metadata, so that JSON
+    serialization has the info it needs to produce compliant timestamps.
+    """
+
     def __new__(cls, *args, **kwargs):
-        precision = kwargs.pop('precision', None)
+        precision = _to_enum(
+            kwargs.pop("precision", Precision.ANY),
+            Precision
+        )
+        precision_constraint = _to_enum(
+            kwargs.pop("precision_constraint", PrecisionConstraint.EXACT),
+            PrecisionConstraint
+        )
+
         if isinstance(args[0], dt.datetime):  # Allow passing in a datetime object
             dttm = args[0]
             args = (
@@ -41,6 +113,7 @@ class STIXdatetime(dt.datetime):
         # self will be an instance of STIXdatetime, not dt.datetime
         self = dt.datetime.__new__(cls, *args, **kwargs)
         self.precision = precision
+        self.precision_constraint = precision_constraint
         return self
 
     def __repr__(self):
@@ -90,7 +163,7 @@ def format_datetime(dttm):
     2. Convert to UTC
     3. Format in ISO format
     4. Ensure correct precision
-       a. Add subsecond value if non-zero and precision not defined
+       a. Add subsecond value if warranted, according to precision settings
     5. Add "Z"
 
     """
@@ -101,20 +174,74 @@ def format_datetime(dttm):
     else:
         zoned = dttm.astimezone(pytz.utc)
     ts = zoned.strftime('%Y-%m-%dT%H:%M:%S')
-    ms = zoned.strftime('%f')
-    precision = getattr(dttm, 'precision', None)
-    if precision == 'second':
-        pass  # Already precise to the second
-    elif precision == 'millisecond':
-        ts = ts + '.' + ms[:3]
-    elif zoned.microsecond > 0:
-        ts = ts + '.' + ms.rstrip('0')
-    return ts + 'Z'
+    precision = getattr(dttm, 'precision', Precision.ANY)
+    precision_constraint = getattr(
+        dttm, 'precision_constraint', PrecisionConstraint.EXACT
+    )
+
+    frac_seconds_str = ""
+    if precision == Precision.ANY:
+        # No need to truncate; ignore constraint
+        if zoned.microsecond:
+            frac_seconds_str = "{:06d}".format(zoned.microsecond).rstrip("0")
+
+    elif precision == Precision.SECOND:
+        if precision_constraint == PrecisionConstraint.MIN:
+            # second precision, or better.  Winds up being the same as ANY:
+            # just use all our digits
+            if zoned.microsecond:
+                frac_seconds_str = "{:06d}".format(zoned.microsecond)\
+                    .rstrip("0")
+        # exact: ignore microseconds entirely
+
+    else:
+        # precision == millisecond
+        if precision_constraint == PrecisionConstraint.EXACT:
+            # can't rstrip() here or we may lose precision
+            frac_seconds_str = "{:06d}".format(zoned.microsecond)[:3]
+
+        else:
+            # millisecond precision, or better.  So we can rstrip() zeros, but
+            # only to a length of at least 3 digits (ljust() adds zeros back,
+            # if it stripped too far.)
+            frac_seconds_str = "{:06d}"\
+                .format(zoned.microsecond)\
+                .rstrip("0")\
+                .ljust(3, "0")
+
+    ts = "{}{}{}Z".format(
+        ts,
+        "." if frac_seconds_str else "",
+        frac_seconds_str
+    )
+
+    return ts
 
 
-def parse_into_datetime(value, precision=None):
-    """Parse a value into a valid STIX timestamp object.
+def parse_into_datetime(
+    value, precision=Precision.ANY,
+    precision_constraint=PrecisionConstraint.EXACT
+):
     """
+    Parse a value into a valid STIX timestamp object.  Also, optionally adjust
+    precision of fractional seconds.  This allows alignment with JSON
+    serialization requirements, and helps ensure we're not using extra
+    precision which would be lost upon JSON serialization.  The precision
+    info will be embedded in the returned object, so that JSON serialization
+    will format it correctly.
+
+    :param value: A datetime.datetime or datetime.date instance, or a string
+    :param precision: A precision value: either an instance of the Precision
+        enum, or a string naming one of the enum values (case-insensitive)
+    :param precision_constraint: A precision constraint value: either an
+        instance of the PrecisionConstraint enum, or a string naming one of
+        the enum values (case-insensitive)
+    :return: A STIXdatetime instance, which is a datetime but also carries the
+        precision info necessary to properly JSON-serialize it.
+    """
+    precision = _to_enum(precision, Precision)
+    precision_constraint = _to_enum(precision_constraint, PrecisionConstraint)
+
     if isinstance(value, dt.date):
         if hasattr(value, 'hour'):
             ts = value
@@ -138,20 +265,23 @@ def parse_into_datetime(value, precision=None):
             ts = pytz.utc.localize(parsed)
 
     # Ensure correct precision
-    if not precision:
-        return STIXdatetime(ts, precision=precision)
-    ms = ts.microsecond
-    if precision == 'second':
-        ts = ts.replace(microsecond=0)
-    elif precision == 'millisecond':
-        ms_len = len(str(ms))
-        if ms_len > 3:
-            # Truncate to millisecond precision
-            factor = 10 ** (ms_len - 3)
-            ts = ts.replace(microsecond=(ts.microsecond // factor) * factor)
-        else:
+    if precision == Precision.SECOND:
+        if precision_constraint == PrecisionConstraint.EXACT:
             ts = ts.replace(microsecond=0)
-    return STIXdatetime(ts, precision=precision)
+        # else, no need to modify fractional seconds
+
+    elif precision == Precision.MILLISECOND:
+        if precision_constraint == PrecisionConstraint.EXACT:
+            us = (ts.microsecond // 1000) * 1000
+            ts = ts.replace(microsecond=us)
+        # else: at least millisecond precision: the constraint will affect JSON
+        # formatting, but there's nothing we need to do here.
+
+    # else, precision == Precision.ANY: nothing for us to do.
+
+    return STIXdatetime(
+        ts, precision=precision, precision_constraint=precision_constraint
+    )
 
 
 def _get_dict(data):
@@ -256,6 +386,39 @@ def find_property_index(obj, search_key, search_value):
     return idx
 
 
+def _fudge_modified(old_modified, new_modified, use_stix21):
+    """
+    Ensures a new modified timestamp is newer than the old.  When they are
+    too close together, new_modified must be pushed further ahead to ensure
+    it is distinct and later, after JSON serialization (which may mean it's
+    actually being pushed a little ways into the future).  JSON serialization
+    can remove precision, which can cause distinct timestamps to accidentally
+    become equal, if we're not careful.
+
+    :param old_modified: A previous "modified" timestamp, as a datetime object
+    :param new_modified: A candidate new "modified" timestamp, as a datetime
+        object
+    :param use_stix21: Whether to use STIX 2.1+ versioning timestamp precision
+        rules (boolean).  This is important so that we are aware of how
+        timestamp precision will be truncated, so we know how close together
+        the timestamps can be, and how far ahead to potentially push the new
+        one.
+    :return: A suitable new "modified" timestamp.  This may be different from
+        what was passed in, if it had to be pushed ahead.
+    """
+    if use_stix21:
+        # 2.1+: we can use full precision
+        if new_modified <= old_modified:
+            new_modified = old_modified + dt.timedelta(microseconds=1)
+    else:
+        # 2.0: we must use millisecond precision
+        one_ms = dt.timedelta(milliseconds=1)
+        if new_modified - old_modified < one_ms:
+            new_modified = old_modified + one_ms
+
+    return new_modified
+
+
 def new_version(data, **kwargs):
     """Create a new version of a STIX object, by modifying properties and
     updating the ``modified`` property.
@@ -283,12 +446,32 @@ def new_version(data, **kwargs):
     if unchangable_properties:
         raise UnmodifiablePropertyError(unchangable_properties)
 
+    # Different versioning precision rules in STIX 2.0 vs 2.1, so we need
+    # to know which rules to apply.
+    is_21 = "spec_version" in data
+    precision_constraint = "min" if is_21 else "exact"
+
     cls = type(data)
     if 'modified' not in kwargs:
-        kwargs['modified'] = get_timestamp()
+        old_modified = parse_into_datetime(
+            data["modified"], precision="millisecond",
+            precision_constraint=precision_constraint
+        )
+
+        new_modified = get_timestamp()
+        new_modified = _fudge_modified(old_modified, new_modified, is_21)
+
+        kwargs['modified'] = new_modified
+
     elif 'modified' in data:
-        old_modified_property = parse_into_datetime(data.get('modified'), precision='millisecond')
-        new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
+        old_modified_property = parse_into_datetime(
+            data.get('modified'), precision='millisecond',
+            precision_constraint=precision_constraint
+        )
+        new_modified_property = parse_into_datetime(
+            kwargs['modified'], precision='millisecond',
+            precision_constraint=precision_constraint
+        )
         if new_modified_property <= old_modified_property:
             raise InvalidValueError(
                 cls, 'modified',
@@ -377,11 +560,6 @@ def remove_custom_stix(stix_obj):
         props.extend(custom_props)
 
         new_obj = new_version(stix_obj, **(dict(props)))
-
-        while parse_into_datetime(new_obj['modified']) == parse_into_datetime(stix_obj['modified']):
-            # Prevents bug when fast computation allows multiple STIX object
-            # versions to be created in single unit of time
-            new_obj = new_version(stix_obj, **(dict(props)))
 
         return new_obj
 
