@@ -1,6 +1,7 @@
 import datetime
 
 import pytest
+import sys
 
 import stix2
 from stix2.utils import (
@@ -43,10 +44,18 @@ def test_to_enum_errors(value, err_type):
         _to_enum(value, Precision)
 
 
-def test_stix_datetime():
+@pytest.mark.xfail(
+    sys.version_info[:2] == (3, 6), strict=True,
+    reason="https://bugs.python.org/issue32404",
+)
+def test_stix_datetime_now():
     dt = STIXdatetime.utcnow()
     assert dt.precision is Precision.ANY
     assert dt.precision_constraint is PrecisionConstraint.EXACT
+
+
+def test_stix_datetime():
+    dt = datetime.datetime.utcnow()
 
     sdt = STIXdatetime(dt, precision=Precision.SECOND)
     assert sdt.precision is Precision.SECOND
