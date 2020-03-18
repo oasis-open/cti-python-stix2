@@ -1,7 +1,7 @@
 import datetime
+import sys
 
 import pytest
-import sys
 
 import stix2
 from stix2.utils import (
