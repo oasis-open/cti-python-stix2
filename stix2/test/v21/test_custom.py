@@ -292,6 +292,19 @@ def test_identity_custom_property_edit_markings():
     identity2.clear_markings('x_foo')
 
 
+def test_invalid_custom_property_in_marking():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomMarking(
+            'x-new-obj', [
+                ('9property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj():
+            pass
+
+    assert "Property names must begin with an alpha character." in str(excinfo.value)
+
+
 def test_custom_marking_no_init_1():
     @stix2.v21.CustomMarking(
         'x-new-obj', [
@@ -327,7 +340,7 @@ def test_custom_marking_invalid_type_name():
         )
         class NewObj(object):
             pass  # pragma: no cover
-    assert "Invalid type name 'x': " in str(excinfo.value)
+    assert "Invalid marking type name 'x': " in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomMarking(
@@ -337,7 +350,7 @@ def test_custom_marking_invalid_type_name():
         )
         class NewObj2(object):
             pass  # pragma: no cover
-    assert "Invalid type name 'x_new_marking':" in str(excinfo.value)
+    assert "Invalid marking type name 'x_new_marking':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomMarking(
@@ -347,7 +360,7 @@ def test_custom_marking_invalid_type_name():
         )
         class NewObj3(object):
             pass  # pragma: no cover
-    assert "Invalid type name '7x-new-marking':" in str(excinfo.value)
+    assert "Invalid marking type name '7x-new-marking':" in str(excinfo.value)
 
 
 @stix2.v21.CustomObject(
@@ -440,7 +453,6 @@ def test_custom_object_invalid_type_name():
         class NewObj3(object):
             pass  # pragma: no cover
     assert "Invalid type name '7x-new-object':" in str(excinfo.value)
-
 
 
 def test_parse_custom_object_type():
@@ -577,7 +589,6 @@ def test_custom_observable_object_invalid_type_name():
         class NewObs3(object):
             pass  # pragma: no cover
     assert "Invalid observable type name '7x-new-obs':" in str(excinfo.value)
-
 
 
 def test_custom_observable_object_invalid_ref_property():

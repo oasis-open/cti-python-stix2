@@ -17,7 +17,7 @@ def _custom_object_builder(cls, type, properties, version):
         if version == "2.0":
             if not re.match(TYPE_REGEX, type):
                 raise ValueError(
-                    "Invalid type type name '%s': must only contain the "
+                    "Invalid type name '%s': must only contain the "
                     "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
                     type,
                 )
@@ -39,7 +39,7 @@ def _custom_object_builder(cls, type, properties, version):
 
         if version == "2.1":
             for prop_name, prop in properties:
-                if not re.match(r'^[a-z]', prop_name):
+                if not re.match(PREFIX_21_REGEX, prop_name):
                     raise ValueError("Property name %s must begin with an alpha character" % prop_name)
 
         _type = type
@@ -54,33 +54,46 @@ def _custom_object_builder(cls, type, properties, version):
 
 
 def _custom_marking_builder(cls, type, properties, version):
+
+    try:
+        prop_dict = OrderedDict(properties)
+    except TypeError as e:
+        six.raise_from(
+            ValueError(
+                "Marking properties must be dict-like, e.g. a list "
+                "containing tuples.  For example, "
+                "[('property1', IntegerProperty())]",
+            ),
+            e,
+        )
+
     class _CustomMarking(cls, _STIXBase):
 
         if version == "2.0":
             if not re.match(TYPE_REGEX, type):
                 raise ValueError(
-                    "Invalid type type name '%s': must only contain the "
+                    "Invalid marking type name '%s': must only contain the "
                     "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
                     type,
                 )
         else:  # 2.1+
             if not re.match(SCO21_TYPE_REGEX, type):
                 raise ValueError(
-                    "Invalid type name '%s': must only contain the "
+                    "Invalid marking type name '%s': must only contain the "
                     "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
                     "and must begin with an a-z character" % type,
                 )
 
         if len(type) < 3 or len(type) > 250:
             raise ValueError(
-                "Invalid type name '%s': must be between 3 and 250 characters." % type,
+                "Invalid marking type name '%s': must be between 3 and 250 characters." % type,
             )
 
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
 
-        if version == "2.1":
-            for prop_name, prop in properties:
+        if version == "2.1 ":
+            for prop_name, prop_value in prop_dict.items():
                 if not re.match(PREFIX_21_REGEX, prop_name):
                     raise ValueError("Property name %s must begin with an alpha character." % prop_name)
 
@@ -104,7 +117,7 @@ def _custom_observable_builder(cls, type, properties, version, id_contrib_props=
         if version == "2.0":
             if not re.match(TYPE_REGEX, type):
                 raise ValueError(
-                    "Invalid type type name '%s': must only contain the "
+                    "Invalid observable type name '%s': must only contain the "
                     "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
                     type,
                 )
