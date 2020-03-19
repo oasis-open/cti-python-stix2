@@ -57,6 +57,9 @@ def _custom_marking_builder(cls, type, properties, version):
 
     class _CustomMarking(cls, _STIXBase):
 
+        if not properties or not isinstance(properties, list):
+            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+
         _type = type
         _properties = OrderedDict(properties)
 
