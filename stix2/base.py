@@ -2,6 +2,7 @@
 
 import copy
 import datetime as dt
+import re
 import uuid
 
 import simplejson as json
@@ -17,7 +18,7 @@ from .exceptions import (
 from .markings.utils import validate
 from .utils import NOW, find_property_index, format_datetime, get_timestamp
 from .utils import new_version as _new_version
-from .utils import revoke as _revoke
+from .utils import revoke as _revoke, PREFIX_21_REGEX
 
 try:
     from collections.abc import Mapping
@@ -75,6 +76,11 @@ def get_required_properties(properties):
 
 class _STIXBase(Mapping):
     """Base class for STIX object types"""
+
+    def get_class_version(self):
+        module_name = self.__class__.__module__
+        module_parts = module_name.split(".")
+        return module_parts[1]
 
     def object_properties(self):
         props = set(self._properties.keys())
@@ -163,6 +169,11 @@ class _STIXBase(Mapping):
                 raise ExtraPropertiesError(cls, extra_kwargs)
         if custom_props:
             self._allow_custom = True
+            if self.get_class_version() == "v21":
+                for prop_name, prop_value in custom_props.items():
+                    if not re.match(PREFIX_21_REGEX, prop_name):
+                        raise InvalidValueError(self.__class__, prop_name,
+                                                reason="Property names must begin with an alpha character.")
 
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}

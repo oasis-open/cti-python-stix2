@@ -8,24 +8,39 @@ from .core import (
     STIXDomainObject, _register_marking, _register_object,
     _register_observable, _register_observable_extension,
 )
-from .utils import TYPE_REGEX, get_class_hierarchy_names
+from .utils import get_class_hierarchy_names, SCO21_TYPE_REGEX, TYPE_REGEX, PREFIX_21_REGEX
 
 
 def _custom_object_builder(cls, type, properties, version):
     class _CustomObject(cls, STIXDomainObject):
 
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type,
-            )
-        elif len(type) < 3 or len(type) > 250:
+        if version == "2.0":
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid type type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
+                    type,
+                )
+        else:  # 2.1+
+            if not re.match(SCO21_TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
+                    "and must begin with an a-z character" % type,
+                )
+
+        if len(type) < 3 or len(type) > 250:
             raise ValueError(
                 "Invalid type name '%s': must be between 3 and 250 characters." % type,
             )
 
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+
+        if version == "2.1":
+            for prop_name, prop in properties:
+                if not re.match(r'^[a-z]', prop_name):
+                    raise ValueError("Property name %s must begin with an alpha character" % prop_name)
 
         _type = type
         _properties = OrderedDict(properties)
@@ -41,8 +56,33 @@ def _custom_object_builder(cls, type, properties, version):
 def _custom_marking_builder(cls, type, properties, version):
     class _CustomMarking(cls, _STIXBase):
 
+        if version == "2.0":
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid type type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
+                    type,
+                )
+        else:  # 2.1+
+            if not re.match(SCO21_TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
+                    "and must begin with an a-z character" % type,
+                )
+
+        if len(type) < 3 or len(type) > 250:
+            raise ValueError(
+                "Invalid type name '%s': must be between 3 and 250 characters." % type,
+            )
+
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+
+        if version == "2.1":
+            for prop_name, prop in properties:
+                if not re.match(PREFIX_21_REGEX, prop_name):
+                    raise ValueError("Property name %s must begin with an alpha character." % prop_name)
 
         _type = type
         _properties = OrderedDict(properties)
@@ -61,12 +101,22 @@ def _custom_observable_builder(cls, type, properties, version, id_contrib_props=
 
     class _CustomObservable(cls, _Observable):
 
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid observable type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type,
-            )
-        elif len(type) < 3 or len(type) > 250:
+        if version == "2.0":
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid type type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
+                    type,
+                )
+        else:  # 2.1+
+            if not re.match(SCO21_TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid observable type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
+                    "and must begin with an a-z character" % type,
+                )
+
+        if len(type) < 3 or len(type) > 250:
             raise ValueError("Invalid observable type name '%s': must be between 3 and 250 characters." % type)
 
         if not properties or not isinstance(properties, list):
@@ -89,7 +139,9 @@ def _custom_observable_builder(cls, type, properties, version, id_contrib_props=
         else:
             # If using STIX2.1 (or newer...), check properties ending in "_ref/s" are ReferenceProperties
             for prop_name, prop in properties:
-                if prop_name.endswith('_ref') and ('ReferenceProperty' not in get_class_hierarchy_names(prop)):
+                if not re.match(PREFIX_21_REGEX, prop_name):
+                    raise ValueError("Property name %s must begin with an alpha character." % prop_name)
+                elif prop_name.endswith('_ref') and ('ReferenceProperty' not in get_class_hierarchy_names(prop)):
                     raise ValueError(
                         "'%s' is named like a reference property but "
                         "is not a ReferenceProperty." % prop_name,
@@ -129,6 +181,11 @@ def _custom_extension_builder(cls, observable, type, properties, version):
         )
 
     class _CustomExtension(cls, _Extension):
+
+        if version == "2.1":
+            for prop_name, prop_value in prop_dict.items():
+                if not re.match(PREFIX_21_REGEX, prop_name):
+                    raise ValueError("Property name %s must begin with an alpha character." % prop_name)
 
         _type = type
         _properties = prop_dict

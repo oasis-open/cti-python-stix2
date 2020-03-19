@@ -7,6 +7,7 @@ except ImportError:
 import copy
 import datetime as dt
 import json
+import re
 
 from dateutil import parser
 import pytz
@@ -25,8 +26,10 @@ NOW = object()
 # STIX object properties that cannot be modified
 STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
 
-TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
-SCO21_EXT_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-ext$'
+TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
+SCO21_TYPE_REGEX = re.compile(r'^\-?([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
+SCO21_EXT_REGEX = re.compile(r'^\-?([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-ext$')
+PREFIX_21_REGEX = re.compile(r'^[a-z].*')
 
 
 class STIXdatetime(dt.datetime):

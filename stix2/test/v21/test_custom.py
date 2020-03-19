@@ -43,6 +43,19 @@ def test_identity_custom_property():
         )
     assert "Unexpected properties for Identity" in str(excinfo.value)
 
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v21.Identity(
+            id=IDENTITY_ID,
+            created="2015-12-21T19:59:11Z",
+            modified="2015-12-21T19:59:11Z",
+            name="John Smith",
+            identity_class="individual",
+            custom_properties={
+                "7foo": "bar",
+            },
+        )
+    assert "Property names must begin with an alpha character." in str(excinfo.value)
+
     identity = stix2.v21.Identity(
         id=IDENTITY_ID,
         created="2015-12-21T19:59:11Z",
@@ -184,6 +197,18 @@ def test_custom_property_in_observed_data():
     assert '"x_foo": "bar"' in str(observed_data)
 
 
+def test_invalid_custom_property_in_observed_data():
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v21.File(
+            custom_properties={"8foo": 1},
+            allow_custom=True,
+            name='test',
+            x_foo='bar',
+        )
+
+        assert "Property names must begin with an alpha character." in str(excinfo.value)
+
+
 def test_custom_property_object_in_observable_extension():
     ntfs = stix2.v21.NTFSExt(
         allow_custom=True,
@@ -293,6 +318,38 @@ def test_custom_marking_no_init_2():
     assert no2.property1 == 'something'
 
 
+def test_custom_marking_invalid_type_name():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomMarking(
+            'x', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj(object):
+            pass  # pragma: no cover
+    assert "Invalid type name 'x': " in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomMarking(
+            'x_new_marking', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj2(object):
+            pass  # pragma: no cover
+    assert "Invalid type name 'x_new_marking':" in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomMarking(
+            '7x-new-marking', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj3(object):
+            pass  # pragma: no cover
+    assert "Invalid type name '7x-new-marking':" in str(excinfo.value)
+
+
 @stix2.v21.CustomObject(
     'x-new-type', [
         ('property1', stix2.properties.StringProperty(required=True)),
@@ -373,6 +430,17 @@ def test_custom_object_invalid_type_name():
         class NewObj2(object):
             pass  # pragma: no cover
     assert "Invalid type name 'x_new_object':" in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomObject(
+            '7x-new-object', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj3(object):
+            pass  # pragma: no cover
+    assert "Invalid type name '7x-new-object':" in str(excinfo.value)
+
 
 
 def test_parse_custom_object_type():
@@ -499,6 +567,17 @@ def test_custom_observable_object_invalid_type_name():
         class NewObs2(object):
             pass  # pragma: no cover
     assert "Invalid observable type name 'x_new_obs':" in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomObservable(
+            '7x-new-obs', [
+                ('property1', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObs3(object):
+            pass  # pragma: no cover
+    assert "Invalid observable type name '7x-new-obs':" in str(excinfo.value)
+
 
 
 def test_custom_observable_object_invalid_ref_property():
@@ -873,6 +952,17 @@ def test_custom_extension_invalid_type_name():
         class BlaExtension():
             pass  # pragma: no cover
     assert "Invalid extension type name 'x_new_ext':" in str(excinfo.value)
+
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomExtension(
+            stix2.v21.File, '7x-new-ext', {
+                'property1': stix2.properties.StringProperty(required=True),
+            },
+        )
+        class Bla2Extension():
+            pass  # pragma: no cover
+    assert "Invalid extension type name '7x-new-ext':" in str(excinfo.value)
+
 
 
 def test_custom_extension_no_properties():

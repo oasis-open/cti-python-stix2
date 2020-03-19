@@ -10,7 +10,7 @@ import stix2
 from .base import _Observable, _STIXBase
 from .exceptions import ParseError
 from .markings import _MarkingsMixin
-from .utils import SCO21_EXT_REGEX, TYPE_REGEX, _get_dict
+from .utils import _get_dict, SCO21_EXT_REGEX, TYPE_REGEX
 
 STIX2_OBJ_MAPS = {}
 
@@ -210,6 +210,7 @@ def _register_object(new_type, version=None):
             None, use latest version.
 
     """
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -248,6 +249,7 @@ def _register_observable(new_observable, version=None):
             None, use latest version.
 
     """
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -289,8 +291,9 @@ def _register_observable_extension(
         if not re.match(SCO21_EXT_REGEX, ext_type):
             raise ValueError(
                 "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, hyphen (-), and end "
-                "with '-ext'." % ext_type,
+                "characters a-z (lowercase ASCII), 0-9, hyphen (-), "
+                "must begin with an a-z character"
+                "and end with '-ext'." % ext_type,
             )
 
     if len(ext_type) < 3 or len(ext_type) > 250:
