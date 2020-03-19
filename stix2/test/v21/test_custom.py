@@ -9,6 +9,8 @@ import stix2.v21
 from ...exceptions import InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
+# Custom Properties in SDOs
+
 IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
     name="John Smith",
     identity_class="individual",
@@ -54,7 +56,7 @@ def test_identity_custom_property():
                 "7foo": "bar",
             },
         )
-    assert "Property names must begin with an alpha character." in str(excinfo.value)
+    assert "must begin with an alpha character." in str(excinfo.value)
 
     identity = stix2.v21.Identity(
         id=IDENTITY_ID,
@@ -178,6 +180,7 @@ def test_custom_properties_dict_in_bundled_object():
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
 
+# Custom properties in SCOs
 
 def test_custom_property_in_observed_data():
     artifact = stix2.v21.File(
@@ -206,7 +209,7 @@ def test_invalid_custom_property_in_observed_data():
             x_foo='bar',
         )
 
-        assert "Property names must begin with an alpha character." in str(excinfo.value)
+        assert "must begin with an alpha character." in str(excinfo.value)
 
 
 def test_custom_property_object_in_observable_extension():
@@ -270,6 +273,7 @@ def test_identity_custom_property_revoke():
     identity = IDENTITY_CUSTOM_PROP.revoke()
     assert identity.x_foo == "bar"
 
+# Custom markings
 
 def test_identity_custom_property_edit_markings():
     marking_obj = stix2.v21.MarkingDefinition(
@@ -302,7 +306,7 @@ def test_invalid_custom_property_in_marking():
         class NewObj():
             pass
 
-    assert "Property names must begin with an alpha character." in str(excinfo.value)
+    assert "must begin with an alpha character." in str(excinfo.value)
 
 
 def test_custom_marking_no_init_1():
@@ -362,6 +366,7 @@ def test_custom_marking_invalid_type_name():
             pass  # pragma: no cover
     assert "Invalid marking type name '7x-new-marking':" in str(excinfo.value)
 
+# Custom Objects
 
 @stix2.v21.CustomObject(
     'x-new-type', [
@@ -492,6 +497,7 @@ def test_parse_unregistered_custom_object_type_w_allow_custom():
     custom_obj = stix2.parse(nt_string, version="2.1", allow_custom=True)
     assert custom_obj["type"] == "x-foobar-observable"
 
+# Custom SCOs
 
 @stix2.v21.CustomObservable(
     'x-new-observable', [
@@ -557,6 +563,18 @@ def test_custom_observable_object_no_init_2():
 
     no2 = NewObs2(property1='something')
     assert no2.property1 == 'something'
+
+
+def test_invalid_custom_property_in_custom_observable_object():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomObservable(
+            'x-new-sco', [
+                ('5property1', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObs(object):
+            pass  # pragma: no cover
+    assert "must begin with an alpha character." in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_type_name():
@@ -826,6 +844,7 @@ def test_custom_observable_object_no_id_contrib_props():
     assert uuid_obj.variant == uuid.RFC_4122
     assert uuid_obj.version == 4
 
+# Custom Extensions
 
 @stix2.v21.CustomExtension(
     stix2.v21.DomainName, 'x-new-ext', [
@@ -1021,6 +1040,20 @@ def test_custom_extension_no_init_2():
 
     ne2 = NewExt2(property1="foobar")
     assert ne2.property1 == "foobar"
+
+
+def test_invalid_custom_property_in_extension():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomExtension(
+            stix2.v21.DomainName, 'x-new3-ext', [
+                ('6property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewExt():
+            pass
+
+    assert "must begin with an alpha character." in str(excinfo.value)
+
 
 
 def test_parse_observable_with_custom_extension():

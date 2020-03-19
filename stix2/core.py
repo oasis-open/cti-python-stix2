@@ -10,7 +10,7 @@ import stix2
 from .base import _Observable, _STIXBase
 from .exceptions import ParseError
 from .markings import _MarkingsMixin
-from .utils import _get_dict, SCO21_EXT_REGEX, TYPE_REGEX
+from .utils import _get_dict, TYPE_REGEX, PREFIX_21_REGEX, TYPE_21_REGEX
 
 STIX2_OBJ_MAPS = {}
 
@@ -230,6 +230,36 @@ def _register_marking(new_marking, version=None):
             None, use latest version.
 
     """
+
+    type = new_marking._type
+
+    if version == "2.0":
+        if not re.match(TYPE_REGEX, type):
+            raise ValueError(
+                "Invalid marking type name '%s': must only contain the "
+                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
+                type,
+            )
+    else:  # 2.1+
+        if not re.match(TYPE_21_REGEX, type):
+            raise ValueError(
+                "Invalid marking type name '%s': must only contain the "
+                "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
+                "and must begin with an a-z character" % type,
+            )
+
+    if len(type) < 3 or len(type) > 250:
+        raise ValueError(
+            "Invalid marking type name '%s': must be between 3 and 250 characters." % type,
+        )
+
+    properties = new_marking._properties
+
+    if version == "2.1":
+        for prop_name, prop_value in properties.items():
+            if not re.match(PREFIX_21_REGEX, prop_name):
+                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -276,6 +306,7 @@ def _register_observable_extension(
     obs_class = observable if isinstance(observable, type) else \
         type(observable)
     ext_type = new_extension._type
+    properties = new_extension._properties
 
     if not issubclass(obs_class, _Observable):
         raise ValueError("'observable' must be a valid Observable class!")
@@ -288,7 +319,7 @@ def _register_observable_extension(
                 ext_type,
             )
     else:  # 2.1+
-        if not re.match(SCO21_EXT_REGEX, ext_type):
+        if not re.match(TYPE_21_REGEX, ext_type):
             raise ValueError(
                 "Invalid extension type name '%s': must only contain the "
                 "characters a-z (lowercase ASCII), 0-9, hyphen (-), "
@@ -307,6 +338,11 @@ def _register_observable_extension(
             "Invalid extension: must define at least one property: " +
             ext_type,
         )
+
+    if version == "2.1":
+        for prop_name, prop_value in properties.items():
+            if not re.match(PREFIX_21_REGEX, prop_name):
+                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
     v = 'v' + version.replace('.', '')
 

@@ -173,7 +173,7 @@ class _STIXBase(Mapping):
                 for prop_name, prop_value in custom_props.items():
                     if not re.match(PREFIX_21_REGEX, prop_name):
                         raise InvalidValueError(self.__class__, prop_name,
-                                                reason="Property names must begin with an alpha character.")
+                                                reason="Property name '%s' must begin with an alpha character." % prop_name)
 
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}
