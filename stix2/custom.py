@@ -8,7 +8,9 @@ from .core import (
     STIXDomainObject, _register_marking, _register_object,
     _register_observable, _register_observable_extension,
 )
-from .utils import get_class_hierarchy_names, TYPE_21_REGEX, TYPE_REGEX, PREFIX_21_REGEX
+from .utils import (
+    PREFIX_21_REGEX, TYPE_21_REGEX, TYPE_REGEX, get_class_hierarchy_names,
+)
 
 
 def _custom_object_builder(cls, type, properties, version):

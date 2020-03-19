@@ -10,7 +10,7 @@ import stix2
 from .base import _Observable, _STIXBase
 from .exceptions import ParseError
 from .markings import _MarkingsMixin
-from .utils import _get_dict, TYPE_REGEX, PREFIX_21_REGEX, TYPE_21_REGEX
+from .utils import PREFIX_21_REGEX, TYPE_21_REGEX, TYPE_REGEX, _get_dict
 
 STIX2_OBJ_MAPS = {}
 

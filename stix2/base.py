@@ -16,9 +16,11 @@ from .exceptions import (
     MissingPropertiesError, MutuallyExclusivePropertiesError,
 )
 from .markings.utils import validate
-from .utils import NOW, find_property_index, format_datetime, get_timestamp
+from .utils import (
+    NOW, PREFIX_21_REGEX, find_property_index, format_datetime, get_timestamp,
+)
 from .utils import new_version as _new_version
-from .utils import revoke as _revoke, PREFIX_21_REGEX
+from .utils import revoke as _revoke
 
 try:
     from collections.abc import Mapping
@@ -172,8 +174,10 @@ class _STIXBase(Mapping):
             if self.get_class_version() == "v21":
                 for prop_name, prop_value in custom_props.items():
                     if not re.match(PREFIX_21_REGEX, prop_name):
-                        raise InvalidValueError(self.__class__, prop_name,
-                                                reason="Property name '%s' must begin with an alpha character." % prop_name)
+                        raise InvalidValueError(
+                            self.__class__, prop_name,
+                            reason="Property name '%s' must begin with an alpha character." % prop_name,
+                        )
 
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {}

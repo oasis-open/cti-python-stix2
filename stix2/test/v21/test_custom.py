@@ -182,6 +182,7 @@ def test_custom_properties_dict_in_bundled_object():
 
 # Custom properties in SCOs
 
+
 def test_custom_property_in_observed_data():
     artifact = stix2.v21.File(
         allow_custom=True,
@@ -275,6 +276,7 @@ def test_identity_custom_property_revoke():
 
 # Custom markings
 
+
 def test_identity_custom_property_edit_markings():
     marking_obj = stix2.v21.MarkingDefinition(
         id=MARKING_DEFINITION_ID,
@@ -367,6 +369,7 @@ def test_custom_marking_invalid_type_name():
     assert "Invalid marking type name '7x-new-marking':" in str(excinfo.value)
 
 # Custom Objects
+
 
 @stix2.v21.CustomObject(
     'x-new-type', [
@@ -498,6 +501,7 @@ def test_parse_unregistered_custom_object_type_w_allow_custom():
     assert custom_obj["type"] == "x-foobar-observable"
 
 # Custom SCOs
+
 
 @stix2.v21.CustomObservable(
     'x-new-observable', [
@@ -846,6 +850,7 @@ def test_custom_observable_object_no_id_contrib_props():
 
 # Custom Extensions
 
+
 @stix2.v21.CustomExtension(
     stix2.v21.DomainName, 'x-new-ext', [
         ('property1', stix2.properties.StringProperty(required=True)),
@@ -994,7 +999,6 @@ def test_custom_extension_invalid_type_name():
     assert "Invalid extension type name '7x-new-ext':" in str(excinfo.value)
 
 
-
 def test_custom_extension_no_properties():
     with pytest.raises(ValueError):
         @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', None)
@@ -1053,7 +1057,6 @@ def test_invalid_custom_property_in_extension():
             pass
 
     assert "must begin with an alpha character." in str(excinfo.value)
-
 
 
 def test_parse_observable_with_custom_extension():
