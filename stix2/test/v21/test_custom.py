@@ -20,6 +20,18 @@ IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
 
 
 def test_identity_custom_property():
+    identity = stix2.v21.Identity(
+        id=IDENTITY_ID,
+        created="2015-12-21T19:59:11Z",
+        modified="2015-12-21T19:59:11Z",
+        name="John Smith",
+        identity_class="individual",
+        custom_properties={
+            "foo": "bar",
+        },
+    )
+    assert identity.foo == "bar"
+
     with pytest.raises(ValueError) as excinfo:
         stix2.v21.Identity(
             id=IDENTITY_ID,
@@ -45,6 +57,8 @@ def test_identity_custom_property():
         )
     assert "Unexpected properties for Identity" in str(excinfo.value)
 
+    # leading numeric character is illegal in 2.1
+
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Identity(
             id=IDENTITY_ID,
@@ -57,6 +71,8 @@ def test_identity_custom_property():
             },
         )
     assert "must begin with an alpha character." in str(excinfo.value)
+
+    # leading "_" is illegal in 2.1
 
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
         stix2.v21.Identity(
@@ -71,17 +87,17 @@ def test_identity_custom_property():
         )
     assert "must begin with an alpha character." in str(excinfo.value)
 
-    identity = stix2.v21.Identity(
-        id=IDENTITY_ID,
-        created="2015-12-21T19:59:11Z",
-        modified="2015-12-21T19:59:11Z",
-        name="John Smith",
-        identity_class="individual",
-        custom_properties={
-            "foo": "bar",
-        },
-    )
-    assert identity.foo == "bar"
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        identity = stix2.v21.Identity(
+            id=IDENTITY_ID,
+            created="2015-12-21T19:59:11Z",
+            modified="2015-12-21T19:59:11Z",
+            name="John Smith",
+            identity_class="individual",
+            _x_foo="bar",
+            allow_custom=True,
+        )
+    assert "must begin with an alpha character." in str(excinfo.value)
 
 
 def test_identity_custom_property_invalid():

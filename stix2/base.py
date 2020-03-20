@@ -169,10 +169,16 @@ class _STIXBase(Mapping):
             extra_kwargs = list(set(kwargs) - set(self._properties))
             if extra_kwargs:
                 raise ExtraPropertiesError(cls, extra_kwargs)
-        if custom_props:
+        else:
+            # because allow_custom is true, any extra kwargs are custom
+            extra_kwargs = list(set(kwargs) - set(self._properties))
+
+        if custom_props or extra_kwargs:
             self._allow_custom = True
             if self.get_class_version() == "v21":
-                for prop_name, prop_value in custom_props.items():
+                all_custom_prop_names = extra_kwargs
+                all_custom_prop_names.extend(list(custom_props.keys()))
+                for prop_name in all_custom_prop_names:
                     if not re.match(PREFIX_21_REGEX, prop_name):
                         raise InvalidValueError(
                             self.__class__, prop_name,
