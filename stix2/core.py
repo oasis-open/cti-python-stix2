@@ -8,7 +8,7 @@ import re
 import stix2
 
 from .base import _Observable, _STIXBase
-from .exceptions import ParseError
+from .exceptions import DuplicateObjectRegistrationError, ParseError
 from .markings import _MarkingsMixin
 from .utils import SCO21_EXT_REGEX, TYPE_REGEX, _get_dict
 

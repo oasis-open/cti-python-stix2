@@ -4,7 +4,7 @@ import stix2
 from stix2 import core
 import stix2.v20
 
-from ...exceptions import InvalidValueError
+from ...exceptions import DuplicateObjectRegistrationError, InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v20.Identity(
@@ -1040,7 +1040,7 @@ def test_register_custom_object_with_version():
 
 
 def test_register_duplicate_object_with_version():
-    with pytest.raises(stix2.exceptions.DuplicateObjectRegistrationError) as excinfo:
+    with pytest.raises(DuplicateObjectRegistrationError) as excinfo:
         @stix2.v20.CustomObject(
             'x-new-type-2', [
                 ('property1', stix2.properties.StringProperty()),
@@ -1069,7 +1069,7 @@ def test_register_observable_with_version():
 
 
 def test_register_duplicate_observable_with_version():
-    with pytest.raises(stix2.exceptions.DuplicateObjectRegistrationError) as excinfo:
+    with pytest.raises(DuplicateObjectRegistrationError) as excinfo:
         @stix2.v20.CustomObservable(
             'x-new-observable-2', [
                 ('property1', stix2.properties.StringProperty()),
