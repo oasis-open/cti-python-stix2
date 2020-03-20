@@ -8,7 +8,7 @@ import re
 import stix2
 
 from .base import _STIXBase
-from .exceptions import ParseError
+from .exceptions import DuplicateObjectRegistrationError, ParseError
 from .markings import _MarkingsMixin
 from .utils import _get_dict
 
@@ -217,6 +217,8 @@ def _register_object(new_type, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP = STIX2_OBJ_MAPS[v]['objects']
+    if new_type._type in OBJ_MAP.keys():
+        raise DuplicateObjectRegistrationError("An object with type '%s' already exists and cannot be created again." % new_type._type)
     OBJ_MAP[new_type._type] = new_type
 
 
@@ -255,6 +257,8 @@ def _register_observable(new_observable, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
+    if new_observable._type in OBJ_MAP_OBSERVABLE.keys():
+        raise DuplicateObjectRegistrationError("An observable with type '%s' already exists and cannot be created again." % new_observable._type)
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 

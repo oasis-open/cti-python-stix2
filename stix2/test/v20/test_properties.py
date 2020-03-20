@@ -392,7 +392,7 @@ def test_dictionary_property_invalid(d):
 
 def test_property_list_of_dictionary():
     @stix2.v20.CustomObject(
-        'x-new-obj', [
+        'x-new-obj-4', [
             ('property1', ListProperty(DictionaryProperty(spec_version="2.0"), required=True)),
         ],
     )

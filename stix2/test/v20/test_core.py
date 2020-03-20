@@ -68,17 +68,6 @@ def test_parse_observable_with_no_version():
     assert v in str(obs_obj.__class__)
 
 
-def test_register_object_with_version():
-    bundle = core.dict_to_stix2(BUNDLE, version='2.0')
-    core._register_object(bundle.objects[0].__class__, version='2.0')
-    v = 'v20'
-
-    assert bundle.objects[0].type in core.STIX2_OBJ_MAPS[v]['objects']
-    # spec_version is not in STIX 2.0, and is required in 2.1, so this
-    # suffices as a test for a STIX 2.0 object.
-    assert "spec_version" not in bundle.objects[0]
-
-
 def test_register_marking_with_version():
     core._register_marking(stix2.v20.TLP_WHITE.__class__, version='2.0')
     v = 'v20'
@@ -95,44 +84,6 @@ def test_register_marking_with_no_version():
 
     assert stix2.v20.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
     assert v in str(stix2.v20.TLP_WHITE.__class__)
-
-
-def test_register_observable_with_version():
-    observed_data = stix2.v20.ObservedData(
-        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref=IDENTITY_ID,
-        created="2016-04-06T19:58:16.000Z",
-        modified="2016-04-06T19:58:16.000Z",
-        first_observed="2015-12-21T19:00:00Z",
-        last_observed="2015-12-21T19:00:00Z",
-        number_observed=50,
-        objects={
-            "0": {
-                "name": "foo.exe",
-                "type": "file",
-                "extensions": {
-                    "ntfs-ext": {
-                        "alternate_data_streams": [
-                            {
-                                "name": "second.stream",
-                                "size": 25536,
-                            },
-                        ],
-                    },
-                },
-            },
-            "1": {
-                "type": "directory",
-                "path": "/usr/home",
-                "contains_refs": ["0"],
-            },
-        },
-    )
-    core._register_observable(observed_data.objects['0'].__class__, version='2.0')
-    v = 'v20'
-
-    assert observed_data.objects['0'].type in core.STIX2_OBJ_MAPS[v]['observables']
-    assert v in str(observed_data.objects['0'].__class__)
 
 
 def test_register_observable_extension_with_version():

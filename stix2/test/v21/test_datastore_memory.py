@@ -344,7 +344,7 @@ def test_memory_store_object_with_custom_property_in_bundle(mem_store):
 
 def test_memory_store_custom_object(mem_store):
     @CustomObject(
-        'x-new-obj', [
+        'x-new-obj-3', [
             ('property1', properties.StringProperty(required=True)),
         ],
     )
