@@ -58,6 +58,19 @@ def test_identity_custom_property():
         )
     assert "must begin with an alpha character." in str(excinfo.value)
 
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v21.Identity(
+            id=IDENTITY_ID,
+            created="2015-12-21T19:59:11Z",
+            modified="2015-12-21T19:59:11Z",
+            name="John Smith",
+            identity_class="individual",
+            custom_properties={
+                "_foo": "bar",
+            },
+        )
+    assert "must begin with an alpha character." in str(excinfo.value)
+
     identity = stix2.v21.Identity(
         id=IDENTITY_ID,
         created="2015-12-21T19:59:11Z",
@@ -210,7 +223,7 @@ def test_invalid_custom_property_in_observed_data():
             x_foo='bar',
         )
 
-        assert "must begin with an alpha character." in str(excinfo.value)
+    assert "must begin with an alpha character." in str(excinfo.value)
 
 
 def test_custom_property_object_in_observable_extension():
