@@ -501,7 +501,6 @@ def test_filesystem_store_query_single_filter(fs_store):
 
 def test_filesystem_store_empty_query(fs_store):
     results = fs_store.query()  # returns all
-    print (results)
     assert len(results) == 30
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj.id for obj in results]
     assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj.id for obj in results]
@@ -516,7 +515,6 @@ def test_filesystem_store_query_multiple_filters(fs_store):
 
 def test_filesystem_store_query_dont_include_type_folder(fs_store):
     results = fs_store.query(stix2.Filter("type", "!=", "tool"))
-    print (results)
     assert len(results) == 28
 
 
