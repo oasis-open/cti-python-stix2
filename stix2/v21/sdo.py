@@ -13,10 +13,9 @@ from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
 )
 from ..properties import (
-    BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, IDProperty, IntegerProperty, ListProperty,
-    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
+    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
+    StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .common import ExternalReference, GranularMarking, KillChainPhase
@@ -106,10 +105,6 @@ class CourseOfAction(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('action_type', StringProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
-        ('action_bin', BinaryProperty()),
-        ('action_reference', EmbeddedObjectProperty(ExternalReference)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -118,14 +113,6 @@ class CourseOfAction(STIXDomainObject):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
     ])
-
-    def _check_object_constraints(self):
-        super(CourseOfAction, self)._check_object_constraints()
-
-        self._check_mutually_exclusive_properties(
-            ["action_bin", "action_reference"],
-            at_least_one=False,
-        )
 
 
 class Grouping(STIXDomainObject):
@@ -173,7 +160,7 @@ class Identity(STIXDomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('roles', ListProperty(StringProperty)),
-        ('identity_class', StringProperty(required=True)),
+        ('identity_class', StringProperty()),
         ('sectors', ListProperty(StringProperty)),
         ('contact_information', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -202,7 +189,7 @@ class Indicator(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('indicator_types', ListProperty(StringProperty, required=True)),
+        ('indicator_types', ListProperty(StringProperty)),
         ('pattern', PatternProperty(required=True)),
         ('pattern_type', StringProperty(required=True)),
         ('pattern_version', StringProperty()),
@@ -269,7 +256,7 @@ class Infrastructure(STIXDomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('infrastructure_types', ListProperty(StringProperty, required=True)),
+        ('infrastructure_types', ListProperty(StringProperty)),
         ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('first_seen', TimestampProperty()),
@@ -454,13 +441,13 @@ class Malware(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('malware_types', ListProperty(StringProperty, required=True)),
+        ('malware_types', ListProperty(StringProperty)),
         ('is_family', BooleanProperty(required=True)),
         ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
+        ('operating_system_refs', ListProperty(ReferenceProperty(valid_types='software', spec_version='2.1'))),
         ('architecture_execution_envs', ListProperty(StringProperty)),
         ('implementation_languages', ListProperty(StringProperty)),
         ('capabilities', ListProperty(StringProperty)),
@@ -524,14 +511,16 @@ class MalwareAnalysis(STIXDomainObject):
         ('submitted', TimestampProperty()),
         ('analysis_started', TimestampProperty()),
         ('analysis_ended', TimestampProperty()),
-        ('av_result', StringProperty()),
+        ('result_name', StringProperty()),
+        ('result', StringProperty()),
         ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="SCO", spec_version='2.1'))),
+        ('sample_ref', ReferenceProperty(valid_types="SCO", spec_version="2.1")),
     ])
 
     def _check_object_constraints(self):
         super(MalwareAnalysis, self)._check_object_constraints()
 
-        self._check_at_least_one_property(["av_result", "analysis_sco_refs"])
+        self._check_at_least_one_property(["result", "analysis_sco_refs"])
 
 
 class Note(STIXDomainObject):
@@ -672,7 +661,7 @@ class Report(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('report_types', ListProperty(StringProperty, required=True)),
+        ('report_types', ListProperty(StringProperty)),
         ('published', TimestampProperty(required=True)),
         ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -701,7 +690,7 @@ class ThreatActor(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('threat_actor_types', ListProperty(StringProperty, required=True)),
+        ('threat_actor_types', ListProperty(StringProperty)),
         ('aliases', ListProperty(StringProperty)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
@@ -748,7 +737,7 @@ class Tool(STIXDomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('tool_types', ListProperty(StringProperty, required=True)),
+        ('tool_types', ListProperty(StringProperty)),
         ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),

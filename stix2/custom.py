@@ -1,6 +1,8 @@
 from collections import OrderedDict
 import re
 
+import six
+
 from .base import _cls_init, _Extension, _Observable, _STIXBase
 from .core import (
     STIXDomainObject, _register_marking, _register_object,
@@ -113,24 +115,23 @@ def _custom_observable_builder(cls, type, properties, version, id_contrib_props=
 
 
 def _custom_extension_builder(cls, observable, type, properties, version):
-    if not observable or not issubclass(observable, _Observable):
-        raise ValueError("'observable' must be a valid Observable class!")
+
+    try:
+        prop_dict = OrderedDict(properties)
+    except TypeError as e:
+        six.raise_from(
+            ValueError(
+                "Extension properties must be dict-like, e.g. a list "
+                "containing tuples.  For example, "
+                "[('property1', IntegerProperty())]",
+            ),
+            e,
+        )
 
     class _CustomExtension(cls, _Extension):
 
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type,
-            )
-        elif len(type) < 3 or len(type) > 250:
-            raise ValueError("Invalid extension type name '%s': must be between 3 and 250 characters." % type)
-
-        if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
         _type = type
-        _properties = OrderedDict(properties)
+        _properties = prop_dict
 
         def __init__(self, **kwargs):
             _Extension.__init__(self, **kwargs)

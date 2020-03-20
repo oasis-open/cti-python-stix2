@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from ..base import _STIXBase
 from ..custom import _custom_marking_builder
+from ..exceptions import InvalidValueError
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
 from ..properties import (
@@ -28,9 +29,25 @@ class ExternalReference(_STIXBase):
         ('external_id', StringProperty()),
     ])
 
+    # This is hash-algorithm-ov
+    _LEGAL_HASHES = {
+        "MD5", "SHA-1", "SHA-256", "SHA-512", "SHA3-256", "SHA3-512", "SSDEEP",
+        "TLSH",
+    }
+
     def _check_object_constraints(self):
         super(ExternalReference, self)._check_object_constraints()
         self._check_at_least_one_property(['description', 'external_id', 'url'])
+
+        if "hashes" in self:
+            if any(
+                hash_ not in self._LEGAL_HASHES
+                for hash_ in self["hashes"]
+            ):
+                raise InvalidValueError(
+                    ExternalReference, "hashes",
+                    "Hash algorithm names must be members of hash-algorithm-ov",
+                )
 
 
 class KillChainPhase(_STIXBase):

@@ -7,10 +7,10 @@ import re
 
 import stix2
 
-from .base import _STIXBase
-from .exceptions import DuplicateObjectRegistrationError, ParseError
+from .base import _Observable, _STIXBase
+from .exceptions import ParseError
 from .markings import _MarkingsMixin
-from .utils import _get_dict
+from .utils import SCO21_EXT_REGEX, TYPE_REGEX, _get_dict
 
 STIX2_OBJ_MAPS = {}
 
@@ -262,22 +262,54 @@ def _register_observable(new_observable, version=None):
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 
-def _register_observable_extension(observable, new_extension, version=None):
+def _register_observable_extension(
+    observable, new_extension, version=stix2.DEFAULT_VERSION,
+):
     """Register a custom extension to a STIX Cyber Observable type.
 
     Args:
-        observable: An observable object
+        observable: An observable class or instance
         new_extension (class): A class to register in the Observables
             Extensions map.
-        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-            None, use latest version.
+        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1").
+            Defaults to the latest supported version.
 
     """
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+    obs_class = observable if isinstance(observable, type) else \
+        type(observable)
+    ext_type = new_extension._type
+
+    if not issubclass(obs_class, _Observable):
+        raise ValueError("'observable' must be a valid Observable class!")
+
+    if version == "2.0":
+        if not re.match(TYPE_REGEX, ext_type):
+            raise ValueError(
+                "Invalid extension type name '%s': must only contain the "
+                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
+                ext_type,
+            )
+    else:  # 2.1+
+        if not re.match(SCO21_EXT_REGEX, ext_type):
+            raise ValueError(
+                "Invalid extension type name '%s': must only contain the "
+                "characters a-z (lowercase ASCII), 0-9, hyphen (-), and end "
+                "with '-ext'." % ext_type,
+            )
+
+    if len(ext_type) < 3 or len(ext_type) > 250:
+        raise ValueError(
+            "Invalid extension type name '%s': must be between 3 and 250"
+            " characters." % ext_type,
+        )
+
+    if not new_extension._properties:
+        raise ValueError(
+            "Invalid extension: must define at least one property: " +
+            ext_type,
+        )
+
+    v = 'v' + version.replace('.', '')
 
     try:
         observable_type = observable._type
@@ -291,7 +323,7 @@ def _register_observable_extension(observable, new_extension, version=None):
     EXT_MAP = STIX2_OBJ_MAPS[v]['observable-extensions']
 
     try:
-        EXT_MAP[observable_type][new_extension._type] = new_extension
+        EXT_MAP[observable_type][ext_type] = new_extension
     except KeyError:
         if observable_type not in OBJ_MAP_OBSERVABLE:
             raise ValueError(
@@ -300,7 +332,7 @@ def _register_observable_extension(observable, new_extension, version=None):
                 % observable_type,
             )
         else:
-            EXT_MAP[observable_type] = {new_extension._type: new_extension}
+            EXT_MAP[observable_type] = {ext_type: new_extension}
 
 
 def _collect_stix2_mappings():
