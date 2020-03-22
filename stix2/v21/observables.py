@@ -770,7 +770,7 @@ class Software(_Observable):
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
     ])
-    _id_contributing_properties = ["name", "cpe", "vendor", "version"]
+    _id_contributing_properties = ["name", "cpe", "swid", "vendor", "version"]
 
 
 class URL(_Observable):
