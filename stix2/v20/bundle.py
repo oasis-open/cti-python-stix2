@@ -2,13 +2,13 @@
 
 from collections import OrderedDict
 
-from ..base import _STIXBase
 from ..properties import (
     IDProperty, ListProperty, STIXObjectProperty, StringProperty, TypeProperty,
 )
+from .base import _STIXBase20
 
 
-class Bundle(_STIXBase):
+class Bundle(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709293>`__.
     """

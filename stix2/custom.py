@@ -3,18 +3,18 @@ import re
 
 import six
 
-from .base import _cls_init, _Extension, _Observable, _STIXBase
+from .base import _cls_init
 from .core import (
-    STIXDomainObject, _register_marking, _register_object,
-    _register_observable, _register_observable_extension,
+    _register_marking, _register_object, _register_observable,
+    _register_observable_extension,
 )
 from .utils import (
     PREFIX_21_REGEX, TYPE_21_REGEX, TYPE_REGEX, get_class_hierarchy_names,
 )
 
 
-def _custom_object_builder(cls, type, properties, version):
-    class _CustomObject(cls, STIXDomainObject):
+def _custom_object_builder(cls, type, properties, version, base_class):
+    class _CustomObject(cls, base_class):
 
         if version == "2.0":
             if not re.match(TYPE_REGEX, type):
@@ -48,16 +48,16 @@ def _custom_object_builder(cls, type, properties, version):
         _properties = OrderedDict(properties)
 
         def __init__(self, **kwargs):
-            _STIXBase.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
     _register_object(_CustomObject, version=version)
     return _CustomObject
 
 
-def _custom_marking_builder(cls, type, properties, version):
+def _custom_marking_builder(cls, type, properties, version, base_class):
 
-    class _CustomMarking(cls, _STIXBase):
+    class _CustomMarking(cls, base_class):
 
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
@@ -66,18 +66,18 @@ def _custom_marking_builder(cls, type, properties, version):
         _properties = OrderedDict(properties)
 
         def __init__(self, **kwargs):
-            _STIXBase.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
     _register_marking(_CustomMarking, version=version)
     return _CustomMarking
 
 
-def _custom_observable_builder(cls, type, properties, version, id_contrib_props=None):
+def _custom_observable_builder(cls, type, properties, version, base_class, id_contrib_props=None):
     if id_contrib_props is None:
         id_contrib_props = []
 
-    class _CustomObservable(cls, _Observable):
+    class _CustomObservable(cls, base_class):
 
         if version == "2.0":
             if not re.match(TYPE_REGEX, type):
@@ -137,14 +137,14 @@ def _custom_observable_builder(cls, type, properties, version, id_contrib_props=
             _id_contributing_properties = id_contrib_props
 
         def __init__(self, **kwargs):
-            _Observable.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
     _register_observable(_CustomObservable, version=version)
     return _CustomObservable
 
 
-def _custom_extension_builder(cls, observable, type, properties, version):
+def _custom_extension_builder(cls, observable, type, properties, version, base_class):
 
     try:
         prop_dict = OrderedDict(properties)
@@ -158,13 +158,13 @@ def _custom_extension_builder(cls, observable, type, properties, version):
             e,
         )
 
-    class _CustomExtension(cls, _Extension):
+    class _CustomExtension(cls, base_class):
 
         _type = type
         _properties = prop_dict
 
         def __init__(self, **kwargs):
-            _Extension.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
     _register_observable_extension(observable, _CustomExtension, version=version)

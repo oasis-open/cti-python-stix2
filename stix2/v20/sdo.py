@@ -5,7 +5,6 @@ import itertools
 
 from stix2patterns.validator import run_validator
 
-from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
 from ..exceptions import InvalidValueError
 from ..properties import (
@@ -14,6 +13,7 @@ from ..properties import (
     TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
+from .base import STIXDomainObject
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
 
@@ -374,5 +374,5 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
-        return _custom_object_builder(cls, type, _properties, '2.0')
+        return _custom_object_builder(cls, type, _properties, '2.0', STIXDomainObject)
     return wrapper

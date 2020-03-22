@@ -2,12 +2,12 @@
 
 from collections import OrderedDict
 
-from ..core import STIXRelationshipObject
 from ..properties import (
     BooleanProperty, IDProperty, IntegerProperty, ListProperty,
     ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
+from .base import STIXRelationshipObject
 from .common import ExternalReference, GranularMarking
 
 

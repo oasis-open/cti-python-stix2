@@ -1,14 +1,13 @@
 """STIX 2.0 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
-embedded in Email Message objects, inherit from ``_STIXBase`` instead of
-Observable and do not have a ``_type`` attribute.
+embedded in Email Message objects, inherit from ``_STIXBase20`` instead of
+_Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
 import itertools
 
-from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
@@ -17,6 +16,7 @@ from ..properties import (
     HashesProperty, HexProperty, IntegerProperty, ListProperty,
     ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
+from .base import _Extension, _Observable, _STIXBase20
 
 
 class Artifact(_Observable):
@@ -103,7 +103,7 @@ class EmailAddress(_Observable):
     ])
 
 
-class EmailMIMEComponent(_STIXBase):
+class EmailMIMEComponent(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716231>`__.
     """  # noqa
@@ -166,7 +166,7 @@ class ArchiveExt(_Extension):
     ])
 
 
-class AlternateDataStream(_STIXBase):
+class AlternateDataStream(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716239>`__.
     """  # noqa
@@ -220,7 +220,7 @@ class RasterImageExt(_Extension):
     ])
 
 
-class WindowsPEOptionalHeaderType(_STIXBase):
+class WindowsPEOptionalHeaderType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716248>`__.
     """  # noqa
@@ -264,7 +264,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         self._check_at_least_one_property()
 
 
-class WindowsPESection(_STIXBase):
+class WindowsPESection(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716250>`__.
     """  # noqa
@@ -677,7 +677,7 @@ class UserAccount(_Observable):
     ])
 
 
-class WindowsRegistryValueType(_STIXBase):
+class WindowsRegistryValueType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716293>`__.
     """  # noqa
@@ -724,7 +724,7 @@ class WindowsRegistryKey(_Observable):
     ])
 
 
-class X509V3ExtenstionsType(_STIXBase):
+class X509V3ExtenstionsType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716298>`__.
     """  # noqa
@@ -795,7 +795,7 @@ def CustomObservable(type='x-custom-observable', properties=None):
             properties,
             [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
         ]))
-        return _custom_observable_builder(cls, type, _properties, '2.0')
+        return _custom_observable_builder(cls, type, _properties, '2.0', _Observable)
     return wrapper
 
 
@@ -803,5 +803,5 @@ def CustomExtension(observable=None, type='x-custom-observable-ext', properties=
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.0')
+        return _custom_extension_builder(cls, observable, type, properties, '2.0', _Extension)
     return wrapper

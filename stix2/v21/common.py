@@ -2,7 +2,6 @@
 
 from collections import OrderedDict
 
-from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..exceptions import InvalidValueError
 from ..markings import _MarkingsMixin
@@ -13,9 +12,10 @@ from ..properties import (
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW, _get_dict
+from .base import _STIXBase21
 
 
-class ExternalReference(_STIXBase):
+class ExternalReference(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -50,7 +50,7 @@ class ExternalReference(_STIXBase):
                 )
 
 
-class KillChainPhase(_STIXBase):
+class KillChainPhase(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -62,7 +62,7 @@ class KillChainPhase(_STIXBase):
     ])
 
 
-class GranularMarking(_STIXBase):
+class GranularMarking(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -79,7 +79,7 @@ class GranularMarking(_STIXBase):
         self._check_at_least_one_property(['lang', 'marking_ref'])
 
 
-class LanguageContent(_STIXBase):
+class LanguageContent(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -107,7 +107,7 @@ class LanguageContent(_STIXBase):
     ])
 
 
-class TLPMarking(_STIXBase):
+class TLPMarking(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -119,7 +119,7 @@ class TLPMarking(_STIXBase):
     ])
 
 
-class StatementMarking(_STIXBase):
+class StatementMarking(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -150,7 +150,7 @@ class MarkingProperty(Property):
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
-class MarkingDefinition(_STIXBase, _MarkingsMixin):
+class MarkingDefinition(_STIXBase21, _MarkingsMixin):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -215,7 +215,7 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
     """
     def wrapper(cls):
-        return _custom_marking_builder(cls, type, properties, '2.1')
+        return _custom_marking_builder(cls, type, properties, '2.1', _STIXBase21)
     return wrapper
 
 

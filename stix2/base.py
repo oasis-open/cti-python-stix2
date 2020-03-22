@@ -79,11 +79,6 @@ def get_required_properties(properties):
 class _STIXBase(Mapping):
     """Base class for STIX object types"""
 
-    def get_class_version(self):
-        module_name = self.__class__.__module__
-        module_parts = module_name.split(".")
-        return module_parts[1]
-
     def object_properties(self):
         props = set(self._properties.keys())
         custom_props = list(set(self._inner.keys()) - props)
@@ -175,7 +170,7 @@ class _STIXBase(Mapping):
 
         if custom_props or extra_kwargs:
             self._allow_custom = True
-            if self.get_class_version() == "v21":
+            if self._spec_version == "2.1":
                 all_custom_prop_names = extra_kwargs
                 all_custom_prop_names.extend(list(custom_props.keys()))
                 for prop_name in all_custom_prop_names:

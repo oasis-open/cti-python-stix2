@@ -1,14 +1,13 @@
 """STIX 2.1 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
-embedded in Email Message objects, inherit from ``_STIXBase`` instead of
-Observable and do not have a ``_type`` attribute.
+embedded in Email Message objects, inherit from ``_STIXBase21`` instead of
+_Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
 import itertools
 
-from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
@@ -18,6 +17,7 @@ from ..properties import (
     ObjectReferenceProperty, ReferenceProperty, StringProperty,
     TimestampProperty, TypeProperty,
 )
+from .base import _Extension, _Observable, _STIXBase21
 from .common import GranularMarking
 
 
@@ -142,7 +142,7 @@ class EmailAddress(_Observable):
     _id_contributing_properties = ["value"]
 
 
-class EmailMIMEComponent(_STIXBase):
+class EmailMIMEComponent(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -214,7 +214,7 @@ class ArchiveExt(_Extension):
     ])
 
 
-class AlternateDataStream(_STIXBase):
+class AlternateDataStream(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -271,7 +271,7 @@ class RasterImageExt(_Extension):
     ])
 
 
-class WindowsPEOptionalHeaderType(_STIXBase):
+class WindowsPEOptionalHeaderType(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -316,7 +316,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         self._check_at_least_one_property()
 
 
-class WindowsPESection(_STIXBase):
+class WindowsPESection(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -841,7 +841,7 @@ class UserAccount(_Observable):
     _id_contributing_properties = ["account_type", "user_id", "account_login"]
 
 
-class WindowsRegistryValueType(_STIXBase):
+class WindowsRegistryValueType(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -896,7 +896,7 @@ class WindowsRegistryKey(_Observable):
     _id_contributing_properties = ["key", "values"]
 
 
-class X509V3ExtenstionsType(_STIXBase):
+class X509V3ExtenstionsType(_STIXBase21):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -988,7 +988,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
             properties,
             [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
         ]))
-        return _custom_observable_builder(cls, type, _properties, '2.1', id_contrib_props)
+        return _custom_observable_builder(cls, type, _properties, '2.1', _Observable, id_contrib_props)
     return wrapper
 
 
@@ -996,5 +996,5 @@ def CustomExtension(observable=None, type='x-custom-observable-ext', properties=
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.1')
+        return _custom_extension_builder(cls, observable, type, properties, '2.1', _Extension)
     return wrapper
