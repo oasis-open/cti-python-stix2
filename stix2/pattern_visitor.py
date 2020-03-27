@@ -2,11 +2,16 @@ import importlib
 import inspect
 
 from stix2patterns.exceptions import ParseException
-from stix2patterns.grammars.STIXPatternParser import (
-    STIXPatternParser, TerminalNode,
-)
+from stix2patterns.grammars.STIXPatternParser import TerminalNode
+
+from stix2patterns.v20.grammars.STIXPatternParser import STIXPatternParser as STIXPatternParser20
+from stix2patterns.v21.grammars.STIXPatternParser import STIXPatternParser as STIXPatternParser21
+
+from stix2patterns.v20.grammars.STIXPatternVisitor import STIXPatternVisitor as STIXPatternVisitor20
+from stix2patterns.v21.grammars.STIXPatternVisitor import STIXPatternVisitor as STIXPatternVisitor21
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
-from stix2patterns.v20.pattern import Pattern
+from stix2patterns.v20.pattern import Pattern as Pattern20
+from stix2patterns.v21.pattern import Pattern as Pattern21
 
 from .patterns import *
 from .patterns import _BooleanExpression
@@ -32,22 +37,11 @@ def remove_terminal_nodes(parse_tree_nodes):
     return values
 
 
-# This class defines a complete generic visitor for a parse tree produced by STIXPatternParser.
 
 
-class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
+
+class STIXPatternVisitorForSTIX2():
     classes = {}
-
-    def __init__(self, module_suffix, module_name):
-        if module_suffix and module_name:
-            self.module_suffix = module_suffix
-            if not STIXPatternVisitorForSTIX2.classes:
-                module = importlib.import_module(module_name)
-                for k, c in inspect.getmembers(module, inspect.isclass):
-                    STIXPatternVisitorForSTIX2.classes[k] = c
-        else:
-            self.module_suffix = None
-        super(STIXPatternVisitor, self).__init__()
 
     def get_class(self, class_name):
         if class_name in STIXPatternVisitorForSTIX2.classes:
@@ -147,7 +141,7 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
     def visitPropTestEqual(self, ctx):
         children = self.visitChildren(ctx)
         operator = children[1].symbol.type
-        negated = operator != STIXPatternParser.EQ
+        negated = operator != self.parser_class.EQ
         return self.instantiate(
             "EqualityComparisonExpression", children[0], children[3 if len(children) > 3 else 2],
             negated,
@@ -157,22 +151,22 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
     def visitPropTestOrder(self, ctx):
         children = self.visitChildren(ctx)
         operator = children[1].symbol.type
-        if operator == STIXPatternParser.GT:
+        if operator == self.parser_class.GT:
             return self.instantiate(
                 "GreaterThanComparisonExpression", children[0],
                 children[3 if len(children) > 3 else 2], False,
             )
-        elif operator == STIXPatternParser.LT:
+        elif operator == self.parser_class.LT:
             return self.instantiate(
                 "LessThanComparisonExpression", children[0],
                 children[3 if len(children) > 3 else 2], False,
             )
-        elif operator == STIXPatternParser.GE:
+        elif operator == self.parser_class.GE:
             return self.instantiate(
                 "GreaterThanEqualComparisonExpression", children[0],
                 children[3 if len(children) > 3 else 2], False,
             )
-        elif operator == STIXPatternParser.LE:
+        elif operator == self.parser_class.LE:
             return self.instantiate(
                 "LessThanEqualComparisonExpression", children[0],
                 children[3 if len(children) > 3 else 2], False,
@@ -294,22 +288,22 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
         return children[0]
 
     def visitTerminal(self, node):
-        if node.symbol.type == STIXPatternParser.IntPosLiteral or node.symbol.type == STIXPatternParser.IntNegLiteral:
+        if node.symbol.type == self.parser_class.IntPosLiteral or node.symbol.type == self.parser_class.IntNegLiteral:
             return IntegerConstant(node.getText())
-        elif node.symbol.type == STIXPatternParser.FloatPosLiteral or node.symbol.type == STIXPatternParser.FloatNegLiteral:
+        elif node.symbol.type == self.parser_class.FloatPosLiteral or node.symbol.type == self.parser_class.FloatNegLiteral:
             return FloatConstant(node.getText())
-        elif node.symbol.type == STIXPatternParser.HexLiteral:
+        elif node.symbol.type == self.parser_class.HexLiteral:
             return HexConstant(node.getText(), from_parse_tree=True)
-        elif node.symbol.type == STIXPatternParser.BinaryLiteral:
+        elif node.symbol.type == self.parser_class.BinaryLiteral:
             return BinaryConstant(node.getText(), from_parse_tree=True)
-        elif node.symbol.type == STIXPatternParser.StringLiteral:
+        elif node.symbol.type == self.parser_class.StringLiteral:
             if node.getText()[0] == "'" and node.getText()[-1] == "'":
                 return StringConstant(node.getText()[1:-1], from_parse_tree=True)
             else:
                 raise ParseException("The pattern does not start and end with a single quote")
-        elif node.symbol.type == STIXPatternParser.BoolLiteral:
+        elif node.symbol.type == self.parser_class.BoolLiteral:
             return BooleanConstant(node.getText())
-        elif node.symbol.type == STIXPatternParser.TimestampLiteral:
+        elif node.symbol.type == self.parser_class.TimestampLiteral:
             return TimestampConstant(node.getText())
         else:
             return node
@@ -321,12 +315,44 @@ class STIXPatternVisitorForSTIX2(STIXPatternVisitor):
             aggregate = [nextResult]
         return aggregate
 
+# This class defines a complete generic visitor for a parse tree produced by STIXPatternParser.
+class STIXPatternVisitorForSTIX21(STIXPatternVisitorForSTIX2, STIXPatternVisitor21):
+    classes = {}
 
-def create_pattern_object(pattern, module_suffix="", module_name=""):
+    def __init__(self, module_suffix, module_name):
+        if module_suffix and module_name:
+            self.module_suffix = module_suffix
+            if not STIXPatternVisitorForSTIX2.classes:
+                module = importlib.import_module(module_name)
+                for k, c in inspect.getmembers(module, inspect.isclass):
+                    STIXPatternVisitorForSTIX2.classes[k] = c
+        else:
+            self.module_suffix = None
+        self.parser_class = STIXPatternParser21
+        super(STIXPatternVisitor21, self).__init__()
+
+
+class STIXPatternVisitorForSTIX20(STIXPatternVisitor20, STIXPatternVisitorForSTIX2):
+    classes = {}
+
+    def __init__(self, module_suffix, module_name):
+        if module_suffix and module_name:
+            self.module_suffix = module_suffix
+            if not STIXPatternVisitorForSTIX2.classes:
+                module = importlib.import_module(module_name)
+                for k, c in inspect.getmembers(module, inspect.isclass):
+                    STIXPatternVisitorForSTIX2.classes[k] = c
+        else:
+            self.module_suffix = None
+        self.parser_class = STIXPatternParser20
+        super(STIXPatternVisitor20, self).__init__()
+
+
+def create_pattern_object(pattern, module_suffix="", module_name="", version="2.1"):
     """
     Create a STIX pattern AST from a pattern string.
     """
 
-    pattern_obj = Pattern(pattern)
-    builder = STIXPatternVisitorForSTIX2(module_suffix, module_name)
+    pattern_obj = Pattern21(pattern) if version == "2.1" else Pattern20(pattern)
+    builder = STIXPatternVisitorForSTIX21(module_suffix, module_name) if version == "2.1" else STIXPatternVisitorForSTIX20(module_suffix, module_name)
     return pattern_obj.visit(builder)

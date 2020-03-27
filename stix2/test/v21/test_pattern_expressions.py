@@ -175,9 +175,19 @@ def test_greater_than():
     assert str(exp) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.0]"
 
 
+def test_parsing_greater_than():
+    patt_obj = create_pattern_object("[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]")
+    assert str(patt_obj) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]"
+
+
 def test_less_than():
     exp = stix2.LessThanComparisonExpression("file:size", 1024)
     assert str(exp) == "file:size < 1024"
+
+
+def test_parsing_less_than():
+    patt_obj = create_pattern_object("[file:size < 1024]")
+    assert str(patt_obj) == "[file:size < 1024]"
 
 
 def test_greater_than_or_equal():
@@ -185,8 +195,12 @@ def test_greater_than_or_equal():
         "file:size",
         1024,
     )
-
     assert str(exp) == "file:size >= 1024"
+
+
+def test_parsing_greater_than_or_equal():
+    patt_obj = create_pattern_object("[file:size >= 1024]")
+    assert str(patt_obj) == "[file:size >= 1024]"
 
 
 def test_less_than_or_equal():
@@ -195,6 +209,11 @@ def test_less_than_or_equal():
         1024,
     )
     assert str(exp) == "file:size <= 1024"
+
+
+def test_parsing_less_than_or_equal():
+    patt_obj = create_pattern_object("[file:size <= 1024]")
+    assert str(patt_obj) == "[file:size <= 1024]"
 
 
 def test_not():
@@ -257,6 +276,67 @@ def test_and_observable_expression():
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1009' AND user-account:account_login = 'Mary']"  # noqa
 
 
+def test_parsing_and_observable_expression():
+    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']")
+    assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"
+
+
+def test_or_observable_expression():
+    exp1 = stix2.AndBooleanExpression([
+        stix2.EqualityComparisonExpression(
+            "user-account:account_type",
+            "unix",
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:user_id",
+            stix2.StringConstant("1007"),
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:account_login",
+            "Peter",
+        ),
+    ])
+    exp2 = stix2.AndBooleanExpression([
+        stix2.EqualityComparisonExpression(
+            "user-account:account_type",
+            "unix",
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:user_id",
+            stix2.StringConstant("1008"),
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:account_login",
+            "Paul",
+        ),
+    ])
+    exp3 = stix2.AndBooleanExpression([
+        stix2.EqualityComparisonExpression(
+            "user-account:account_type",
+            "unix",
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:user_id",
+            stix2.StringConstant("1009"),
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:account_login",
+            "Mary",
+        ),
+    ])
+    exp = stix2.OrObservationExpression([
+        stix2.ObservationExpression(exp1),
+        stix2.ObservationExpression(exp2),
+        stix2.ObservationExpression(exp3),
+    ])
+    assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1009' AND user-account:account_login = 'Mary']"  # noqa
+
+
+def test_parsing_or_observable_expression():
+    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']")  # noqa
+    assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
+
+
 def test_invalid_and_observable_expression():
     with pytest.raises(ValueError):
         stix2.AndBooleanExpression([
@@ -284,6 +364,11 @@ def test_hex():
     ])
     exp = stix2.ObservationExpression(exp_and)
     assert str(exp) == "[file:mime_type = 'image/bmp' AND file:magic_number_hex = h'ffd8']"
+
+
+def test_parsing_hex():
+    patt_obj = create_pattern_object("[file:magic_number_hex = h'ffd8']")
+    assert str(patt_obj) == "[file:magic_number_hex = h'ffd8']"
 
 
 def test_multiple_qualifiers():
@@ -332,6 +417,11 @@ def test_binary():
         const,
     )
     assert str(exp) == "artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q='"
+
+
+def test_parsing_binary():
+    patt_obj = create_pattern_object("[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']")
+    assert str(patt_obj) == "[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']"
 
 
 def test_list():
@@ -499,7 +589,7 @@ def test_parsing_comparison_expression():
     assert str(patt_obj) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']"
 
 
-def test_parsing_qualified_expression():
+def test_parsing_repeat_and_within_qualified_expression():
     patt_obj = create_pattern_object(
         "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS",
     )
@@ -508,9 +598,23 @@ def test_parsing_qualified_expression():
     ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS"
 
 
+def test_parsing_start_stop_qualified_expression():
+    patt_obj = create_pattern_object(
+        "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'",
+    )
+    assert str(
+        patt_obj,
+    ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"
+
+
 def test_list_constant():
     patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]")
     assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
+
+
+def test_parsing_boolean():
+    patt_obj = create_pattern_object("[network-traffic:is_active = true]")
+    assert str(patt_obj) == "[network-traffic:is_active = true]"
 
 
 def test_parsing_multiple_slashes_quotes():
