@@ -1,7 +1,7 @@
 import pytest
 
 import stix2
-from stix2 import core, exceptions
+from stix2 import exceptions, parsing
 
 from .constants import IDENTITY_ID, OBSERVED_DATA_ID
 
@@ -50,7 +50,7 @@ BUNDLE = {
 
 def test_dict_to_stix2_bundle_with_version():
     with pytest.raises(exceptions.InvalidValueError) as excinfo:
-        core.dict_to_stix2(BUNDLE, version='2.0')
+        parsing.dict_to_stix2(BUNDLE, version='2.0')
 
     msg = "Invalid value for Bundle 'objects': Spec version 2.0 bundles don't yet support containing objects of a different spec version."
     assert str(excinfo.value) == msg
@@ -58,7 +58,7 @@ def test_dict_to_stix2_bundle_with_version():
 
 def test_parse_observable_with_version():
     observable = {"type": "file", "name": "foo.exe"}
-    obs_obj = core.parse_observable(observable, version='2.1')
+    obs_obj = parsing.parse_observable(observable, version='2.1')
     v = 'v21'
 
     assert v in str(obs_obj.__class__)
@@ -67,36 +67,36 @@ def test_parse_observable_with_version():
 @pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
 def test_parse_observable_with_no_version():
     observable = {"type": "file", "name": "foo.exe"}
-    obs_obj = core.parse_observable(observable)
+    obs_obj = parsing.parse_observable(observable)
     v = 'v21'
 
     assert v in str(obs_obj.__class__)
 
 
 def test_register_object_with_version():
-    bundle = core.dict_to_stix2(BUNDLE, version='2.1')
-    core._register_object(bundle.objects[0].__class__)
+    bundle = parsing.dict_to_stix2(BUNDLE, version='2.1')
+    parsing._register_object(bundle.objects[0].__class__)
     v = 'v21'
 
-    assert bundle.objects[0].type in core.STIX2_OBJ_MAPS[v]['objects']
+    assert bundle.objects[0].type in parsing.STIX2_OBJ_MAPS[v]['objects']
     assert bundle.objects[0].spec_version == "2.1"
 
 
 def test_register_marking_with_version():
-    core._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
+    parsing._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
     v = 'v21'
 
-    assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
+    assert stix2.v21.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
     assert v in str(stix2.v21.TLP_WHITE.__class__)
 
 
 @pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
 def test_register_marking_with_no_version():
     # Uses default version (2.0 in this case)
-    core._register_marking(stix2.v21.TLP_WHITE.__class__)
+    parsing._register_marking(stix2.v21.TLP_WHITE.__class__)
     v = 'v21'
 
-    assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
+    assert stix2.v21.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
     assert v in str(stix2.v21.TLP_WHITE.__class__)
 
 
@@ -131,10 +131,10 @@ def test_register_observable_with_default_version():
             },
         },
     )
-    core._register_observable(observed_data.objects['0'].__class__)
+    parsing._register_observable(observed_data.objects['0'].__class__)
     v = 'v21'
 
-    assert observed_data.objects['0'].type in core.STIX2_OBJ_MAPS[v]['observables']
+    assert observed_data.objects['0'].type in parsing.STIX2_OBJ_MAPS[v]['observables']
     assert v in str(observed_data.objects['0'].__class__)
 
 
@@ -169,11 +169,11 @@ def test_register_observable_extension_with_default_version():
             },
         },
     )
-    core._register_observable_extension(observed_data.objects['0'], observed_data.objects['0'].extensions['ntfs-ext'].__class__)
+    parsing._register_observable_extension(observed_data.objects['0'], observed_data.objects['0'].extensions['ntfs-ext'].__class__)
     v = 'v21'
 
-    assert observed_data.objects['0'].type in core.STIX2_OBJ_MAPS[v]['observables']
+    assert observed_data.objects['0'].type in parsing.STIX2_OBJ_MAPS[v]['observables']
     assert v in str(observed_data.objects['0'].__class__)
 
-    assert observed_data.objects['0'].extensions['ntfs-ext']._type in core.STIX2_OBJ_MAPS[v]['observable-extensions']['file']
+    assert observed_data.objects['0'].extensions['ntfs-ext']._type in parsing.STIX2_OBJ_MAPS[v]['observable-extensions']['file']
     assert v in str(observed_data.objects['0'].extensions['ntfs-ext'].__class__)

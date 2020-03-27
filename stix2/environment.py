@@ -4,8 +4,8 @@ import copy
 import logging
 import time
 
-from .core import parse as _parse
 from .datastore import CompositeDataSource, DataStoreMixin
+from .parsing import parse as _parse
 from .utils import STIXdatetime, parse_into_datetime
 
 logger = logging.getLogger(__name__)

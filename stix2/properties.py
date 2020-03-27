@@ -12,11 +12,11 @@ from six import string_types, text_type
 import stix2
 
 from .base import _STIXBase
-from .core import STIX2_OBJ_MAPS, parse, parse_observable
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
     MutuallyExclusivePropertiesError,
 )
+from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 try:
