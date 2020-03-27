@@ -12,9 +12,8 @@ from .common import ExternalReference, GranularMarking
 
 
 class Relationship(STIXRelationshipObject):
-    # TODO: Add link
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_al0fb8fcd9e7>`__.
     """
 
     _invalid_source_target_types = ['bundle', 'language-content', 'marking-definition', 'relationship', 'sighting']
@@ -69,9 +68,8 @@ class Relationship(STIXRelationshipObject):
 
 
 class Sighting(STIXRelationshipObject):
-    # TODO: Add link
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_7p0n81ikux8f>`__.
     """
 
     _type = 'sighting'
