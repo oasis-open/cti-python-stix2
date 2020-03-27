@@ -3,7 +3,6 @@ import inspect
 
 from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternParser import TerminalNode
-from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
 from stix2patterns.v20.grammars.STIXPatternParser import \
     STIXPatternParser as STIXPatternParser20
 from stix2patterns.v20.grammars.STIXPatternVisitor import \
@@ -102,7 +101,10 @@ class STIXPatternVisitorForSTIX2():
     # Visit a parse tree produced by STIXPatternParser#observationExpressionCompound.
     def visitObservationExpressionCompound(self, ctx):
         children = self.visitChildren(ctx)
-        return self.instantiate("ObservationExpression", children[1])
+        if isinstance(children[0], TerminalNode) and children[0].symbol.type == self.parser_class.LPAREN:
+            return self.instantiate("ParentheticalExpression", children[1])
+        else:
+            return self.instantiate("ObservationExpression", children[0])
 
     # Visit a parse tree produced by STIXPatternParser#observationExpressionWithin.
     def visitObservationExpressionWithin(self, ctx):

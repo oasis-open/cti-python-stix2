@@ -216,6 +216,31 @@ def test_parsing_less_than_or_equal():
     assert str(patt_obj) == "[file:size <= 1024]"
 
 
+def test_parsing_issubset():
+    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']")
+    assert str(patt_obj) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
+
+
+def test_parsing_issuperset():
+    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']")
+    assert str(patt_obj) == "[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
+
+
+def test_parsing_like():
+    patt_obj = create_pattern_object("[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']")
+    assert str(patt_obj) == "[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']"
+
+
+def test_parsing_match():
+    patt_obj = create_pattern_object("[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS")  # noqa
+    assert str(patt_obj) == "[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS"
+
+
+def test_parsing_followed_by():
+    patt_obj = create_pattern_object("([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS")  # noqa
+    assert str(patt_obj) == "([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS"  # noqa
+
+
 def test_not():
     exp = stix2.LessThanComparisonExpression(
         "file:size",
