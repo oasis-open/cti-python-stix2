@@ -6,7 +6,7 @@ import stix2
 import stix2.base
 import stix2.v21
 
-from ...exceptions import DuplicateObjectRegistrationError, InvalidValueError
+from ...exceptions import DuplicateRegistrationError, InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
@@ -1092,7 +1092,7 @@ def test_register_custom_object_with_version():
 
 
 def test_register_duplicate_object_with_version():
-    with pytest.raises(DuplicateObjectRegistrationError) as excinfo:
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
         @stix2.v21.CustomObject(
             'x-new-type-2', [
                 ('property1', stix2.properties.StringProperty()),
@@ -1101,7 +1101,7 @@ def test_register_duplicate_object_with_version():
         )
         class NewType2(object):
             pass
-    assert "An object with type 'x-new-type-2' already exists and cannot be created again." in str(excinfo.value)
+    assert "cannot be registered again" in str(excinfo.value)
 
 
 @stix2.v21.CustomObservable(
@@ -1113,15 +1113,15 @@ class NewObservable3(object):
     pass
 
 
-def test_register_observable_with_version():
+def test_register_observable():
     custom_obs = NewObservable3(property1="Test Observable")
     v = 'v21'
 
     assert custom_obs.type in stix2.core.STIX2_OBJ_MAPS[v]['observables']
 
 
-def test_register_duplicate_observable_with_version():
-    with pytest.raises(DuplicateObjectRegistrationError) as excinfo:
+def test_register_duplicate_observable():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
         @stix2.v21.CustomObservable(
             'x-new-observable-2', [
                 ('property1', stix2.properties.StringProperty()),
@@ -1129,4 +1129,46 @@ def test_register_duplicate_observable_with_version():
         )
         class NewObservable2(object):
             pass
-    assert "An observable with type 'x-new-observable-2' already exists and cannot be created again." in str(excinfo.value)
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_register_observable_custom_extension():
+    @stix2.v21.CustomExtension(
+        stix2.v21.DomainName, 'x-new-2-ext', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ],
+    )
+    class NewExtension2():
+        pass
+
+    example = NewExtension2(property1="Hi there")
+    v = 'v21'
+
+    assert 'domain-name' in stix2.core.STIX2_OBJ_MAPS[v]['observables']
+    assert example._type in stix2.core.STIX2_OBJ_MAPS[v]['observable-extensions']['domain-name']
+
+
+def test_register_duplicate_observable_extension():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v21.CustomExtension(
+            stix2.v21.DomainName, 'x-new-2-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+                ('property2', stix2.properties.IntegerProperty()),
+            ],
+        )
+        class NewExtension2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_register_duplicate_marking():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v21.CustomMarking(
+            'x-new-obj', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)

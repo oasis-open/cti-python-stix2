@@ -3,8 +3,6 @@ import pytest
 import stix2
 from stix2 import core, exceptions
 
-from .constants import IDENTITY_ID
-
 BUNDLE = {
     "type": "bundle",
     "spec_version": "2.0",
@@ -74,54 +72,3 @@ def test_register_marking_with_version():
 
     assert stix2.v20.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
     assert v in str(stix2.v20.TLP_WHITE.__class__)
-
-
-@pytest.mark.xfail(reason="The default version is no longer 2.0", condition=stix2.DEFAULT_VERSION != "2.0")
-def test_register_marking_with_no_version():
-    # Uses default version (2.0 in this case)
-    core._register_marking(stix2.v20.TLP_WHITE.__class__)
-    v = 'v20'
-
-    assert stix2.v20.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(stix2.v20.TLP_WHITE.__class__)
-
-
-def test_register_observable_extension_with_version():
-    observed_data = stix2.v20.ObservedData(
-        id="observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf",
-        created_by_ref=IDENTITY_ID,
-        created="2016-04-06T19:58:16.000Z",
-        modified="2016-04-06T19:58:16.000Z",
-        first_observed="2015-12-21T19:00:00Z",
-        last_observed="2015-12-21T19:00:00Z",
-        number_observed=50,
-        objects={
-            "0": {
-                "name": "foo.exe",
-                "type": "file",
-                "extensions": {
-                    "ntfs-ext": {
-                        "alternate_data_streams": [
-                            {
-                                "name": "second.stream",
-                                "size": 25536,
-                            },
-                        ],
-                    },
-                },
-            },
-            "1": {
-                "type": "directory",
-                "path": "/usr/home",
-                "contains_refs": ["0"],
-            },
-        },
-    )
-    core._register_observable_extension(observed_data.objects['0'], observed_data.objects['0'].extensions['ntfs-ext'].__class__, version='2.0')
-    v = 'v20'
-
-    assert observed_data.objects['0'].type in core.STIX2_OBJ_MAPS[v]['observables']
-    assert v in str(observed_data.objects['0'].__class__)
-
-    assert observed_data.objects['0'].extensions['ntfs-ext']._type in core.STIX2_OBJ_MAPS[v]['observable-extensions']['file']
-    assert v in str(observed_data.objects['0'].extensions['ntfs-ext'].__class__)

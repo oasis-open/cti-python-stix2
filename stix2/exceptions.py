@@ -235,8 +235,14 @@ class STIXDeprecationWarning(DeprecationWarning):
     pass
 
 
-class DuplicateObjectRegistrationError(STIXError):
-    """An object (or observable) with the same type as an existing object (or observable) is being registered"""
+class DuplicateRegistrationError(STIXError):
+    """A STIX object with the same type as an existing object is being registered"""
 
-    def __init__(self, msg):
-        super(DuplicateObjectRegistrationError, self).__init__(msg)
+    def __init__(self, obj_type, reg_obj_type):
+        super(DuplicateRegistrationError, self).__init__()
+        self.obj_type = obj_type
+        self.reg_obj_type = reg_obj_type
+
+    def __str__(self):
+        msg = "A(n) {0} with type '{1}' already exists and cannot be registered again"
+        return msg.format(self.obj_type, self.reg_obj_type)
