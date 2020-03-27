@@ -3,14 +3,16 @@ import inspect
 
 from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternParser import TerminalNode
-
-from stix2patterns.v20.grammars.STIXPatternParser import STIXPatternParser as STIXPatternParser20
-from stix2patterns.v21.grammars.STIXPatternParser import STIXPatternParser as STIXPatternParser21
-
-from stix2patterns.v20.grammars.STIXPatternVisitor import STIXPatternVisitor as STIXPatternVisitor20
-from stix2patterns.v21.grammars.STIXPatternVisitor import STIXPatternVisitor as STIXPatternVisitor21
 from stix2patterns.grammars.STIXPatternVisitor import STIXPatternVisitor
+from stix2patterns.v20.grammars.STIXPatternParser import \
+    STIXPatternParser as STIXPatternParser20
+from stix2patterns.v20.grammars.STIXPatternVisitor import \
+    STIXPatternVisitor as STIXPatternVisitor20
 from stix2patterns.v20.pattern import Pattern as Pattern20
+from stix2patterns.v21.grammars.STIXPatternParser import \
+    STIXPatternParser as STIXPatternParser21
+from stix2patterns.v21.grammars.STIXPatternVisitor import \
+    STIXPatternVisitor as STIXPatternVisitor21
 from stix2patterns.v21.pattern import Pattern as Pattern21
 
 from .patterns import *
