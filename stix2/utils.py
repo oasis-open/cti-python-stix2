@@ -12,7 +12,7 @@ import re
 from dateutil import parser
 import pytz
 
-import stix2.base
+import stix2
 
 from .exceptions import (
     InvalidValueError, RevokeError, UnmodifiablePropertyError,
@@ -233,14 +233,12 @@ def find_property_index(obj, search_key, search_value):
     Returns:
         int: An index; -1 if the key and value aren't found
     """
-    from .base import _STIXBase
-
     # Special-case keys which are numbers-as-strings, e.g. for cyber-observable
     # mappings.  Use the int value of the key as the index.
     if search_key.isdigit():
         return int(search_key)
 
-    if isinstance(obj, _STIXBase):
+    if isinstance(obj, stix2.base._STIXBase):
         if search_key in obj and obj[search_key] == search_value:
             idx = _find(obj.object_properties(), search_key)
         else:
