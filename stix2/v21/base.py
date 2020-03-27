@@ -1,11 +1,12 @@
 """Base classes for STIX 2.1 type definitions."""
 
-from ..base import _Extension, _Observable, _STIXBase
-from ..core import STIXDomainObject, STIXRelationshipObject
+from ..base import (
+    _DomainObject, _Extension, _Observable, _RelationshipObject, _STIXBase,
+)
 
 
 class _STIXBase21(_STIXBase):
-    _spec_version = "2.1"
+    pass
 
 
 class _Observable(_Observable, _STIXBase21):
@@ -16,9 +17,9 @@ class _Extension(_Extension, _STIXBase21):
     pass
 
 
-class STIXDomainObject(STIXDomainObject, _STIXBase21):
+class _DomainObject(_DomainObject, _STIXBase21):
     pass
 
 
-class STIXRelationshipObject(STIXRelationshipObject, _STIXBase21):
+class _RelationshipObject(_RelationshipObject, _STIXBase21):
     pass

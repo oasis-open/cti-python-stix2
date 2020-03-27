@@ -7,11 +7,11 @@ from ..properties import (
     ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
-from .base import STIXRelationshipObject
+from .base import _RelationshipObject
 from .common import ExternalReference, GranularMarking
 
 
-class Relationship(STIXRelationshipObject):
+class Relationship(_RelationshipObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714340>`__.
     """
@@ -52,7 +52,7 @@ class Relationship(STIXRelationshipObject):
         super(Relationship, self).__init__(**kwargs)
 
 
-class Sighting(STIXRelationshipObject):
+class Sighting(_RelationshipObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714343>`__.
     """

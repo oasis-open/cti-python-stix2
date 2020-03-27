@@ -13,11 +13,11 @@ from ..properties import (
     TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
-from .base import STIXDomainObject
+from .base import _DomainObject
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
 
-class AttackPattern(STIXDomainObject):
+class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714302>`__.
     """
@@ -40,7 +40,7 @@ class AttackPattern(STIXDomainObject):
     ])
 
 
-class Campaign(STIXDomainObject):
+class Campaign(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714305>`__.
     """
@@ -66,7 +66,7 @@ class Campaign(STIXDomainObject):
     ])
 
 
-class CourseOfAction(STIXDomainObject):
+class CourseOfAction(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714308>`__.
     """
@@ -88,7 +88,7 @@ class CourseOfAction(STIXDomainObject):
     ])
 
 
-class Identity(STIXDomainObject):
+class Identity(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714311>`__.
     """
@@ -113,7 +113,7 @@ class Identity(STIXDomainObject):
     ])
 
 
-class Indicator(STIXDomainObject):
+class Indicator(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714314>`__.
     """
@@ -144,7 +144,7 @@ class Indicator(STIXDomainObject):
             raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
 
 
-class IntrusionSet(STIXDomainObject):
+class IntrusionSet(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714317>`__.
     """
@@ -173,7 +173,7 @@ class IntrusionSet(STIXDomainObject):
     ])
 
 
-class Malware(STIXDomainObject):
+class Malware(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714320>`__.
     """
@@ -196,7 +196,7 @@ class Malware(STIXDomainObject):
     ])
 
 
-class ObservedData(STIXDomainObject):
+class ObservedData(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714323>`__.
     """
@@ -226,7 +226,7 @@ class ObservedData(STIXDomainObject):
         super(ObservedData, self).__init__(*args, **kwargs)
 
 
-class Report(STIXDomainObject):
+class Report(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714326>`__.
     """
@@ -250,7 +250,7 @@ class Report(STIXDomainObject):
     ])
 
 
-class ThreatActor(STIXDomainObject):
+class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714329>`__.
     """
@@ -280,7 +280,7 @@ class ThreatActor(STIXDomainObject):
     ])
 
 
-class Tool(STIXDomainObject):
+class Tool(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714332>`__.
     """
@@ -304,7 +304,7 @@ class Tool(STIXDomainObject):
     ])
 
 
-class Vulnerability(STIXDomainObject):
+class Vulnerability(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714335>`__.
     """
@@ -374,5 +374,5 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
-        return _custom_object_builder(cls, type, _properties, '2.0', STIXDomainObject)
+        return _custom_object_builder(cls, type, _properties, '2.0', _DomainObject)
     return wrapper

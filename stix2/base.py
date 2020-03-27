@@ -8,6 +8,7 @@ import uuid
 import simplejson as json
 import six
 
+import stix2
 from stix2.canonicalization.Canonicalize import canonicalize
 
 from .exceptions import (
@@ -15,6 +16,7 @@ from .exceptions import (
     ImmutableError, InvalidObjRefError, InvalidValueError,
     MissingPropertiesError, MutuallyExclusivePropertiesError,
 )
+from .markings import _MarkingsMixin
 from .markings.utils import validate
 from .utils import (
     NOW, PREFIX_21_REGEX, find_property_index, format_datetime, get_timestamp,
@@ -160,17 +162,15 @@ class _STIXBase(Mapping):
         custom_props = kwargs.pop('custom_properties', {})
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
-        if not self._allow_custom:
-            extra_kwargs = list(set(kwargs) - set(self._properties))
-            if extra_kwargs:
-                raise ExtraPropertiesError(cls, extra_kwargs)
-        else:
-            # because allow_custom is true, any extra kwargs are custom
-            extra_kwargs = list(set(kwargs) - set(self._properties))
 
+        extra_kwargs = list(set(kwargs) - set(self._properties))
+        if extra_kwargs and not self._allow_custom:
+            raise ExtraPropertiesError(cls, extra_kwargs)
+
+        # because allow_custom is true, any extra kwargs are custom
         if custom_props or extra_kwargs:
             self._allow_custom = True
-            if self._spec_version == "2.1":
+            if isinstance(self, stix2.v21._STIXBase21):
                 all_custom_prop_names = extra_kwargs
                 all_custom_prop_names.extend(list(custom_props.keys()))
                 for prop_name in all_custom_prop_names:
@@ -319,6 +319,14 @@ class _STIXBase(Mapping):
             return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
         else:
             return json.dumps(self, cls=STIXJSONEncoder, **kwargs)
+
+
+class _DomainObject(_STIXBase, _MarkingsMixin):
+    pass
+
+
+class _RelationshipObject(_STIXBase, _MarkingsMixin):
+    pass
 
 
 class _Observable(_STIXBase):

@@ -7,11 +7,11 @@ from ..properties import (
     ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
-from .base import STIXRelationshipObject
+from .base import _RelationshipObject
 from .common import ExternalReference, GranularMarking
 
 
-class Relationship(STIXRelationshipObject):
+class Relationship(_RelationshipObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -68,7 +68,7 @@ class Relationship(STIXRelationshipObject):
             raise ValueError(msg.format(self))
 
 
-class Sighting(STIXRelationshipObject):
+class Sighting(_RelationshipObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.

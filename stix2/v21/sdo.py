@@ -17,11 +17,11 @@ from ..properties import (
     StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
-from .base import STIXDomainObject
+from .base import _DomainObject
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
 
-class AttackPattern(STIXDomainObject):
+class AttackPattern(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -49,7 +49,7 @@ class AttackPattern(STIXDomainObject):
     ])
 
 
-class Campaign(STIXDomainObject):
+class Campaign(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -89,7 +89,7 @@ class Campaign(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class CourseOfAction(STIXDomainObject):
+class CourseOfAction(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -115,7 +115,7 @@ class CourseOfAction(STIXDomainObject):
     ])
 
 
-class Grouping(STIXDomainObject):
+class Grouping(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -143,7 +143,7 @@ class Grouping(STIXDomainObject):
     ])
 
 
-class Identity(STIXDomainObject):
+class Identity(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -173,7 +173,7 @@ class Identity(STIXDomainObject):
     ])
 
 
-class Indicator(STIXDomainObject):
+class Indicator(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -210,7 +210,7 @@ class Indicator(STIXDomainObject):
         if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
             kwargs['pattern_version'] = '2.1'
 
-        super(STIXDomainObject, self).__init__(*args, **kwargs)
+        super(_DomainObject, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
@@ -233,7 +233,7 @@ class Indicator(STIXDomainObject):
                 raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
 
 
-class Infrastructure(STIXDomainObject):
+class Infrastructure(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -274,7 +274,7 @@ class Infrastructure(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class IntrusionSet(STIXDomainObject):
+class IntrusionSet(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -317,7 +317,7 @@ class IntrusionSet(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class Location(STIXDomainObject):
+class Location(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -425,7 +425,7 @@ class Location(STIXDomainObject):
         return final_url
 
 
-class Malware(STIXDomainObject):
+class Malware(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -478,7 +478,7 @@ class Malware(STIXDomainObject):
             )
 
 
-class MalwareAnalysis(STIXDomainObject):
+class MalwareAnalysis(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -523,7 +523,7 @@ class MalwareAnalysis(STIXDomainObject):
         self._check_at_least_one_property(["result", "analysis_sco_refs"])
 
 
-class Note(STIXDomainObject):
+class Note(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -551,7 +551,7 @@ class Note(STIXDomainObject):
     ])
 
 
-class ObservedData(STIXDomainObject):
+class ObservedData(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -607,7 +607,7 @@ class ObservedData(STIXDomainObject):
         )
 
 
-class Opinion(STIXDomainObject):
+class Opinion(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -645,7 +645,7 @@ class Opinion(STIXDomainObject):
     ])
 
 
-class Report(STIXDomainObject):
+class Report(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -674,7 +674,7 @@ class Report(STIXDomainObject):
     ])
 
 
-class ThreatActor(STIXDomainObject):
+class ThreatActor(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -721,7 +721,7 @@ class ThreatActor(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class Tool(STIXDomainObject):
+class Tool(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -751,7 +751,7 @@ class Tool(STIXDomainObject):
     ])
 
 
-class Vulnerability(STIXDomainObject):
+class Vulnerability(_DomainObject):
     # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
@@ -828,6 +828,6 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
-        return _custom_object_builder(cls, type, _properties, '2.1', STIXDomainObject)
+        return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 
     return wrapper

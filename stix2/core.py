@@ -7,22 +7,13 @@ import re
 
 import stix2
 
-from .base import _Observable, _STIXBase
+from .base import _Observable
 from .exceptions import ParseError
-from .markings import _MarkingsMixin
 from .utils import (
     EXT_21_REGEX, PREFIX_21_REGEX, TYPE_21_REGEX, TYPE_REGEX, _get_dict,
 )
 
 STIX2_OBJ_MAPS = {}
-
-
-class STIXDomainObject(_STIXBase, _MarkingsMixin):
-    pass
-
-
-class STIXRelationshipObject(_STIXBase, _MarkingsMixin):
-    pass
 
 
 def parse(data, allow_custom=False, version=None):
