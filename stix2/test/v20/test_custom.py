@@ -1,9 +1,10 @@
 import pytest
 
 import stix2
+from stix2 import core
 import stix2.v20
 
-from ...exceptions import InvalidValueError
+from ...exceptions import DuplicateRegistrationError, InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v20.Identity(
@@ -449,7 +450,7 @@ def test_custom_observable_raises_exception():
 
 def test_custom_observable_object_no_init_1():
     @stix2.v20.CustomObservable(
-        'x-new-observable', [
+        'x-new-observable-1', [
             ('property1', stix2.properties.StringProperty()),
         ],
     )
@@ -1011,3 +1012,123 @@ def test_custom_object_nested_dictionary(data):
     )
 
     assert data == str(example)
+
+
+@stix2.v20.CustomObject(
+    'x-new-type-2', [
+        ('property1', stix2.properties.StringProperty()),
+        ('property2', stix2.properties.IntegerProperty()),
+    ],
+)
+class NewType2(object):
+    pass
+
+
+def test_register_custom_object_with_version():
+    custom_obj_1 = {
+        "type": "x-new-type-2",
+        "id": "x-new-type-2--00000000-0000-4000-8000-000000000007",
+    }
+
+    cust_obj_1 = core.dict_to_stix2(custom_obj_1, version='2.0')
+    v = 'v20'
+
+    assert cust_obj_1.type in core.STIX2_OBJ_MAPS[v]['objects']
+    # spec_version is not in STIX 2.0, and is required in 2.1, so this
+    # suffices as a test for a STIX 2.0 object.
+    assert "spec_version" not in cust_obj_1
+
+
+def test_register_duplicate_object_with_version():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomObject(
+            'x-new-type-2', [
+                ('property1', stix2.properties.StringProperty()),
+                ('property2', stix2.properties.IntegerProperty()),
+            ],
+        )
+        class NewType2(object):
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+@stix2.v20.CustomObservable(
+    'x-new-observable-2', [
+        ('property1', stix2.properties.StringProperty()),
+    ],
+)
+class NewObservable2(object):
+    pass
+
+
+def test_register_observable_with_version():
+    custom_obs = NewObservable2(property1="Test Observable")
+    v = 'v20'
+
+    assert custom_obs.type in core.STIX2_OBJ_MAPS[v]['observables']
+
+
+def test_register_duplicate_observable_with_version():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomObservable(
+            'x-new-observable-2', [
+                ('property1', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObservable2(object):
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_register_marking_with_version():
+    @stix2.v20.CustomMarking(
+        'x-new-obj-2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    )
+    class NewObj2():
+        pass
+    v = 'v20'
+
+    no = NewObj2(property1='something')
+    assert no._type in core.STIX2_OBJ_MAPS[v]['markings']
+
+
+def test_register_observable_extension_with_version():
+    @stix2.v20.CustomExtension(
+        stix2.v20.UserAccount, 'some-extension-2', [
+            ('keys', stix2.properties.StringProperty(required=True)),
+        ],
+    )
+    class SomeCustomExtension2:
+        pass
+
+    v = 'v20'
+    example = SomeCustomExtension2(keys='test123')
+
+    assert example._type in core.STIX2_OBJ_MAPS[v]['observable-extensions']['user-account']
+
+
+def test_register_duplicate_observable_extension():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomExtension(
+            stix2.v20.UserAccount, 'some-extension-2', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+                ('property2', stix2.properties.IntegerProperty()),
+            ],
+        )
+        class NewExtension2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_register_duplicate_marking():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomMarking(
+            'x-new-obj-2', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)

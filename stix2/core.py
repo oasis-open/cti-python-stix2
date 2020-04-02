@@ -8,7 +8,7 @@ import re
 import stix2
 
 from .base import _Observable, _STIXBase
-from .exceptions import ParseError
+from .exceptions import DuplicateRegistrationError, ParseError
 from .markings import _MarkingsMixin
 from .utils import SCO21_EXT_REGEX, TYPE_REGEX, _get_dict
 
@@ -217,6 +217,8 @@ def _register_object(new_type, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP = STIX2_OBJ_MAPS[v]['objects']
+    if new_type._type in OBJ_MAP.keys():
+        raise DuplicateRegistrationError("STIX Object", new_type._type)
     OBJ_MAP[new_type._type] = new_type
 
 
@@ -236,6 +238,8 @@ def _register_marking(new_marking, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP_MARKING = STIX2_OBJ_MAPS[v]['markings']
+    if new_marking._type in OBJ_MAP_MARKING.keys():
+        raise DuplicateRegistrationError("STIX Marking", new_marking._type)
     OBJ_MAP_MARKING[new_marking._type] = new_marking
 
 
@@ -255,6 +259,8 @@ def _register_observable(new_observable, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
+    if new_observable._type in OBJ_MAP_OBSERVABLE.keys():
+        raise DuplicateRegistrationError("Cyber Observable", new_observable._type)
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 
@@ -319,6 +325,8 @@ def _register_observable_extension(
     EXT_MAP = STIX2_OBJ_MAPS[v]['observable-extensions']
 
     try:
+        if ext_type in EXT_MAP[observable_type].keys():
+            raise DuplicateRegistrationError("Observable Extension", ext_type)
         EXT_MAP[observable_type][ext_type] = new_extension
     except KeyError:
         if observable_type not in OBJ_MAP_OBSERVABLE:

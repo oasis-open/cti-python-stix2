@@ -1,4 +1,4 @@
-sudo: false
+os: linux
 language: python
 cache: pip
 dist: xenial
