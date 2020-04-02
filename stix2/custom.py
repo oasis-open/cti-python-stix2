@@ -8,33 +8,11 @@ from .parsing import (
     _register_marking, _register_object, _register_observable,
     _register_observable_extension,
 )
-from .utils import (
-    PREFIX_21_REGEX, TYPE_21_REGEX, TYPE_REGEX, get_class_hierarchy_names,
-)
+from .utils import PREFIX_21_REGEX, get_class_hierarchy_names
 
 
 def _custom_object_builder(cls, type, properties, version, base_class):
     class _CustomObject(cls, base_class):
-
-        if version == "2.0":
-            if not re.match(TYPE_REGEX, type):
-                raise ValueError(
-                    "Invalid type name '%s': must only contain the "
-                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
-                    type,
-                )
-        else:  # 2.1+
-            if not re.match(TYPE_21_REGEX, type):
-                raise ValueError(
-                    "Invalid type name '%s': must only contain the "
-                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
-                    "and must begin with an a-z character" % type,
-                )
-
-        if len(type) < 3 or len(type) > 250:
-            raise ValueError(
-                "Invalid type name '%s': must be between 3 and 250 characters." % type,
-            )
 
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
@@ -78,24 +56,6 @@ def _custom_observable_builder(cls, type, properties, version, base_class, id_co
         id_contrib_props = []
 
     class _CustomObservable(cls, base_class):
-
-        if version == "2.0":
-            if not re.match(TYPE_REGEX, type):
-                raise ValueError(
-                    "Invalid observable type name '%s': must only contain the "
-                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
-                    type,
-                )
-        else:  # 2.1+
-            if not re.match(TYPE_21_REGEX, type):
-                raise ValueError(
-                    "Invalid observable type name '%s': must only contain the "
-                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
-                    "and must begin with an a-z character" % type,
-                )
-
-        if len(type) < 3 or len(type) > 250:
-            raise ValueError("Invalid observable type name '%s': must be between 3 and 250 characters." % type)
 
         if not properties or not isinstance(properties, list):
             raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")

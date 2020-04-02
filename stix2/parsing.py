@@ -7,11 +7,9 @@ import re
 
 import stix2
 
-from .base import _Observable
+from .base import _DomainObject, _Observable
 from .exceptions import ParseError
-from .utils import (
-    EXT_21_REGEX, PREFIX_21_REGEX, TYPE_21_REGEX, TYPE_REGEX, _get_dict,
-)
+from .utils import PREFIX_21_REGEX, _get_dict
 
 STIX2_OBJ_MAPS = {}
 
@@ -204,6 +202,14 @@ def _register_object(new_type, version=None):
 
     """
 
+    if not issubclass(new_type, _DomainObject):
+        raise ValueError(
+            "'%s' must be created with the @CustomObject decorator." %
+            new_type.__name__,
+        )
+
+    new_type._properties['type'].clean(new_type._type)
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -223,28 +229,6 @@ def _register_marking(new_marking, version=None):
             None, use latest version.
 
     """
-
-    type = new_marking._type
-
-    if version == "2.0":
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid marking type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
-                type,
-            )
-    else:  # 2.1+
-        if not re.match(TYPE_21_REGEX, type):
-            raise ValueError(
-                "Invalid marking type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
-                "and must begin with an a-z character" % type,
-            )
-
-    if len(type) < 3 or len(type) > 250:
-        raise ValueError(
-            "Invalid marking type name '%s': must be between 3 and 250 characters." % type,
-        )
 
     properties = new_marking._properties
 
@@ -272,6 +256,8 @@ def _register_observable(new_observable, version=None):
             None, use latest version.
 
     """
+
+    new_observable._properties['type'].clean(new_observable._type)
 
     if version:
         v = 'v' + version.replace('.', '')
@@ -304,26 +290,12 @@ def _register_observable_extension(
     if not issubclass(obs_class, _Observable):
         raise ValueError("'observable' must be a valid Observable class!")
 
-    if version == "2.0":
-        if not re.match(TYPE_REGEX, ext_type):
-            raise ValueError(
-                "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
-                ext_type,
-            )
-    else:  # 2.1+
-        if not re.match(EXT_21_REGEX, ext_type):
-            raise ValueError(
-                "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, hyphen (-), "
-                "must begin with an a-z character"
-                "and end with '-ext'." % ext_type,
-            )
-
-    if len(ext_type) < 3 or len(ext_type) > 250:
+    temp_prop = stix2.properties.TypeProperty(ext_type, spec_version=version)
+    temp_prop.clean(ext_type)
+    if not ext_type.endswith('-ext'):
         raise ValueError(
-            "Invalid extension type name '%s': must be between 3 and 250"
-            " characters." % ext_type,
+            "Invalid extension type name '%s': must end with '-ext'." %
+            ext_type,
         )
 
     if not new_extension._properties:

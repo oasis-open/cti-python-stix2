@@ -17,7 +17,10 @@ from .exceptions import (
     MutuallyExclusivePropertiesError,
 )
 from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
-from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
+from .utils import (
+    TYPE_21_REGEX, TYPE_REGEX, _get_dict, get_class_hierarchy_names,
+    parse_into_datetime,
+)
 
 try:
     from collections.abc import Mapping
@@ -232,8 +235,32 @@ class StringProperty(Property):
 
 class TypeProperty(Property):
 
-    def __init__(self, type):
+    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+        self.spec_version = spec_version
         super(TypeProperty, self).__init__(fixed=type)
+
+    def clean(self, value):
+        if self.spec_version == "2.0":
+            if not re.match(TYPE_REGEX, type):
+                raise ValueError(
+                    "Invalid type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
+                    type,
+                )
+        else:  # 2.1+
+            if not re.match(TYPE_21_REGEX, type):
+                raise ValueError(
+                    "Invalid type name '%s': must only contain the "
+                    "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
+                    "and must begin with an a-z character" % type,
+                )
+
+        if len(type) < 3 or len(type) > 250:
+            raise ValueError(
+                "Invalid type name '%s': must be between 3 and 250 characters." % type,
+            )
+
+        return value
 
 
 class IDProperty(Property):

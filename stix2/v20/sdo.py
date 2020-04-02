@@ -24,7 +24,7 @@ class AttackPattern(_DomainObject):
 
     _type = 'attack-pattern'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -47,7 +47,7 @@ class Campaign(_DomainObject):
 
     _type = 'campaign'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -73,7 +73,7 @@ class CourseOfAction(_DomainObject):
 
     _type = 'course-of-action'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -95,7 +95,7 @@ class Identity(_DomainObject):
 
     _type = 'identity'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -120,7 +120,7 @@ class Indicator(_DomainObject):
 
     _type = 'indicator'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -151,7 +151,7 @@ class IntrusionSet(_DomainObject):
 
     _type = 'intrusion-set'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -180,7 +180,7 @@ class Malware(_DomainObject):
 
     _type = 'malware'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -203,7 +203,7 @@ class ObservedData(_DomainObject):
 
     _type = 'observed-data'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -233,7 +233,7 @@ class Report(_DomainObject):
 
     _type = 'report'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -257,7 +257,7 @@ class ThreatActor(_DomainObject):
 
     _type = 'threat-actor'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -287,7 +287,7 @@ class Tool(_DomainObject):
 
     _type = 'tool'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -311,7 +311,7 @@ class Vulnerability(_DomainObject):
 
     _type = 'vulnerability'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -358,7 +358,7 @@ def CustomObject(type='x-custom-type', properties=None):
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [
-                ('type', TypeProperty(type)),
+                ('type', TypeProperty(type, spec_version='2.0')),
                 ('id', IDProperty(type, spec_version='2.0')),
                 ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),

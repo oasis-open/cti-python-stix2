@@ -120,7 +120,7 @@ class MarkingDefinition(_STIXBase20, _MarkingsMixin):
 
     _type = 'marking-definition'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW)),

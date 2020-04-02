@@ -21,7 +21,7 @@ class Relationship(_RelationshipObject):
 
     _type = 'relationship'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -76,7 +76,7 @@ class Sighting(_RelationshipObject):
 
     _type = 'sighting'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),

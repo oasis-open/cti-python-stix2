@@ -15,7 +15,7 @@ class Bundle(_STIXBase20):
 
     _type = 'bundle'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         # Not technically correct: STIX 2.0 spec doesn't say spec_version must
         # have this value, but it's all we support for now.

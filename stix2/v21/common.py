@@ -87,7 +87,7 @@ class LanguageContent(_STIXBase21):
 
     _type = 'language-content'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -158,7 +158,7 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
 
     _type = 'marking-definition'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),

@@ -29,7 +29,7 @@ class Artifact(_Observable):
 
     _type = 'artifact'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
@@ -59,7 +59,7 @@ class AutonomousSystem(_Observable):
 
     _type = 'autonomous-system'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
@@ -81,7 +81,7 @@ class Directory(_Observable):
 
     _type = 'directory'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
@@ -107,7 +107,7 @@ class DomainName(_Observable):
 
     _type = 'domain-name'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name'], spec_version='2.1'))),
@@ -128,7 +128,7 @@ class EmailAddress(_Observable):
 
     _type = 'email-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
@@ -168,7 +168,7 @@ class EmailMessage(_Observable):
 
     _type = 'email-message'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
@@ -361,7 +361,7 @@ class File(_Observable):
 
     _type = 'file'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('hashes', HashesProperty(spec_version='2.1')),
         ('size', IntegerProperty(min=0)),
@@ -397,7 +397,7 @@ class IPv4Address(_Observable):
 
     _type = 'ipv4-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types='mac-addr', spec_version='2.1'))),
@@ -419,7 +419,7 @@ class IPv6Address(_Observable):
 
     _type = 'ipv6-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ReferenceProperty(valid_types='mac-addr', spec_version='2.1'))),
@@ -441,7 +441,7 @@ class MACAddress(_Observable):
 
     _type = 'mac-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
@@ -461,7 +461,7 @@ class Mutex(_Observable):
 
     _type = 'mutex'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
@@ -586,7 +586,7 @@ class NetworkTraffic(_Observable):
 
     _type = 'network-traffic'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
@@ -711,7 +711,7 @@ class Process(_Observable):
 
     _type = 'process'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
@@ -756,7 +756,7 @@ class Software(_Observable):
 
     _type = 'software'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
@@ -781,7 +781,7 @@ class URL(_Observable):
 
     _type = 'url'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
@@ -816,7 +816,7 @@ class UserAccount(_Observable):
 
     _type = 'user-account'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('user_id', StringProperty()),
         ('credential', StringProperty()),
@@ -879,7 +879,7 @@ class WindowsRegistryKey(_Observable):
 
     _type = 'windows-registry-key'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('key', StringProperty()),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
@@ -931,7 +931,7 @@ class X509Certificate(_Observable):
 
     _type = 'x509-certificate'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('is_self_signed', BooleanProperty()),
         ('hashes', HashesProperty(spec_version='2.1')),
@@ -983,7 +983,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
     """
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
-            [('type', TypeProperty(type))],
+            [('type', TypeProperty(type, spec_version='2.1'))],
             [('id', IDProperty(type, spec_version='2.1'))],
             properties,
             [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],

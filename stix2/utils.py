@@ -28,7 +28,6 @@ STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
 
 TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
 TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
-EXT_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-ext$')
 PREFIX_21_REGEX = re.compile(r'^[a-z].*')
 
 
