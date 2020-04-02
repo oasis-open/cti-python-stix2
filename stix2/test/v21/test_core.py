@@ -3,8 +3,6 @@ import pytest
 import stix2
 from stix2 import exceptions, parsing
 
-from .constants import IDENTITY_ID, OBSERVED_DATA_ID
-
 BUNDLE = {
     "type": "bundle",
     "id": "bundle--00000000-0000-4000-8000-000000000007",
@@ -73,15 +71,6 @@ def test_parse_observable_with_no_version():
     assert v in str(obs_obj.__class__)
 
 
-def test_register_object_with_version():
-    bundle = parsing.dict_to_stix2(BUNDLE, version='2.1')
-    parsing._register_object(bundle.objects[0].__class__)
-    v = 'v21'
-
-    assert bundle.objects[0].type in parsing.STIX2_OBJ_MAPS[v]['objects']
-    assert bundle.objects[0].spec_version == "2.1"
-
-
 def test_register_marking_with_version():
     parsing._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
     v = 'v21'
@@ -98,82 +87,3 @@ def test_register_marking_with_no_version():
 
     assert stix2.v21.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
     assert v in str(stix2.v21.TLP_WHITE.__class__)
-
-
-def test_register_observable_with_default_version():
-    observed_data = stix2.v21.ObservedData(
-        id=OBSERVED_DATA_ID,
-        created_by_ref=IDENTITY_ID,
-        created="2016-04-06T19:58:16.000Z",
-        modified="2016-04-06T19:58:16.000Z",
-        first_observed="2015-12-21T19:00:00Z",
-        last_observed="2015-12-21T19:00:00Z",
-        number_observed=50,
-        objects={
-            "0": {
-                "name": "foo.exe",
-                "type": "file",
-                "extensions": {
-                    "ntfs-ext": {
-                        "alternate_data_streams": [
-                            {
-                                "name": "second.stream",
-                                "size": 25536,
-                            },
-                        ],
-                    },
-                },
-            },
-            "1": {
-                "type": "directory",
-                "path": "/usr/home",
-                "contains_refs": ["file--420bc087-8b53-5ae9-8210-20d27d5e96c8"],
-            },
-        },
-    )
-    parsing._register_observable(observed_data.objects['0'].__class__)
-    v = 'v21'
-
-    assert observed_data.objects['0'].type in parsing.STIX2_OBJ_MAPS[v]['observables']
-    assert v in str(observed_data.objects['0'].__class__)
-
-
-def test_register_observable_extension_with_default_version():
-    observed_data = stix2.v21.ObservedData(
-        id=OBSERVED_DATA_ID,
-        created_by_ref=IDENTITY_ID,
-        created="2016-04-06T19:58:16.000Z",
-        modified="2016-04-06T19:58:16.000Z",
-        first_observed="2015-12-21T19:00:00Z",
-        last_observed="2015-12-21T19:00:00Z",
-        number_observed=50,
-        objects={
-            "0": {
-                "name": "foo.exe",
-                "type": "file",
-                "extensions": {
-                    "ntfs-ext": {
-                        "alternate_data_streams": [
-                            {
-                                "name": "second.stream",
-                                "size": 25536,
-                            },
-                        ],
-                    },
-                },
-            },
-            "1": {
-                "type": "directory",
-                "path": "/usr/home",
-                "contains_refs": ["file--420bc087-8b53-5ae9-8210-20d27d5e96c8"],
-            },
-        },
-    )
-    parsing._register_observable_extension(observed_data.objects['0'], observed_data.objects['0'].extensions['ntfs-ext'].__class__)
-    v = 'v21'
-
-    assert observed_data.objects['0'].type in parsing.STIX2_OBJ_MAPS[v]['observables']
-    assert v in str(observed_data.objects['0'].__class__)
-
-    assert observed_data.objects['0'].extensions['ntfs-ext']._type in parsing.STIX2_OBJ_MAPS[v]['observable-extensions']['file']
-    assert v in str(observed_data.objects['0'].extensions['ntfs-ext'].__class__)

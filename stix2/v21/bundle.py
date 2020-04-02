@@ -9,9 +9,8 @@ from .base import _STIXBase21
 
 
 class Bundle(_STIXBase21):
-    # TODO: Add link
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_nuwp4rox8c7r>`__.
     """
 
     _type = 'bundle'

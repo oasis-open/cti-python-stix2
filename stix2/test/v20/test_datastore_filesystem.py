@@ -635,7 +635,7 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
 
 def test_filesystem_custom_object(fs_store):
     @stix2.v20.CustomObject(
-        'x-new-obj', [
+        'x-new-obj-2', [
             ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
@@ -650,7 +650,7 @@ def test_filesystem_custom_object(fs_store):
     assert newobj_r["property1"] == 'something'
 
     # remove dir
-    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj"), True)
+    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj-2"), True)
 
 
 def test_relationships(rel_fs_store):
