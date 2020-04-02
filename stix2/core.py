@@ -325,11 +325,8 @@ def _register_observable_extension(
     EXT_MAP = STIX2_OBJ_MAPS[v]['observable-extensions']
 
     try:
-        try:
-            if ext_type in EXT_MAP[observable_type].keys():
-                raise DuplicateRegistrationError("Observable Extension", ext_type)
-        except AttributeError:
-            pass
+        if ext_type in EXT_MAP[observable_type].keys():
+            raise DuplicateRegistrationError("Observable Extension", ext_type)
         EXT_MAP[observable_type][ext_type] = new_extension
     except KeyError:
         if observable_type not in OBJ_MAP_OBSERVABLE:

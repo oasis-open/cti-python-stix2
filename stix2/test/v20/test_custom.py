@@ -1080,8 +1080,7 @@ def test_register_duplicate_observable_with_version():
     assert "cannot be registered again" in str(excinfo.value)
 
 
-@pytest.mark.xfail(reason="The default version is no longer 2.0", condition=stix2.DEFAULT_VERSION != "2.0")
-def test_register_marking_with_no_version():
+def test_register_marking_with_version():
     @stix2.v20.CustomMarking(
         'x-new-obj-2', [
             ('property1', stix2.properties.StringProperty(required=True)),
