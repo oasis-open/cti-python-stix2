@@ -375,7 +375,7 @@ def test_custom_marking_invalid_type_name():
         )
         class NewObj(object):
             pass  # pragma: no cover
-    assert "Invalid marking type name 'x': " in str(excinfo.value)
+    assert "Invalid type name 'x': " in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomMarking(
@@ -385,7 +385,7 @@ def test_custom_marking_invalid_type_name():
         )
         class NewObj2(object):
             pass  # pragma: no cover
-    assert "Invalid marking type name 'x_new_marking':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_marking':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomMarking(
@@ -395,7 +395,7 @@ def test_custom_marking_invalid_type_name():
         )
         class NewObj3(object):
             pass  # pragma: no cover
-    assert "Invalid marking type name '7x-new-marking':" in str(excinfo.value)
+    assert "Invalid type name '7x-new-marking':" in str(excinfo.value)
 
 # Custom Objects
 
@@ -619,7 +619,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomObservable(
@@ -629,7 +629,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs2(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x_new_obs':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_obs':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomObservable(
@@ -639,7 +639,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs3(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name '7x-new-obs':" in str(excinfo.value)
+    assert "Invalid type name '7x-new-obs':" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_ref_property():
@@ -1005,7 +1005,7 @@ def test_custom_extension_invalid_type_name():
         )
         class FooExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
@@ -1015,7 +1015,7 @@ def test_custom_extension_invalid_type_name():
         )
         class BlaExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x_new_ext':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_ext':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
@@ -1025,7 +1025,7 @@ def test_custom_extension_invalid_type_name():
         )
         class Bla2Extension():
             pass  # pragma: no cover
-    assert "Invalid extension type name '7x-new-ext':" in str(excinfo.value)
+    assert "Invalid type name '7x-new-ext':" in str(excinfo.value)
 
 
 def test_custom_extension_no_properties():

@@ -483,7 +483,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomObservable(
@@ -493,7 +493,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs2(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x_new_obs':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_obs':" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_ref_property():
@@ -808,7 +808,7 @@ def test_custom_extension_invalid_type_name():
         )
         class FooExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomExtension(
@@ -818,7 +818,7 @@ def test_custom_extension_invalid_type_name():
         )
         class BlaExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x_new_ext':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_ext':" in str(excinfo.value)
 
 
 def test_custom_extension_no_properties():
@@ -968,9 +968,8 @@ def test_register_custom_object():
     class CustomObject2(object):
         _type = 'awesome-object'
 
-    stix2.parsing._register_object(CustomObject2, version="2.0")
-    # Note that we will always check against newest OBJ_MAP.
-    assert (CustomObject2._type, CustomObject2) in stix2.v20.OBJ_MAP.items()
+    with pytest.raises(ValueError):
+        stix2.parsing._register_object(CustomObject2, version="2.0")
 
 
 def test_extension_property_location():

@@ -200,6 +200,11 @@ def _register_object(new_type, version=None):
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
 
+    Raises:
+        ValueError: If the class being registered wasn't created with the
+            @CustomObject decorator.
+        DuplicateRegistrationError: If the class has already been registered.
+
     """
 
     if not issubclass(new_type, _DomainObject):
@@ -207,8 +212,6 @@ def _register_object(new_type, version=None):
             "'%s' must be created with the @CustomObject decorator." %
             new_type.__name__,
         )
-
-    new_type._properties['type'].clean(new_type._type)
 
     if version:
         v = 'v' + version.replace('.', '')
@@ -232,7 +235,10 @@ def _register_marking(new_marking, version=None):
 
     """
 
+    mark_type = new_marking._type
     properties = new_marking._properties
+
+    stix2.properties._validate_type(mark_type, version)
 
     if version == "2.1":
         for prop_name, prop_value in properties.items():
@@ -246,9 +252,9 @@ def _register_marking(new_marking, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP_MARKING = STIX2_OBJ_MAPS[v]['markings']
-    if new_marking._type in OBJ_MAP_MARKING.keys():
-        raise DuplicateRegistrationError("STIX Marking", new_marking._type)
-    OBJ_MAP_MARKING[new_marking._type] = new_marking
+    if mark_type in OBJ_MAP_MARKING.keys():
+        raise DuplicateRegistrationError("STIX Marking", mark_type)
+    OBJ_MAP_MARKING[mark_type] = new_marking
 
 
 def _register_observable(new_observable, version=None):
@@ -260,8 +266,6 @@ def _register_observable(new_observable, version=None):
             None, use latest version.
 
     """
-
-    new_observable._properties['type'].clean(new_observable._type)
 
     if version:
         v = 'v' + version.replace('.', '')
@@ -296,8 +300,7 @@ def _register_observable_extension(
     if not issubclass(obs_class, _Observable):
         raise ValueError("'observable' must be a valid Observable class!")
 
-    temp_prop = stix2.properties.TypeProperty(ext_type, spec_version=version)
-    temp_prop.clean(ext_type)
+    stix2.properties._validate_type(ext_type, version)
 
     if not new_extension._properties:
         raise ValueError(
