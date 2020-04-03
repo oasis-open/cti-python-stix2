@@ -7,20 +7,11 @@ import re
 
 import stix2
 
-from .base import _Observable, _STIXBase
+from .base import _DomainObject, _Observable
 from .exceptions import DuplicateRegistrationError, ParseError
-from .markings import _MarkingsMixin
-from .utils import SCO21_EXT_REGEX, TYPE_REGEX, _get_dict
+from .utils import PREFIX_21_REGEX, _get_dict, get_class_hierarchy_names
 
 STIX2_OBJ_MAPS = {}
-
-
-class STIXDomainObject(_STIXBase, _MarkingsMixin):
-    pass
-
-
-class STIXRelationshipObject(_STIXBase, _MarkingsMixin):
-    pass
 
 
 def parse(data, allow_custom=False, version=None):
@@ -201,7 +192,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
     return obj_class(allow_custom=allow_custom, **obj)
 
 
-def _register_object(new_type, version=None):
+def _register_object(new_type, version=stix2.DEFAULT_VERSION):
     """Register a custom STIX Object type.
 
     Args:
@@ -209,7 +200,26 @@ def _register_object(new_type, version=None):
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
             None, use latest version.
 
+    Raises:
+        ValueError: If the class being registered wasn't created with the
+            @CustomObject decorator.
+        DuplicateRegistrationError: If the class has already been registered.
+
     """
+
+    if not issubclass(new_type, _DomainObject):
+        raise ValueError(
+            "'%s' must be created with the @CustomObject decorator." %
+            new_type.__name__,
+        )
+
+    properties = new_type._properties
+
+    if version == "2.1":
+        for prop_name, prop in properties.items():
+            if not re.match(PREFIX_21_REGEX, prop_name):
+                raise ValueError("Property name '%s' must begin with an alpha character" % prop_name)
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -222,7 +232,7 @@ def _register_object(new_type, version=None):
     OBJ_MAP[new_type._type] = new_type
 
 
-def _register_marking(new_marking, version=None):
+def _register_marking(new_marking, version=stix2.DEFAULT_VERSION):
     """Register a custom STIX Marking Definition type.
 
     Args:
@@ -231,6 +241,17 @@ def _register_marking(new_marking, version=None):
             None, use latest version.
 
     """
+
+    mark_type = new_marking._type
+    properties = new_marking._properties
+
+    stix2.properties._validate_type(mark_type, version)
+
+    if version == "2.1":
+        for prop_name, prop_value in properties.items():
+            if not re.match(PREFIX_21_REGEX, prop_name):
+                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -238,12 +259,12 @@ def _register_marking(new_marking, version=None):
         v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
 
     OBJ_MAP_MARKING = STIX2_OBJ_MAPS[v]['markings']
-    if new_marking._type in OBJ_MAP_MARKING.keys():
-        raise DuplicateRegistrationError("STIX Marking", new_marking._type)
-    OBJ_MAP_MARKING[new_marking._type] = new_marking
+    if mark_type in OBJ_MAP_MARKING.keys():
+        raise DuplicateRegistrationError("STIX Marking", mark_type)
+    OBJ_MAP_MARKING[mark_type] = new_marking
 
 
-def _register_observable(new_observable, version=None):
+def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
     """Register a custom STIX Cyber Observable type.
 
     Args:
@@ -252,6 +273,39 @@ def _register_observable(new_observable, version=None):
             None, use latest version.
 
     """
+    properties = new_observable._properties
+
+    if version == "2.0":
+        # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
+        for prop_name, prop in properties.items():
+            if prop_name.endswith('_ref') and ('ObjectReferenceProperty' not in get_class_hierarchy_names(prop)):
+                raise ValueError(
+                    "'%s' is named like an object reference property but "
+                    "is not an ObjectReferenceProperty." % prop_name,
+                )
+            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
+                                                   'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+                raise ValueError(
+                    "'%s' is named like an object reference list property but "
+                    "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
+                )
+    else:
+        # If using STIX2.1 (or newer...), check properties ending in "_ref/s" are ReferenceProperties
+        for prop_name, prop in properties.items():
+            if not re.match(PREFIX_21_REGEX, prop_name):
+                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
+            elif prop_name.endswith('_ref') and ('ReferenceProperty' not in get_class_hierarchy_names(prop)):
+                raise ValueError(
+                    "'%s' is named like a reference property but "
+                    "is not a ReferenceProperty." % prop_name,
+                )
+            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
+                                                   'ReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+                raise ValueError(
+                    "'%s' is named like a reference list property but "
+                    "is not a ListProperty containing ReferenceProperty." % prop_name,
+                )
+
     if version:
         v = 'v' + version.replace('.', '')
     else:
@@ -280,36 +334,29 @@ def _register_observable_extension(
     obs_class = observable if isinstance(observable, type) else \
         type(observable)
     ext_type = new_extension._type
+    properties = new_extension._properties
 
     if not issubclass(obs_class, _Observable):
         raise ValueError("'observable' must be a valid Observable class!")
 
-    if version == "2.0":
-        if not re.match(TYPE_REGEX, ext_type):
-            raise ValueError(
-                "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
-                ext_type,
-            )
-    else:  # 2.1+
-        if not re.match(SCO21_EXT_REGEX, ext_type):
-            raise ValueError(
-                "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, hyphen (-), and end "
-                "with '-ext'." % ext_type,
-            )
-
-    if len(ext_type) < 3 or len(ext_type) > 250:
-        raise ValueError(
-            "Invalid extension type name '%s': must be between 3 and 250"
-            " characters." % ext_type,
-        )
+    stix2.properties._validate_type(ext_type, version)
 
     if not new_extension._properties:
         raise ValueError(
             "Invalid extension: must define at least one property: " +
             ext_type,
         )
+
+    if version == "2.1":
+        if not ext_type.endswith('-ext'):
+            raise ValueError(
+                "Invalid extension type name '%s': must end with '-ext'." %
+                ext_type,
+            )
+
+        for prop_name, prop_value in properties.items():
+            if not re.match(PREFIX_21_REGEX, prop_name):
+                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
     v = 'v' + version.replace('.', '')
 

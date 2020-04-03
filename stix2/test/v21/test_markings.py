@@ -277,13 +277,11 @@ def test_not_registered_marking_raises_exception():
 
 
 def test_marking_wrong_type_construction():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         # Test passing wrong type for properties.
         @stix2.v21.CustomMarking('x-new-marking-type2', ("a", "b"))
         class NewObject3(object):
             pass
-
-    assert str(excinfo.value) == "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
 
 
 def test_campaign_add_markings():

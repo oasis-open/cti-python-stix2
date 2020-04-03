@@ -7,9 +7,9 @@ import os
 
 from stix2 import v20, v21
 from stix2.base import _STIXBase
-from stix2.core import parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import FilterSet, apply_common_filters
+from stix2.parsing import parse
 
 
 def _add(store, stix_data, allow_custom=True, version=None):

@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import pytest
 
-from stix2.core import _detect_spec_version
+from stix2.parsing import _detect_spec_version
 
 
 @pytest.mark.parametrize(

@@ -7,7 +7,6 @@ import warnings
 from six.moves.urllib.parse import quote_plus
 from stix2patterns.validator import run_validator
 
-from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
 from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
@@ -18,17 +17,18 @@ from ..properties import (
     StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
+from .base import _DomainObject
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
 
-class AttackPattern(STIXDomainObject):
+class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_4ohsa4pay4h4>`__.
     """
 
     _type = 'attack-pattern'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -48,14 +48,14 @@ class AttackPattern(STIXDomainObject):
     ])
 
 
-class Campaign(STIXDomainObject):
+class Campaign(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_vvysvm8mt434>`__.
     """
 
     _type = 'campaign'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -87,14 +87,14 @@ class Campaign(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class CourseOfAction(STIXDomainObject):
+class CourseOfAction(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_d5yf99f0a230>`__.
     """
 
     _type = 'course-of-action'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -112,14 +112,14 @@ class CourseOfAction(STIXDomainObject):
     ])
 
 
-class Grouping(STIXDomainObject):
+class Grouping(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_9e3uldaqqha2>`__.
     """
 
     _type = 'grouping'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
@@ -139,14 +139,14 @@ class Grouping(STIXDomainObject):
     ])
 
 
-class Identity(STIXDomainObject):
+class Identity(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ru8fmldl2p6w>`__.
     """
 
     _type = 'identity'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -168,14 +168,14 @@ class Identity(STIXDomainObject):
     ])
 
 
-class Indicator(STIXDomainObject):
+class Indicator(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_wfiae74706sw>`__.
     """
 
     _type = 'indicator'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -204,7 +204,7 @@ class Indicator(STIXDomainObject):
         if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
             kwargs['pattern_version'] = '2.1'
 
-        super(STIXDomainObject, self).__init__(*args, **kwargs)
+        super(_DomainObject, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
@@ -227,14 +227,14 @@ class Indicator(STIXDomainObject):
                 raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
 
 
-class Infrastructure(STIXDomainObject):
+class Infrastructure(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_l2alfbbcmfep>`__.
     """
 
     _type = 'infrastructure'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -267,14 +267,14 @@ class Infrastructure(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class IntrusionSet(STIXDomainObject):
+class IntrusionSet(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ticprjb32bc4>`__.
     """
 
     _type = 'intrusion-set'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -309,14 +309,14 @@ class IntrusionSet(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class Location(STIXDomainObject):
+class Location(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_sqez6sri9vtz>`__.
     """
 
     _type = 'location'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -416,14 +416,14 @@ class Location(STIXDomainObject):
         return final_url
 
 
-class Malware(STIXDomainObject):
+class Malware(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_gc4ooz6oaz7y>`__.
     """
 
     _type = 'malware'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -468,14 +468,14 @@ class Malware(STIXDomainObject):
             )
 
 
-class MalwareAnalysis(STIXDomainObject):
+class MalwareAnalysis(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_dw67pa20zss5>`__.
     """
 
     _type = 'malware-analysis'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
@@ -512,14 +512,14 @@ class MalwareAnalysis(STIXDomainObject):
         self._check_at_least_one_property(["result", "analysis_sco_refs"])
 
 
-class Note(STIXDomainObject):
+class Note(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_hr77jvcbs9jk>`__.
     """
 
     _type = 'note'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -539,14 +539,14 @@ class Note(STIXDomainObject):
     ])
 
 
-class ObservedData(STIXDomainObject):
+class ObservedData(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_h1590esrzg5f>`__.
     """
 
     _type = 'observed-data'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -594,14 +594,14 @@ class ObservedData(STIXDomainObject):
         )
 
 
-class Opinion(STIXDomainObject):
+class Opinion(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_sr2hswmu5t1>`__.
     """
 
     _type = 'opinion'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -631,14 +631,14 @@ class Opinion(STIXDomainObject):
     ])
 
 
-class Report(STIXDomainObject):
+class Report(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ha4fpad0r9pf>`__.
     """
 
     _type = 'report'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -659,14 +659,14 @@ class Report(STIXDomainObject):
     ])
 
 
-class ThreatActor(STIXDomainObject):
+class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_2wowmlcbkqst>`__.
     """
 
     _type = 'threat-actor'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -705,14 +705,14 @@ class ThreatActor(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class Tool(STIXDomainObject):
+class Tool(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_m21z3a1f3lou>`__.
     """
 
     _type = 'tool'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -734,14 +734,14 @@ class Tool(STIXDomainObject):
     ])
 
 
-class Vulnerability(STIXDomainObject):
+class Vulnerability(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_d9f0iay06wtx>`__.
     """
 
     _type = 'vulnerability'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -791,7 +791,7 @@ def CustomObject(type='x-custom-type', properties=None):
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [
-                ('type', TypeProperty(type)),
+                ('type', TypeProperty(type, spec_version='2.1')),
                 ('spec_version', StringProperty(fixed='2.1')),
                 ('id', IDProperty(type, spec_version='2.1')),
                 ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
@@ -810,6 +810,6 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
-        return _custom_object_builder(cls, type, _properties, '2.1')
+        return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 
     return wrapper

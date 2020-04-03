@@ -1,7 +1,7 @@
 import pytest
 
 import stix2
-from stix2 import core
+from stix2 import parsing
 import stix2.v20
 
 from ...exceptions import DuplicateRegistrationError, InvalidValueError
@@ -483,7 +483,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomObservable(
@@ -493,7 +493,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs2(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x_new_obs':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_obs':" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_ref_property():
@@ -808,7 +808,7 @@ def test_custom_extension_invalid_type_name():
         )
         class FooExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomExtension(
@@ -818,7 +818,7 @@ def test_custom_extension_invalid_type_name():
         )
         class BlaExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x_new_ext':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_ext':" in str(excinfo.value)
 
 
 def test_custom_extension_no_properties():
@@ -968,9 +968,8 @@ def test_register_custom_object():
     class CustomObject2(object):
         _type = 'awesome-object'
 
-    stix2.core._register_object(CustomObject2, version="2.0")
-    # Note that we will always check against newest OBJ_MAP.
-    assert (CustomObject2._type, CustomObject2) in stix2.v20.OBJ_MAP.items()
+    with pytest.raises(ValueError):
+        stix2.parsing._register_object(CustomObject2, version="2.0")
 
 
 def test_extension_property_location():
@@ -1030,10 +1029,10 @@ def test_register_custom_object_with_version():
         "id": "x-new-type-2--00000000-0000-4000-8000-000000000007",
     }
 
-    cust_obj_1 = core.dict_to_stix2(custom_obj_1, version='2.0')
+    cust_obj_1 = parsing.dict_to_stix2(custom_obj_1, version='2.0')
     v = 'v20'
 
-    assert cust_obj_1.type in core.STIX2_OBJ_MAPS[v]['objects']
+    assert cust_obj_1.type in parsing.STIX2_OBJ_MAPS[v]['objects']
     # spec_version is not in STIX 2.0, and is required in 2.1, so this
     # suffices as a test for a STIX 2.0 object.
     assert "spec_version" not in cust_obj_1
@@ -1065,7 +1064,7 @@ def test_register_observable_with_version():
     custom_obs = NewObservable2(property1="Test Observable")
     v = 'v20'
 
-    assert custom_obs.type in core.STIX2_OBJ_MAPS[v]['observables']
+    assert custom_obs.type in parsing.STIX2_OBJ_MAPS[v]['observables']
 
 
 def test_register_duplicate_observable_with_version():
@@ -1091,7 +1090,7 @@ def test_register_marking_with_version():
     v = 'v20'
 
     no = NewObj2(property1='something')
-    assert no._type in core.STIX2_OBJ_MAPS[v]['markings']
+    assert no._type in parsing.STIX2_OBJ_MAPS[v]['markings']
 
 
 def test_register_observable_extension_with_version():
@@ -1106,7 +1105,7 @@ def test_register_observable_extension_with_version():
     v = 'v20'
     example = SomeCustomExtension2(keys='test123')
 
-    assert example._type in core.STIX2_OBJ_MAPS[v]['observable-extensions']['user-account']
+    assert example._type in parsing.STIX2_OBJ_MAPS[v]['observable-extensions']['user-account']
 
 
 def test_register_duplicate_observable_extension():

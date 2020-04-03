@@ -14,6 +14,9 @@
 
 # flake8: noqa
 
+from .base import (
+    _DomainObject, _Extension, _Observable, _RelationshipObject, _STIXBase21,
+)
 from .bundle import Bundle
 from .common import (
     TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,

@@ -8,12 +8,13 @@ import copy
 import datetime as dt
 import enum
 import json
+import re
 
 from dateutil import parser
 import pytz
 import six
 
-import stix2.base
+import stix2
 
 from .exceptions import (
     InvalidValueError, RevokeError, UnmodifiablePropertyError,
@@ -27,8 +28,9 @@ NOW = object()
 # STIX object properties that cannot be modified
 STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
 
-TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
-SCO21_EXT_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-ext$'
+TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
+PREFIX_21_REGEX = re.compile(r'^[a-z].*')
 
 
 class Precision(enum.Enum):
@@ -360,14 +362,12 @@ def find_property_index(obj, search_key, search_value):
     Returns:
         int: An index; -1 if the key and value aren't found
     """
-    from .base import _STIXBase
-
     # Special-case keys which are numbers-as-strings, e.g. for cyber-observable
     # mappings.  Use the int value of the key as the index.
     if search_key.isdigit():
         return int(search_key)
 
-    if isinstance(obj, _STIXBase):
+    if isinstance(obj, stix2.base._STIXBase):
         if search_key in obj and obj[search_key] == search_value:
             idx = _find(obj.object_properties(), search_key)
         else:

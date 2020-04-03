@@ -1,40 +1,36 @@
 import pytest
 
 import stix2
-from stix2 import core, exceptions
+from stix2 import exceptions, parsing
 
 BUNDLE = {
     "type": "bundle",
+    "spec_version": "2.0",
     "id": "bundle--00000000-0000-4000-8000-000000000007",
     "objects": [
         {
             "type": "indicator",
-            "spec_version": "2.1",
             "id": "indicator--00000000-0000-4000-8000-000000000001",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "pattern": "[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
-            "pattern_type": "stix",
             "valid_from": "2017-01-01T12:34:56Z",
-            "indicator_types": [
+            "labels": [
                 "malicious-activity",
             ],
         },
         {
             "type": "malware",
-            "spec_version": "2.1",
             "id": "malware--00000000-0000-4000-8000-000000000003",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
             "name": "Cryptolocker",
-            "malware_types": [
+            "labels": [
                 "ransomware",
             ],
-            "is_family": False,
         },
         {
             "type": "relationship",
-            "spec_version": "2.1",
             "id": "relationship--00000000-0000-4000-8000-000000000005",
             "created": "2017-01-01T12:34:56.000Z",
             "modified": "2017-01-01T12:34:56.000Z",
@@ -47,43 +43,32 @@ BUNDLE = {
 
 
 def test_dict_to_stix2_bundle_with_version():
-    with pytest.raises(exceptions.InvalidValueError) as excinfo:
-        core.dict_to_stix2(BUNDLE, version='2.0')
+    with pytest.raises(exceptions.ExtraPropertiesError) as excinfo:
+        parsing.dict_to_stix2(BUNDLE, version='2.1')
 
-    msg = "Invalid value for Bundle 'objects': Spec version 2.0 bundles don't yet support containing objects of a different spec version."
-    assert str(excinfo.value) == msg
+    assert str(excinfo.value) == "Unexpected properties for Bundle: (spec_version)."
 
 
 def test_parse_observable_with_version():
     observable = {"type": "file", "name": "foo.exe"}
-    obs_obj = core.parse_observable(observable, version='2.1')
-    v = 'v21'
+    obs_obj = parsing.parse_observable(observable, version='2.0')
+    v = 'v20'
 
     assert v in str(obs_obj.__class__)
 
 
-@pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
+@pytest.mark.xfail(reason="The default version is no longer 2.0", condition=stix2.DEFAULT_VERSION != "2.0")
 def test_parse_observable_with_no_version():
     observable = {"type": "file", "name": "foo.exe"}
-    obs_obj = core.parse_observable(observable)
-    v = 'v21'
+    obs_obj = parsing.parse_observable(observable)
+    v = 'v20'
 
     assert v in str(obs_obj.__class__)
 
 
 def test_register_marking_with_version():
-    core._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
-    v = 'v21'
+    parsing._register_marking(stix2.v20.TLP_WHITE.__class__, version='2.0')
+    v = 'v20'
 
-    assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(stix2.v21.TLP_WHITE.__class__)
-
-
-@pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
-def test_register_marking_with_no_version():
-    # Uses default version (2.0 in this case)
-    core._register_marking(stix2.v21.TLP_WHITE.__class__)
-    v = 'v21'
-
-    assert stix2.v21.TLP_WHITE.definition._type in core.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(stix2.v21.TLP_WHITE.__class__)
+    assert stix2.v20.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(stix2.v20.TLP_WHITE.__class__)

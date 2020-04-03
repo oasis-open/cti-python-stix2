@@ -2,20 +2,20 @@
 
 from collections import OrderedDict
 
-from ..base import _STIXBase
 from ..properties import (
     IDProperty, ListProperty, STIXObjectProperty, StringProperty, TypeProperty,
 )
+from .base import _STIXBase20
 
 
-class Bundle(_STIXBase):
+class Bundle(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709293>`__.
     """
 
     _type = 'bundle'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         # Not technically correct: STIX 2.0 spec doesn't say spec_version must
         # have this value, but it's all we support for now.
