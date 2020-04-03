@@ -4,7 +4,8 @@ from medallion.filters.basic_filter import BasicFilter
 import pytest
 from requests.models import Response
 import six
-from taxii2client import Collection, _filter_kwargs_to_query_params
+from taxii2client import Collection
+from taxii2client.common import _filter_kwargs_to_query_params
 
 import stix2
 from stix2.datastore import DataSourceError
@@ -38,8 +39,10 @@ class MockTAXIICollectionEndpoint(Collection):
             self.objects,
             ("id", "type", "version"),
             [],
-        )
+            None,
+        )[0]
         if objs:
+            print(objs)
             return stix2.v21.Bundle(objects=objs)
         else:
             resp = Response()
@@ -59,7 +62,8 @@ class MockTAXIICollectionEndpoint(Collection):
                 objects,
                 ("version",),
                 [],
-            )
+                None,
+            )[0]
         else:
             filtered_objects = []
         if filtered_objects:
