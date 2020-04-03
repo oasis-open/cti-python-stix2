@@ -551,7 +551,7 @@ class ObservationExpression(_PatternExpression):
         self.operand = operand
 
     def __str__(self):
-        return "[%s]" % self.operand
+        return "%s" % self.operand if isinstance(self.operand, (ObservationExpression, _CompoundObservationExpression)) else "[%s]" % self.operand
 
 
 class _CompoundObservationExpression(_PatternExpression):
