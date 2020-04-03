@@ -14,6 +14,8 @@ from stix2patterns.v21.grammars.STIXPatternVisitor import \
     STIXPatternVisitor as STIXPatternVisitor21
 from stix2patterns.v21.pattern import Pattern as Pattern21
 
+import stix2
+
 from .patterns import *
 from .patterns import _BooleanExpression
 
@@ -336,7 +338,7 @@ class STIXPatternVisitorForSTIX21(STIXPatternVisitorForSTIX2, STIXPatternVisitor
         super(STIXPatternVisitor21, self).__init__()
 
 
-class STIXPatternVisitorForSTIX20(STIXPatternVisitor20, STIXPatternVisitorForSTIX2):
+class STIXPatternVisitorForSTIX20(STIXPatternVisitorForSTIX2, STIXPatternVisitor20):
     classes = {}
 
     def __init__(self, module_suffix, module_name):
@@ -352,11 +354,18 @@ class STIXPatternVisitorForSTIX20(STIXPatternVisitor20, STIXPatternVisitorForSTI
         super(STIXPatternVisitor20, self).__init__()
 
 
-def create_pattern_object(pattern, module_suffix="", module_name="", version="2.1"):
+def create_pattern_object(pattern, module_suffix="", module_name="", version=stix2.DEFAULT_VERSION):
     """
     Create a STIX pattern AST from a pattern string.
     """
 
-    pattern_obj = Pattern21(pattern) if version == "2.1" else Pattern20(pattern)
-    builder = STIXPatternVisitorForSTIX21(module_suffix, module_name) if version == "2.1" else STIXPatternVisitorForSTIX20(module_suffix, module_name)
+    if version == "2.1":
+        pattern_class = Pattern21
+        visitor_class = STIXPatternVisitorForSTIX21
+    else:
+        pattern_class = Pattern20
+        visitor_class = STIXPatternVisitorForSTIX20
+
+    pattern_obj = pattern_class(pattern)
+    builder = visitor_class(module_suffix, module_name)
     return pattern_obj.visit(builder)

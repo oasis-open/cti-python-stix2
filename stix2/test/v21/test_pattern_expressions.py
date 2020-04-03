@@ -176,7 +176,7 @@ def test_greater_than():
 
 
 def test_parsing_greater_than():
-    patt_obj = create_pattern_object("[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]")
+    patt_obj = create_pattern_object("[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]", version="2.1")
     assert str(patt_obj) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]"
 
 
@@ -186,7 +186,7 @@ def test_less_than():
 
 
 def test_parsing_less_than():
-    patt_obj = create_pattern_object("[file:size < 1024]")
+    patt_obj = create_pattern_object("[file:size < 1024]", version="2.1")
     assert str(patt_obj) == "[file:size < 1024]"
 
 
@@ -199,7 +199,7 @@ def test_greater_than_or_equal():
 
 
 def test_parsing_greater_than_or_equal():
-    patt_obj = create_pattern_object("[file:size >= 1024]")
+    patt_obj = create_pattern_object("[file:size >= 1024]", version="2.1")
     assert str(patt_obj) == "[file:size >= 1024]"
 
 
@@ -212,32 +212,32 @@ def test_less_than_or_equal():
 
 
 def test_parsing_less_than_or_equal():
-    patt_obj = create_pattern_object("[file:size <= 1024]")
+    patt_obj = create_pattern_object("[file:size <= 1024]", version="2.1")
     assert str(patt_obj) == "[file:size <= 1024]"
 
 
 def test_parsing_issubset():
-    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']")
+    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']", version="2.1")
     assert str(patt_obj) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
 
 
 def test_parsing_issuperset():
-    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']")
+    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']", version="2.1")
     assert str(patt_obj) == "[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
 
 
 def test_parsing_like():
-    patt_obj = create_pattern_object("[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']")
+    patt_obj = create_pattern_object("[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']", version="2.1")
     assert str(patt_obj) == "[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']"
 
 
 def test_parsing_match():
-    patt_obj = create_pattern_object("[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS")  # noqa
+    patt_obj = create_pattern_object("[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS", version="2.1")  # noqa
     assert str(patt_obj) == "[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS"  # noqa
 
 
 def test_parsing_followed_by():
-    patt_obj = create_pattern_object("([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS")  # noqa
+    patt_obj = create_pattern_object("([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS", version="2.1")  # noqa
     assert str(patt_obj) == "([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS"  # noqa
 
 
@@ -302,7 +302,7 @@ def test_and_observable_expression():
 
 
 def test_parsing_and_observable_expression():
-    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']")  # noqa
+    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']", version="2.1")  # noqa
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
 
 
@@ -358,7 +358,7 @@ def test_or_observable_expression():
 
 
 def test_parsing_or_observable_expression():
-    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']")  # noqa
+    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']", version="2.1")  # noqa
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
 
 
@@ -392,7 +392,7 @@ def test_hex():
 
 
 def test_parsing_hex():
-    patt_obj = create_pattern_object("[file:magic_number_hex = h'ffd8']")
+    patt_obj = create_pattern_object("[file:magic_number_hex = h'ffd8']", version="2.1")
     assert str(patt_obj) == "[file:magic_number_hex = h'ffd8']"
 
 
@@ -445,7 +445,7 @@ def test_binary():
 
 
 def test_parsing_binary():
-    patt_obj = create_pattern_object("[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']")
+    patt_obj = create_pattern_object("[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']", version="2.1")
     assert str(patt_obj) == "[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']"
 
 
@@ -610,13 +610,14 @@ def test_make_constant_already_a_constant():
 
 
 def test_parsing_comparison_expression():
-    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']")
+    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']", version="2.1")
     assert str(patt_obj) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']"
 
 
 def test_parsing_repeat_and_within_qualified_expression():
     patt_obj = create_pattern_object(
         "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS",
+        version="2.1",
     )
     assert str(
         patt_obj,
@@ -626,6 +627,7 @@ def test_parsing_repeat_and_within_qualified_expression():
 def test_parsing_start_stop_qualified_expression():
     patt_obj = create_pattern_object(
         "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'",  # noqa
+        version="2.1",
     )
     assert str(
         patt_obj,
@@ -633,20 +635,20 @@ def test_parsing_start_stop_qualified_expression():
 
 
 def test_list_constant():
-    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]")
+    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]", version="2.1")
     assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
 
 
 def test_parsing_boolean():
-    patt_obj = create_pattern_object("[network-traffic:is_active = true]")
+    patt_obj = create_pattern_object("[network-traffic:is_active = true]", version="2.1")
     assert str(patt_obj) == "[network-traffic:is_active = true]"
 
 
 def test_parsing_multiple_slashes_quotes():
-    patt_obj = create_pattern_object("[ file:name = 'weird_name\\'' ]")
+    patt_obj = create_pattern_object("[ file:name = 'weird_name\\'' ]", version="2.1")
     assert str(patt_obj) == "[file:name = 'weird_name\\'']"
 
 
 def test_parse_error():
     with pytest.raises(ParseException):
-        create_pattern_object("[ file: name = 'weirdname]")
+        create_pattern_object("[ file: name = 'weirdname]", version="2.1")
