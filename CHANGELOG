@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+1.4.0 - 2020-04-03
+
+* #347, #355, #356, #357, #358, #360, #362, #369, #370, #379, #374, #384 Updates STIX 2.1 support to CS01
+* #376 Fixes bug where registering object of same name would overwrite it; will
+  now raise an error
+
 1.3.1 - 2020-03-06
 
 * #322 Adds encoding option FileSystemSource and MemorySource
