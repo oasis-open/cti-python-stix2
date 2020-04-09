@@ -14,6 +14,7 @@ from dateutil import parser
 import pytz
 import six
 
+from ciso8601 import parse_datetime
 import stix2
 
 from .exceptions import (
@@ -253,7 +254,10 @@ def parse_into_datetime(
     else:
         # value isn't a date or datetime object so assume it's a string
         try:
-            parsed = parser.parse(value)
+            try:
+                parsed = parse_datetime(value)
+            except ValueError:
+                parsed = parser.parse(value)
         except (TypeError, ValueError):
             # Unknown format
             raise ValueError(
