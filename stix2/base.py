@@ -324,11 +324,26 @@ class _STIXBase(Mapping):
 
 
 class _DomainObject(_STIXBase, _MarkingsMixin):
-    pass
+    def __init__(self, *args, **kwargs):
+        interoperability = kwargs.get('interoperability', False)
+        self.__interoperability = interoperability
+        self._properties['id'].interoperability = interoperability
+        self._properties['created_by_ref'].interoperability = interoperability
+        if kwargs.get('object_marking_refs'):
+            self._properties['object_marking_refs'].contained.interoperability = interoperability
+        super(_DomainObject, self).__init__(*args, **kwargs)
 
 
 class _RelationshipObject(_STIXBase, _MarkingsMixin):
-    pass
+    def __init__(self, *args, **kwargs):
+        interoperability = kwargs.get('interoperability', False)
+        self.__interoperability = interoperability
+        self._properties['id'].interoperability = interoperability
+        if kwargs.get('created_by_ref'):
+            self._properties['created_by_ref'].interoperability = interoperability
+        if kwargs.get('object_marking_refs'):
+            self._properties['object_marking_refs'].contained.interoperability = interoperability
+        super(_RelationshipObject, self).__init__(*args, **kwargs)
 
 
 class _Observable(_STIXBase):
