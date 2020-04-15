@@ -233,3 +233,16 @@ class STIXDeprecationWarning(DeprecationWarning):
     Represents usage of a deprecated component of a STIX specification.
     """
     pass
+
+
+class DuplicateRegistrationError(STIXError):
+    """A STIX object with the same type as an existing object is being registered"""
+
+    def __init__(self, obj_type, reg_obj_type):
+        super(DuplicateRegistrationError, self).__init__()
+        self.obj_type = obj_type
+        self.reg_obj_type = reg_obj_type
+
+    def __str__(self):
+        msg = "A(n) {0} with type '{1}' already exists and cannot be registered again"
+        return msg.format(self.obj_type, self.reg_obj_type)

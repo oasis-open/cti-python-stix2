@@ -23,7 +23,6 @@
 DEFAULT_VERSION = '2.0'  # Default version will always be the latest STIX 2.X version
 
 from .confidence import scales
-from .core import _collect_stix2_mappings, parse, parse_observable
 from .datastore import CompositeDataSource
 from .datastore.filesystem import (
     FileSystemSink, FileSystemSource, FileSystemStore,
@@ -38,6 +37,7 @@ from .markings import (
     add_markings, clear_markings, get_markings, is_marked, remove_markings,
     set_markings,
 )
+from .parsing import _collect_stix2_mappings, parse, parse_observable
 from .patterns import (
     AndBooleanExpression, AndObservationExpression, BasicObjectPathComponent,
     BinaryConstant, BooleanConstant, EqualityComparisonExpression,

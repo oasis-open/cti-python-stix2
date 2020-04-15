@@ -1,14 +1,13 @@
 """STIX 2.0 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
-embedded in Email Message objects, inherit from ``_STIXBase`` instead of
-Observable and do not have a ``_type`` attribute.
+embedded in Email Message objects, inherit from ``_STIXBase20`` instead of
+_Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
 import itertools
 
-from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
@@ -17,6 +16,7 @@ from ..properties import (
     HashesProperty, HexProperty, IntegerProperty, ListProperty,
     ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
+from .base import _Extension, _Observable, _STIXBase20
 
 
 class Artifact(_Observable):
@@ -26,7 +26,7 @@ class Artifact(_Observable):
 
     _type = 'artifact'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
@@ -47,7 +47,7 @@ class AutonomousSystem(_Observable):
 
     _type = 'autonomous-system'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
         ('rir', StringProperty()),
@@ -62,7 +62,7 @@ class Directory(_Observable):
 
     _type = 'directory'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
         # these are not the created/modified timestamps of the object itself
@@ -81,7 +81,7 @@ class DomainName(_Observable):
 
     _type = 'domain-name'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
@@ -95,7 +95,7 @@ class EmailAddress(_Observable):
 
     _type = 'email-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
@@ -103,7 +103,7 @@ class EmailAddress(_Observable):
     ])
 
 
-class EmailMIMEComponent(_STIXBase):
+class EmailMIMEComponent(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716231>`__.
     """  # noqa
@@ -127,7 +127,7 @@ class EmailMessage(_Observable):
 
     _type = 'email-message'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
         ('content_type', StringProperty()),
@@ -166,7 +166,7 @@ class ArchiveExt(_Extension):
     ])
 
 
-class AlternateDataStream(_STIXBase):
+class AlternateDataStream(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716239>`__.
     """  # noqa
@@ -220,7 +220,7 @@ class RasterImageExt(_Extension):
     ])
 
 
-class WindowsPEOptionalHeaderType(_STIXBase):
+class WindowsPEOptionalHeaderType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716248>`__.
     """  # noqa
@@ -264,7 +264,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         self._check_at_least_one_property()
 
 
-class WindowsPESection(_STIXBase):
+class WindowsPESection(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716250>`__.
     """  # noqa
@@ -306,7 +306,7 @@ class File(_Observable):
 
     _type = 'file'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('hashes', HashesProperty()),
         ('size', IntegerProperty()),
         ('name', StringProperty()),
@@ -339,7 +339,7 @@ class IPv4Address(_Observable):
 
     _type = 'ipv4-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
@@ -354,7 +354,7 @@ class IPv6Address(_Observable):
 
     _type = 'ipv6-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
@@ -369,7 +369,7 @@ class MACAddress(_Observable):
 
     _type = 'mac-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
@@ -382,7 +382,7 @@ class Mutex(_Observable):
 
     _type = 'mutex'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('name', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
@@ -483,7 +483,7 @@ class NetworkTraffic(_Observable):
 
     _type = 'network-traffic'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
@@ -575,7 +575,7 @@ class Process(_Observable):
 
     _type = 'process'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
         ('name', StringProperty()),
@@ -615,7 +615,7 @@ class Software(_Observable):
 
     _type = 'software'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
         ('languages', ListProperty(StringProperty)),
@@ -632,7 +632,7 @@ class URL(_Observable):
 
     _type = 'url'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
@@ -659,7 +659,7 @@ class UserAccount(_Observable):
 
     _type = 'user-account'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('user_id', StringProperty(required=True)),
         ('account_login', StringProperty()),
         ('account_type', StringProperty()),   # open vocab
@@ -677,7 +677,7 @@ class UserAccount(_Observable):
     ])
 
 
-class WindowsRegistryValueType(_STIXBase):
+class WindowsRegistryValueType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716293>`__.
     """  # noqa
@@ -713,7 +713,7 @@ class WindowsRegistryKey(_Observable):
 
     _type = 'windows-registry-key'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('key', StringProperty(required=True)),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
         # this is not the modified timestamps of the object itself
@@ -724,7 +724,7 @@ class WindowsRegistryKey(_Observable):
     ])
 
 
-class X509V3ExtenstionsType(_STIXBase):
+class X509V3ExtenstionsType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716298>`__.
     """  # noqa
@@ -757,7 +757,7 @@ class X509Certificate(_Observable):
 
     _type = 'x509-certificate'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_self_signed', BooleanProperty()),
         ('hashes', HashesProperty()),
         ('version', StringProperty()),
@@ -791,11 +791,11 @@ def CustomObservable(type='x-custom-observable', properties=None):
     """
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
-            [('type', TypeProperty(type))],
+            [('type', TypeProperty(type, spec_version='2.0'))],
             properties,
             [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
         ]))
-        return _custom_observable_builder(cls, type, _properties, '2.0')
+        return _custom_observable_builder(cls, type, _properties, '2.0', _Observable)
     return wrapper
 
 
@@ -803,5 +803,5 @@ def CustomExtension(observable=None, type='x-custom-observable-ext', properties=
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.0')
+        return _custom_extension_builder(cls, observable, type, properties, '2.0', _Extension)
     return wrapper

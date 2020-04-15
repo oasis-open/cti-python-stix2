@@ -5,7 +5,6 @@ import itertools
 
 from stix2patterns.validator import run_validator
 
-from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
 from ..exceptions import InvalidValueError
 from ..properties import (
@@ -14,17 +13,18 @@ from ..properties import (
     TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
+from .base import _DomainObject
 from .common import ExternalReference, GranularMarking, KillChainPhase
 
 
-class AttackPattern(STIXDomainObject):
+class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714302>`__.
     """
 
     _type = 'attack-pattern'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -40,14 +40,14 @@ class AttackPattern(STIXDomainObject):
     ])
 
 
-class Campaign(STIXDomainObject):
+class Campaign(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714305>`__.
     """
 
     _type = 'campaign'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -66,14 +66,14 @@ class Campaign(STIXDomainObject):
     ])
 
 
-class CourseOfAction(STIXDomainObject):
+class CourseOfAction(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714308>`__.
     """
 
     _type = 'course-of-action'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -88,14 +88,14 @@ class CourseOfAction(STIXDomainObject):
     ])
 
 
-class Identity(STIXDomainObject):
+class Identity(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714311>`__.
     """
 
     _type = 'identity'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -113,14 +113,14 @@ class Identity(STIXDomainObject):
     ])
 
 
-class Indicator(STIXDomainObject):
+class Indicator(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714314>`__.
     """
 
     _type = 'indicator'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -144,14 +144,14 @@ class Indicator(STIXDomainObject):
             raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
 
 
-class IntrusionSet(STIXDomainObject):
+class IntrusionSet(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714317>`__.
     """
 
     _type = 'intrusion-set'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -173,14 +173,14 @@ class IntrusionSet(STIXDomainObject):
     ])
 
 
-class Malware(STIXDomainObject):
+class Malware(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714320>`__.
     """
 
     _type = 'malware'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -196,14 +196,14 @@ class Malware(STIXDomainObject):
     ])
 
 
-class ObservedData(STIXDomainObject):
+class ObservedData(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714323>`__.
     """
 
     _type = 'observed-data'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -226,14 +226,14 @@ class ObservedData(STIXDomainObject):
         super(ObservedData, self).__init__(*args, **kwargs)
 
 
-class Report(STIXDomainObject):
+class Report(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714326>`__.
     """
 
     _type = 'report'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -256,14 +256,14 @@ class Report(STIXDomainObject):
         super(Report, self).__init__(*args, **kwargs)
 
 
-class ThreatActor(STIXDomainObject):
+class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714329>`__.
     """
 
     _type = 'threat-actor'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -286,14 +286,14 @@ class ThreatActor(STIXDomainObject):
     ])
 
 
-class Tool(STIXDomainObject):
+class Tool(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714332>`__.
     """
 
     _type = 'tool'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -310,14 +310,14 @@ class Tool(STIXDomainObject):
     ])
 
 
-class Vulnerability(STIXDomainObject):
+class Vulnerability(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part2-stix-objects/stix-v2.0-cs01-part2-stix-objects.html#_Toc496714335>`__.
     """
 
     _type = 'vulnerability'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -364,7 +364,7 @@ def CustomObject(type='x-custom-type', properties=None):
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [
-                ('type', TypeProperty(type)),
+                ('type', TypeProperty(type, spec_version='2.0')),
                 ('id', IDProperty(type, spec_version='2.0')),
                 ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
@@ -380,5 +380,5 @@ def CustomObject(type='x-custom-type', properties=None):
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
-        return _custom_object_builder(cls, type, _properties, '2.0')
+        return _custom_object_builder(cls, type, _properties, '2.0', _DomainObject)
     return wrapper
