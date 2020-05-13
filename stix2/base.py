@@ -405,9 +405,12 @@ class _Observable(_STIXBase):
             if "hashes" in kwargs and "hashes" in properties_to_use:
                 possible_hash = _choose_one_hash(kwargs["hashes"])
                 if possible_hash:
+                    streamlined_obj_vals.append("hashes")
                     streamlined_obj_vals.append(possible_hash)
             for key in properties_to_use:
                 if key != "hashes" and key in kwargs:
+                    streamlined_obj_vals.append(key)
+
                     if isinstance(kwargs[key], dict) or isinstance(kwargs[key], _STIXBase):
                         temp_deep_copy = copy.deepcopy(dict(kwargs[key]))
                         _recursive_stix_to_dict(temp_deep_copy)
