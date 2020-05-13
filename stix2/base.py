@@ -422,7 +422,7 @@ class _Observable(_STIXBase):
                     else:
                         streamlined_obj_vals.append(kwargs[key])
             if streamlined_obj_vals:
-                data = canonicalize(streamlined_obj_vals, utf8=False)
+                data = canonicalize(streamlined_obj_vals, utf8=False) 
 
                 # The situation is complicated w.r.t. python 2/3 behavior, so
                 # I'd rather not rely on particular exceptions being raised to
