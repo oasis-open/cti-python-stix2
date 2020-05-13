@@ -518,7 +518,7 @@ def test_invalid_boolean_constant():
 @pytest.mark.parametrize(
     "hashtype, data", [
         ('MD5', 'zzz'),
-        ('ssdeep', 'zzz=='),
+        ('SSDEEP', 'zzz=='),
     ],
 )
 def test_invalid_hash_constant(hashtype, data):

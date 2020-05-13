@@ -785,6 +785,22 @@ def test_file_example():
     assert f.atime == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
 
 
+def test_file_ssdeep_example():
+    f = stix2.v21.File(
+        name="example.dll",
+        hashes={
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a",
+            "SSDEEP": "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV",
+        },
+        size=1024,
+    )
+
+    assert f.name == "example.dll"
+    assert f.size == 1024
+    assert f.hashes["SHA-256"] == "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+    assert f.hashes["SSDEEP"] == "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV"
+
+
 def test_file_example_with_NTFSExt():
     f = stix2.v21.File(
         name="abc.txt",
