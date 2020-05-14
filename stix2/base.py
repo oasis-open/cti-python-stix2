@@ -401,25 +401,25 @@ class _Observable(_STIXBase):
 
         properties_to_use = self._id_contributing_properties
         if properties_to_use:
-            streamlined_obj_vals = []
+            streamlined_object = {}
             if "hashes" in kwargs and "hashes" in properties_to_use:
                 possible_hash = _choose_one_hash(kwargs["hashes"])
                 if possible_hash:
-                    streamlined_obj_vals.append(possible_hash)
+                    streamlined_object["hashes"] = possible_hash
             for key in properties_to_use:
                 if key != "hashes" and key in kwargs:
                     if isinstance(kwargs[key], dict) or isinstance(kwargs[key], _STIXBase):
                         temp_deep_copy = copy.deepcopy(dict(kwargs[key]))
                         _recursive_stix_to_dict(temp_deep_copy)
-                        streamlined_obj_vals.append(temp_deep_copy)
+                        streamlined_object[key] = temp_deep_copy
                     elif isinstance(kwargs[key], list):
                         temp_deep_copy = copy.deepcopy(kwargs[key])
                         _recursive_stix_list_to_dict(temp_deep_copy)
-                        streamlined_obj_vals.append(temp_deep_copy)
+                        streamlined_object[key] = temp_deep_copy
                     else:
-                        streamlined_obj_vals.append(kwargs[key])
-            if streamlined_obj_vals:
-                data = canonicalize(streamlined_obj_vals, utf8=False)
+                        streamlined_object[key] = kwargs[key]
+            if streamlined_object:
+                data = canonicalize(streamlined_object, utf8=False)
 
                 # The situation is complicated w.r.t. python 2/3 behavior, so
                 # I'd rather not rely on particular exceptions being raised to

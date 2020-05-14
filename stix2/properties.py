@@ -505,7 +505,7 @@ class ReferenceProperty(Property):
             if possible_prefix not in ref_invalid_types:
                 required_prefix = possible_prefix
             else:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
 
         _validate_id(value, self.spec_version, required_prefix)
 
