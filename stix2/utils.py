@@ -10,7 +10,6 @@ import enum
 import json
 import re
 
-from dateutil import parser
 import pytz
 import six
 
@@ -31,6 +30,9 @@ STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
 TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
 TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
 PREFIX_21_REGEX = re.compile(r'^[a-z].*')
+
+_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+_TIMESTAMP_FORMAT_FRAC = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class Precision(enum.Enum):
@@ -252,8 +254,9 @@ def parse_into_datetime(
             ts = dt.datetime.combine(value, dt.time(0, 0, tzinfo=pytz.utc))
     else:
         # value isn't a date or datetime object so assume it's a string
+        fmt = _TIMESTAMP_FORMAT_FRAC if "." in value else _TIMESTAMP_FORMAT
         try:
-            parsed = parser.parse(value)
+            parsed = dt.datetime.strptime(value, fmt)
         except (TypeError, ValueError):
             # Unknown format
             raise ValueError(

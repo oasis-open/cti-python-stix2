@@ -228,7 +228,7 @@ def make_constant(value):
 
     try:
         return parse_into_datetime(value)
-    except ValueError:
+    except (ValueError, TypeError):
         pass
 
     if isinstance(value, str):

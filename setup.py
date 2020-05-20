@@ -52,7 +52,6 @@ setup(
     packages=find_packages(exclude=['*.test', '*.test.*']),
     install_requires=[
         'enum34 ; python_version<"3.4"',
-        'python-dateutil',
         'pytz',
         'requests',
         'simplejson',
