@@ -4,6 +4,7 @@ import pytest
 import pytz
 
 import stix2
+import stix2.exceptions
 
 from .constants import ATTACK_PATTERN_ID
 
@@ -83,19 +84,18 @@ def test_attack_pattern_invalid_labels():
 
 
 def test_overly_precise_timestamps():
-    ap = stix2.v20.AttackPattern(
-        id=ATTACK_PATTERN_ID,
-        created="2016-05-12T08:17:27.0000342Z",
-        modified="2016-05-12T08:17:27.000287Z",
-        name="Spear Phishing",
-        external_references=[{
-            "source_name": "capec",
-            "external_id": "CAPEC-163",
-        }],
-        description="...",
-    )
-
-    assert str(ap) == EXPECTED
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        stix2.v20.AttackPattern(
+            id=ATTACK_PATTERN_ID,
+            created="2016-05-12T08:17:27.0000342Z",
+            modified="2016-05-12T08:17:27.000287Z",
+            name="Spear Phishing",
+            external_references=[{
+                "source_name": "capec",
+                "external_id": "CAPEC-163",
+            }],
+            description="...",
+        )
 
 
 def test_less_precise_timestamps():
