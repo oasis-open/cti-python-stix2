@@ -46,7 +46,7 @@ def test_observed_data_example():
         objects={
             "0": {
                 "type": "file",
-                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "id": "file--7af1312c-4402-5d2f-b169-b118d73b85c4",
                 "name": "foo.exe",
             },
         },
@@ -102,12 +102,12 @@ def test_observed_data_example_with_refs():
         objects={
             "0": {
                 "type": "file",
-                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "id": "file--7af1312c-4402-5d2f-b169-b118d73b85c4",
                 "name": "foo.exe",
             },
             "1": {
                 "type": "directory",
-                "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
+                "id": "directory--ee97f78e-7e2b-5b3d-bcbd-5692968cacea",
                 "path": "/usr/home",
                 "contains_refs": ["file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"],
             },
@@ -719,7 +719,7 @@ def test_directory_example():
     assert dir1.ctime == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert dir1.mtime == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
     assert dir1.atime == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
-    assert dir1.contains_refs == ["file--9d050a3b-72cd-5b57-bf18-024e74e1e5eb"]
+    assert dir1.contains_refs == ["file--c6ae2cf8-92d3-56d0-a25f-713efad643a7"]
 
 
 def test_directory_example_ref_error():
@@ -747,7 +747,7 @@ def test_domain_name_example():
     )
 
     assert dn2.value == "example.com"
-    assert dn2.resolves_to_refs == ["domain-name--02af94ea-7e38-5718-87c3-5cc023e3d49d"]
+    assert dn2.resolves_to_refs == ["domain-name--5b5803bf-a7eb-5076-b799-96aa574c44eb"]
 
 
 def test_domain_name_example_invalid_ref_type():
@@ -783,6 +783,22 @@ def test_file_example():
     assert f.ctime == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert f.mtime == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
     assert f.atime == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+
+
+def test_file_ssdeep_example():
+    f = stix2.v21.File(
+        name="example.dll",
+        hashes={
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a",
+            "SSDEEP": "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV",
+        },
+        size=1024,
+    )
+
+    assert f.name == "example.dll"
+    assert f.size == 1024
+    assert f.hashes["SHA-256"] == "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+    assert f.hashes["SSDEEP"] == "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV"
 
 
 def test_file_example_with_NTFSExt():
@@ -1032,7 +1048,7 @@ def test_ipv4_address_valid_refs():
     )
 
     assert ip4.value == "177.60.40.7"
-    assert ip4.resolves_to_refs == ["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"]
+    assert ip4.resolves_to_refs == ["mac-addr--f72d7d00-86bd-5cd2-8c86-52f7a83bef62", "mac-addr--875ad625-177b-5c2a-9101-d44b0ad55938"]
 
 
 def test_ipv4_address_example_cidr():
@@ -1565,7 +1581,7 @@ def test_id_gen_recursive_dict_conversion_1():
         },
     )
 
-    assert file_observable.id == "file--5219d93d-13c1-5f1f-896b-039f10ec67ea"
+    assert file_observable.id == "file--ced31cd4-bdcb-537d-aefa-92d291bfc11d"
 
 
 def test_id_gen_recursive_dict_conversion_2():
@@ -1582,4 +1598,4 @@ def test_id_gen_recursive_dict_conversion_2():
         ],
     )
 
-    assert wrko.id == "windows-registry-key--c087d9fe-a03e-5922-a1cd-da116e5b8a7b"
+    assert wrko.id == "windows-registry-key--36594eba-bcc7-5014-9835-0e154264e588"

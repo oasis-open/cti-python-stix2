@@ -310,7 +310,11 @@ class STIXPatternVisitorForSTIX2():
         elif node.symbol.type == self.parser_class.BoolLiteral:
             return BooleanConstant(node.getText())
         elif node.symbol.type == self.parser_class.TimestampLiteral:
-            return TimestampConstant(node.getText())
+            value = node.getText()
+            # STIX 2.1 uses a special timestamp literal syntax
+            if value.startswith("t"):
+                value = value[2:-1]
+            return TimestampConstant(value)
         else:
             return node
 

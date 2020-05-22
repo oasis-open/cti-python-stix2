@@ -35,8 +35,6 @@ def test_timestamp_formatting(dttm, timestamp):
         (dt.datetime(2017, 1, 1, 0, tzinfo=pytz.utc), dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
         (dt.date(2017, 1, 1), dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
         ('2017-01-01T00:00:00Z', dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
-        ('2017-01-01T02:00:00+2:00', dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
-        ('2017-01-01T00:00:00', dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
     ],
 )
 def test_parse_datetime(timestamp, dttm):
@@ -45,11 +43,11 @@ def test_parse_datetime(timestamp, dttm):
 
 @pytest.mark.parametrize(
     'timestamp, dttm, precision', [
-        ('2017-01-01T01:02:03.000001', dt.datetime(2017, 1, 1, 1, 2, 3, 0, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.001', dt.datetime(2017, 1, 1, 1, 2, 3, 1000, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.1', dt.datetime(2017, 1, 1, 1, 2, 3, 100000, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.45', dt.datetime(2017, 1, 1, 1, 2, 3, 450000, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.45', dt.datetime(2017, 1, 1, 1, 2, 3, tzinfo=pytz.utc), 'second'),
+        ('2017-01-01T01:02:03.000001Z', dt.datetime(2017, 1, 1, 1, 2, 3, 0, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.001Z', dt.datetime(2017, 1, 1, 1, 2, 3, 1000, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.1Z', dt.datetime(2017, 1, 1, 1, 2, 3, 100000, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.45Z', dt.datetime(2017, 1, 1, 1, 2, 3, 450000, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.45Z', dt.datetime(2017, 1, 1, 1, 2, 3, tzinfo=pytz.utc), 'second'),
     ],
 )
 def test_parse_datetime_precision(timestamp, dttm, precision):

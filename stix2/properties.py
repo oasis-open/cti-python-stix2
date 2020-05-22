@@ -427,7 +427,7 @@ HASHES_REGEX = {
     "SHA3256": (r"^[a-fA-F0-9]{64}$", "SHA3-256"),
     "SHA3384": (r"^[a-fA-F0-9]{96}$", "SHA3-384"),
     "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
-    "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
+    "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "SSDEEP"),
     "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
     "TLSH": (r"^[a-fA-F0-9]{70}$", "TLSH"),
 }
@@ -441,6 +441,8 @@ class HashesProperty(DictionaryProperty):
             key = k.upper().replace('-', '')
             if key in HASHES_REGEX:
                 vocab_key = HASHES_REGEX[key][1]
+                if vocab_key == "SSDEEP" and self.spec_version == "2.0":
+                    vocab_key = vocab_key.lower()
                 if not re.match(HASHES_REGEX[key][0], v):
                     raise ValueError("'{0}' is not a valid {1} hash".format(v, vocab_key))
                 if k != vocab_key:
@@ -513,7 +515,7 @@ class ReferenceProperty(Property):
             if possible_prefix not in ref_invalid_types:
                 required_prefix = possible_prefix + '--'
             else:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix, value))
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
         interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
         _validate_id(value, self.spec_version, required_prefix, interoperability)
 

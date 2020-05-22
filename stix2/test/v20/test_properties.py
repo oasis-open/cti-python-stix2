@@ -300,8 +300,6 @@ def test_reference_property_specific_type():
 @pytest.mark.parametrize(
     "value", [
         '2017-01-01T12:34:56Z',
-        '2017-01-01 12:34:56',
-        'Jan 1 2017 12:34:56',
     ],
 )
 def test_timestamp_property_valid(value):
@@ -311,7 +309,7 @@ def test_timestamp_property_valid(value):
 
 def test_timestamp_property_invalid():
     ts_prop = TimestampProperty()
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         ts_prop.clean(1)
     with pytest.raises(ValueError):
         ts_prop.clean("someday sometime")
