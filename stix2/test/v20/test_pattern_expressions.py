@@ -508,6 +508,14 @@ def test_parsing_qualified_expression():
     ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS"
 
 
+def test_parsing_start_stop_qualified_expression():
+    patt_obj = create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'", version="2.0")
+
+    assert str(
+        patt_obj,
+    ) == "[ipv4-addr:value = '1.2.3.4'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"
+
+
 def test_list_constant():
     patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]", version="2.0")
     assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
