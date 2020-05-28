@@ -1,6 +1,7 @@
 import copy
 import datetime as dt
 
+import six
 from six.moves.collections_abc import Mapping
 
 import stix2.base
@@ -86,9 +87,18 @@ def _is_versionable(data):
 
         # Then, determine versionability.
 
+        if six.PY2:
+            # dumb python2 compatibility: map.keys() returns a list, not a set!
+            # six.viewkeys() compatibility function uses dict.viewkeys() on
+            # python2, which is not a Mapping mixin method, so that doesn't
+            # work either (for our stix2 objects).
+            keys = set(data)
+        else:
+            keys = data.keys()
+
         # This should be sufficient for STIX objects; maybe we get lucky with
         # dicts here but probably not.
-        if data.keys() >= _VERSIONING_PROPERTIES:
+        if keys >= _VERSIONING_PROPERTIES:
             is_versionable = True
 
         # Tougher to handle dicts.  We need to consider STIX version, map to a
