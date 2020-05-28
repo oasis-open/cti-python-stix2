@@ -1,11 +1,12 @@
 import copy
 import datetime as dt
-from stix2.utils import (
-    get_timestamp, parse_into_datetime
-)
-import stix2.base
-import stix2.v20.base
+
 from six.moves.collections_abc import Mapping
+
+import stix2.base
+from stix2.utils import get_timestamp, parse_into_datetime
+import stix2.v20.base
+
 from .exceptions import (
     InvalidValueError, RevokeError, UnmodifiablePropertyError,
 )

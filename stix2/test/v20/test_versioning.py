@@ -2,6 +2,7 @@ import pytest
 
 import stix2
 import stix2.exceptions
+import stix2.utils
 import stix2.v20
 import stix2.versioning
 
