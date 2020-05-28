@@ -114,8 +114,19 @@ def _is_versionable(data):
 
 
 def new_version(data, allow_custom=None, **kwargs):
-    """Create a new version of a STIX object, by modifying properties and
+    """
+    Create a new version of a STIX object, by modifying properties and
     updating the ``modified`` property.
+
+    :param data: The object to create a new version of.  Maybe a stix2 object
+        or dict.
+    :param allow_custom: Whether to allow custom properties on the new object.
+        If True, allow them (regardless of whether the original had custom
+        properties); if False disallow them; if None, propagate the preference
+        from the original object.
+    :param kwargs: The properties to change.  Setting to None requests property
+        removal.
+    :return: The new object.
     """
 
     is_versionable, is_21 = _is_versionable(data)
