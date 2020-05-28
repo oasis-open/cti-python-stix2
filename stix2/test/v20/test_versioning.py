@@ -1,6 +1,9 @@
 import pytest
 
 import stix2
+import stix2.exceptions
+import stix2.v20
+import stix2.versioning
 
 from .constants import CAMPAIGN_MORE_KWARGS
 
@@ -142,7 +145,7 @@ def test_versioning_error_revoke_of_revoked():
 
 def test_making_new_version_dict():
     campaign_v1 = CAMPAIGN_MORE_KWARGS
-    campaign_v2 = stix2.utils.new_version(CAMPAIGN_MORE_KWARGS, name="fred")
+    campaign_v2 = stix2.versioning.new_version(CAMPAIGN_MORE_KWARGS, name="fred")
 
     assert campaign_v1['id'] == campaign_v2['id']
     assert campaign_v1['created_by_ref'] == campaign_v2['created_by_ref']
@@ -155,7 +158,7 @@ def test_making_new_version_dict():
 
 def test_versioning_error_dict_bad_modified_value():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.utils.new_version(CAMPAIGN_MORE_KWARGS, modified="2015-04-06T20:03:00.000Z")
+        stix2.versioning.new_version(CAMPAIGN_MORE_KWARGS, modified="2015-04-06T20:03:00.000Z")
 
     assert excinfo.value.cls == dict
     assert excinfo.value.prop_name == "modified"
@@ -171,7 +174,7 @@ def test_versioning_error_dict_no_modified_value():
         'created': "2016-04-06T20:03:00.000Z",
         'name': "Green Group Attacks Against Finance",
     }
-    campaign_v2 = stix2.utils.new_version(campaign_v1, modified="2017-04-06T20:03:00.000Z")
+    campaign_v2 = stix2.versioning.new_version(campaign_v1, modified="2017-04-06T20:03:00.000Z")
 
     assert str(campaign_v2['modified']) == "2017-04-06T20:03:00.000Z"
 
@@ -179,14 +182,14 @@ def test_versioning_error_dict_no_modified_value():
 def test_making_new_version_invalid_cls():
     campaign_v1 = "This is a campaign."
     with pytest.raises(ValueError) as excinfo:
-        stix2.utils.new_version(campaign_v1, name="fred")
+        stix2.versioning.new_version(campaign_v1, name="fred")
 
     assert 'cannot create new version of object of this type' in str(excinfo.value)
 
 
 def test_revoke_dict():
     campaign_v1 = CAMPAIGN_MORE_KWARGS
-    campaign_v2 = stix2.utils.revoke(campaign_v1)
+    campaign_v2 = stix2.versioning.revoke(campaign_v1)
 
     assert campaign_v1['id'] == campaign_v2['id']
     assert campaign_v1['created_by_ref'] == campaign_v2['created_by_ref']
@@ -198,12 +201,18 @@ def test_revoke_dict():
     assert campaign_v2['revoked']
 
 
+def test_revoke_unversionable():
+    sco = stix2.v20.File(name="data.txt")
+    with pytest.raises(ValueError):
+        sco.revoke()
+
+
 def test_versioning_error_revoke_of_revoked_dict():
     campaign_v1 = CAMPAIGN_MORE_KWARGS
-    campaign_v2 = stix2.utils.revoke(campaign_v1)
+    campaign_v2 = stix2.versioning.revoke(campaign_v1)
 
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
-        stix2.utils.revoke(campaign_v2)
+        stix2.versioning.revoke(campaign_v2)
 
     assert excinfo.value.called_by == "revoke"
 
@@ -211,7 +220,7 @@ def test_versioning_error_revoke_of_revoked_dict():
 def test_revoke_invalid_cls():
     campaign_v1 = "This is a campaign."
     with pytest.raises(ValueError) as excinfo:
-        stix2.utils.revoke(campaign_v1)
+        stix2.versioning.revoke(campaign_v1)
 
     assert 'cannot revoke object of this type' in str(excinfo.value)
 
@@ -224,7 +233,7 @@ def test_remove_custom_stix_property():
         allow_custom=True,
     )
 
-    mal_nc = stix2.utils.remove_custom_stix(mal)
+    mal_nc = stix2.versioning.remove_custom_stix(mal)
 
     assert "x_custom" not in mal_nc
     assert (stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") <
@@ -243,15 +252,136 @@ def test_remove_custom_stix_object():
 
     animal = Animal(species="lion", animal_class="mammal")
 
-    nc = stix2.utils.remove_custom_stix(animal)
+    nc = stix2.versioning.remove_custom_stix(animal)
 
     assert nc is None
 
 
 def test_remove_custom_stix_no_custom():
     campaign_v1 = stix2.v20.Campaign(**CAMPAIGN_MORE_KWARGS)
-    campaign_v2 = stix2.utils.remove_custom_stix(campaign_v1)
+    campaign_v2 = stix2.versioning.remove_custom_stix(campaign_v1)
 
     assert len(campaign_v1.keys()) == len(campaign_v2.keys())
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.description == campaign_v2.description
+
+
+def test_version_unversionable_dict():
+    f = {
+        "type": "file",
+        "name": "data.txt",
+    }
+
+    with pytest.raises(ValueError):
+        stix2.versioning.new_version(f)
+
+
+def test_version_sco_with_modified():
+    """
+    Ensure new_version() doesn't get tripped up over unversionable objects with
+    properties not used for versioning, but whose names conflict with
+    versioning properties.
+    """
+
+    file_sco = {
+        "type": "file",
+        "name": "data.txt",
+        "created": "1973-11-23T02:31:37Z",
+        "modified": "1991-05-13T19:24:57Z",
+    }
+
+    with pytest.raises(ValueError):
+        stix2.versioning.new_version(file_sco, name="newname.txt")
+
+    with pytest.raises(ValueError):
+        stix2.versioning.revoke(file_sco)
+
+    file_sco_obj = stix2.v20.File(
+        name="data.txt",
+        created="1973-11-23T02:31:37Z",
+        modified="1991-05-13T19:24:57Z",
+    )
+
+    with pytest.raises(ValueError):
+        stix2.versioning.new_version(file_sco_obj, name="newname.txt")
+
+    with pytest.raises(ValueError):
+        stix2.versioning.revoke(file_sco_obj)
+
+
+def test_version_sco_with_custom():
+    """
+    If we add custom properties named like versioning properties to an object
+    type which is otherwise unversionable, versioning should start working.
+    """
+
+    file_sco_obj = stix2.v20.File(
+        name="data.txt",
+        created="1973-11-23T02:31:37Z",
+        modified="1991-05-13T19:24:57Z",
+        revoked=False,  # the custom property
+        allow_custom=True,
+    )
+
+    new_file_sco_obj = stix2.versioning.new_version(
+        file_sco_obj, name="newname.txt",
+    )
+
+    assert new_file_sco_obj.name == "newname.txt"
+
+    revoked_obj = stix2.versioning.revoke(new_file_sco_obj)
+    assert revoked_obj.revoked
+
+
+def test_version_disable_custom():
+    m = stix2.v20.Malware(
+        name="foo", labels=["label"], description="Steals your identity!",
+        x_custom=123, allow_custom=True,
+    )
+
+    # Remove the custom property, and disallow custom properties in the
+    # resulting object.
+    m2 = stix2.versioning.new_version(m, x_custom=None, allow_custom=False)
+    assert "x_custom" not in m2
+
+    # Remove a regular property and leave the custom one, disallow custom
+    # properties, and make sure we get an error.
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        stix2.versioning.new_version(m, description=None, allow_custom=False)
+
+
+def test_version_enable_custom():
+    m = stix2.v20.Malware(
+        name="foo", labels=["label"], description="Steals your identity!",
+    )
+
+    # Add a custom property to an object for which it was previously disallowed
+    m2 = stix2.versioning.new_version(m, x_custom=123, allow_custom=True)
+    assert "x_custom" in m2
+
+    # Add a custom property without enabling it, make sure we get an error
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        stix2.versioning.new_version(m, x_custom=123, allow_custom=False)
+
+
+def test_version_propagate_custom():
+    m = stix2.v20.Malware(
+        name="foo", labels=["label"],
+    )
+
+    # Remember custom-not-allowed setting from original; produce error
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        stix2.versioning.new_version(m, x_custom=123)
+
+    m2 = stix2.versioning.new_version(m, description="Steals your identity!")
+    assert "description" in m2
+    assert m2.description == "Steals your identity!"
+
+    m_custom = stix2.v20.Malware(
+        name="foo", labels=["label"], x_custom=123, allow_custom=True,
+    )
+
+    # Remember custom-allowed setting from original; should work
+    m2_custom = stix2.versioning.new_version(m_custom, x_other_custom="abc")
+    assert "x_other_custom" in m2_custom
+    assert m2_custom.x_other_custom == "abc"

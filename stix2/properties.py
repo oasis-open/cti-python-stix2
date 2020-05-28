@@ -17,16 +17,15 @@ from .exceptions import (
     MutuallyExclusivePropertiesError,
 )
 from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
-from .utils import (
-    TYPE_21_REGEX, TYPE_REGEX, _get_dict, get_class_hierarchy_names,
-    parse_into_datetime,
-)
+from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
 
+TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )

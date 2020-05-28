@@ -2,7 +2,8 @@
 
 from stix2 import exceptions
 from stix2.markings import utils
-from stix2.utils import is_marking, new_version
+from stix2.utils import is_marking
+from stix2.versioning import new_version
 
 
 def get_markings(obj, selectors, inherited=False, descendants=False, marking_ref=True, lang=True):

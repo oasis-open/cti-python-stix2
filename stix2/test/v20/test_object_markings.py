@@ -14,6 +14,7 @@ from .constants import MARKING_IDS
 MALWARE_KWARGS = MALWARE_KWARGS_CONST.copy()
 MALWARE_KWARGS.update({
     'id': MALWARE_ID,
+    'type': 'malware',
     'created': FAKE_TIME,
     'modified': FAKE_TIME,
 })
