@@ -255,7 +255,7 @@ def remove_custom_stix(stix_obj):
         # add to set the custom properties we want to get rid of (with their value=None)
         props.extend(custom_props)
 
-        new_obj = new_version(stix_obj, **(dict(props)))
+        new_obj = new_version(stix_obj, allow_custom=False, **(dict(props)))
 
         return new_obj
 
