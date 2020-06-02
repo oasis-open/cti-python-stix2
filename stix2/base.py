@@ -534,7 +534,7 @@ def _un_json_escape(json_string):
     # the other escapes, e.g. \n, \r, etc.
     #
     # This list is taken from RFC7159 section 7:
-    # https://tools.ietf.org/html/rfc7159.html#section-7
+    # https://tools.ietf.org/html/rfc8259#section-7
 
     result = json_string\
         .replace(r"\"", "\"")\
