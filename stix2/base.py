@@ -431,7 +431,7 @@ class _Observable(_STIXBase):
                 uuid_ = uuid.uuid5(SCO_DET_ID_NAMESPACE, data)
             else:
                 uuid_ = uuid.uuid5(
-                    SCO_DET_ID_NAMESPACE, data.encode("utf-8")
+                    SCO_DET_ID_NAMESPACE, data.encode("utf-8"),
                 )
 
             id_ = "{}--{}".format(self._type, six.text_type(uuid_))
