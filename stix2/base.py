@@ -533,7 +533,7 @@ def _un_json_escape(json_string):
     # since I use ensure_ascii=False when generating it.  I will just fix all
     # the other escapes, e.g. \n, \r, etc.
     #
-    # This list is taken from RFC7159 section 7:
+    # This list is taken from RFC8259 section 7:
     # https://tools.ietf.org/html/rfc8259#section-7
 
     result = json_string\
