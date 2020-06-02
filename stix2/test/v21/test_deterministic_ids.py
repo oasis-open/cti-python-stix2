@@ -7,9 +7,9 @@ import six
 import stix2.base
 import stix2.canonicalization.Canonicalize
 from stix2.properties import (
-    BooleanProperty, DictionaryProperty, ExtensionsProperty, FloatProperty,
-    IDProperty, IntegerProperty, ListProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    BooleanProperty, DictionaryProperty, EmbeddedObjectProperty,
+    ExtensionsProperty, FloatProperty, IDProperty, IntegerProperty,
+    ListProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 import stix2.v21.base
 
@@ -144,6 +144,43 @@ def test_json_incompatible_timestamp_value():
 
     obj = {
         "timestamp": "1987-01-02T03:04:05.6789Z",
+    }
+
+    can_json = stix2.canonicalization.Canonicalize.canonicalize(obj, utf8=False)
+    expected_uuid5 = _make_uuid5(can_json)
+    actual_uuid5 = _uuid_from_id(sco["id"])
+
+    assert actual_uuid5 == expected_uuid5
+
+
+def test_embedded_object():
+    class SubObj(stix2.base._STIXBase):
+        _type = "sub-object"
+        _properties = OrderedDict((
+            ('value', StringProperty()),
+        ))
+
+    class SomeSCO(stix2.v21.base._Observable):
+        _type = "some-sco"
+        _properties = OrderedDict((
+            ('type', TypeProperty(_type, spec_version='2.1')),
+            ('id', IDProperty(_type, spec_version='2.1')),
+            (
+                'extensions', ExtensionsProperty(
+                    spec_version='2.1', enclosing_type=_type,
+                ),
+            ),
+            ('sub_obj', EmbeddedObjectProperty(type=SubObj)),
+        ))
+        _id_contributing_properties = ['sub_obj']
+
+    sub_obj = SubObj(value="foo")
+    sco = SomeSCO(sub_obj=sub_obj)
+
+    obj = {
+        "sub_obj": {
+            "value": "foo",
+        },
     }
 
     can_json = stix2.canonicalization.Canonicalize.canonicalize(obj, utf8=False)
