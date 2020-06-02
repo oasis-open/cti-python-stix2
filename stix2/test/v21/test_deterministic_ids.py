@@ -48,7 +48,7 @@ def test_no_contrib_props_defined():
             (
                 'extensions', ExtensionsProperty(
                     spec_version='2.1', enclosing_type=_type,
-                )
+                ),
             ),
         ))
         _id_contributing_properties = []
@@ -70,7 +70,7 @@ def test_no_contrib_props_given():
             (
                 'extensions', ExtensionsProperty(
                     spec_version='2.1', enclosing_type=_type,
-                )
+                ),
             ),
             ('value', StringProperty()),
         ))
@@ -92,7 +92,7 @@ def test_json_compatible_prop_values():
             (
                 'extensions', ExtensionsProperty(
                     spec_version='2.1', enclosing_type=_type,
-                )
+                ),
             ),
             ('string', StringProperty()),
             ('int', IntegerProperty()),
@@ -132,7 +132,7 @@ def test_json_incompatible_timestamp_value():
             (
                 'extensions', ExtensionsProperty(
                     spec_version='2.1', enclosing_type=_type,
-                )
+                ),
             ),
             ('timestamp', TimestampProperty()),
         ))
