@@ -521,6 +521,24 @@ def _make_json_serializable(value):
     return json_value
 
 
+_JSON_ESCAPE_RE = re.compile(r"\\.")
+# I don't think I should need to worry about the unicode escapes (\uXXXX)
+# since I use ensure_ascii=False when generating it.  I will just fix all
+# the other escapes, e.g. \n, \r, etc.
+#
+# This list is taken from RFC8259 section 7:
+# https://tools.ietf.org/html/rfc8259#section-7
+# Maps the second char of a "\X" style escape, to a replacement char
+_JSON_ESCAPE_MAP = {
+    '"': '"',
+    "\\": "\\",
+    "/": "/",
+    "b": "\b",
+    "f": "\f",
+    "n": "\n",
+    "r": "\r",
+    "t": "\t"
+}
 def _un_json_escape(json_string):
     """
     Removes JSON string literal escapes.  We should undo these things Python's
@@ -532,21 +550,13 @@ def _un_json_escape(json_string):
     :return: The unescaped string
     """
 
-    # I don't think I should need to worry about the unicode escapes (\uXXXX)
-    # since I use ensure_ascii=False when generating it.  I will just fix all
-    # the other escapes, e.g. \n, \r, etc.
-    #
-    # This list is taken from RFC8259 section 7:
-    # https://tools.ietf.org/html/rfc8259#section-7
+    def replace(m):
+        replacement = _JSON_ESCAPE_MAP.get(m.group(0)[1])
+        if replacement is None:
+            raise ValueError("Unrecognized JSON escape: " + m.group(0))
 
-    result = json_string\
-        .replace(r"\"", "\"")\
-        .replace(r"\/", "/")\
-        .replace(r"\b", "\b")\
-        .replace(r"\f", "\f")\
-        .replace(r"\n", "\n")\
-        .replace(r"\r", "\r")\
-        .replace(r"\t", "\t")\
-        .replace(r"\\", "\\")  # Must do this one last!
+        return replacement
+
+    result = _JSON_ESCAPE_RE.sub(replace, json_string)
 
     return result
