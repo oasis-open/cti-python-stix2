@@ -2,14 +2,17 @@ from collections import OrderedDict
 import datetime
 import uuid
 
+import pytest
 import six
 
 import stix2.base
 import stix2.canonicalization.Canonicalize
+import stix2.exceptions
 from stix2.properties import (
     BooleanProperty, DictionaryProperty, EmbeddedObjectProperty,
-    ExtensionsProperty, FloatProperty, IDProperty, IntegerProperty,
-    ListProperty, StringProperty, TimestampProperty, TypeProperty,
+    ExtensionsProperty, FloatProperty, HashesProperty, IDProperty,
+    IntegerProperty, ListProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 import stix2.v21.base
 
@@ -188,3 +191,22 @@ def test_embedded_object():
     actual_uuid5 = _uuid_from_id(sco["id"])
 
     assert actual_uuid5 == expected_uuid5
+
+
+def test_empty_hash():
+    class SomeSCO(stix2.v21.base._Observable):
+        _type = "some-sco"
+        _properties = OrderedDict((
+            ('type', TypeProperty(_type, spec_version='2.1')),
+            ('id', IDProperty(_type, spec_version='2.1')),
+            (
+                'extensions', ExtensionsProperty(
+                    spec_version='2.1', enclosing_type=_type,
+                ),
+            ),
+            ('hashes', HashesProperty()),
+        ))
+        _id_contributing_properties = ['hashes']
+
+    with pytest.raises(stix2.exceptions.InvalidValueError):
+        SomeSCO(hashes={})

@@ -410,9 +410,12 @@ class _Observable(_STIXBase):
                 obj_value = self[key]
 
                 if key == "hashes":
-                    possible_hash = _choose_one_hash(obj_value)
-                    if possible_hash:
-                        serializable_value = possible_hash
+                    serializable_value = _choose_one_hash(obj_value)
+
+                    if serializable_value is None:
+                        raise InvalidValueError(
+                            self, key, "No hashes given",
+                        )
 
                 else:
                     serializable_value = _make_json_serializable(obj_value)
