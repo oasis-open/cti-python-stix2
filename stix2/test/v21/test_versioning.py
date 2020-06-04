@@ -335,10 +335,10 @@ def test_version_sco_with_custom():
     )
 
     new_file_sco_obj = stix2.versioning.new_version(
-        file_sco_obj, name="newname.txt",
+        file_sco_obj, size=1234,
     )
 
-    assert new_file_sco_obj.name == "newname.txt"
+    assert new_file_sco_obj.size == 1234
 
     revoked_obj = stix2.versioning.revoke(new_file_sco_obj)
     assert revoked_obj.revoked

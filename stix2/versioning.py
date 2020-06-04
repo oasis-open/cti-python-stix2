@@ -1,12 +1,14 @@
 import copy
 import datetime as dt
+import itertools
+import uuid
 
 import six
 from six.moves.collections_abc import Mapping
 
 import stix2.base
 from stix2.utils import get_timestamp, parse_into_datetime
-import stix2.v20.base
+import stix2.v20
 
 from .exceptions import (
     InvalidValueError, RevokeError, UnmodifiablePropertyError,
@@ -78,7 +80,7 @@ def _is_versionable(data):
         # work for dicts.
         is_21 = False
         if isinstance(data, stix2.base._STIXBase) and \
-                not isinstance(data, stix2.v20.base._STIXBase20):
+                not isinstance(data, stix2.v20._STIXBase20):
             # (is_21 means 2.1 or later; try not to be 2.1-specific)
             is_21 = True
         elif isinstance(data, dict):
@@ -117,7 +119,7 @@ def _is_versionable(data):
                 # but do check SCOs
                 cls = class_maps["observables"][obj_type]
                 is_versionable = _VERSIONING_PROPERTIES.issubset(
-                    cls._properties
+                    cls._properties,
                 )
 
     return is_versionable, is_21
@@ -147,7 +149,6 @@ def new_version(data, allow_custom=None, **kwargs):
             "Try a dictionary or instance of an SDO or SRO class.",
         )
 
-    unchangable_properties = []
     if data.get('revoked'):
         raise RevokeError("new_version")
     try:
@@ -157,9 +158,20 @@ def new_version(data, allow_custom=None, **kwargs):
     properties_to_change = kwargs.keys()
 
     # Make sure certain properties aren't trying to change
-    for prop in STIX_UNMOD_PROPERTIES:
+    # ID contributing properties of 2.1+ SCOs may also not change if a UUIDv5
+    # is in use (depending on whether they were used to create it... but they
+    # probably were).  That would imply an ID change, which is not allowed
+    # across versions.
+    sco_locked_props = []
+    if is_21 and isinstance(data, stix2.base._Observable):
+        uuid_ = uuid.UUID(data["id"][-36:])
+        if uuid_.variant == uuid.RFC_4122 and uuid_.version == 5:
+            sco_locked_props = data._id_contributing_properties
+
+    unchangable_properties = set()
+    for prop in itertools.chain(STIX_UNMOD_PROPERTIES, sco_locked_props):
         if prop in properties_to_change:
-            unchangable_properties.append(prop)
+            unchangable_properties.add(prop)
     if unchangable_properties:
         raise UnmodifiablePropertyError(unchangable_properties)
 
