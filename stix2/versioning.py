@@ -117,7 +117,7 @@ def _is_versionable(data):
                 # but do check SCOs
                 cls = class_maps["observables"][obj_type]
                 is_versionable = _VERSIONING_PROPERTIES.issubset(
-                    p[0] for p in cls._properties
+                    cls._properties
                 )
 
     return is_versionable, is_21
