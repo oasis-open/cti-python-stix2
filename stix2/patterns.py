@@ -669,12 +669,16 @@ class StartStopQualifier(_ExpressionQualifier):
             self.start_time = start_time
         elif isinstance(start_time, datetime.date):
             self.start_time = TimestampConstant(start_time)
+        elif isinstance(start_time, StringConstant):
+            self.start_time = StringConstant(start_time.value)
         else:
             raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % start_time)
         if isinstance(stop_time, TimestampConstant):
             self.stop_time = stop_time
         elif isinstance(stop_time, datetime.date):
             self.stop_time = TimestampConstant(stop_time)
+        elif isinstance(stop_time, StringConstant):
+            self.stop_time = StringConstant(stop_time.value)
         else:
             raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % stop_time)
 
