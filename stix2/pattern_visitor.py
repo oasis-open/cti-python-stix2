@@ -219,11 +219,14 @@ class STIXPatternVisitorForSTIX2():
     # Visit a parse tree produced by STIXPatternParser#startStopQualifier.
     def visitStartStopQualifier(self, ctx):
         children = self.visitChildren(ctx)
-        # parser will accept any string, need to make sure it is a full STIX timestamp
-        t1 = check_for_valid_timetamp_syntax(children[1].value)
-        t2 = check_for_valid_timetamp_syntax(children[3].value)
-        if not t1 or not t2:
-            raise(ValueError("Not a legal timestamp"))
+        # 2.0 parser will accept any string, need to make sure it is a full STIX timestamp
+        if isinstance(children[1], StringConstant):
+            if not check_for_valid_timetamp_syntax(children[1].value):
+                raise (ValueError("Start time is not a legal timestamp"))
+        if isinstance(children[3], StringConstant):
+            if not check_for_valid_timetamp_syntax(children[3].value):
+                raise (ValueError("Stop time is not a legal timestamp"))
+
         return StartStopQualifier(children[1], children[3])
 
     # Visit a parse tree produced by STIXPatternParser#withinQualifier.
