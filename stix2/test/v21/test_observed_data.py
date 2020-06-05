@@ -900,6 +900,27 @@ def test_file_example_with_RasterImageExt_Object():
     assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
 
 
+def test_file_with_archive_ext_object():
+    ad = stix2.v21.Directory(path="archived/path")
+    f_obj = stix2.v21.File(
+        name="foo", extensions={
+            "archive-ext": {
+                "contains_refs": [ad, ],
+            },
+        },
+    )
+    f_ref = stix2.v21.File(
+        name="foo", extensions={
+            "archive-ext": {
+                "contains_refs": [ad.id, ],
+            },
+        },
+    )
+
+    assert f_obj["id"] == f_ref["id"]
+    assert f_obj["extensions"]["archive-ext"]["contains_refs"][0] == ad["id"]
+
+
 RASTER_IMAGE_EXT = """{
 "type": "observed-data",
 "spec_version": "2.1",
