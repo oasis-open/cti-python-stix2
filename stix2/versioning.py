@@ -155,7 +155,6 @@ def new_version(data, allow_custom=None, **kwargs):
         new_obj_inner = copy.deepcopy(data._inner)
     except AttributeError:
         new_obj_inner = copy.deepcopy(data)
-    properties_to_change = kwargs.keys()
 
     # Make sure certain properties aren't trying to change
     # ID contributing properties of 2.1+ SCOs may also not change if a UUIDv5
@@ -170,7 +169,7 @@ def new_version(data, allow_custom=None, **kwargs):
 
     unchangable_properties = set()
     for prop in itertools.chain(STIX_UNMOD_PROPERTIES, sco_locked_props):
-        if prop in properties_to_change:
+        if prop in kwargs:
             unchangable_properties.add(prop)
     if unchangable_properties:
         raise UnmodifiablePropertyError(unchangable_properties)
@@ -262,33 +261,13 @@ def remove_custom_stix(stix_obj):
         # if entire object is custom, discard
         return None
 
-    custom_props = []
-    for prop in stix_obj.items():
-        if prop[0].startswith('x_'):
-            # for every custom property, record it and set value to None
-            # (so we can pass it to new_version() and it will be dropped)
-            custom_props.append((prop[0], None))
+    custom_props = {
+        k: None
+        for k in stix_obj if k.startswith("x_")
+    }
 
     if custom_props:
-        # obtain set of object properties that can be transferred
-        # to a new object version. This is 1)custom props with their
-        # values set to None, and 2)any properties left that are not
-        # unmodifiable STIX properties or the "modified" property
-
-        # set of properties that are not supplied to new_version()
-        # to be used for updating properties. This includes unmodifiable
-        # properties (properties that new_version() just re-uses from the
-        # existing STIX object) and the "modified" property. We dont supply the
-        # "modified" property so that new_version() creates a new datetime
-        # value for this property
-        non_supplied_props = STIX_UNMOD_PROPERTIES + ['modified']
-
-        props = [(prop, stix_obj[prop]) for prop in stix_obj if prop not in non_supplied_props]
-
-        # add to set the custom properties we want to get rid of (with their value=None)
-        props.extend(custom_props)
-
-        new_obj = new_version(stix_obj, allow_custom=False, **(dict(props)))
+        new_obj = new_version(stix_obj, allow_custom=False, **custom_props)
 
         return new_obj
 
