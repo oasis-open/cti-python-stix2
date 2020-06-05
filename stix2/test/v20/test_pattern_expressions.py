@@ -513,7 +513,7 @@ def test_parsing_start_stop_qualified_expression():
 
 def test_parsing_illegal_start_stop_qualified_expression():
     with pytest.raises(ValueError):
-        patt_obj = create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01' STOP '2017-03-12T08:30:00Z'", version="2.0")
+        create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01' STOP '2017-03-12T08:30:00Z'", version="2.0")
 
 
 def test_list_constant():
