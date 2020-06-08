@@ -537,8 +537,10 @@ _JSON_ESCAPE_MAP = {
     "f": "\f",
     "n": "\n",
     "r": "\r",
-    "t": "\t"
+    "t": "\t",
 }
+
+
 def _un_json_escape(json_string):
     """
     Removes JSON string literal escapes.  We should undo these things Python's

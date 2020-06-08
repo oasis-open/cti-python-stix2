@@ -1,6 +1,5 @@
 import datetime as dt
 import re
-import uuid
 
 import pytest
 import pytz

@@ -189,14 +189,16 @@ def test_empty_hash():
         SomeSCO(hashes={})
 
 
-@pytest.mark.parametrize("json_escaped, expected_unescaped", [
-    ("", ""),
-    ("a", "a"),
-    (r"\n", "\n"),
-    (r"\n\r\b\t\\\/\"", "\n\r\b\t\\/\""),
-    (r"\\n", r"\n"),
-    (r"\\\n", "\\\n")
-])
+@pytest.mark.parametrize(
+    "json_escaped, expected_unescaped", [
+        ("", ""),
+        ("a", "a"),
+        (r"\n", "\n"),
+        (r"\n\r\b\t\\\/\"", "\n\r\b\t\\/\""),
+        (r"\\n", r"\n"),
+        (r"\\\n", "\\\n"),
+    ],
+)
 def test_json_unescaping(json_escaped, expected_unescaped):
     actual_unescaped = stix2.base._un_json_escape(json_escaped)
     assert actual_unescaped == expected_unescaped
