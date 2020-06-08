@@ -1089,3 +1089,17 @@ def test_clear_marking_not_present(data):
     """Test clearing markings for a selector that has no associated markings."""
     with pytest.raises(MarkingNotFoundError):
         data = markings.clear_markings(data, ["labels"])
+
+
+def test_set_marking_on_id_property():
+    malware = Malware(
+        granular_markings=[
+            {
+                "selectors": ["id"],
+                "marking_ref": MARKING_IDS[0],
+            },
+        ],
+        **MALWARE_KWARGS
+    )
+
+    assert "id" in malware["granular_markings"][0]["selectors"]
