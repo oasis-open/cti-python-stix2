@@ -537,7 +537,7 @@ def enumerate_types(types, spec_version):
     return return_types
 
 
-SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
+SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*|id)$")
 
 
 class SelectorProperty(Property):
