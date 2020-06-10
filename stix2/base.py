@@ -21,8 +21,8 @@ from .markings.utils import validate
 from .utils import (
     NOW, PREFIX_21_REGEX, find_property_index, format_datetime, get_timestamp,
 )
-from .utils import new_version as _new_version
-from .utils import revoke as _revoke
+from .versioning import new_version as _new_version
+from .versioning import revoke as _revoke
 
 try:
     from collections.abc import Mapping
