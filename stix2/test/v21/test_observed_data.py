@@ -1,6 +1,5 @@
 import datetime as dt
 import re
-import uuid
 
 import pytest
 import pytz
@@ -898,6 +897,27 @@ def test_file_example_with_RasterImageExt_Object():
     assert f.name == "qwerty.jpeg"
     assert f.extensions["raster-image-ext"].bits_per_pixel == 123
     assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
+
+
+def test_file_with_archive_ext_object():
+    ad = stix2.v21.Directory(path="archived/path")
+    f_obj = stix2.v21.File(
+        name="foo", extensions={
+            "archive-ext": {
+                "contains_refs": [ad, ],
+            },
+        },
+    )
+    f_ref = stix2.v21.File(
+        name="foo", extensions={
+            "archive-ext": {
+                "contains_refs": [ad.id, ],
+            },
+        },
+    )
+
+    assert f_obj["id"] == f_ref["id"]
+    assert f_obj["extensions"]["archive-ext"]["contains_refs"][0] == ad["id"]
 
 
 RASTER_IMAGE_EXT = """{
