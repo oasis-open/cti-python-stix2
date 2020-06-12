@@ -39,10 +39,7 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Security',
         'License :: OSI Approved :: BSD License',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
@@ -51,7 +48,6 @@ setup(
     keywords='stix stix2 json cti cyber threat intelligence',
     packages=find_packages(exclude=['*.test', '*.test.*']),
     install_requires=[
-        'enum34 ; python_version<"3.4"',
         'pytz',
         'requests',
         'simplejson',
