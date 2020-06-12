@@ -154,7 +154,7 @@ class _STIXBase(Mapping):
     def __init__(self, allow_custom=False, **kwargs):
         cls = self.__class__
         self._allow_custom = allow_custom
-        
+
         for prop in self._properties:
             if isinstance(self._properties[prop], (stix2.properties.ListProperty, stix2.properties.ReferenceProperty)):
                 self._properties[prop].allow_custom = allow_custom

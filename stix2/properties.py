@@ -198,7 +198,7 @@ class ListProperty(Property):
             self.contained = contained()
         else:
             self.contained = contained
-        
+
         self.allow_custom = allow_custom
         super(ListProperty, self).__init__(**kwargs)
 

@@ -1338,3 +1338,104 @@ def test_register_duplicate_marking():
         class NewObj2():
             pass
     assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_parse_custom_ref_allow_custom_true():
+    email_addr_json = {
+        'type': 'email-addr',
+        'spec_version': '2.1',
+        'value': 'hello@example.org',
+        'belongs_to_ref': 'custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa',
+    }
+
+    email_addr_stix = stix2.parse(email_addr_json, allow_custom=True, version='2.1')
+
+    assert email_addr_stix.value == email_addr_json['value']
+    assert email_addr_stix.belongs_to_ref == email_addr_json['belongs_to_ref']
+
+
+def test_parse_custom_ref_allow_custom_false():
+    email_addr_json = {
+        'type': 'email-addr',
+        'spec_version': '2.1',
+        'value': 'hello@example.org',
+        'belongs_to_ref': 'custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa',
+    }
+
+    with pytest.raises(InvalidValueError) as excinfo:
+        stix2.parse(email_addr_json, version='2.1')
+
+    assert "prefix 'custom-obj' for this property is not valid" in str(excinfo.value)
+
+
+def test_parse_standard_ref_allow_custom_true():
+    email_addr_json = {
+        'type': 'email-addr',
+        'spec_version': '2.1',
+        'value': 'hello@example.org',
+        'belongs_to_ref': 'user-account--26ffb872-1dd9-446e-b6f5-d58527e5b5aa',
+    }
+
+    email_addr_stix = stix2.parse(email_addr_json, allow_custom=True, version='2.1')
+
+    assert email_addr_stix.value == email_addr_json['value']
+    assert email_addr_stix.belongs_to_ref == email_addr_json['belongs_to_ref']
+
+
+def test_parse_custom_refs_allow_custom_true():
+    report_json = {
+        'type': 'report',
+        'name': "The Black Vine Cyberespionage Group",
+        'published': "2016-01-20T17:00:00.000Z",
+        'report_types': ["campaign"],
+        'object_refs': [
+            "bird--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
+            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
+            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+        ],
+    }
+
+    report_stix = stix2.parse(report_json, allow_custom=True, version='2.1')
+
+    assert report_stix.name == report_json['name']
+    assert report_stix.report_types == report_json['report_types']
+    assert report_stix.object_refs == report_json['object_refs']
+
+
+def test_parse_custom_refs_allow_custom_false():
+    report_json = {
+        'type': 'report',
+        'name': "The Black Vine Cyberespionage Group",
+        'published': "2016-01-20T17:00:00.000Z",
+        'report_types': ["campaign"],
+        'object_refs': [
+            "plane--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
+            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
+            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+        ],
+    }
+
+    with pytest.raises(InvalidValueError) as excinfo:
+        stix2.parse(report_json, version='2.1')
+
+    assert "prefix 'plane' for this property is not valid" in str(excinfo.value)
+
+
+def test_parse_standard_refs_allow_custom_true():
+    report_json = {
+        'type': 'report',
+        'name': "The Black Vine Cyberespionage Group",
+        'published': "2016-01-20T17:00:00.000Z",
+        'report_types': ["campaign"],
+        'object_refs': [
+            "identity--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
+            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
+            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+        ],
+    }
+
+    report_stix = stix2.parse(report_json, allow_custom=True, version='2.1')
+
+    assert report_stix.name == report_json['name']
+    assert report_stix.report_types == report_json['report_types']
+    assert report_stix.object_refs == report_json['object_refs']
