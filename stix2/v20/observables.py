@@ -589,7 +589,7 @@ class Process(_Observable):
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('binary_ref', ObjectReferenceProperty(valid_types='file')),
         ('parent_ref', ObjectReferenceProperty(valid_types='process')),
-        ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
+        ('child_refs', ListProperty(ObjectReferenceProperty(valid_types='process'))),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
