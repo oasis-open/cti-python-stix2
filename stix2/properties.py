@@ -187,7 +187,7 @@ class Property(object):
 
 class ListProperty(Property):
 
-    def __init__(self, contained, **kwargs):
+    def __init__(self, contained, allow_custom=False, **kwargs):
         """
         ``contained`` should be a function which returns an object from the value.
         """
@@ -198,6 +198,8 @@ class ListProperty(Property):
             self.contained = contained()
         else:
             self.contained = contained
+        
+        self.allow_custom = allow_custom
         super(ListProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -212,7 +214,12 @@ class ListProperty(Property):
         result = []
         for item in value:
             try:
-                valid = self.contained.clean(item)
+                # valid = self.contained.clean(item)
+                if isinstance(self.contained, stix2.properties.ReferenceProperty):
+                    self.contained.allow_custom = self.allow_custom
+                    valid = self.contained.clean(item)
+                else:
+                    valid = self.contained.clean(item)
             except ValueError:
                 raise
             except AttributeError:
@@ -460,11 +467,12 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, **kwargs):
         """
         references sometimes must be to a specific object type
         """
         self.spec_version = spec_version
+        self.allow_custom = allow_custom
 
         # These checks need to be done prior to the STIX object finishing construction
         # and thus we can't use base.py's _check_mutually_exclusive_properties()
@@ -489,24 +497,30 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        possible_prefix = value[:value.index('--')]
+        if not self.allow_custom:
+            possible_prefix = value[:value.index('--')]
 
-        if self.valid_types:
-            ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
+            if self.valid_types:
+                ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
 
-            if possible_prefix in ref_valid_types:
-                required_prefix = possible_prefix
-            else:
-                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
-        elif self.invalid_types:
-            ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
+                if possible_prefix in ref_valid_types:
+                    required_prefix = possible_prefix
+                else:
+                    raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
+            elif self.invalid_types:
+                ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
 
-            if possible_prefix not in ref_invalid_types:
-                required_prefix = possible_prefix
-            else:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
+                if possible_prefix not in ref_invalid_types:
+                    required_prefix = possible_prefix
+                else:
+                    raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
 
-        _validate_id(value, self.spec_version, required_prefix)
+            _validate_id(value, self.spec_version, required_prefix)
+        else:
+            uuid_part = value[value.index("--") + 2:]
+            valid_uuid = _check_uuid(uuid_part, self.spec_version)
+            if not valid_uuid:
+                raise ValueError(ERROR_INVALID_ID.format(value))
 
         return value
 
