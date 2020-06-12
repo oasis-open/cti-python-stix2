@@ -1131,3 +1131,63 @@ def test_register_duplicate_marking():
         class NewObj2():
             pass
     assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_parse_custom_ref_allow_custom_true():
+    id_json = {
+        'type': 'identity',
+        'id': IDENTITY_ID,
+        'name': 'Johnny Apple',
+        'identity_class': 'individual',
+        'created_by_ref': 'person--26ffb872-1dd9-446e-b6f5-d58527e5b5bb',
+    }
+
+    id_stix = stix2.parse(id_json, allow_custom=True, version='2.0')
+
+    assert id_stix.name == id_json['name']
+    assert id_stix.created_by_ref == id_json['created_by_ref']
+
+
+def test_parse_custom_ref_allow_custom_false():
+    id_json = {
+        'type': 'identity',
+        'id': IDENTITY_ID,
+        'name': 'Johnny Apple',
+        'identity_class': 'individual',
+        'created_by_ref': 'human--26ffb872-1dd9-446e-b6f5-d58527e5b5bb',
+    }
+
+    with pytest.raises(InvalidValueError) as excinfo:
+        stix2.parse(id_json, version='2.0')
+
+    assert "prefix 'human' for this property is not valid" in str(excinfo.value)
+
+
+def test_parse_custom_refs_allow_custom_true():
+    id_json = {
+        'type': 'identity',
+        'id': IDENTITY_ID,
+        'name': 'Johnny Apple',
+        'identity_class': 'individual',
+        'object_marking_refs': ['rocket--70ffb872-1dd9-446e-b6f5-d58527e5b5bb'],
+    }
+
+    id_stix = stix2.parse(id_json, allow_custom=True, version='2.0')
+
+    assert id_stix.name == id_json['name']
+    assert id_stix.object_marking_refs == id_json['object_marking_refs']
+
+
+def test_parse_custom_refs_allow_custom_false():
+    id_json = {
+        'type': 'identity',
+        'id': IDENTITY_ID,
+        'name': 'Johnny Apple',
+        'identity_class': 'individual',
+        'object_marking_refs': ['rocket--70ffb872-1dd9-446e-b6f5-d58527e5b5bb'],
+    }
+
+    with pytest.raises(InvalidValueError) as excinfo:
+        stix2.parse(id_json, version='2.0')
+
+    assert "prefix 'rocket' for this property is not valid" in str(excinfo.value)
