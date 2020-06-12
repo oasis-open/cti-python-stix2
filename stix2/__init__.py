@@ -20,7 +20,7 @@
 
 # flake8: noqa
 
-DEFAULT_VERSION = '2.0'  # Default version will always be the latest STIX 2.X version
+DEFAULT_VERSION = '2.1'  # Default version will always be the latest STIX 2.X version
 
 from .confidence import scales
 from .datastore import CompositeDataSource
@@ -53,7 +53,7 @@ from .patterns import (
     RepeatQualifier, StartStopQualifier, StringConstant, TimestampConstant,
     WithinQualifier,
 )
-from .v20 import *  # This import will always be the latest STIX 2.X version
+from .v21 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 from .versioning import new_version, revoke
 

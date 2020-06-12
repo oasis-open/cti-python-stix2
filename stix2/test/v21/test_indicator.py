@@ -98,8 +98,8 @@ def test_indicator_required_properties():
         stix2.v21.Indicator()
 
     assert excinfo.value.cls == stix2.v21.Indicator
-    assert excinfo.value.properties == ["pattern", "pattern_type", "valid_from"]
-    assert str(excinfo.value) == "No values for required properties for Indicator: (pattern, pattern_type, valid_from)."
+    assert excinfo.value.properties == ["pattern", "pattern_type"]
+    assert str(excinfo.value) == "No values for required properties for Indicator: (pattern, pattern_type)."
 
 
 def test_indicator_required_property_pattern():
@@ -107,7 +107,7 @@ def test_indicator_required_property_pattern():
         stix2.v21.Indicator(indicator_types=['malicious-activity'])
 
     assert excinfo.value.cls == stix2.v21.Indicator
-    assert excinfo.value.properties == ["pattern", "pattern_type", "valid_from"]
+    assert excinfo.value.properties == ["pattern", "pattern_type"]
 
 
 def test_indicator_created_ref_invalid_format():

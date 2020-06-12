@@ -187,7 +187,7 @@ class Indicator(_DomainObject):
         ('pattern', PatternProperty(required=True)),
         ('pattern_type', StringProperty(required=True)),
         ('pattern_version', StringProperty()),
-        ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
+        ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
