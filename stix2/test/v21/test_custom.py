@@ -1405,3 +1405,37 @@ def test_parse_custom_refs_allow_custom_false():
         stix2.parse(report_json, version='2.1')
 
     assert "prefix 'plane' for this property is not valid" in str(excinfo.value)
+
+
+def test_parse_obj_embedded_objs_with_custom_props():
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--e0089815-c338-44f4-96ef-ed7f66b51274",
+        "objects": [
+            {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--aaa3aa20-8a17-4136-b2ae-ed384ca31874",
+                "created": "2020-07-31T11:36:08.563Z",
+                "modified": "2020-07-31T11:36:08.563Z",
+                "indicator_types": [
+                    "malicious-activity",
+                ],
+                "pattern": "[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+                "pattern_type": "stix",
+                "pattern_version": "2.1",
+                "valid_from": "2020-07-31T11:36:08.563Z",
+                "kill_chain_phases": [
+                    {
+                        "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                        "phase_name": "actions-on-objective",
+                        "x_foo_description": "Intruder takes action to achieve their goals, such as data exfiltration.",
+                    },
+                ],
+            },
+        ],
+    }
+
+    bundle_stix = stix2.parse(bundle, version='2.1', allow_custom=True)
+
+    assert bundle["objects"][0]["kill_chain_phases"][0] == bundle_stix.objects[0].kill_chain_phases[0]

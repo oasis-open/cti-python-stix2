@@ -214,13 +214,13 @@ class ListProperty(Property):
         result = []
         for item in value:
             try:
-                acceptable_types = (
+                customizable_types = (
                     stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
                     stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
                     stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
                 )
 
-                if isinstance(self.contained, acceptable_types):
+                if isinstance(self.contained, customizable_types):
                     self.contained.allow_custom = self.allow_custom
                 valid = self.contained.clean(item)
             except ValueError:
@@ -248,7 +248,10 @@ class ListProperty(Property):
                 try:
                     valid._allow_custom
                 except AttributeError:
-                    result.append(obj_type(**valid))
+                    if self.allow_custom:
+                        result.append(obj_type(allow_custom=True, **valid))
+                    else:
+                        result.append(obj_type(**valid))
                 else:
                     result.append(obj_type(allow_custom=True, **valid))
             else:

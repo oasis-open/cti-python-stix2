@@ -1191,3 +1191,31 @@ def test_parse_custom_refs_allow_custom_false():
         stix2.parse(id_json, version='2.0')
 
     assert "prefix 'rocket' for this property is not valid" in str(excinfo.value)
+
+
+def test_parse_obj_embedded_objs_with_custom_props():
+    indicator = {
+        "type": "indicator",
+        "spec_version": "2.0",
+        "id": "indicator--aaa3aa20-8a17-4136-b2ae-ed384ca31874",
+        "created": "2020-07-31T11:36:08.563Z",
+        "modified": "2020-07-31T11:36:08.563Z",
+        "labels": [
+            "malicious-activity",
+        ],
+        "pattern": "[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+        "pattern_type": "stix",
+        "pattern_version": "2.0",
+        "valid_from": "2020-07-31T11:36:08.563Z",
+        "kill_chain_phases": [
+            {
+                "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                "phase_name": "actions-on-objective",
+                "x_foo_description": "Intruder takes action to achieve their goals, such as data exfiltration.",
+            },
+        ],
+    }
+
+    indicator_stix = stix2.parse(indicator, version='2.0', allow_custom=True)
+
+    assert indicator["kill_chain_phases"][0] == indicator_stix.kill_chain_phases[0]
