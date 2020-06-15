@@ -219,7 +219,7 @@ class ListProperty(Property):
                     stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
                     stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
                 )
-                
+
                 if isinstance(self.contained, acceptable_types):
                     self.contained.allow_custom = self.allow_custom
                 valid = self.contained.clean(item)
@@ -575,8 +575,9 @@ class ObjectReferenceProperty(StringProperty):
 
 class EmbeddedObjectProperty(Property):
 
-    def __init__(self, type, **kwargs):
+    def __init__(self, type, allow_custom=False, **kwargs):
         self.type = type
+        self.allow_custom = allow_custom
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
     def clean(self, value):
