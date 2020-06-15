@@ -214,12 +214,15 @@ class ListProperty(Property):
         result = []
         for item in value:
             try:
-                # valid = self.contained.clean(item)
-                if isinstance(self.contained, stix2.properties.ReferenceProperty):
+                acceptable_types = (
+                    stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
+                    stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
+                    stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
+                )
+                
+                if isinstance(self.contained, acceptable_types):
                     self.contained.allow_custom = self.allow_custom
-                    valid = self.contained.clean(item)
-                else:
-                    valid = self.contained.clean(item)
+                valid = self.contained.clean(item)
             except ValueError:
                 raise
             except AttributeError:
