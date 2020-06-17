@@ -4,7 +4,9 @@ import stix2
 from stix2 import parsing
 import stix2.v20
 
-from ...exceptions import DuplicateRegistrationError, InvalidValueError
+from ...exceptions import (
+    DuplicateRegistrationError, InvalidObjRefError, InvalidValueError,
+)
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v20.Identity(
@@ -1221,33 +1223,54 @@ def test_parse_obj_embedded_objs_with_custom_props():
     assert indicator["kill_chain_phases"][0] == indicator_stix.kill_chain_phases[0]
 
 
-def test_create_obj_embed_obj_prop_custom_refs_true():
-    em = stix2.v20.EmailMessage(
-        is_multipart=True,
-        body_multipart=[
+def test_parse_obs_with_custom_obj_refs_allow_custom_true():
+    email_msg = {
+        "type": "email-message",
+        "is_multipart": True,
+        "body_multipart": [
             {
                 "content_type": "application/zip",
                 "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-                "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
-            }
+                "body_raw_ref": [
+                    "0",
+                ],
+            },
         ],
-        allow_custom=True
-    )
+        "from_ref": "1",
+    }
 
-    assert em.body_multipart[0]['body_raw_ref'] == "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
+    valid_refs = {
+        "0": "fake",
+        "1": "unreal",
+    }
+
+    email_data = stix2.parse_observable(data=email_msg, _valid_refs=valid_refs, version='2.0', allow_custom=True)
+    assert email_msg["from_ref"] == email_data["from_ref"]
+    assert str(email_msg["body_multipart"][0]["body_raw_ref"]) == email_data["body_multipart"][0]["body_raw_ref"]
 
 
-def test_create_obj_embed_obj_prop_custom_refs_false():
-    with pytest.raises(InvalidValueError) as excinfo:
-        em = stix2.v20.EmailMessage(
-            is_multipart=True,
-            body_multipart=[
-                {
-                    "content_type": "application/zip",
-                    "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-                    "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
-                }
-            ]
-        )
+def test_parse_obs_with_custom_obj_refs_allow_custom_false():
+    email_msg = {
+        "type": "email-message",
+        "is_multipart": True,
+        "body_multipart": [
+            {
+                "content_type": "application/zip",
+                "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
+                "body_raw_ref": [
+                    "0",
+                ],
+            },
+        ],
+        "from_ref": "1",
+    }
 
-    assert "prefix 'indicator' for this property is not valid" in str(excinfo.value)
+    valid_refs = {
+        "0": "email-mime-part-type",
+        "1": "unreal",
+    }
+
+    with pytest.raises(InvalidObjRefError) as excinfo:
+        stix2.parse_observable(data=email_msg, _valid_refs=valid_refs, version='2.0')
+
+    assert "is of an invalid type 'unreal'" in str(excinfo.value)

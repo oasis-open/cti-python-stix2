@@ -338,7 +338,14 @@ class _Observable(_STIXBase):
     def __init__(self, **kwargs):
         # the constructor might be called independently of an observed data object
         self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
-        self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
+        _allow_custom = kwargs.get('allow_custom', False)
+
+        self._properties['extensions'].allow_custom = _allow_custom
+
+        for prop in self._properties:
+            if isinstance(self._properties[prop], stix2.properties.ObjectReferenceProperty):
+                self._properties[prop].allow_custom = _allow_custom
+
         super(_Observable, self).__init__(**kwargs)
 
         if 'id' not in kwargs and not isinstance(self, stix2.v20._Observable):
@@ -380,7 +387,10 @@ class _Observable(_STIXBase):
 
         if allowed_types:
             if ref_type not in allowed_types:
-                raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
+                if type(prop) == stix2.properties.ObjectReferenceProperty and prop.allow_custom:
+                    pass
+                else:
+                    raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 
     def _check_property(self, prop_name, prop, kwargs):
         super(_Observable, self)._check_property(prop_name, prop, kwargs)

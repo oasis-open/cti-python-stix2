@@ -569,10 +569,12 @@ class SelectorProperty(Property):
 
 class ObjectReferenceProperty(StringProperty):
 
-    def __init__(self, valid_types=None, **kwargs):
+    def __init__(self, valid_types=None, allow_custom=False, **kwargs):
         if valid_types and type(valid_types) is not list:
             valid_types = [valid_types]
         self.valid_types = valid_types
+        self.allow_custom = allow_custom
+
         super(ObjectReferenceProperty, self).__init__(**kwargs)
 
 
