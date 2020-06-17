@@ -1448,26 +1448,26 @@ def test_create_obj_embed_obj_prop_custom_refs_true():
             {
                 "content_type": "application/zip",
                 "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-                "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
-            }
+                "body_raw_ref": "non-standard--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+            },
         ],
-        allow_custom=True
+        allow_custom=True,
     )
 
-    assert em.body_multipart[0]['body_raw_ref'] == "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
+    assert em.body_multipart[0]['body_raw_ref'] == "non-standard--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
 
 
 def test_create_obj_embed_obj_prop_custom_refs_false():
     with pytest.raises(InvalidValueError) as excinfo:
-        em = stix2.v21.EmailMessage(
+        stix2.v21.EmailMessage(
             is_multipart=True,
             body_multipart=[
                 {
                     "content_type": "application/zip",
                     "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
                     "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
-                }
-            ]
+                },
+            ],
         )
 
     assert "prefix 'indicator' for this property is not valid" in str(excinfo.value)
