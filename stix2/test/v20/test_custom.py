@@ -1219,3 +1219,35 @@ def test_parse_obj_embedded_objs_with_custom_props():
     indicator_stix = stix2.parse(indicator, version='2.0', allow_custom=True)
 
     assert indicator["kill_chain_phases"][0] == indicator_stix.kill_chain_phases[0]
+
+
+def test_create_obj_embed_obj_prop_custom_refs_true():
+    em = stix2.v20.EmailMessage(
+        is_multipart=True,
+        body_multipart=[
+            {
+                "content_type": "application/zip",
+                "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
+                "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+            }
+        ],
+        allow_custom=True
+    )
+
+    assert em.body_multipart[0]['body_raw_ref'] == "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
+
+
+def test_create_obj_embed_obj_prop_custom_refs_false():
+    with pytest.raises(InvalidValueError) as excinfo:
+        em = stix2.v20.EmailMessage(
+            is_multipart=True,
+            body_multipart=[
+                {
+                    "content_type": "application/zip",
+                    "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
+                    "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+                }
+            ]
+        )
+
+    assert "prefix 'indicator' for this property is not valid" in str(excinfo.value)

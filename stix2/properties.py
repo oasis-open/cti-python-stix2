@@ -585,7 +585,10 @@ class EmbeddedObjectProperty(Property):
 
     def clean(self, value):
         if type(value) is dict:
-            value = self.type(**value)
+            if self.allow_custom and 'allow_custom' not in value.keys():
+                value = self.type(allow_custom=self.allow_custom, **value)
+            else:
+                value = self.type(**value)
         elif not isinstance(value, self.type):
             raise ValueError("must be of type {}.".format(self.type.__name__))
         return value
