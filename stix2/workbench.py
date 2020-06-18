@@ -25,11 +25,17 @@ import stix2
 from . import AttackPattern as _AttackPattern
 from . import Campaign as _Campaign
 from . import CourseOfAction as _CourseOfAction
+from . import Grouping as _Grouping
 from . import Identity as _Identity
 from . import Indicator as _Indicator
+from . import Infrastructure as _Infrastructure
 from . import IntrusionSet as _IntrusionSet
+from . import Location as _Location
 from . import Malware as _Malware
+from . import MalwareAnalysis as _MalwareAnalysis
+from . import Note as _Note
 from . import ObservedData as _ObservedData
+from . import Opinion as _Opinion
 from . import Report as _Report
 from . import ThreatActor as _ThreatActor
 from . import Tool as _Tool
@@ -40,7 +46,7 @@ from . import (  # noqa: F401
     Directory, DomainName, EmailAddress, EmailMessage,
     EmailMIMEComponent, Environment, ExternalReference, File,
     FileSystemSource, Filter, GranularMarking, HTTPRequestExt,
-    ICMPExt, IPv4Address, IPv6Address, KillChainPhase, MACAddress,
+    ICMPExt, IPv4Address, IPv6Address, KillChainPhase, LanguageContent, MACAddress,
     MarkingDefinition, MemoryStore, Mutex, NetworkTraffic, NTFSExt,
     parse_observable, PDFExt, Process, RasterImageExt, Relationship,
     Sighting, SocketExt, Software, StatementMarking,
@@ -56,6 +62,7 @@ from .datastore.filters import FilterSet
 
 # Enable some adaptation to the current default supported STIX version.
 _STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
+print(_STIX_VID)
 
 
 # Use an implicit MemoryStore
@@ -84,12 +91,13 @@ add_data_sources = _environ.source.add_data_sources
 
 
 STIX_OBJS = [
-    _AttackPattern, _Campaign, _CourseOfAction, _Identity,
-    _Indicator, _IntrusionSet, _Malware, _ObservedData, _Report,
+    _AttackPattern, _Campaign, _CourseOfAction, _Identity, _Grouping,
+    _Indicator, _Infrastructure, _IntrusionSet, _Location, _Malware,
+    _MalwareAnalysis, _Note, _ObservedData, _Opinion, _Report,
     _ThreatActor, _Tool, _Vulnerability,
 ]
 
-STIX_OBJ_DOCS = """
+STIX_OBJ_DOCS = """s
 
 .. method:: created_by(*args, **kwargs)
 
@@ -202,6 +210,19 @@ def courses_of_action(filters=None):
     return query(filter_list)
 
 
+def groupings(filters=None):
+    """Retrieve all Grouping objects.
+
+    Args:
+        filters (list, optional): A list of additional filters to apply to
+            the query.
+
+    """
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'grouping'))
+    return query(filter_list)
+
+
 def identities(filters=None):
     """Retrieve all Identity objects.
 
@@ -228,6 +249,19 @@ def indicators(filters=None):
     return query(filter_list)
 
 
+def infrastructures(filters=None):
+    """Retrieve all Infrastructure objects.
+
+    Args:
+        filters (list, optional): A list of additional filters to apply to
+            the query.
+
+    """
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'infrastructure'))
+    return query(filter_list)
+
+
 def intrusion_sets(filters=None):
     """Retrieve all Intrusion Set objects.
 
@@ -238,6 +272,19 @@ def intrusion_sets(filters=None):
     """
     filter_list = FilterSet(filters)
     filter_list.add(Filter('type', '=', 'intrusion-set'))
+    return query(filter_list)
+
+
+def locations(filters=None):
+    """Retrieve all Location objects.
+
+    Args:
+        filters (list, optional): A list of additional filters to apply to
+            the query.
+
+    """
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'location'))
     return query(filter_list)
 
 
@@ -254,6 +301,32 @@ def malware(filters=None):
     return query(filter_list)
 
 
+def malware_analyses(filters=None):
+    """Retrieve all Malware Analysis objects.
+
+    Args:
+        filters (list, optional): A list of additional filters to apply to
+            the query.
+
+    """
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'malware-analysis'))
+    return query(filter_list)
+
+
+def notes(filters=None):
+    """Retrieve all Note objects.
+
+    Args:
+        filters (list, optional): A list of additional filters to apply to
+            the query.
+
+    """
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'note'))
+    return query(filter_list)
+
+
 def observed_data(filters=None):
     """Retrieve all Observed Data objects.
 
@@ -264,6 +337,19 @@ def observed_data(filters=None):
     """
     filter_list = FilterSet(filters)
     filter_list.add(Filter('type', '=', 'observed-data'))
+    return query(filter_list)
+
+
+def opinions(filters=None):
+    """Retrieve all Opinion objects.
+
+    Args:
+        filters (list, optional): A list of additional filters to apply to
+            the query.
+
+    """
+    filter_list = FilterSet(filters)
+    filter_list.add(Filter('type', '=', 'opinion'))
     return query(filter_list)
 
 

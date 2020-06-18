@@ -14,6 +14,7 @@ INFRASTRUCTURE_ID = "infrastructure--3000ae1b-784c-f03d-8abc-0a625b2ff018"
 INTRUSION_SET_ID = "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29"
 LOCATION_ID = "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64"
 MALWARE_ID = "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
+MALWARE_ANALYSIS_ID = "malware-analysis--b46ee0ad-9443-41c5-a8e3-0fa053262805"
 MARKING_DEFINITION_ID = "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
 NOTE_ID = "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 OBSERVED_DATA_ID = "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
@@ -102,6 +103,10 @@ INTRUSION_SET_KWARGS = dict(
     name="Bobcat Breakin",
 )
 
+LOCATION_KWARGS = dict(
+    region="africa",
+)
+
 MALWARE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
@@ -119,6 +124,16 @@ MALWARE_MORE_KWARGS = dict(
     is_family=False,
 )
 
+MALWARE_ANALYSIS_KWARGS = dict(
+    product="microsoft",
+    result="malicious",
+)
+
+NOTE_KWARGS = dict(
+    content="Heartbleed",
+    object_refs=[CAMPAIGN_ID]
+)
+
 OBSERVED_DATA_KWARGS = dict(
     first_observed=FAKE_TIME,
     last_observed=FAKE_TIME,
@@ -129,6 +144,11 @@ OBSERVED_DATA_KWARGS = dict(
             "key": "HKEY_LOCAL_MACHINE\\System\\Foo\\Bar",
         },
     },
+)
+
+OPINION_KWARGS = dict(
+    opinion="agree",
+    object_refs=[CAMPAIGN_ID]
 )
 
 REPORT_KWARGS = dict(
