@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import pytest
 
 import stix2
@@ -64,7 +66,7 @@ def test_parse_observable_with_version():
 
 @pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
 def test_parse_observable_with_no_version():
-    observable = {"type": "file", "name": "foo.exe"}
+    observable = {"type": "file", "name": "foo.exe", "spec_version": "2.1"}
     obs_obj = parsing.parse_observable(observable)
     v = 'v21'
 
@@ -72,18 +74,26 @@ def test_parse_observable_with_no_version():
 
 
 def test_register_marking_with_version():
-    parsing._register_marking(stix2.v21.TLP_WHITE.__class__, version='2.1')
+    class NewMarking1:
+        _type = 'x-new-marking1'
+        _properties = OrderedDict()
+
+    parsing._register_marking(NewMarking1, version='2.1')
     v = 'v21'
 
-    assert stix2.v21.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(stix2.v21.TLP_WHITE.__class__)
+    assert NewMarking1._type in parsing.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(parsing.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])
 
 
 @pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
 def test_register_marking_with_no_version():
-    # Uses default version (2.0 in this case)
-    parsing._register_marking(stix2.v21.TLP_WHITE.__class__)
+    # Uses default version (2.1 in this case)
+    class NewMarking2:
+        _type = 'x-new-marking2'
+        _properties = OrderedDict()
+
+    parsing._register_marking(NewMarking2)
     v = 'v21'
 
-    assert stix2.v21.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(stix2.v21.TLP_WHITE.__class__)
+    assert NewMarking2._type in parsing.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(parsing.STIX2_OBJ_MAPS[v]['markings'][NewMarking2._type])
