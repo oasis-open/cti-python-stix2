@@ -132,6 +132,37 @@ def test_reference_property_whitelist_type():
     assert result == ("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
 
+def test_reference_property_whitelist_generic_type():
+    ref_prop = ReferenceProperty(
+        valid_types=["SCO", "SRO"], spec_version="2.1"
+    )
+
+    result = ref_prop.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean(
+        "sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False
+    )
+    assert result == ("sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean(
+        "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True
+    )
+    assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+
 def test_reference_property_blacklist_type():
     ref_prop = ReferenceProperty(invalid_types="identity", spec_version="2.1")
     result = ref_prop.clean(
@@ -163,6 +194,60 @@ def test_reference_property_blacklist_type():
         ref_prop.clean(
             "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
         )
+
+
+def test_reference_property_blacklist_generic_type():
+    ref_prop = ReferenceProperty(
+        invalid_types=["SDO", "SRO"], spec_version="2.1"
+    )
+
+    result = ref_prop.clean(
+        "file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+    )
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean(
+        "file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+    )
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean(
+        "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+    )
+    assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean(
+            "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+        )
+
+    with pytest.raises(ValueError):
+        ref_prop.clean(
+            "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
+
+    with pytest.raises(ValueError):
+        ref_prop.clean(
+            "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+        )
+
+    with pytest.raises(ValueError):
+        ref_prop.clean(
+            "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
+
+    with pytest.raises(CustomContentError):
+        ref_prop.clean(
+            "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
+
+
+def test_reference_property_hybrid_constraint_type():
+    with pytest.raises(ValueError):
+        ReferenceProperty(valid_types=["a", "SCO"], spec_version="2.1")
+
+    with pytest.raises(ValueError):
+        ReferenceProperty(invalid_types=["a", "SCO"], spec_version="2.1")
 
 
 @pytest.mark.parametrize(

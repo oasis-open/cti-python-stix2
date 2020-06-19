@@ -490,27 +490,44 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
+    _OBJECT_CATEGORIES = {"SDO", "SCO", "SRO"}
+    _WHITELIST, _BLACKLIST = range(2)
+
     def __init__(self, valid_types=None, invalid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
         self.spec_version = spec_version
 
-        # These checks need to be done prior to the STIX object finishing construction
-        # and thus we can't use base.py's _check_mutually_exclusive_properties()
-        # in the typical location of _check_object_constraints() in sdo.py
-        if valid_types and invalid_types:
-            raise MutuallyExclusivePropertiesError(self.__class__, ['invalid_types', 'valid_types'])
-        elif valid_types is None and invalid_types is None:
-            raise MissingPropertiesError(self.__class__, ['invalid_types', 'valid_types'])
+        if (valid_types is not None and invalid_types is not None) or \
+                (valid_types is None and invalid_types is None):
+            raise ValueError(
+                "Exactly one of 'valid_types' and 'invalid_types' must be "
+                "given"
+            )
 
-        if valid_types and type(valid_types) is not list:
+        if valid_types and not isinstance(valid_types, list):
             valid_types = [valid_types]
-        elif invalid_types and type(invalid_types) is not list:
+        elif invalid_types and not isinstance(invalid_types, list):
             invalid_types = [invalid_types]
 
-        self.valid_types = valid_types
-        self.invalid_types = invalid_types
+        self.types = set(valid_types or invalid_types)
+        self.auth_type = self._WHITELIST if valid_types else self._BLACKLIST
+
+        # Handling both generic and non-generic types in the same constraint
+        # complicates life... let's keep it simple unless we really need the
+        # complexity.
+        self.generic_constraint = any(
+            t in self._OBJECT_CATEGORIES for t in self.types
+        )
+
+        if self.generic_constraint and any(
+            t not in self._OBJECT_CATEGORIES for t in self.types
+        ):
+            raise ValueError(
+                "Generic type categories and specific types may not both be "
+                "given"
+            )
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
@@ -523,26 +540,56 @@ class ReferenceProperty(Property):
 
         obj_type = value[:value.index('--')]
 
-        if self.valid_types:
+        types = self.types
+        auth_type = self.auth_type
+        if allow_custom and auth_type == self._WHITELIST and \
+                self.generic_constraint:
+            # If allowing customization and using a whitelist, and if generic
+            # "category" types were given, we need to allow custom object types
+            # of those categories.  Unless registered, it's impossible to know
+            # whether a given type is within a given category.  So we take a
+            # permissive approach and allow any type which is not known to be
+            # in the wrong category.  I.e. flip the whitelist set to a
+            # blacklist of a complementary set.
+            types = self._OBJECT_CATEGORIES - types
+            auth_type = self._BLACKLIST
+
+        if auth_type == self._WHITELIST:
             # allow_custom is not applicable to "whitelist" style object type
             # constraints, so we ignore it.
             has_custom = False
 
-            ref_valid_types = enumerate_types(self.valid_types, self.spec_version)
+            if self.generic_constraint:
+                type_ok = _type_in_generic_set(
+                    obj_type, types, self.spec_version
+                )
+            else:
+                type_ok = obj_type in types
 
-            if obj_type not in ref_valid_types:
-                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (obj_type))
+            if not type_ok:
+                raise ValueError(
+                    "The type-specifying prefix '%s' for this property is not "
+                    "valid" % obj_type
+                )
 
         else:
-            # A type "blacklist" was used to describe legal object types.
-            # We must enforce the type blacklist regardless of allow_custom.
-            ref_invalid_types = enumerate_types(self.invalid_types, self.spec_version)
+            # A type "blacklist" was used to describe legal object types.  We
+            # must enforce the type blacklist regardless of allow_custom.
+            if self.generic_constraint:
+                type_ok = not _type_in_generic_set(
+                    obj_type, types, self.spec_version
+                )
+            else:
+                type_ok = obj_type not in types
 
-            if obj_type in ref_invalid_types:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (obj_type))
+            if not type_ok:
+                raise ValueError(
+                    "The type-specifying prefix '%s' for this property is not "
+                    "valid" % obj_type
+                )
 
             # allow_custom=True only allows references to custom objects which
-            # are not otherwise blacklisted.  So we need to figure out whether
+            # are not otherwise blacklisted.  We need to figure out whether
             # the referenced object is custom or not.  No good way to do that
             # at present... just check if unregistered and for the "x-" type
             # prefix, for now?
@@ -562,28 +609,30 @@ class ReferenceProperty(Property):
         return value, has_custom
 
 
-def enumerate_types(types, spec_version):
+def _type_in_generic_set(type_, type_set, spec_version):
     """
-    `types` is meant to be a list; it may contain specific object types and/or
-        the any of the words "SCO", "SDO", or "SRO"
-
-    Since "SCO", "SDO", and "SRO" are general types that encompass various specific object types,
-        once each of those words is being processed, that word will be removed from `return_types`,
-        so as not to mistakenly allow objects to be created of types "SCO", "SDO", or "SRO"
+    Determine if type_ is in the given set, with respect to the given STIX
+    version.  This handles special generic category values "SDO", "SCO",
+    "SRO", so it's not a simple set containment check.  The type_set is
+    implicitly "OR"d.
     """
-    return_types = types[:]
+    type_maps = STIX2_OBJ_MAPS[spec_version]
 
-    if "SDO" in types:
-        return_types.remove("SDO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
-    if "SCO" in types:
-        return_types.remove("SCO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
-    if "SRO" in types:
-        return_types.remove("SRO")
-        return_types += ['relationship', 'sighting']
+    result = False
+    for type_id in type_set:
+        if type_id == "SDO":
+            result = type_ in type_maps["objects"]
+        elif type_id == "SCO":
+            result = type_ in type_maps["observables"]
+        elif type_id == "SRO":
+            result = type_ in ["relationship", "sighting"]
+        else:
+            raise ValueError("Unrecognized generic type category: " + type_id)
 
-    return return_types
+        if result:
+            break
+
+    return result
 
 
 SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*|id)$")
