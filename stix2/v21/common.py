@@ -137,9 +137,9 @@ class MarkingProperty(Property):
     marking-definition objects.
     """
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         if type(value) in OBJ_MAP_MARKING.values():
-            return value
+            return value, False
         else:
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 

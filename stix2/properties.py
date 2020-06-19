@@ -134,11 +134,23 @@ class Property(object):
 
     Subclasses can also define the following functions:
 
-    - ``def clean(self, value) -> any:``
-        - Return a value that is valid for this property. If ``value`` is not
-          valid for this property, this will attempt to transform it first. If
-          ``value`` is not valid and no such transformation is possible, it
-          should raise an exception.
+    - ``def clean(self, value, allow_custom) -> (any, has_custom):``
+        - Return a value that is valid for this property, and enforce and
+          detect value customization.  If ``value`` is not valid for this
+          property, you may attempt to transform it first.  If ``value`` is not
+          valid and no such transformation is possible, it must raise an
+          exception.  The method is also responsible for enforcing and
+          detecting customizations.  If allow_custom is False, no customizations
+          must be allowed.  If any are encountered, an exception must be raised
+          (e.g. CustomContentError).  If none are encountered, False must be
+          returned for has_custom.  If allow_custom is True, then the clean()
+          method is responsible for detecting any customizations in the value
+          (just because the user has elected to allow customizations doesn't
+          mean there actually are any).  The method must return an appropriate
+          value for has_custom.  Customization may not be applicable/possible
+          for a property.  In that case, allow_custom can be ignored, and
+          has_custom must be returned as False.
+
     - ``def default(self):``
         - provide a default value for this property.
         - ``default()`` can return the special value ``NOW`` to use the current
@@ -159,10 +171,10 @@ class Property(object):
 
     """
 
-    def _default_clean(self, value):
+    def _default_clean(self, value, allow_custom=False):
         if value != self._fixed_value:
             raise ValueError("must equal '{}'.".format(self._fixed_value))
-        return value
+        return value, False
 
     def __init__(self, required=False, fixed=None, default=None):
         self.required = required
@@ -180,14 +192,8 @@ class Property(object):
         if default:
             self.default = default
 
-    def clean(self, value):
-        return value
-
-    def __call__(self, value=None):
-        """Used by ListProperty to handle lists that have been defined with
-        either a class or an instance.
-        """
-        return value
+    def clean(self, value, allow_custom=False):
+        return value, False
 
 
 class ListProperty(Property):
@@ -219,7 +225,7 @@ class ListProperty(Property):
 
         super(ListProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom):
         try:
             iter(value)
         except TypeError:
@@ -228,21 +234,22 @@ class ListProperty(Property):
         if isinstance(value, (_STIXBase, str)):
             value = [value]
 
+        result = []
+        has_custom = False
         if isinstance(self.contained, Property):
-            result = [
-                self.contained.clean(item)
-                for item in value
-            ]
+            for item in value:
+                valid, temp_custom = self.contained.clean(item, allow_custom)
+                result.append(valid)
+                has_custom = has_custom or temp_custom
 
         else:  # self.contained must be a _STIXBase subclass
-            result = []
             for item in value:
                 if isinstance(item, self.contained):
                     valid = item
 
                 elif isinstance(item, Mapping):
                     # attempt a mapping-like usage...
-                    valid = self.contained(**item)
+                    valid = self.contained(allow_custom=allow_custom, **item)
 
                 else:
                     raise ValueError(
@@ -252,12 +259,16 @@ class ListProperty(Property):
                     )
 
                 result.append(valid)
+                has_custom = has_custom or valid.has_custom
+
+        if not allow_custom and has_custom:
+            raise CustomContentError("custom content encountered")
 
         # STIX spec forbids empty lists
         if len(result) < 1:
             raise ValueError("must not be empty.")
 
-        return result
+        return result, has_custom
 
 
 class StringProperty(Property):
@@ -265,10 +276,10 @@ class StringProperty(Property):
     def __init__(self, **kwargs):
         super(StringProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         if not isinstance(value, str):
-            return str(value)
-        return value
+            value = str(value)
+        return value, False
 
 
 class TypeProperty(Property):
@@ -286,9 +297,9 @@ class IDProperty(Property):
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         _validate_id(value, self.spec_version, self.required_prefix)
-        return value
+        return value, False
 
     def default(self):
         return self.required_prefix + str(uuid.uuid4())
@@ -301,7 +312,7 @@ class IntegerProperty(Property):
         self.max = max
         super(IntegerProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         try:
             value = int(value)
         except Exception:
@@ -315,7 +326,7 @@ class IntegerProperty(Property):
             msg = "maximum value is {}. received {}".format(self.max, value)
             raise ValueError(msg)
 
-        return value
+        return value, False
 
 
 class FloatProperty(Property):
@@ -325,7 +336,7 @@ class FloatProperty(Property):
         self.max = max
         super(FloatProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         try:
             value = float(value)
         except Exception:
@@ -339,29 +350,26 @@ class FloatProperty(Property):
             msg = "maximum value is {}. received {}".format(self.max, value)
             raise ValueError(msg)
 
-        return value
+        return value, False
 
 
 class BooleanProperty(Property):
+    _trues = ['true', 't', '1', 1, True]
+    _falses = ['false', 'f', '0', 0, False]
 
-    def clean(self, value):
-        if isinstance(value, bool):
-            return value
+    def clean(self, value, allow_custom=False):
 
-        trues = ['true', 't', '1']
-        falses = ['false', 'f', '0']
-        try:
-            if value.lower() in trues:
-                return True
-            if value.lower() in falses:
-                return False
-        except AttributeError:
-            if value == 1:
-                return True
-            if value == 0:
-                return False
+        if isinstance(value, str):
+            value = value.lower()
 
-        raise ValueError("must be a boolean value.")
+        if value in self._trues:
+            result = True
+        elif value in self._falses:
+            result = False
+        else:
+            raise ValueError("must be a boolean value.")
+
+        return result, False
 
 
 class TimestampProperty(Property):
@@ -372,10 +380,10 @@ class TimestampProperty(Property):
 
         super(TimestampProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         return parse_into_datetime(
             value, self.precision, self.precision_constraint,
-        )
+        ), False
 
 
 class DictionaryProperty(Property):
@@ -384,7 +392,7 @@ class DictionaryProperty(Property):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         try:
             dictified = _get_dict(value)
         except ValueError:
@@ -409,7 +417,7 @@ class DictionaryProperty(Property):
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
 
-        return dictified
+        return dictified, False
 
 
 HASHES_REGEX = {
@@ -433,8 +441,14 @@ HASHES_REGEX = {
 
 class HashesProperty(DictionaryProperty):
 
-    def clean(self, value):
-        clean_dict = super(HashesProperty, self).clean(value)
+    def clean(self, value, allow_custom):
+        # ignore the has_custom return value here; there is no customization
+        # of DictionaryProperties.
+        clean_dict, _ = super(HashesProperty, self).clean(
+            value, allow_custom,
+        )
+
+        has_custom = False
         for k, v in copy.deepcopy(clean_dict).items():
             key = k.upper().replace('-', '')
             if key in HASHES_REGEX:
@@ -446,25 +460,32 @@ class HashesProperty(DictionaryProperty):
                 if k != vocab_key:
                     clean_dict[vocab_key] = clean_dict[k]
                     del clean_dict[k]
-        return clean_dict
+
+            else:
+                has_custom = True
+
+            if not allow_custom and has_custom:
+                raise CustomContentError("custom hash found: " + k)
+
+        return clean_dict, has_custom
 
 
 class BinaryProperty(Property):
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         try:
             base64.b64decode(value)
         except (binascii.Error, TypeError):
             raise ValueError("must contain a base64 encoded string")
-        return value
+        return value, False
 
 
 class HexProperty(Property):
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         if not re.match(r"^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
-        return value
+        return value, False
 
 
 class ReferenceProperty(Property):
@@ -493,31 +514,52 @@ class ReferenceProperty(Property):
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
 
-        possible_prefix = value[:value.index('--')]
+        _validate_id(value, self.spec_version, None)
+
+        obj_type = value[:value.index('--')]
 
         if self.valid_types:
+            # allow_custom is not applicable to "whitelist" style object type
+            # constraints, so we ignore it.
+            has_custom = False
+
             ref_valid_types = enumerate_types(self.valid_types, self.spec_version)
 
-            if possible_prefix in ref_valid_types:
-                required_prefix = possible_prefix
-            else:
-                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
-        elif self.invalid_types:
+            if obj_type not in ref_valid_types:
+                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (obj_type))
+
+        else:
+            # A type "blacklist" was used to describe legal object types.
+            # We must enforce the type blacklist regardless of allow_custom.
             ref_invalid_types = enumerate_types(self.invalid_types, self.spec_version)
 
-            if possible_prefix not in ref_invalid_types:
-                required_prefix = possible_prefix
-            else:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
+            if obj_type in ref_invalid_types:
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (obj_type))
 
-        _validate_id(value, self.spec_version, required_prefix)
+            # allow_custom=True only allows references to custom objects which
+            # are not otherwise blacklisted.  So we need to figure out whether
+            # the referenced object is custom or not.  No good way to do that
+            # at present... just check if unregistered and for the "x-" type
+            # prefix, for now?
+            type_maps = STIX2_OBJ_MAPS[self.spec_version]
 
-        return value
+            has_custom = obj_type not in type_maps["objects"] \
+                and obj_type not in type_maps["observables"] \
+                and obj_type not in ["relationship", "sighting"]
+
+            has_custom = has_custom or obj_type.startswith("x-")
+
+            if not allow_custom and has_custom:
+                raise CustomContentError(
+                    "reference to custom object type: " + obj_type,
+                )
+
+        return value, has_custom
 
 
 def enumerate_types(types, spec_version):
@@ -529,8 +571,7 @@ def enumerate_types(types, spec_version):
         once each of those words is being processed, that word will be removed from `return_types`,
         so as not to mistakenly allow objects to be created of types "SCO", "SDO", or "SRO"
     """
-    return_types = []
-    return_types += types
+    return_types = types[:]
 
     if "SDO" in types:
         return_types.remove("SDO")
@@ -550,10 +591,10 @@ SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))
 
 class SelectorProperty(Property):
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("must adhere to selector syntax.")
-        return value
+        return value, False
 
 
 class ObjectReferenceProperty(StringProperty):
@@ -571,12 +612,20 @@ class EmbeddedObjectProperty(Property):
         self.type = type
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
-        if type(value) is dict:
-            value = self.type(**value)
+    def clean(self, value, allow_custom):
+        if isinstance(value, dict):
+            value = self.type(allow_custom=allow_custom, **value)
         elif not isinstance(value, self.type):
             raise ValueError("must be of type {}.".format(self.type.__name__))
-        return value
+
+        has_custom = False
+        if isinstance(value, _STIXBase):
+            has_custom = value.has_custom
+
+        if not allow_custom and has_custom:
+            raise CustomContentError("custom content encountered")
+
+        return value, has_custom
 
 
 class EnumProperty(StringProperty):
@@ -587,12 +636,14 @@ class EnumProperty(StringProperty):
         self.allowed = allowed
         super(EnumProperty, self).__init__(**kwargs)
 
-    def clean(self, value):
-        cleaned_value = super(EnumProperty, self).clean(value)
-        if cleaned_value not in self.allowed:
+    def clean(self, value, allow_custom):
+        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
+        has_custom = cleaned_value not in self.allowed
+
+        if not allow_custom and has_custom:
             raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
 
-        return cleaned_value
+        return cleaned_value, has_custom
 
 
 class PatternProperty(StringProperty):
@@ -603,12 +654,11 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
-        self.allow_custom = allow_custom
+    def __init__(self, spec_version=DEFAULT_VERSION, *args, **kwargs):
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom):
         try:
             dictified = _get_dict(value)
             # get deep copy since we are going modify the dict and might
@@ -622,28 +672,43 @@ class ObservableProperty(Property):
 
         valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
 
+        has_custom = False
         for key, obj in dictified.items():
             parsed_obj = parse_observable(
                 obj,
                 valid_refs,
-                allow_custom=self.allow_custom,
+                allow_custom=allow_custom,
                 version=self.spec_version,
             )
+
+            if isinstance(parsed_obj, _STIXBase):
+                has_custom = has_custom or parsed_obj.has_custom
+            else:
+                # we get dicts for unregistered custom objects
+                has_custom = True
+
+            if not allow_custom and has_custom:
+                if parsed_obj.has_custom:
+                    raise CustomContentError(
+                        "customized {} observable found".format(
+                            parsed_obj["type"],
+                        ),
+                    )
+
             dictified[key] = parsed_obj
 
-        return dictified
+        return dictified, has_custom
 
 
 class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
-        self.allow_custom = allow_custom
+    def __init__(self, spec_version=DEFAULT_VERSION, enclosing_type=None, required=False):
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom):
         try:
             dictified = _get_dict(value)
             # get deep copy since we are going modify the dict and might
@@ -653,37 +718,47 @@ class ExtensionsProperty(DictionaryProperty):
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
 
+        has_custom = False
         specific_type_map = STIX2_OBJ_MAPS[self.spec_version]['observable-extensions'].get(self.enclosing_type, {})
         for key, subvalue in dictified.items():
             if key in specific_type_map:
                 cls = specific_type_map[key]
                 if type(subvalue) is dict:
-                    if self.allow_custom:
-                        subvalue['allow_custom'] = True
-                        dictified[key] = cls(**subvalue)
-                    else:
-                        dictified[key] = cls(**subvalue)
+                    ext = cls(allow_custom=allow_custom, **subvalue)
                 elif type(subvalue) is cls:
                     # If already an instance of an _Extension class, assume it's valid
-                    dictified[key] = subvalue
+                    ext = subvalue
                 else:
                     raise ValueError("Cannot determine extension type.")
+
+                has_custom = has_custom or ext.has_custom
+
+                if not allow_custom and has_custom:
+                    raise CustomContentError(
+                        "custom content found in {} extension".format(
+                            key,
+                        ),
+                    )
+
+                dictified[key] = ext
+
             else:
-                if self.allow_custom:
+                if allow_custom:
+                    has_custom = True
                     dictified[key] = subvalue
                 else:
                     raise CustomContentError("Can't parse unknown extension type: {}".format(key))
-        return dictified
+
+        return dictified, has_custom
 
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
-        self.allow_custom = allow_custom
+    def __init__(self, spec_version=DEFAULT_VERSION, *args, **kwargs):
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
 
-    def clean(self, value):
+    def clean(self, value, allow_custom):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
         if any(
@@ -702,7 +777,11 @@ class STIXObjectProperty(Property):
                     "containing objects of a different spec "
                     "version.",
                 )
-            return value
+
+            if not allow_custom and value.has_custom:
+                raise CustomContentError("custom content encountered")
+
+            return value, value.has_custom
         try:
             dictified = _get_dict(value)
         except ValueError:
@@ -718,6 +797,22 @@ class STIXObjectProperty(Property):
                 "containing objects of a different spec version.",
             )
 
-        parsed_obj = parse(dictified, allow_custom=self.allow_custom)
+        parsed_obj = parse(dictified, allow_custom=allow_custom)
 
-        return parsed_obj
+        if isinstance(parsed_obj, _STIXBase):
+            has_custom = parsed_obj.has_custom
+        else:
+            # we get dicts for unregistered custom objects
+            has_custom = True
+
+        if not allow_custom and has_custom:
+            # parse() will ignore the caller's allow_custom=False request if
+            # the object type is registered and dictified has a
+            # "custom_properties" key.  So we have to do another check here.
+            raise CustomContentError(
+                "customized {} object found".format(
+                    parsed_obj["type"],
+                ),
+            )
+
+        return parsed_obj, has_custom

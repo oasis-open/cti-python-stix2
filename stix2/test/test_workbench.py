@@ -369,6 +369,7 @@ def test_workbench_custom_property_object_in_observable_extension():
         x_foo='bar',
     )
     artifact = File(
+        allow_custom=True,
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
@@ -390,7 +391,6 @@ def test_workbench_custom_property_dict_in_observable_extension():
         name='test',
         extensions={
             'ntfs-ext': {
-                'allow_custom': True,
                 'sid': 1,
                 'x_foo': 'bar',
             },

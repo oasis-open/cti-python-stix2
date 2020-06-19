@@ -219,12 +219,6 @@ class ObservedData(_DomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
-    def __init__(self, *args, **kwargs):
-        self._allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
-
-        super(ObservedData, self).__init__(*args, **kwargs)
-
 
 class Report(_DomainObject):
     """For more detailed information on this object's properties, see

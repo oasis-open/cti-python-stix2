@@ -192,8 +192,9 @@ def new_version(data, allow_custom=None, **kwargs):
         or dict.
     :param allow_custom: Whether to allow custom properties on the new object.
         If True, allow them (regardless of whether the original had custom
-        properties); if False disallow them; if None, propagate the preference
-        from the original object.
+        properties); if False disallow them; if None, auto-detect from the
+        object: if it has custom properties, allow them in the new version,
+        otherwise don't allow them.
     :param kwargs: The properties to change.  Setting to None requests property
         removal.
     :return: The new object.
@@ -271,7 +272,7 @@ def new_version(data, allow_custom=None, **kwargs):
     # it for dicts.
     if isinstance(data, stix2.base._STIXBase):
         if allow_custom is None:
-            new_obj_inner["allow_custom"] = data._allow_custom
+            new_obj_inner["allow_custom"] = data.has_custom
         else:
             new_obj_inner["allow_custom"] = allow_custom
 

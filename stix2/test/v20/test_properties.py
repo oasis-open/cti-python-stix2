@@ -3,14 +3,14 @@ import uuid
 import pytest
 
 import stix2
-import stix2.base
 from stix2.exceptions import (
     AtLeastOnePropertyError, CustomContentError, DictionaryKeyError,
+    ExtraPropertiesError, ParseError,
 )
 from stix2.properties import (
     DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty,
-    HashesProperty, IDProperty, ListProperty, ReferenceProperty,
-    STIXObjectProperty,
+    HashesProperty, ListProperty, ObservableProperty, ReferenceProperty,
+    STIXObjectProperty, IDProperty,
 )
 from stix2.v20.common import MarkingProperty
 
@@ -27,7 +27,7 @@ MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
     ],
 )
 def test_id_property_valid(value):
-    assert ID_PROP.clean(value) == value
+    assert ID_PROP.clean(value) == (value, False)
 
 
 CONSTANT_IDS = [
@@ -54,7 +54,7 @@ CONSTANT_IDS.extend(constants.RELATIONSHIP_IDS)
 @pytest.mark.parametrize("value", CONSTANT_IDS)
 def test_id_property_valid_for_type(value):
     type = value.split('--', 1)[0]
-    assert IDProperty(type=type, spec_version="2.0").clean(value) == value
+    assert IDProperty(type=type, spec_version="2.0").clean(value) == (value, False)
 
 
 def test_id_property_wrong_type():
@@ -80,29 +80,63 @@ def test_id_property_not_a_valid_hex_uuid(value):
 
 def test_id_property_default():
     default = ID_PROP.default()
-    assert ID_PROP.clean(default) == default
+    assert ID_PROP.clean(default) == (default, False)
 
 
 def test_reference_property():
     ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
 
-    assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000")
+    assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000", False)
     with pytest.raises(ValueError):
-        ref_prop.clean("foo")
+        ref_prop.clean("foo", False)
 
     # This is not a valid V4 UUID
     with pytest.raises(ValueError):
-        ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000")
+        ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000", False)
 
 
-def test_reference_property_specific_type():
+def test_reference_property_whitelist_type():
     ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
 
     with pytest.raises(ValueError):
-        ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf")
+        ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    assert ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf") == \
-        "my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf"
+    with pytest.raises(ValueError):
+        ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    result = ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+    assert result == ("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+
+def test_reference_property_blacklist_type():
+    ref_prop = ReferenceProperty(invalid_types="identity", spec_version="2.0")
+    result = ref_prop.clean(
+        "malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+    )
+    assert result == ("malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean(
+        "malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+    )
+    assert result == ("malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean(
+        "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+    )
+    assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean(
+            "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
+
+    with pytest.raises(ValueError):
+        ref_prop.clean(
+            "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+        )
 
 
 @pytest.mark.parametrize(
@@ -183,7 +217,8 @@ def test_property_list_of_dictionary():
 )
 def test_hashes_property_valid(value):
     hash_prop = HashesProperty()
-    assert hash_prop.clean(value)
+    _, has_custom = hash_prop.clean(value, False)
+    assert not has_custom
 
 
 @pytest.mark.parametrize(
@@ -196,7 +231,21 @@ def test_hashes_property_invalid(value):
     hash_prop = HashesProperty()
 
     with pytest.raises(ValueError):
-        hash_prop.clean(value)
+        hash_prop.clean(value, False)
+
+
+def test_hashes_property_custom():
+    value = {
+        "sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
+        "abc-123": "aaaaaaaaaaaaaaaaaaaaa",
+    }
+
+    hash_prop = HashesProperty()
+    result = hash_prop.clean(value, True)
+    assert result == (value, True)
+
+    with pytest.raises(CustomContentError):
+        hash_prop.clean(value, False)
 
 
 def test_embedded_property():
@@ -206,25 +255,103 @@ def test_embedded_property():
         content_disposition="inline",
         body="Cats are funny!",
     )
-    assert emb_prop.clean(mime)
+    result = emb_prop.clean(mime, False)
+    assert result == (mime, False)
+
+    result = emb_prop.clean(mime, True)
+    assert result == (mime, False)
 
     with pytest.raises(ValueError):
-        emb_prop.clean("string")
+        emb_prop.clean("string", False)
+
+
+def test_embedded_property_dict():
+    emb_prop = EmbeddedObjectProperty(type=stix2.v20.EmailMIMEComponent)
+    mime = {
+        "content_type": "text/plain; charset=utf-8",
+        "content_disposition": "inline",
+        "body": "Cats are funny!",
+    }
+
+    result = emb_prop.clean(mime, False)
+    assert isinstance(result[0], stix2.v20.EmailMIMEComponent)
+    assert result[0]["body"] == "Cats are funny!"
+    assert not result[1]
+
+    result = emb_prop.clean(mime, True)
+    assert isinstance(result[0], stix2.v20.EmailMIMEComponent)
+    assert result[0]["body"] == "Cats are funny!"
+    assert not result[1]
+
+
+def test_embedded_property_custom():
+    emb_prop = EmbeddedObjectProperty(type=stix2.v20.EmailMIMEComponent)
+    mime = stix2.v20.EmailMIMEComponent(
+        content_type="text/plain; charset=utf-8",
+        content_disposition="inline",
+        body="Cats are funny!",
+        foo=123,
+        allow_custom=True,
+    )
+
+    with pytest.raises(CustomContentError):
+        emb_prop.clean(mime, False)
+
+    result = emb_prop.clean(mime, True)
+    assert result == (mime, True)
+
+
+def test_embedded_property_dict_custom():
+    emb_prop = EmbeddedObjectProperty(type=stix2.v20.EmailMIMEComponent)
+    mime = {
+        "content_type": "text/plain; charset=utf-8",
+        "content_disposition": "inline",
+        "body": "Cats are funny!",
+        "foo": 123,
+    }
+
+    with pytest.raises(ExtraPropertiesError):
+        emb_prop.clean(mime, False)
+
+    result = emb_prop.clean(mime, True)
+    assert isinstance(result[0], stix2.v20.EmailMIMEComponent)
+    assert result[0]["body"] == "Cats are funny!"
+    assert result[1]
 
 
 def test_extension_property_valid():
     ext_prop = ExtensionsProperty(spec_version="2.0", enclosing_type='file')
-    assert ext_prop({
-        'windows-pebinary-ext': {
-            'pe_type': 'exe',
-        },
-    })
+    result = ext_prop.clean(
+        {
+            'windows-pebinary-ext': {
+                'pe_type': 'exe',
+            },
+        }, False,
+    )
+
+    assert isinstance(
+        result[0]["windows-pebinary-ext"], stix2.v20.WindowsPEBinaryExt,
+    )
+    assert not result[1]
+
+    result = ext_prop.clean(
+        {
+            'windows-pebinary-ext': {
+                'pe_type': 'exe',
+            },
+        }, True,
+    )
+
+    assert isinstance(
+        result[0]["windows-pebinary-ext"], stix2.v20.WindowsPEBinaryExt,
+    )
+    assert not result[1]
 
 
 def test_extension_property_invalid1():
     ext_prop = ExtensionsProperty(spec_version="2.0", enclosing_type='file')
     with pytest.raises(ValueError):
-        ext_prop.clean(1)
+        ext_prop.clean(1, False)
 
 
 def test_extension_property_invalid2():
@@ -236,7 +363,46 @@ def test_extension_property_invalid2():
                     'pe_type': 'exe',
                 },
             },
+            False,
         )
+
+    result = ext_prop.clean(
+        {
+            'foobar-ext': {
+                'pe_type': 'exe',
+            },
+        }, True,
+    )
+    assert result == ({"foobar-ext": {"pe_type": "exe"}}, True)
+
+
+def test_extension_property_invalid3():
+    ext_prop = ExtensionsProperty(spec_version="2.0", enclosing_type='file')
+    with pytest.raises(ExtraPropertiesError):
+        ext_prop.clean(
+            {
+                'windows-pebinary-ext': {
+                    'pe_type': 'exe',
+                    'abc': 123,
+                },
+            },
+            False,
+        )
+
+    result = ext_prop.clean(
+        {
+            'windows-pebinary-ext': {
+                'pe_type': 'exe',
+                'abc': 123,
+            },
+        }, True,
+    )
+
+    assert isinstance(
+        result[0]["windows-pebinary-ext"], stix2.v20.WindowsPEBinaryExt,
+    )
+    assert result[0]["windows-pebinary-ext"]["abc"] == 123
+    assert result[1]
 
 
 def test_extension_property_invalid_type():
@@ -248,6 +414,7 @@ def test_extension_property_invalid_type():
                     'pe_type': 'exe',
                 },
             },
+            False,
         )
     assert "Can't parse unknown extension" in str(excinfo.value)
 
@@ -272,6 +439,116 @@ def test_stix_property_not_compliant_spec():
     stix_prop = STIXObjectProperty(spec_version="2.0")
 
     with pytest.raises(ValueError) as excinfo:
-        stix_prop.clean(indicator)
+        stix_prop.clean(indicator, False)
 
     assert "Spec version 2.0 bundles don't yet support containing objects of a different spec version." in str(excinfo.value)
+
+
+def test_observable_property_obj():
+    prop = ObservableProperty(spec_version="2.0")
+
+    obs = stix2.v20.File(name="data.dat")
+    obs_dict = {
+        "0": obs,
+    }
+
+    result = prop.clean(obs_dict, False)
+    assert result[0]["0"] == obs
+    assert not result[1]
+
+    result = prop.clean(obs_dict, True)
+    assert result[0]["0"] == obs
+    assert not result[1]
+
+
+def test_observable_property_dict():
+    prop = ObservableProperty(spec_version="2.0")
+
+    obs_dict = {
+        "0": {
+            "type": "file",
+            "name": "data.dat",
+        },
+    }
+
+    result = prop.clean(obs_dict, False)
+    assert isinstance(result[0]["0"], stix2.v20.File)
+    assert result[0]["0"]["name"] == "data.dat"
+    assert not result[1]
+
+    result = prop.clean(obs_dict, True)
+    assert isinstance(result[0]["0"], stix2.v20.File)
+    assert result[0]["0"]["name"] == "data.dat"
+    assert not result[1]
+
+
+def test_observable_property_obj_custom():
+    prop = ObservableProperty(spec_version="2.0")
+
+    obs = stix2.v20.File(name="data.dat", foo=True, allow_custom=True)
+    obs_dict = {
+        "0": obs,
+    }
+
+    with pytest.raises(ExtraPropertiesError):
+        prop.clean(obs_dict, False)
+
+    result = prop.clean(obs_dict, True)
+    assert result[0]["0"] == obs
+    assert result[1]
+
+
+def test_observable_property_dict_custom():
+    prop = ObservableProperty(spec_version="2.0")
+
+    obs_dict = {
+        "0": {
+            "type": "file",
+            "name": "data.dat",
+            "foo": True,
+        },
+    }
+
+    with pytest.raises(ExtraPropertiesError):
+        prop.clean(obs_dict, False)
+
+    result = prop.clean(obs_dict, True)
+    assert isinstance(result[0]["0"], stix2.v20.File)
+    assert result[0]["0"]["foo"]
+    assert result[1]
+
+
+def test_stix_object_property_custom_prop():
+    prop = STIXObjectProperty(spec_version="2.0")
+
+    obj_dict = {
+        "type": "identity",
+        "name": "alice",
+        "identity_class": "supergirl",
+        "foo": "bar",
+    }
+
+    with pytest.raises(ExtraPropertiesError):
+        prop.clean(obj_dict, False)
+
+    result = prop.clean(obj_dict, True)
+    assert isinstance(result[0], stix2.v20.Identity)
+    assert result[0]["foo"] == "bar"
+    assert result[1]
+
+
+def test_stix_object_property_custom_obj():
+    prop = STIXObjectProperty(spec_version="2.0")
+
+    obj_dict = {
+        "type": "something",
+        "abc": 123,
+        "xyz": ["a", 1],
+    }
+
+    with pytest.raises(ParseError):
+        prop.clean(obj_dict, False)
+
+    result = prop.clean(obj_dict, True)
+    assert result[0] == {"type": "something", "abc": 123, "xyz": ["a", 1]}
+    assert result[1]

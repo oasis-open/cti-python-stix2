@@ -567,8 +567,6 @@ class ObservedData(_DomainObject):
     ])
 
     def __init__(self, *args, **kwargs):
-        self._allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
         if "objects" in kwargs:
             warnings.warn(
