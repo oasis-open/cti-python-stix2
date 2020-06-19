@@ -138,6 +138,11 @@ def test_reference_property_blacklist_type():
             "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
 
+    with pytest.raises(CustomContentError):
+        ref_prop.clean(
+            "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
+
 
 @pytest.mark.parametrize(
     "d", [
