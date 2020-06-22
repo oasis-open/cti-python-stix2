@@ -511,6 +511,9 @@ class ReferenceProperty(Property):
         elif invalid_types and not isinstance(invalid_types, list):
             invalid_types = [invalid_types]
 
+        if valid_types is not None and len(valid_types) == 0:
+            raise ValueError("Impossible type constraint: empty whitelist")
+
         self.types = set(valid_types or invalid_types)
         self.auth_type = self._WHITELIST if valid_types else self._BLACKLIST
 

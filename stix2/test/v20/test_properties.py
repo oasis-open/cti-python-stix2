@@ -229,6 +229,11 @@ def test_reference_property_hybrid_constraint_type():
         ReferenceProperty(invalid_types=["a", "SCO"], spec_version="2.0")
 
 
+def test_reference_property_impossible_constraint():
+    with pytest.raises(ValueError):
+        ReferenceProperty(valid_types=[], spec_version="2.0")
+
+
 @pytest.mark.parametrize(
     "d", [
         {'description': 'something'},
