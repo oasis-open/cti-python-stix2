@@ -215,7 +215,7 @@ class ListProperty(Property):
         for item in value:
             try:
                 customizable_types = (
-                    stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
+                    stix2.properties.ReferenceProperty,
                     stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
                     stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
                 )
@@ -503,30 +503,28 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        if not self.allow_custom:
-            possible_prefix = value[:value.index('--')]
+        possible_prefix = value[:value.index('--')]
+        spec_version = 'v' + self.spec_version.replace(".", "")
 
-            if self.valid_types:
-                ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
+        if self.allow_custom and self.valid_types:
+            self.valid_types, self.invalid_types = enumerate_inverted_blacklist(self.valid_types, spec_version)
 
-                if possible_prefix in ref_valid_types:
-                    required_prefix = possible_prefix
-                else:
-                    raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
-            elif self.invalid_types:
-                ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
+        if self.valid_types:
+            ref_valid_types = enumerate_types(self.valid_types, spec_version)
 
-                if possible_prefix not in ref_invalid_types:
-                    required_prefix = possible_prefix
-                else:
-                    raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
+            if possible_prefix in ref_valid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
+        elif self.invalid_types:
+            ref_invalid_types = enumerate_types(self.invalid_types, spec_version)
 
-            _validate_id(value, self.spec_version, required_prefix)
-        else:
-            uuid_part = value[value.index("--") + 2:]
-            valid_uuid = _check_uuid(uuid_part, self.spec_version)
-            if not valid_uuid:
-                raise ValueError(ERROR_INVALID_ID.format(value))
+            if possible_prefix not in ref_invalid_types:
+                required_prefix = possible_prefix
+            else:
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
+
+        _validate_id(value, self.spec_version, required_prefix)
 
         return value
 
@@ -556,6 +554,41 @@ def enumerate_types(types, spec_version):
     return return_types
 
 
+def enumerate_inverted_blacklist(valid_types, spec_version):
+    return_valid_types = []
+    return_invalid_types = []
+
+    sco = "SCO" in valid_types
+    sdo = "SDO" in valid_types
+    sro = "SRO" in valid_types
+    inverted = True
+    remaining_types = [_type for _type in valid_types if _type not in ["SCO", "SDO", "SRO"]]
+
+    if sco and sdo and sro:
+        return_invalid_types = [""]
+    elif sco and sdo:
+        return_invalid_types = ["SRO"]
+    elif sco and sro:
+        return_invalid_types = ["SDO"]
+    elif sdo and sro:
+        return_invalid_types = ["SCO"]
+    elif sco:
+        return_invalid_types = ["SDO", "SRO"]
+    elif sdo:
+        return_invalid_types = ["SCO", "SRO"]
+    elif sro:
+        return_invalid_types = ["SCO", "SDO"]
+    else:
+        inverted = False
+
+    if remaining_types and inverted:
+        return_invalid_types = list(filter(lambda _type: _type not in remaining_types, enumerate_types(return_invalid_types, spec_version)))
+    elif remaining_types:
+        return_valid_types = remaining_types
+
+    return (return_valid_types, return_invalid_types)
+
+
 SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*|id)$")
 
 
@@ -580,17 +613,13 @@ class ObjectReferenceProperty(StringProperty):
 
 class EmbeddedObjectProperty(Property):
 
-    def __init__(self, type, allow_custom=False, **kwargs):
+    def __init__(self, type, **kwargs):
         self.type = type
-        self.allow_custom = allow_custom
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         if type(value) is dict:
-            if self.allow_custom and 'allow_custom' not in value.keys():
-                value = self.type(allow_custom=self.allow_custom, **value)
-            else:
-                value = self.type(**value)
+            value = self.type(**value)
         elif not isinstance(value, self.type):
             raise ValueError("must be of type {}.".format(self.type.__name__))
         return value

@@ -1341,73 +1341,54 @@ def test_register_duplicate_marking():
 
 
 def test_parse_custom_ref_allow_custom_true():
-    email_addr_json = {
-        'type': 'email-addr',
-        'spec_version': '2.1',
-        'value': 'hello@example.org',
-        'belongs_to_ref': 'custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa',
-    }
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1", allow_custom=True)
+    possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+    cleaned_val = rp.clean(possible_val)
 
-    email_addr_stix = stix2.parse(email_addr_json, allow_custom=True, version='2.1')
-
-    assert email_addr_stix.value == email_addr_json['value']
-    assert email_addr_stix.belongs_to_ref == email_addr_json['belongs_to_ref']
+    assert possible_val == cleaned_val
 
 
 def test_parse_custom_ref_allow_custom_false():
-    email_addr_json = {
-        'type': 'email-addr',
-        'spec_version': '2.1',
-        'value': 'hello@example.org',
-        'belongs_to_ref': 'custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa',
-    }
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1")
+    possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
 
-    with pytest.raises(InvalidValueError) as excinfo:
-        stix2.parse(email_addr_json, version='2.1')
+    with pytest.raises(ValueError) as excinfo:
+        rp.clean(possible_val)
 
     assert "prefix 'custom-obj' for this property is not valid" in str(excinfo.value)
 
 
 def test_parse_custom_refs_allow_custom_true():
-    report_json = {
-        'type': 'report',
-        'name': "The Black Vine Cyberespionage Group",
-        'published': "2016-01-20T17:00:00.000Z",
-        'report_types': ["campaign"],
-        'object_refs': [
-            "bird--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
-            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
+    file_json = {
+        "type": "file",
+        "name": "custom_ref.exe",
+        "contains_refs": [
+            "custom-sco--26ffb872-1dd9-446e-b6f5-d58527e5b5ac",
         ],
     }
 
-    report_stix = stix2.parse(report_json, allow_custom=True, version='2.1')
+    file_stix = stix2.parse(file_json, allow_custom=True, version='2.1')
 
-    assert report_stix.name == report_json['name']
-    assert report_stix.report_types == report_json['report_types']
-    assert report_stix.object_refs == report_json['object_refs']
-
-
-def test_parse_custom_refs_allow_custom_false():
-    report_json = {
-        'type': 'report',
-        'name': "The Black Vine Cyberespionage Group",
-        'published': "2016-01-20T17:00:00.000Z",
-        'report_types': ["campaign"],
-        'object_refs': [
-            "plane--26ffb872-1dd9-446e-b6f5-d58527e5b5d2",
-            "campaign--83422c77-904c-4dc1-aff5-5c38f3a2c55c",
-            "relationship--f82356ae-fe6c-437c-9c24-6b64314ae68a",
-        ],
-    }
-
-    with pytest.raises(InvalidValueError) as excinfo:
-        stix2.parse(report_json, version='2.1')
-
-    assert "prefix 'plane' for this property is not valid" in str(excinfo.value)
+    assert file_json["name"] == file_stix.name
+    assert file_json["contains_refs"] == file_stix.contains_refs
 
 
-def test_parse_obj_embedded_objs_with_custom_props():
+# def test_parse_custom_refs_allow_custom_false():
+#     file_json = {
+#         "type": "file",
+#         "name": "custom_ref.exe",
+#         "contains_refs": [
+#             "custom-sco--26ffb872-1dd9-446e-b6f5-d58527e5b5ad",
+#         ],
+#     }
+
+#     with pytest.raises(InvalidValueError) as excinfo:
+#         stix2.parse(file_json, version='2.1')
+
+#     assert "prefix 'custom-sco' for this property is not valid" in str(excinfo.value)
+
+
+def test_parse_obj_embedded_objs_with_custom_props_true():
     bundle = {
         "type": "bundle",
         "id": "bundle--e0089815-c338-44f4-96ef-ed7f66b51274",
@@ -1441,33 +1422,36 @@ def test_parse_obj_embedded_objs_with_custom_props():
     assert bundle["objects"][0]["kill_chain_phases"][0] == bundle_stix.objects[0].kill_chain_phases[0]
 
 
-def test_create_obj_embed_obj_prop_custom_refs_true():
-    em = stix2.v21.EmailMessage(
-        is_multipart=True,
-        body_multipart=[
+def test_parse_obj_embedded_objs_with_custom_props_false():
+    bundle = {
+        "type": "bundle",
+        "id": "bundle--e0089815-c338-44f4-96ef-ed7f66b51274",
+        "objects": [
             {
-                "content_type": "application/zip",
-                "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-                "body_raw_ref": "non-standard--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--aaa3aa20-8a17-4136-b2ae-ed384ca31874",
+                "created": "2020-07-31T11:36:08.563Z",
+                "modified": "2020-07-31T11:36:08.563Z",
+                "indicator_types": [
+                    "malicious-activity",
+                ],
+                "pattern": "[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']",
+                "pattern_type": "stix",
+                "pattern_version": "2.1",
+                "valid_from": "2020-07-31T11:36:08.563Z",
+                "kill_chain_phases": [
+                    {
+                        "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                        "phase_name": "actions-on-objective",
+                        "x_foo_description": "Intruder takes action to achieve their goals, such as data exfiltration.",
+                    },
+                ],
             },
         ],
-        allow_custom=True,
-    )
+    }
 
-    assert em.body_multipart[0]['body_raw_ref'] == "non-standard--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
-
-
-def test_create_obj_embed_obj_prop_custom_refs_false():
     with pytest.raises(InvalidValueError) as excinfo:
-        stix2.v21.EmailMessage(
-            is_multipart=True,
-            body_multipart=[
-                {
-                    "content_type": "application/zip",
-                    "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-                    "body_raw_ref": "indicator--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
-                },
-            ],
-        )
+        stix2.parse(bundle, version='2.1')
 
-    assert "prefix 'indicator' for this property is not valid" in str(excinfo.value)
+    assert "Unexpected properties for KillChainPhase: (x_foo_description)" in str(excinfo.value)
