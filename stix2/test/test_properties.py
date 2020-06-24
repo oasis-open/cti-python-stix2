@@ -71,7 +71,9 @@ def test_property_fixed_and_required():
 def test_list_property_property_type():
     p = ListProperty(StringProperty)
 
-    assert p.clean(['abc', 'xyz'], False)
+    result = p.clean(['abc', 'xyz'], False)
+    assert result == (['abc', 'xyz'], False)
+
     with pytest.raises(ValueError):
         p.clean([], False)
 
@@ -89,7 +91,8 @@ def test_list_property_property_type_custom():
         TestObj(foo="xyz"),
     ]
 
-    assert p.clean(objs_custom, True)
+    result = p.clean(objs_custom, True)
+    assert result == (objs_custom, True)
 
     with pytest.raises(CustomContentError):
         p.clean(objs_custom, False)
@@ -99,7 +102,8 @@ def test_list_property_property_type_custom():
         {"foo": "xyz"},
     ]
 
-    assert p.clean(dicts_custom, True)
+    result = p.clean(dicts_custom, True)
+    assert result == (objs_custom, True)
 
     with pytest.raises(ExtraPropertiesError):
         p.clean(dicts_custom, False)
@@ -114,10 +118,12 @@ def test_list_property_object_type():
     p = ListProperty(TestObj)
 
     objs = [TestObj(foo="abc"), TestObj(foo="xyz")]
-    assert p.clean(objs, False)
+    result = p.clean(objs, False)
+    assert result == (objs, False)
 
     dicts = [{"foo": "abc"}, {"foo": "xyz"}]
-    assert p.clean(dicts, False)
+    result = p.clean(dicts, False)
+    assert result == (objs, False)
 
 
 def test_list_property_object_type_custom():
@@ -133,7 +139,8 @@ def test_list_property_object_type_custom():
         TestObj(foo="xyz"),
     ]
 
-    assert p.clean(objs_custom, True)
+    result = p.clean(objs_custom, True)
+    assert result == (objs_custom, True)
 
     with pytest.raises(CustomContentError):
         p.clean(objs_custom, False)
@@ -143,7 +150,8 @@ def test_list_property_object_type_custom():
         {"foo": "xyz"},
     ]
 
-    assert p.clean(dicts_custom, True)
+    result = p.clean(dicts_custom, True)
+    assert result == (objs_custom, True)
 
     with pytest.raises(ExtraPropertiesError):
         p.clean(dicts_custom, False)

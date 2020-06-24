@@ -16,6 +16,7 @@ from stix2.v20.common import MarkingProperty
 
 from . import constants
 
+
 ID_PROP = IDProperty('my-type', spec_version="2.0")
 MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 

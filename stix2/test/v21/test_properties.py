@@ -23,23 +23,6 @@ def test_dictionary_property():
         p.clean({})
 
 
-def test_string_property():
-    prop = StringProperty()
-
-    assert prop.clean('foobar')
-    assert prop.clean(1)
-    assert prop.clean([1, 2, 3])
-
-
-def test_type_property():
-    prop = TypeProperty('my-type')
-
-    assert prop.clean('my-type')
-    with pytest.raises(ValueError):
-        prop.clean('not-my-type')
-    assert prop.clean(prop.default())
-
-
 ID_PROP = IDProperty('my-type', spec_version="2.1")
 MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 
