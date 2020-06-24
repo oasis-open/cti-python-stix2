@@ -17,10 +17,7 @@ from .exceptions import (
     MutuallyExclusivePropertiesError,
 )
 from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
-from .utils import (
-    TYPE_21_REGEX, TYPE_REGEX, _get_dict, get_class_hierarchy_names,
-    parse_into_datetime,
-)
+from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 ID_REGEX_interoperability = re.compile(r"[0-9a-fA-F]{8}-"
                                        "[0-9a-fA-F]{4}-"
@@ -33,6 +30,8 @@ try:
 except ImportError:
     from collections import Mapping, defaultdict
 
+TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )
@@ -547,7 +546,7 @@ def enumerate_types(types, spec_version):
     return return_types
 
 
-SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
+SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*|id)$")
 
 
 class SelectorProperty(Property):

@@ -312,8 +312,8 @@ def test_set_op():
 
 
 def test_timestamp():
-    ts = stix2.TimestampConstant('2014-01-13T07:03:17Z')
-    assert str(ts) == "t'2014-01-13T07:03:17Z'"
+    ts = stix2.StringConstant('2014-01-13T07:03:17Z')
+    assert str(ts) == "'2014-01-13T07:03:17Z'"
 
 
 def test_boolean():
@@ -361,11 +361,6 @@ def test_invalid_constant_type():
 def test_invalid_integer_constant():
     with pytest.raises(ValueError):
         stix2.IntegerConstant('foo')
-
-
-def test_invalid_timestamp_constant():
-    with pytest.raises(ValueError):
-        stix2.TimestampConstant('foo')
 
 
 def test_invalid_float_constant():
@@ -461,23 +456,23 @@ def test_invalid_within_qualifier():
 
 def test_startstop_qualifier():
     qual = stix2.StartStopQualifier(
-        stix2.TimestampConstant('2016-06-01T00:00:00Z'),
-        datetime.datetime(2017, 3, 12, 8, 30, 0),
+        stix2.StringConstant('2016-06-01T00:00:00Z'),
+        stix2.StringConstant('2017-03-12T08:30:00Z'),
     )
-    assert str(qual) == "START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"
+    assert str(qual) == "START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'"
 
     qual2 = stix2.StartStopQualifier(
-        datetime.date(2016, 6, 1),
-        stix2.TimestampConstant('2016-07-01T00:00:00Z'),
+        stix2.StringConstant("2016-06-01T00:00:00Z"),
+        stix2.StringConstant('2016-07-01T00:00:00Z'),
     )
-    assert str(qual2) == "START t'2016-06-01T00:00:00Z' STOP t'2016-07-01T00:00:00Z'"
+    assert str(qual2) == "START '2016-06-01T00:00:00Z' STOP '2016-07-01T00:00:00Z'"
 
 
 def test_invalid_startstop_qualifier():
     with pytest.raises(ValueError):
         stix2.StartStopQualifier(
             'foo',
-            stix2.TimestampConstant('2016-06-01T00:00:00Z'),
+            stix2.StringConstant('2016-06-01T00:00:00Z'),
         )
 
     with pytest.raises(ValueError):
@@ -506,6 +501,19 @@ def test_parsing_qualified_expression():
     assert str(
         patt_obj,
     ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS"
+
+
+def test_parsing_start_stop_qualified_expression():
+    patt_obj = create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'", version="2.0")
+
+    assert str(
+        patt_obj,
+    ) == "[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'"
+
+
+def test_parsing_illegal_start_stop_qualified_expression():
+    with pytest.raises(ValueError):
+        create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01' STOP '2017-03-12T08:30:00Z'", version="2.0")
 
 
 def test_list_constant():

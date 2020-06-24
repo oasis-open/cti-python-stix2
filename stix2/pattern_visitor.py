@@ -40,6 +40,11 @@ def remove_terminal_nodes(parse_tree_nodes):
     return values
 
 
+_TIMESTAMP_RE = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z')
+
+
+def check_for_valid_timetamp_syntax(timestamp_string):
+    return _TIMESTAMP_RE.match(timestamp_string)
 
 
 
@@ -214,6 +219,14 @@ class STIXPatternVisitorForSTIX2():
     # Visit a parse tree produced by STIXPatternParser#startStopQualifier.
     def visitStartStopQualifier(self, ctx):
         children = self.visitChildren(ctx)
+        # 2.0 parser will accept any string, need to make sure it is a full STIX timestamp
+        if isinstance(children[1], StringConstant):
+            if not check_for_valid_timetamp_syntax(children[1].value):
+                raise (ValueError("Start time is not a legal timestamp"))
+        if isinstance(children[3], StringConstant):
+            if not check_for_valid_timetamp_syntax(children[3].value):
+                raise (ValueError("Stop time is not a legal timestamp"))
+
         return StartStopQualifier(children[1], children[3])
 
     # Visit a parse tree produced by STIXPatternParser#withinQualifier.
