@@ -189,17 +189,30 @@ class ListProperty(Property):
 
     def __init__(self, contained, allow_custom=False, **kwargs):
         """
-        ``contained`` should be a function which returns an object from the value.
+        ``contained`` should be a Property class or instance, or a _STIXBase
+        subclass.
         """
-        if inspect.isclass(contained) and issubclass(contained, Property):
-            # If it's a class and not an instance, instantiate it so that
-            # clean() can be called on it, and ListProperty.clean() will
-            # use __call__ when it appends the item.
-            self.contained = contained()
-        else:
+        self.contained = None
+        self.allow_custom = allow_custom
+
+        if inspect.isclass(contained):
+            # Property classes are instantiated; _STIXBase subclasses are left
+            # as-is.
+            if issubclass(contained, Property):
+                self.contained = contained()
+            elif issubclass(contained, _STIXBase):
+                self.contained = contained
+
+        elif isinstance(contained, Property):
             self.contained = contained
 
-        self.allow_custom = allow_custom
+        if not self.contained:
+            raise TypeError(
+                "Invalid list element type: {}".format(
+                    str(contained),
+                ),
+            )
+
         super(ListProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -210,52 +223,39 @@ class ListProperty(Property):
 
         if isinstance(value, (_STIXBase, string_types)):
             value = [value]
+        
+        customizable_types = (
+            stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
+            stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
+            stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
+        )
 
-        result = []
         for item in value:
-            try:
-                customizable_types = (
-                    stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
-                    stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
-                    stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
-                )
+            isinstance(self.contained, customizable_types):
+                self.contained.allow_custom = self.allow_custom
 
-                if isinstance(self.contained, customizable_types):
-                    self.contained.allow_custom = self.allow_custom
-                valid = self.contained.clean(item)
-            except ValueError:
-                raise
-            except AttributeError:
-                # type of list has no clean() function (eg. built in Python types)
-                # TODO Should we raise an error here?
-                valid = item
+        if isinstance(self.contained, Property):
+            result = [
+                self.contained.clean(item)
+                for item in value
+            ]
 
-            if type(self.contained) is EmbeddedObjectProperty:
-                obj_type = self.contained.type
-            elif type(self.contained).__name__ == "STIXObjectProperty":
-                # ^ this way of checking doesn't require a circular import
-                # valid is already an instance of a python-stix2 class; no need
-                # to turn it into a dictionary and then pass it to the class
-                # constructor again
-                result.append(valid)
-                continue
-            elif type(self.contained) is DictionaryProperty:
-                obj_type = dict
-            else:
-                obj_type = self.contained
+        else:  # self.contained must be a _STIXBase subclass
+            result = []
+            for item in value:
+                if isinstance(item, self.contained):
+                    valid = item
 
-            if isinstance(valid, Mapping):
-                try:
-                    valid._allow_custom
-                except AttributeError:
-                    if self.allow_custom:
-                        result.append(obj_type(allow_custom=True, **valid))
-                    else:
-                        result.append(obj_type(**valid))
+                elif isinstance(item, Mapping):
+                    # attempt a mapping-like usage...
+                    valid = self.contained(**item)
+
                 else:
-                    result.append(obj_type(allow_custom=True, **valid))
-            else:
-                result.append(obj_type(valid))
+                    raise ValueError("Can't create a {} out of {}".format(
+                        self.contained._type, str(item),
+                    ))
+
+                result.append(valid)
 
         # STIX spec forbids empty lists
         if len(result) < 1:
