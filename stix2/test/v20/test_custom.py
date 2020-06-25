@@ -1131,3 +1131,39 @@ def test_register_duplicate_marking():
         class NewObj2():
             pass
     assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_custom_ref_allow_custom_true():
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.0", allow_custom=True)
+    possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+    cleaned_val = rp.clean(possible_val)
+
+    assert possible_val == cleaned_val
+
+
+def test_custom_ref_allow_custom_false():
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.0")
+    possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+
+    with pytest.raises(ValueError) as excinfo:
+        rp.clean(possible_val)
+
+    assert "prefix 'custom-obj' for this property is not valid" in str(excinfo.value)
+
+
+def test_custom_illegal_ref_valid_generic_categories():
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SRO"], spec_version="2.0", allow_custom=True)
+    possible_val = "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+
+    with pytest.raises(ValueError) as excinfo:
+        rp.clean(possible_val)
+
+    assert "invalid type-specifying prefix 'indicator' was specified" in str(excinfo.value)
+
+
+def test_custom_illegal_ref_valid_hybrid_categories():
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "indicator"], spec_version="2.0", allow_custom=True)
+    possible_val = "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+    cleaned_val = rp.clean(possible_val)
+
+    assert possible_val == cleaned_val

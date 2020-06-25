@@ -215,7 +215,7 @@ class ListProperty(Property):
         for item in value:
             try:
                 customizable_types = (
-                    stix2.properties.ReferenceProperty,
+                    stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
                     stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
                     stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
                 )
@@ -506,17 +506,28 @@ class ReferenceProperty(Property):
         possible_prefix = value[:value.index('--')]
         spec_version = 'v' + self.spec_version.replace(".", "")
 
+        print ('In clean()')
+
         if self.allow_custom and self.valid_types:
+            print ('In allow_custom and valid_types if statement')
             self.valid_types, self.invalid_types = enumerate_inverted_blacklist(self.valid_types, spec_version)
+
+            # Happens when valid_types includes "SCO", "SDO", **AND** "SRO"
+            # We want to allow all types, which is better achieved via disallowing
+            # nothing; thus we force blacklisting since invalid_types is now an empty list
+            force_blacklisting = len(self.invalid_types) == 0
 
         if self.valid_types:
             ref_valid_types = enumerate_types(self.valid_types, spec_version)
 
             if possible_prefix in ref_valid_types:
+                print ("Accepted the prefix")
+                print (possible_prefix)
+                print (ref_valid_types)
                 required_prefix = possible_prefix
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
-        elif self.invalid_types:
+        elif self.invalid_types or force_blacklisting:
             ref_invalid_types = enumerate_types(self.invalid_types, spec_version)
 
             if possible_prefix not in ref_invalid_types:
@@ -542,12 +553,15 @@ def enumerate_types(types, spec_version):
     return_types += types
 
     if "SDO" in types:
+        print ('In SDO')
         return_types.remove("SDO")
         return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
     if "SCO" in types:
+        print ('In SCO')
         return_types.remove("SCO")
         return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
     if "SRO" in types:
+        print ('In SRO')
         return_types.remove("SRO")
         return_types += ['relationship', 'sighting']
 
@@ -555,36 +569,21 @@ def enumerate_types(types, spec_version):
 
 
 def enumerate_inverted_blacklist(valid_types, spec_version):
-    return_valid_types = []
+    return_valid_types = valid_types
     return_invalid_types = []
 
-    sco = "SCO" in valid_types
-    sdo = "SDO" in valid_types
-    sro = "SRO" in valid_types
-    inverted = True
-    remaining_types = [_type for _type in valid_types if _type not in ["SCO", "SDO", "SRO"]]
+    generic_obj_categories = {"SCO", "SDO", "SRO"}
+    remaining_types = set(valid_types).difference(generic_obj_categories)
 
-    if sco and sdo and sro:
-        return_invalid_types = [""]
-    elif sco and sdo:
-        return_invalid_types = ["SRO"]
-    elif sco and sro:
-        return_invalid_types = ["SDO"]
-    elif sdo and sro:
-        return_invalid_types = ["SCO"]
-    elif sco:
-        return_invalid_types = ["SDO", "SRO"]
-    elif sdo:
-        return_invalid_types = ["SCO", "SRO"]
-    elif sro:
-        return_invalid_types = ["SCO", "SDO"]
-    else:
-        inverted = False
+    # at least one generic object category is present in valid_types
+    if list(remaining_types) != valid_types:
+        set_to_blacklist = generic_obj_categories.difference(set(valid_types))
 
-    if remaining_types and inverted:
-        return_invalid_types = list(filter(lambda _type: _type not in remaining_types, enumerate_types(return_invalid_types, spec_version)))
-    elif remaining_types:
-        return_valid_types = remaining_types
+        set_to_blacklist = set(enumerate_types(list(set_to_blacklist), spec_version))
+        set_to_blacklist.difference_update(remaining_types)
+
+        return_valid_types = []
+        return_invalid_types = list(set_to_blacklist)
 
     return (return_valid_types, return_invalid_types)
 
@@ -613,13 +612,14 @@ class ObjectReferenceProperty(StringProperty):
 
 class EmbeddedObjectProperty(Property):
 
-    def __init__(self, type, **kwargs):
+    def __init__(self, type, allow_custom=False, **kwargs):
         self.type = type
+        self.allow_custom = allow_custom
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
     def clean(self, value):
         if type(value) is dict:
-            value = self.type(**value)
+            value = self.type(self.allow_custom, **value)
         elif not isinstance(value, self.type):
             raise ValueError("must be of type {}.".format(self.type.__name__))
         return value

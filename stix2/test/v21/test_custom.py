@@ -1340,7 +1340,7 @@ def test_register_duplicate_marking():
     assert "cannot be registered again" in str(excinfo.value)
 
 
-def test_parse_custom_ref_allow_custom_true():
+def test_custom_ref_allow_custom_true():
     rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1", allow_custom=True)
     possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
     cleaned_val = rp.clean(possible_val)
@@ -1348,7 +1348,7 @@ def test_parse_custom_ref_allow_custom_true():
     assert possible_val == cleaned_val
 
 
-def test_parse_custom_ref_allow_custom_false():
+def test_custom_ref_allow_custom_false():
     rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1")
     possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
 
@@ -1356,6 +1356,24 @@ def test_parse_custom_ref_allow_custom_false():
         rp.clean(possible_val)
 
     assert "prefix 'custom-obj' for this property is not valid" in str(excinfo.value)
+
+
+def test_custom_illegal_ref_valid_generic_categories():
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SRO"], spec_version="2.1", allow_custom=True)
+    possible_val = "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+
+    with pytest.raises(ValueError) as excinfo:
+        rp.clean(possible_val)
+
+    assert "invalid type-specifying prefix 'indicator' was specified" in str(excinfo.value)
+
+
+def test_custom_illegal_ref_valid_hybrid_categories():
+    rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "indicator"], spec_version="2.1", allow_custom=True)
+    possible_val = "indicator--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
+    cleaned_val = rp.clean(possible_val)
+
+    assert possible_val == cleaned_val
 
 
 def test_parse_custom_refs_allow_custom_true():
@@ -1373,19 +1391,19 @@ def test_parse_custom_refs_allow_custom_true():
     assert file_json["contains_refs"] == file_stix.contains_refs
 
 
-# def test_parse_custom_refs_allow_custom_false():
-#     file_json = {
-#         "type": "file",
-#         "name": "custom_ref.exe",
-#         "contains_refs": [
-#             "custom-sco--26ffb872-1dd9-446e-b6f5-d58527e5b5ad",
-#         ],
-#     }
+def test_parse_custom_refs_allow_custom_false():
+    file_json = {
+        "type": "file",
+        "name": "custom_ref.exe",
+        "contains_refs": [
+            "custom-sco--26ffb872-1dd9-446e-b6f5-d58527e5b5ad",
+        ],
+    }
 
-#     with pytest.raises(InvalidValueError) as excinfo:
-#         stix2.parse(file_json, version='2.1')
+    with pytest.raises(InvalidValueError) as excinfo:
+        stix2.parse(file_json, version='2.1')
 
-#     assert "prefix 'custom-sco' for this property is not valid" in str(excinfo.value)
+    assert "prefix 'custom-sco' for this property is not valid" in str(excinfo.value)
 
 
 def test_parse_obj_embedded_objs_with_custom_props_true():
