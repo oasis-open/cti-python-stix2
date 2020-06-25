@@ -223,15 +223,13 @@ class ListProperty(Property):
 
         if isinstance(value, (_STIXBase, string_types)):
             value = [value]
-        
-        customizable_types = (
+
+        customizable_props = (
             stix2.properties.EmbeddedObjectProperty, stix2.properties.ReferenceProperty,
-            stix2.v20.ExternalReference, stix2.v20.GranularMarking, stix2.v20.KillChainPhase,
-            stix2.v21.ExternalReference, stix2.v21.GranularMarking, stix2.v21.KillChainPhase,
         )
 
         for item in value:
-            isinstance(self.contained, customizable_types):
+            if isinstance(self.contained, customizable_props):
                 self.contained.allow_custom = self.allow_custom
 
         if isinstance(self.contained, Property):
@@ -248,7 +246,7 @@ class ListProperty(Property):
 
                 elif isinstance(item, Mapping):
                     # attempt a mapping-like usage...
-                    valid = self.contained(**item)
+                    valid = self.contained(allow_custom=self.allow_custom, **item)
 
                 else:
                     raise ValueError("Can't create a {} out of {}".format(
@@ -506,10 +504,7 @@ class ReferenceProperty(Property):
         possible_prefix = value[:value.index('--')]
         spec_version = 'v' + self.spec_version.replace(".", "")
 
-        print ('In clean()')
-
         if self.allow_custom and self.valid_types:
-            print ('In allow_custom and valid_types if statement')
             self.valid_types, self.invalid_types = enumerate_inverted_blacklist(self.valid_types, spec_version)
 
             # Happens when valid_types includes "SCO", "SDO", **AND** "SRO"
@@ -521,9 +516,6 @@ class ReferenceProperty(Property):
             ref_valid_types = enumerate_types(self.valid_types, spec_version)
 
             if possible_prefix in ref_valid_types:
-                print ("Accepted the prefix")
-                print (possible_prefix)
-                print (ref_valid_types)
                 required_prefix = possible_prefix
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
@@ -553,15 +545,12 @@ def enumerate_types(types, spec_version):
     return_types += types
 
     if "SDO" in types:
-        print ('In SDO')
         return_types.remove("SDO")
         return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
     if "SCO" in types:
-        print ('In SCO')
         return_types.remove("SCO")
         return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
     if "SRO" in types:
-        print ('In SRO')
         return_types.remove("SRO")
         return_types += ['relationship', 'sighting']
 
