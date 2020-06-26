@@ -170,8 +170,10 @@ class Property(object):
         self.required = required
 
         if required and default:
-            raise STIXError("Cant't use 'required' and 'default' together. 'required'"
-                            "really means 'the user must provide this.'")
+            raise STIXError(
+                "Cant't use 'required' and 'default' together. 'required'"
+                "really means 'the user must provide this.'",
+            )
 
         if fixed:
             self._fixed_value = fixed

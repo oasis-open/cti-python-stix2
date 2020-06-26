@@ -131,7 +131,7 @@ MALWARE_ANALYSIS_KWARGS = dict(
 
 NOTE_KWARGS = dict(
     content="Heartbleed",
-    object_refs=[CAMPAIGN_ID]
+    object_refs=[CAMPAIGN_ID],
 )
 
 OBSERVED_DATA_KWARGS = dict(
@@ -148,7 +148,7 @@ OBSERVED_DATA_KWARGS = dict(
 
 OPINION_KWARGS = dict(
     opinion="agree",
-    object_refs=[CAMPAIGN_ID]
+    object_refs=[CAMPAIGN_ID],
 )
 
 REPORT_KWARGS = dict(
