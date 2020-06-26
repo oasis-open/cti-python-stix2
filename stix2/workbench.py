@@ -62,7 +62,6 @@ from .datastore.filters import FilterSet
 
 # Enable some adaptation to the current default supported STIX version.
 _STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
-print(_STIX_VID)
 
 
 # Use an implicit MemoryStore
