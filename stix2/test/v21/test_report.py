@@ -4,12 +4,12 @@ import pytest
 import pytz
 
 import stix2
+from stix2.exceptions import InvalidValueError
 
 from .constants import (
     CAMPAIGN_ID, IDENTITY_ID, INDICATOR_ID, INDICATOR_KWARGS, RELATIONSHIP_ID,
     REPORT_ID,
 )
-from stix2.exceptions import InvalidValueError
 
 EXPECTED = """{
     "type": "report",
@@ -144,8 +144,8 @@ def test_report_on_custom():
             published="2016-01-20T17:00:00Z",
             object_refs=[
                 "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
-                "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7"
-            ]
+                "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7",
+            ],
         )
 
     report = stix2.v21.Report(
@@ -153,10 +153,10 @@ def test_report_on_custom():
         published="2016-01-20T17:00:00Z",
         object_refs=[
             "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
-            "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7"
+            "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7",
         ],
         allow_custom=True,
     )
 
     assert "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7" \
-       in report.object_refs
+        in report.object_refs

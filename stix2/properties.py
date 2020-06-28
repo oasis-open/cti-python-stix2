@@ -8,10 +8,7 @@ import re
 import uuid
 
 from .base import _STIXBase
-from .exceptions import (
-    CustomContentError, DictionaryKeyError, MissingPropertiesError,
-    MutuallyExclusivePropertiesError, STIXError,
-)
+from .exceptions import CustomContentError, DictionaryKeyError, STIXError
 from .parsing import parse, parse_observable
 from .registry import STIX2_OBJ_MAPS
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
@@ -503,7 +500,7 @@ class ReferenceProperty(Property):
                 (valid_types is None and invalid_types is None):
             raise ValueError(
                 "Exactly one of 'valid_types' and 'invalid_types' must be "
-                "given"
+                "given",
             )
 
         if valid_types and not isinstance(valid_types, list):
@@ -517,21 +514,6 @@ class ReferenceProperty(Property):
         self.types = set(valid_types or invalid_types)
         self.auth_type = self._WHITELIST if valid_types else self._BLACKLIST
 
-        # Handling both generic and non-generic types in the same constraint
-        # complicates life... let's keep it simple unless we really need the
-        # complexity.
-        self.generic_constraint = any(
-            t in self._OBJECT_CATEGORIES for t in self.types
-        )
-
-        if self.generic_constraint and any(
-            t not in self._OBJECT_CATEGORIES for t in self.types
-        ):
-            raise ValueError(
-                "Generic type categories and specific types may not both be "
-                "given"
-            )
-
         super(ReferenceProperty, self).__init__(**kwargs)
 
     def clean(self, value, allow_custom):
@@ -543,10 +525,19 @@ class ReferenceProperty(Property):
 
         obj_type = value[:value.index('--')]
 
-        types = self.types
+        # Only comes into play when inverting a hybrid whitelist.
+        # E.g. if the possible generic categories are A, B, C, then the
+        # inversion of whitelist constraint "A or x" (where x is a specific
+        # type) is something like "[not (B or C)] or x".  In other words, we
+        # invert the generic categories to produce a blacklist, but leave the
+        # specific categories alone; they essentially become exceptions to our
+        # blacklist.
+        blacklist_exceptions = set()
+
+        generics = self.types & self._OBJECT_CATEGORIES
+        specifics = self.types - generics
         auth_type = self.auth_type
-        if allow_custom and auth_type == self._WHITELIST and \
-                self.generic_constraint:
+        if allow_custom and auth_type == self._WHITELIST and generics:
             # If allowing customization and using a whitelist, and if generic
             # "category" types were given, we need to allow custom object types
             # of those categories.  Unless registered, it's impossible to know
@@ -554,60 +545,40 @@ class ReferenceProperty(Property):
             # permissive approach and allow any type which is not known to be
             # in the wrong category.  I.e. flip the whitelist set to a
             # blacklist of a complementary set.
-            types = self._OBJECT_CATEGORIES - types
             auth_type = self._BLACKLIST
+            generics = self._OBJECT_CATEGORIES - generics
+            blacklist_exceptions, specifics = specifics, blacklist_exceptions
 
         if auth_type == self._WHITELIST:
-            # allow_custom is not applicable to "whitelist" style object type
-            # constraints, so we ignore it.
-            has_custom = False
-
-            if self.generic_constraint:
-                type_ok = _type_in_generic_set(
-                    obj_type, types, self.spec_version
-                )
-            else:
-                type_ok = obj_type in types
-
-            if not type_ok:
-                raise ValueError(
-                    "The type-specifying prefix '%s' for this property is not "
-                    "valid" % obj_type
-                )
+            type_ok = _type_in_generic_set(
+                obj_type, generics, self.spec_version
+            ) or obj_type in specifics
 
         else:
-            # A type "blacklist" was used to describe legal object types.  We
-            # must enforce the type blacklist regardless of allow_custom.
-            if self.generic_constraint:
-                type_ok = not _type_in_generic_set(
-                    obj_type, types, self.spec_version
+            type_ok = (
+                not _type_in_generic_set(
+                    obj_type, generics, self.spec_version,
                 )
-            else:
-                type_ok = obj_type not in types
+                and obj_type not in specifics
+            ) or obj_type in blacklist_exceptions
 
-            if not type_ok:
-                raise ValueError(
-                    "The type-specifying prefix '%s' for this property is not "
-                    "valid" % obj_type
-                )
+        if not type_ok:
+            raise ValueError(
+                "The type-specifying prefix '%s' for this property is not "
+                "valid" % obj_type,
+            )
 
-            # allow_custom=True only allows references to custom objects which
-            # are not otherwise blacklisted.  We need to figure out whether
-            # the referenced object is custom or not.  No good way to do that
-            # at present... just check if unregistered and for the "x-" type
-            # prefix, for now?
-            type_maps = STIX2_OBJ_MAPS[self.spec_version]
+        # We need to figure out whether the referenced object is custom or
+        # not.  No good way to do that at present... just check if
+        # unregistered and for the "x-" type prefix, for now?
+        has_custom = not _type_in_generic_set(
+            obj_type, self._OBJECT_CATEGORIES, self.spec_version,
+        ) or obj_type.startswith("x-")
 
-            has_custom = obj_type not in type_maps["objects"] \
-                and obj_type not in type_maps["observables"] \
-                and obj_type not in ["relationship", "sighting"]
-
-            has_custom = has_custom or obj_type.startswith("x-")
-
-            if not allow_custom and has_custom:
-                raise CustomContentError(
-                    "reference to custom object type: " + obj_type,
-                )
+        if not allow_custom and has_custom:
+            raise CustomContentError(
+                "reference to custom object type: " + obj_type,
+            )
 
         return value, has_custom
 
@@ -624,7 +595,9 @@ def _type_in_generic_set(type_, type_set, spec_version):
     result = False
     for type_id in type_set:
         if type_id == "SDO":
-            result = type_ in type_maps["objects"]
+            result = type_ in type_maps["objects"] and type_ not in [
+                "relationship", "sighting",
+            ]  # sigh
         elif type_id == "SCO":
             result = type_ in type_maps["observables"]
         elif type_id == "SRO":

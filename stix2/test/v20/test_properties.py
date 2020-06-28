@@ -84,19 +84,21 @@ def test_id_property_default():
     assert ID_PROP.clean(default) == (default, False)
 
 
-def test_reference_property():
-    ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
+def test_reference_property_whitelist_standard_type():
+    ref_prop = ReferenceProperty(valid_types="identity", spec_version="2.0")
+    result = ref_prop.clean(
+        "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+    )
+    assert result == ("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    assert ref_prop.clean("my-type--00000000-0000-4000-8000-000000000000", False)
     with pytest.raises(ValueError):
-        ref_prop.clean("foo", False)
+        ref_prop.clean("foo--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    # This is not a valid V4 UUID
     with pytest.raises(ValueError):
-        ref_prop.clean("my-type--00000000-0000-0000-0000-000000000000", False)
+        ref_prop.clean("foo--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
 
-def test_reference_property_whitelist_type():
+def test_reference_property_whitelist_custom_type():
     ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
 
     with pytest.raises(ValueError):
@@ -105,16 +107,18 @@ def test_reference_property_whitelist_type():
     with pytest.raises(ValueError):
         ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    result = ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
-    assert result == ("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+    with pytest.raises(CustomContentError):
+        # This is the whitelisted type, but it's still custom, and
+        # customization is disallowed here.
+        ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    result = ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
-    assert result == ("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+    result = ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
 
 def test_reference_property_whitelist_generic_type():
     ref_prop = ReferenceProperty(
-        valid_types=["SCO", "SRO"], spec_version="2.0"
+        valid_types=["SCO", "SRO"], spec_version="2.0",
     )
 
     result = ref_prop.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
@@ -124,12 +128,19 @@ def test_reference_property_whitelist_generic_type():
     assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
     result = ref_prop.clean(
-        "sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False
+        "sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
     )
     assert result == ("sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
     result = ref_prop.clean(
-        "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True
+        "sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+    )
+    assert result == ("sighting--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    # The prop assumes some-type is a custom type of one of the generic
+    # type categories.
+    result = ref_prop.clean(
+        "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
     )
     assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
@@ -143,7 +154,7 @@ def test_reference_property_whitelist_generic_type():
         ref_prop.clean("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
 
-def test_reference_property_blacklist_type():
+def test_reference_property_blacklist_standard_type():
     ref_prop = ReferenceProperty(invalid_types="identity", spec_version="2.0")
     result = ref_prop.clean(
         "malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
@@ -154,6 +165,11 @@ def test_reference_property_blacklist_type():
         "malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
     )
     assert result == ("malware--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(CustomContentError):
+        ref_prop.clean(
+            "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
 
     result = ref_prop.clean(
         "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
@@ -170,15 +186,10 @@ def test_reference_property_blacklist_type():
             "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
 
-    with pytest.raises(CustomContentError):
-        ref_prop.clean(
-            "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
-        )
-
 
 def test_reference_property_blacklist_generic_type():
     ref_prop = ReferenceProperty(
-        invalid_types=["SDO", "SRO"], spec_version="2.0"
+        invalid_types=["SDO", "SRO"], spec_version="2.0",
     )
 
     result = ref_prop.clean(
@@ -191,15 +202,15 @@ def test_reference_property_blacklist_generic_type():
     )
     assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
+    with pytest.raises(CustomContentError):
+        ref_prop.clean(
+            "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+        )
+
     result = ref_prop.clean(
         "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
     )
     assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
-
-    with pytest.raises(ValueError):
-        ref_prop.clean(
-            "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
-        )
 
     with pytest.raises(ValueError):
         ref_prop.clean(
@@ -208,7 +219,7 @@ def test_reference_property_blacklist_generic_type():
 
     with pytest.raises(ValueError):
         ref_prop.clean(
-            "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
+            "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
 
     with pytest.raises(ValueError):
@@ -216,18 +227,57 @@ def test_reference_property_blacklist_generic_type():
             "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
         )
 
-    with pytest.raises(CustomContentError):
+    with pytest.raises(ValueError):
         ref_prop.clean(
-            "some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
+            "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
 
 
-def test_reference_property_hybrid_constraint_type():
-    with pytest.raises(ValueError):
-        ReferenceProperty(valid_types=["a", "SCO"], spec_version="2.0")
+def test_reference_property_whitelist_hybrid_type():
+    p = ReferenceProperty(valid_types=["a", "SCO"], spec_version="2.0")
+
+    result = p.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = p.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(CustomContentError):
+        # although whitelisted, "a" is a custom type
+        p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
     with pytest.raises(ValueError):
-        ReferenceProperty(invalid_types=["a", "SCO"], spec_version="2.0")
+        p.clean("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    # should just assume "b" is a custom SCO type.
+    result = p.clean("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+
+def test_reference_property_blacklist_hybrid_type():
+    p = ReferenceProperty(invalid_types=["a", "SCO"], spec_version="2.0")
+
+    with pytest.raises(ValueError):
+        p.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(ValueError):
+        p.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    with pytest.raises(ValueError):
+        p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(ValueError):
+        p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    with pytest.raises(CustomContentError):
+        p.clean("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    # should just assume "b" is a custom type which is not an SCO
+    result = p.clean("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
 
 def test_reference_property_impossible_constraint():
