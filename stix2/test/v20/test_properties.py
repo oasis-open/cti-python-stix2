@@ -3,8 +3,10 @@ import uuid
 import pytest
 
 import stix2
+import stix2.base
 from stix2.exceptions import (
     AtLeastOnePropertyError, CustomContentError, DictionaryKeyError,
+    ExtraPropertiesError,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -66,12 +68,94 @@ def test_fixed_property():
     assert p.clean(p.default())
 
 
-def test_list_property():
+def test_list_property_property_type():
     p = ListProperty(StringProperty)
 
     assert p.clean(['abc', 'xyz'])
     with pytest.raises(ValueError):
         p.clean([])
+
+
+def test_list_property_property_type_custom():
+    class TestObj(stix2.base._STIXBase):
+        _type = "test"
+        _properties = {
+            "foo": StringProperty(),
+        }
+    p = ListProperty(EmbeddedObjectProperty(type=TestObj))
+
+    objs_custom = [
+        TestObj(foo="abc", bar=123, allow_custom=True),
+        TestObj(foo="xyz"),
+    ]
+
+    assert p.clean(objs_custom)
+
+    dicts_custom = [
+        {"foo": "abc", "bar": 123},
+        {"foo": "xyz"},
+    ]
+
+    # no opportunity to set allow_custom=True when using dicts
+    with pytest.raises(ExtraPropertiesError):
+        p.clean(dicts_custom)
+
+
+def test_list_property_object_type():
+    class TestObj(stix2.base._STIXBase):
+        _type = "test"
+        _properties = {
+            "foo": StringProperty(),
+        }
+    p = ListProperty(TestObj)
+
+    objs = [TestObj(foo="abc"), TestObj(foo="xyz")]
+    assert p.clean(objs)
+
+    dicts = [{"foo": "abc"}, {"foo": "xyz"}]
+    assert p.clean(dicts)
+
+
+def test_list_property_object_type_custom():
+    class TestObj(stix2.base._STIXBase):
+        _type = "test"
+        _properties = {
+            "foo": StringProperty(),
+        }
+    p = ListProperty(TestObj)
+
+    objs_custom = [
+        TestObj(foo="abc", bar=123, allow_custom=True),
+        TestObj(foo="xyz"),
+    ]
+
+    assert p.clean(objs_custom)
+
+    dicts_custom = [
+        {"foo": "abc", "bar": 123},
+        {"foo": "xyz"},
+    ]
+
+    # no opportunity to set allow_custom=True when using dicts
+    with pytest.raises(ExtraPropertiesError):
+        p.clean(dicts_custom)
+
+
+def test_list_property_bad_element_type():
+    with pytest.raises(TypeError):
+        ListProperty(1)
+
+
+def test_list_property_bad_value_type():
+    class TestObj(stix2.base._STIXBase):
+        _type = "test"
+        _properties = {
+            "foo": StringProperty(),
+        }
+
+    list_prop = ListProperty(TestObj)
+    with pytest.raises(ValueError):
+        list_prop.clean([1])
 
 
 def test_string_property():
