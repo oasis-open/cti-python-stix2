@@ -204,7 +204,7 @@ class Indicator(_DomainObject):
         if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
             kwargs['pattern_version'] = '2.1'
 
-        super(_DomainObject, self).__init__(*args, **kwargs)
+        super(Indicator, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
