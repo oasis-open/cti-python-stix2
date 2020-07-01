@@ -9,6 +9,7 @@
    exceptions
    markings
    parsing
+   pattern_visitor
    patterns
    properties
    utils
