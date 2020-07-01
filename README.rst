@@ -63,18 +63,20 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
-STIX 2.X Technical Specification Support
-----------------------------------------
+STIX 2 Technical Specification Support
+--------------------------------------
 
-This version of python-stix2 brings initial support to STIX 2.1 currently at the
-CSD level. The intention is to help debug components of the library and also
-check for problems that should be fixed in the specification.
+This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html>`__
+published on 20 March 2020 currently at the Committee Specification (CS) level.
 
-The `stix2` Python library is built to support multiple versions of the STIX
-Technical Specification. With every major release of stix2 the ``import stix2``
-statement will automatically load the SDO/SROs equivalent to the most recent
-supported 2.X Committee Specification. Please see the library documentation for
-more details.
+The `stix2` Python library is built to support multiple versions of the STIX2
+Technical Specification. With newer Committee Specification Draft (CSD) the
+library will bring initial support with the intention is to help debug components
+of the library and also check for problems that should be fixed in the specification,
+but these modules must be imported manually until the CSD reaches CS level.
+With continued releases to stix2 the ``import stix2`` implicit import statement
+will be updated to automatically load the STIX Objects equivalent to the most
+recently supported CS. Please see the library documentation for details.
 
 Governance
 ----------
