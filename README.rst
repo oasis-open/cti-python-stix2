@@ -69,14 +69,14 @@ STIX 2 Technical Specification Support
 This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html>`__
 published on 20 March 2020 currently at the Committee Specification (CS) level.
 
-The `stix2` Python library is built to support multiple versions of the STIX2
-Technical Specification. With newer Committee Specification Draft (CSD) the
-library will bring initial support with the intention is to help debug components
-of the library and also check for problems that should be fixed in the specification,
-but these modules must be imported manually until the CSD reaches CS level.
-With continued releases to stix2 the ``import stix2`` implicit import statement
+The stix2 Python library supports multiple versions of the STIX 2 Technical
+Specification. The library will be updated to support new Committee
+Specification Drafts (CSDs) as they are released, but modules for these
+versions must be imported manually until the CSD reaches CS level. In new
+major releases of stix2 the ``import stix2`` implicit import statement
 will be updated to automatically load the STIX Objects equivalent to the most
-recently supported CS. Please see the library documentation for details.
+recently supported CS. Please see the `library documentation <https://stix2.readthedocs.io/en/latest/guide/ts_support.html>`__
+for details.
 
 Governance
 ----------
