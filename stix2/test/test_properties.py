@@ -4,7 +4,7 @@ import pytest
 import pytz
 
 import stix2
-from stix2.exceptions import ExtraPropertiesError
+from stix2.exceptions import ExtraPropertiesError, STIXError
 from stix2.properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
     FloatProperty, HexProperty, IntegerProperty, ListProperty, Property,
@@ -47,7 +47,7 @@ def test_property_default():
     assert p.default() == 77
 
 
-def test_fixed_property():
+def test_property_fixed():
     p = Property(fixed="2.0")
 
     assert p.clean("2.0")
@@ -58,6 +58,11 @@ def test_fixed_property():
 
     assert p.default() == "2.0"
     assert p.clean(p.default())
+
+
+def test_property_fixed_and_required():
+    with pytest.raises(STIXError):
+        Property(default=lambda: 3, required=True)
 
 
 def test_list_property():
