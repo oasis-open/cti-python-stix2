@@ -4,16 +4,17 @@
    :toctree: api
 
    confidence
-   core
    datastore
    environment
    exceptions
    markings
+   parsing
    patterns
    properties
    utils
    v20
    v21
+   versioning
    workbench
 
 """
