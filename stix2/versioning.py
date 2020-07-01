@@ -1,3 +1,5 @@
+"""STIX2 core versioning methods."""
+
 import copy
 import datetime as dt
 import itertools
