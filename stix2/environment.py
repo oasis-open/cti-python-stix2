@@ -200,6 +200,8 @@ class Environment(DataStoreMixin):
         Args:
             obj1: A stix2 object instance
             obj2: A stix2 object instance
+            prop_scores: A dictionary that can hold individual property scores,
+                weights, contributing score, matching score and sum of weights.
             weight_dict: A dictionary that can be used to override settings
                 in the semantic equivalence process
 

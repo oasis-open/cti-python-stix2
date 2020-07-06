@@ -1,4 +1,4 @@
-"""STIX2 Core Objects and Methods."""
+"""STIX2 Core parsing methods."""
 
 import copy
 import importlib

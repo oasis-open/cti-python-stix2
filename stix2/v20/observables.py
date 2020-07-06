@@ -30,7 +30,7 @@ class Artifact(_Observable):
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.0')),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
@@ -173,7 +173,7 @@ class AlternateDataStream(_STIXBase20):
 
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.0')),
         ('size', IntegerProperty()),
     ])
 
@@ -256,7 +256,7 @@ class WindowsPEOptionalHeaderType(_STIXBase20):
         ('size_of_heap_commit', IntegerProperty()),
         ('loader_flags_hex', HexProperty()),
         ('number_of_rva_and_sizes', IntegerProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.0')),
     ])
 
     def _check_object_constraints(self):
@@ -273,7 +273,7 @@ class WindowsPESection(_STIXBase20):
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty()),
         ('entropy', FloatProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.0')),
     ])
 
 
@@ -293,7 +293,7 @@ class WindowsPEBinaryExt(_Extension):
         ('number_of_symbols', IntegerProperty()),
         ('size_of_optional_header', IntegerProperty()),
         ('characteristics_hex', HexProperty()),
-        ('file_header_hashes', HashesProperty()),
+        ('file_header_hashes', HashesProperty(spec_version='2.0')),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
@@ -307,7 +307,7 @@ class File(_Observable):
     _type = 'file'
     _properties = OrderedDict([
         ('type', TypeProperty(_type, spec_version='2.0')),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.0')),
         ('size', IntegerProperty()),
         ('name', StringProperty()),
         ('name_enc', StringProperty()),
@@ -759,7 +759,7 @@ class X509Certificate(_Observable):
     _properties = OrderedDict([
         ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_self_signed', BooleanProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(spec_version='2.0')),
         ('version', StringProperty()),
         ('serial_number', StringProperty()),
         ('signature_algorithm', StringProperty()),

@@ -33,7 +33,8 @@ be set automatically if not provided as keyword arguments.
     from stix2 import Indicator
 
     indicator = Indicator(name="File hash for malware variant",
-                          labels=["malicious-activity"],
+                          indicator_types=["malicious-activity"],
+                          pattern_type="stix",
                           pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']")
 
 To parse a STIX JSON string into a Python STIX object, use ``parse()``:
@@ -53,6 +54,7 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
             "malicious-activity"
         ],
         "pattern_type": "stix",
+        "pattern_version": "2.1",
         "pattern": "[file:hashes.md5 ='d41d8cd98f00b204e9800998ecf8427e']",
         "valid_from": "2017-09-26T23:33:39.829952Z"
     }""")
@@ -61,18 +63,20 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
-STIX 2.X Technical Specification Support
-----------------------------------------
+STIX 2 Technical Specification Support
+--------------------------------------
 
-This version of python-stix2 brings initial support to STIX 2.1 currently at the
-CSD level. The intention is to help debug components of the library and also
-check for problems that should be fixed in the specification.
+This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html>`__
+published on 20 March 2020 currently at the Committee Specification (CS) level.
 
-The `stix2` Python library is built to support multiple versions of the STIX
-Technical Specification. With every major release of stix2 the ``import stix2``
-statement will automatically load the SDO/SROs equivalent to the most recent
-supported 2.X Committee Specification. Please see the library documentation for
-more details.
+The stix2 Python library supports multiple versions of the STIX 2 Technical
+Specification. The library will be updated to support new Committee
+Specification Drafts (CSDs) as they are released, but modules for these
+versions must be imported manually until the CSD reaches CS level. In new
+major releases of stix2 the ``import stix2`` implicit import statement
+will be updated to automatically load the STIX Objects equivalent to the most
+recently supported CS. Please see the `library documentation <https://stix2.readthedocs.io/en/latest/guide/ts_support.html>`__
+for details.
 
 Governance
 ----------

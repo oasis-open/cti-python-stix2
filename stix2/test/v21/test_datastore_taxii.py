@@ -28,7 +28,7 @@ class MockTAXIICollectionEndpoint(Collection):
     def add_objects(self, bundle):
         self._verify_can_write()
         if isinstance(bundle, six.string_types):
-            bundle = json.loads(bundle, encoding='utf-8')
+            bundle = json.loads(bundle)
         for object in bundle.get("objects", []):
             self.objects.append(object)
             self.manifests.append(

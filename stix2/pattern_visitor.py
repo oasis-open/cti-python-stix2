@@ -1,3 +1,5 @@
+"""STIX2 classes and methods to generate AST from patterns"""
+
 import importlib
 import inspect
 
