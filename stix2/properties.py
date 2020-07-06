@@ -477,6 +477,7 @@ class ReferenceProperty(Property):
         """
         self.spec_version = spec_version
         self.allow_custom = allow_custom
+        self.force_blacklisting = False
 
         # These checks need to be done prior to the STIX object finishing construction
         # and thus we can't use base.py's _check_mutually_exclusive_properties()
@@ -486,13 +487,23 @@ class ReferenceProperty(Property):
         elif valid_types is None and invalid_types is None:
             raise MissingPropertiesError(self.__class__, ['invalid_types', 'valid_types'])
 
-        if valid_types and type(valid_types) is not list:
+        if valid_types and not isinstance(valid_types, list):
             valid_types = [valid_types]
-        elif invalid_types and type(invalid_types) is not list:
+        elif invalid_types and not isinstance(valid_types, list):
             invalid_types = [invalid_types]
 
         self.valid_types = valid_types
         self.invalid_types = invalid_types
+
+        if self.allow_custom and valid_types:
+            version = 'v' + self.spec_version.replace(".", "")
+
+            self.valid_types, self.invalid_types = enumerate_inverted_blacklist(self.valid_types, version)
+
+            # Happens when valid_types includes "SCO", "SDO", **AND** "SRO"
+            # We want to allow all types, which is better achieved via disallowing
+            # nothing; thus we force blacklisting since invalid_types is now an empty list
+            self.force_blacklisting = len(self.invalid_types) == 0
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
@@ -501,33 +512,25 @@ class ReferenceProperty(Property):
             value = value.id
         value = str(value)
 
-        possible_prefix = value[:value.index('--')]
+        prefix = value[:value.index('--')]
         spec_version = 'v' + self.spec_version.replace(".", "")
-
-        if self.allow_custom and self.valid_types:
-            self.valid_types, self.invalid_types = enumerate_inverted_blacklist(self.valid_types, spec_version)
-
-            # Happens when valid_types includes "SCO", "SDO", **AND** "SRO"
-            # We want to allow all types, which is better achieved via disallowing
-            # nothing; thus we force blacklisting since invalid_types is now an empty list
-            force_blacklisting = len(self.invalid_types) == 0
 
         if self.valid_types:
             ref_valid_types = enumerate_types(self.valid_types, spec_version)
 
-            if possible_prefix in ref_valid_types:
-                required_prefix = possible_prefix
-            else:
-                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
-        elif self.invalid_types or force_blacklisting:
+            if prefix not in ref_valid_types and (
+                (prefix in STIX2_OBJ_MAPS[spec_version]['objects'] or
+                    prefix in STIX2_OBJ_MAPS[spec_version]['observables']) or
+                not self.allow_custom
+            ):
+                raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (prefix))
+        elif self.invalid_types or self.force_blacklisting:
             ref_invalid_types = enumerate_types(self.invalid_types, spec_version)
 
-            if possible_prefix not in ref_invalid_types:
-                required_prefix = possible_prefix
-            else:
-                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (possible_prefix))
+            if prefix in ref_invalid_types:
+                raise ValueError("An invalid type-specifying prefix '%s' was specified for this property" % (prefix))
 
-        _validate_id(value, self.spec_version, required_prefix)
+        _validate_id(value, self.spec_version, prefix)
 
         return value
 
@@ -546,7 +549,8 @@ def enumerate_types(types, spec_version):
 
     if "SDO" in types:
         return_types.remove("SDO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
+        objects = STIX2_OBJ_MAPS[spec_version]['objects'].keys()
+        return_types += [obj_type for obj_type in objects if obj_type not in ['relationship', 'sighting']]
     if "SCO" in types:
         return_types.remove("SCO")
         return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
@@ -591,7 +595,7 @@ class SelectorProperty(Property):
 class ObjectReferenceProperty(StringProperty):
 
     def __init__(self, valid_types=None, allow_custom=False, **kwargs):
-        if valid_types and type(valid_types) is not list:
+        if valid_types and not isinstance(valid_types, list):
             valid_types = [valid_types]
         self.valid_types = valid_types
         self.allow_custom = allow_custom
