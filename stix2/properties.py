@@ -14,7 +14,7 @@ import stix2
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
-    MutuallyExclusivePropertiesError,
+    MutuallyExclusivePropertiesError, STIXError,
 )
 from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
@@ -168,6 +168,13 @@ class Property(object):
 
     def __init__(self, required=False, fixed=None, default=None):
         self.required = required
+
+        if required and default:
+            raise STIXError(
+                "Cant't use 'required' and 'default' together. 'required'"
+                "really means 'the user must provide this.'",
+            )
+
         if fixed:
             self._fixed_value = fixed
             self.clean = self._default_clean

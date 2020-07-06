@@ -287,7 +287,7 @@ class TAXIICollectionSource(DataSource):
 
         # query TAXII collection
         try:
-            all_data = self.collection.get_objects(**taxii_filters_dict)['objects']
+            all_data = self.collection.get_objects(**taxii_filters_dict).get('objects', [])
 
             # deduplicate data (before filtering as reduces wasted filtering)
             all_data = deduplicate(all_data)
