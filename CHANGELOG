@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+2.0.2 - 2020-07-07
+
+* #423 Fixes issue with six dependency.
+
 2.0.1 - 2020-07-06
 
 * Fixes issue with PyPI.
