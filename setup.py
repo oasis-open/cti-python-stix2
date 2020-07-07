@@ -51,7 +51,7 @@ setup(
         'pytz',
         'requests',
         'simplejson',
-        'six',
+        'six>=1.13.0',
         'stix2-patterns',
     ],
     project_urls={
