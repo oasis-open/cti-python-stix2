@@ -3,10 +3,9 @@ import datetime as dt
 import pytest
 import pytz
 
-import stix2
 from stix2.base import _STIXBase
 from stix2.exceptions import (
-    ExtraPropertiesError, STIXError, CustomContentError,
+    CustomContentError, ExtraPropertiesError, STIXError,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
