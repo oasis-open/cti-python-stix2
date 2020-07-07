@@ -1340,18 +1340,6 @@ def test_register_duplicate_observable_extension():
     assert "cannot be registered again" in str(excinfo.value)
 
 
-def test_register_duplicate_marking():
-    with pytest.raises(DuplicateRegistrationError) as excinfo:
-        @stix2.v21.CustomMarking(
-            'x-new-obj', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class NewObj2():
-            pass
-    assert "cannot be registered again" in str(excinfo.value)
-
-
 def test_custom_ref_allow_custom_true():
     rp = stix2.properties.ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version="2.1", allow_custom=True)
     possible_val = "custom-obj--26ffb872-1dd9-446e-b6f5-d58527e5b5aa"
