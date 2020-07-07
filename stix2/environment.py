@@ -1,5 +1,4 @@
 """Python STIX2 Environment API."""
-
 import copy
 import logging
 import time
@@ -463,7 +462,7 @@ def partial_location_distance(lat1, long1, lat2, long2, threshold):
         float: Number between 0.0 and 1.0 depending on match.
 
     """
-    from haversine import haversine, Unit
+    from haversine import Unit, haversine
     distance = haversine((lat1, long1), (lat2, long2), unit=Unit.KILOMETERS)
     result = 1 - (distance / threshold)
     logger.debug(
