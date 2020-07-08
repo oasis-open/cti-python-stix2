@@ -365,7 +365,7 @@ def partial_string_based(str1, str2):
 
     """
     from rapidfuzz import fuzz
-    result = round(fuzz.token_sort_ratio(str1, str2))
+    result = fuzz.token_sort_ratio(str1, str2)
     logger.debug("--\t\tpartial_string_based '%s' '%s'\tresult: '%s'", str1, str2, result)
     return result / 100.0
 
