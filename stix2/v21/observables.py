@@ -503,16 +503,6 @@ class SocketExt(_Extension):
         ),
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
-        (
-            'protocol_family', EnumProperty(allowed=[
-                "PF_INET",
-                "PF_IPX",
-                "PF_APPLETALK",
-                "PF_INET6",
-                "PF_AX25",
-                "PF_NETROM",
-            ]),
-        ),
         ('options', DictionaryProperty(spec_version='2.1')),
         (
             'socket_type', EnumProperty(allowed=[
