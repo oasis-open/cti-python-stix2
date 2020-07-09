@@ -1139,7 +1139,6 @@ def test_network_traffic_socket_example():
     h = stix2.v21.SocketExt(
         is_listening=True,
         address_family="AF_INET",
-        protocol_family="PF_INET",
         socket_type="SOCK_STREAM",
     )
     nt = stix2.v21.NetworkTraffic(
@@ -1149,7 +1148,6 @@ def test_network_traffic_socket_example():
     )
     assert nt.extensions['socket-ext'].is_listening
     assert nt.extensions['socket-ext'].address_family == "AF_INET"
-    assert nt.extensions['socket-ext'].protocol_family == "PF_INET"
     assert nt.extensions['socket-ext'].socket_type == "SOCK_STREAM"
 
 
@@ -1157,7 +1155,6 @@ def test_correct_socket_options():
     se1 = stix2.v21.SocketExt(
         is_listening=True,
         address_family="AF_INET",
-        protocol_family="PF_INET",
         socket_type="SOCK_STREAM",
         options={"ICMP6_RCVTIMEO": 100},
     )
@@ -1172,7 +1169,6 @@ def test_incorrect_socket_options():
         stix2.v21.SocketExt(
             is_listening=True,
             address_family="AF_INET",
-            protocol_family="PF_INET",
             socket_type="SOCK_STREAM",
             options={"RCVTIMEO": 100},
         )
@@ -1182,7 +1178,6 @@ def test_incorrect_socket_options():
         stix2.v21.SocketExt(
             is_listening=True,
             address_family="AF_INET",
-            protocol_family="PF_INET",
             socket_type="SOCK_STREAM",
             options={"SO_RCVTIMEO": '100'},
         )
