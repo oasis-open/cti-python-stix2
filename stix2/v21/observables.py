@@ -352,7 +352,6 @@ class File(_Observable):
         ('name_enc', StringProperty()),
         ('magic_number_hex', HexProperty()),
         ('mime_type', StringProperty()),
-        # these are not the created/modified timestamps of the object itself
         ('ctime', TimestampProperty()),
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),

@@ -1,6 +1,27 @@
 CHANGELOG
 =========
 
+2.0.2 - 2020-07-07
+
+* #423 Fixes issue with six dependency.
+
+2.0.1 - 2020-07-06
+
+* Fixes issue with PyPI.
+
+2.0.0 - 2020-07-06
+
+* #418 Drops support for Python versions older than 3.5
+* #397 Drops python-dateutil dependency to just use built-in datetime instead
+* #392, #402 Fixes bugs with deterministic ID generation
+* #393 Fixes bug when using SSDEEP hashes
+* #404 Fixes bug with "import *"
+* #400 Fixes bug with pattern builder and STIX 2.0 Start/Stop timestamps
+* #407 Fixes bug to allow granular markings with 'id' as selector
+* #409 Fixes bug with 2.1 object reference properties
+* #401 Fixes bug where some objects can be versioned and revoked that shouldn't
+* #417 Improves efficiency of ListProperty
+
 1.4.0 - 2020-04-03
 
 * #347, #355, #356, #357, #358, #360, #362, #369, #370, #379, #374, #384 Updates STIX 2.1 support to CS01

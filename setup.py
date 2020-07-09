@@ -51,7 +51,7 @@ setup(
         'pytz',
         'requests',
         'simplejson',
-        'six',
+        'six>=1.13.0',
         'stix2-patterns',
     ],
     project_urls={
@@ -61,6 +61,6 @@ setup(
     },
     extras_require={
         'taxii': ['taxii2-client'],
-        'semantic': ['haversine', 'fuzzywuzzy'],
+        'semantic': ['haversine', 'rapidfuzz'],
     },
 )

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 import pytest
 
 import stix2
@@ -67,8 +69,12 @@ def test_parse_observable_with_no_version():
 
 
 def test_register_marking_with_version():
-    parsing._register_marking(stix2.v20.TLP_WHITE.__class__, version='2.0')
+    class NewMarking1:
+        _type = 'x-new-marking1'
+        _properties = OrderedDict()
+
+    parsing._register_marking(NewMarking1, version='2.0')
     v = 'v20'
 
-    assert stix2.v20.TLP_WHITE.definition._type in parsing.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(stix2.v20.TLP_WHITE.__class__)
+    assert NewMarking1._type in parsing.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(parsing.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])
