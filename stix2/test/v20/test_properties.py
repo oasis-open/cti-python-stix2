@@ -8,8 +8,9 @@ from stix2.exceptions import (
     ExtraPropertiesError, ParseError,
 )
 from stix2.properties import (
-    DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty, IDProperty,
-    ListProperty, ObservableProperty, ReferenceProperty, STIXObjectProperty,
+    DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty,
+    HashesProperty, IDProperty, ListProperty, ObservableProperty,
+    ReferenceProperty, STIXObjectProperty,
 )
 from stix2.v20.common import MarkingProperty
 
@@ -351,6 +352,32 @@ def test_property_list_of_dictionary():
 
     test_obj = NewObj(property1=[{'foo': 'bar'}])
     assert test_obj.property1[0]['foo'] == 'bar'
+
+
+@pytest.mark.parametrize(
+    "key", [
+        "aaa",
+        "a"*256,
+        "a-1_b",
+    ],
+)
+def test_hash_property_valid_key(key):
+    p = HashesProperty(["foo"], spec_version="2.0")
+    result = p.clean({key: "bar"}, True)
+    assert result == ({key: "bar"}, True)
+
+
+@pytest.mark.parametrize(
+    "key", [
+        "aa",
+        "a"*257,
+        "funny%chars?",
+    ],
+)
+def test_hash_property_invalid_key(key):
+    p = HashesProperty(["foo"], spec_version="2.0")
+    with pytest.raises(DictionaryKeyError):
+        p.clean({key: "foo"}, True)
 
 
 def test_embedded_property():
