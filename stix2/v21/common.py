@@ -25,7 +25,7 @@ class ExternalReference(_STIXBase21):
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('external_id', StringProperty()),
     ])
 

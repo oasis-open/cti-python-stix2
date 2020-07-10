@@ -40,7 +40,7 @@ class Artifact(_Observable):
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('encryption_algorithm', EnumProperty(ENCRYPTION_ALGORITHM)),
         ('decryption_key', StringProperty()),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
@@ -219,7 +219,7 @@ class AlternateDataStream(_STIXBase21):
 
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('size', IntegerProperty()),
     ])
 
@@ -301,7 +301,7 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
         ('size_of_heap_commit', IntegerProperty()),
         ('loader_flags_hex', HexProperty()),
         ('number_of_rva_and_sizes', IntegerProperty()),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
     ])
 
     def _check_object_constraints(self):
@@ -318,7 +318,7 @@ class WindowsPESection(_STIXBase21):
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty(min=0)),
         ('entropy', FloatProperty()),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
     ])
 
 
@@ -338,7 +338,7 @@ class WindowsPEBinaryExt(_Extension):
         ('number_of_symbols', IntegerProperty(min=0)),
         ('size_of_optional_header', IntegerProperty(min=0)),
         ('characteristics_hex', HexProperty()),
-        ('file_header_hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('file_header_hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
@@ -354,7 +354,7 @@ class File(_Observable):
         ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('size', IntegerProperty(min=0)),
         ('name', StringProperty()),
         ('name_enc', StringProperty()),
@@ -826,7 +826,7 @@ class X509Certificate(_Observable):
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('is_self_signed', BooleanProperty()),
-        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('version', StringProperty()),
         ('serial_number', StringProperty()),
         ('signature_algorithm', StringProperty()),
