@@ -9,8 +9,9 @@ from stix2.exceptions import (
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, HexProperty, IntegerProperty, ListProperty, Property,
-    StringProperty, TimestampProperty, TypeProperty,
+    FloatProperty, HashesProperty, HexProperty, IntegerProperty, ListProperty,
+    OpenVocabProperty, Property, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 
 
@@ -363,8 +364,86 @@ def test_enum_property_invalid():
     with pytest.raises(ValueError):
         enum_prop.clean('z', False)
 
+    with pytest.raises(ValueError):
+        enum_prop.clean('z', True)
 
-def test_enum_property_custom():
-    enum_prop = EnumProperty(['a', 'b', 'c'])
-    result = enum_prop.clean("z", True)
-    assert result == ("z", True)
+
+@pytest.mark.parametrize(
+    "vocab", [
+        ['a', 'b', 'c'],
+        ('a', 'b', 'c'),
+        'b',
+    ],
+)
+def test_openvocab_property(vocab):
+    ov_prop = OpenVocabProperty(vocab)
+
+    assert ov_prop.clean("b", False) == ("b", False)
+    assert ov_prop.clean("b", True) == ("b", False)
+
+    with pytest.raises(CustomContentError):
+        ov_prop.clean("d", False)
+
+    assert ov_prop.clean("d", True) == ("d", True)
+
+
+@pytest.mark.parametrize(
+    "value", [
+        {"sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b"},
+        [('MD5', '2dfb1bcc980200c6706feee399d41b3f'), ('RIPEMD-160', 'b3a8cd8a27c90af79b3c81754f267780f443dfef')],
+    ],
+)
+def test_hashes_property_valid(value):
+    hash_prop = HashesProperty(["sha256", "md5", "ripemd160"])
+    _, has_custom = hash_prop.clean(value, False)
+    assert not has_custom
+
+
+@pytest.mark.parametrize(
+    "value", [
+        {"MD5": "a"},
+        {"SHA-256": "2dfb1bcc980200c6706feee399d41b3f"},
+    ],
+)
+def test_hashes_property_invalid(value):
+    hash_prop = HashesProperty(["sha256", "md5"])
+
+    with pytest.raises(ValueError):
+        hash_prop.clean(value, False)
+
+
+def test_hashes_property_custom():
+    value = {
+        "sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
+        "abc-123": "aaaaaaaaaaaaaaaaaaaaa",
+    }
+    expected_cleaned_value = {
+        # cleaning transforms recognized hash algorithm names to the spec-
+        # mandated name.
+        "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
+        "abc-123": "aaaaaaaaaaaaaaaaaaaaa",
+    }
+
+    hash_prop = HashesProperty(["SHA-256"])
+    result = hash_prop.clean(value, True)
+    assert result == (expected_cleaned_value, True)
+
+    with pytest.raises(CustomContentError):
+        hash_prop.clean(value, False)
+
+
+def test_hashes_no_library_support():
+    prop = HashesProperty(["foo"])
+
+    result = prop.clean({"foo": "bar"}, False)
+    assert result == ({"foo": "bar"}, False)
+
+    result = prop.clean({"foo": "bar"}, True)
+    assert result == ({"foo": "bar"}, False)
+
+    with pytest.raises(CustomContentError):
+        # require exact name match for unsupported hash algorithms
+        prop.clean({"FOO": "bar"}, False)
+
+    result = prop.clean({"FOO": "bar"}, True)
+    assert result == ({"FOO": "bar"}, True)

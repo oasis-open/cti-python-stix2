@@ -7,6 +7,9 @@ import inspect
 import re
 import uuid
 
+import stix2
+import stix2.hashes
+
 from .base import _STIXBase
 from .exceptions import CustomContentError, DictionaryKeyError, STIXError
 from .parsing import parse, parse_observable
@@ -417,54 +420,65 @@ class DictionaryProperty(Property):
         return dictified, False
 
 
-HASHES_REGEX = {
-    "MD5": (r"^[a-fA-F0-9]{32}$", "MD5"),
-    "MD6": (r"^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
-    "RIPEMD160": (r"^[a-fA-F0-9]{40}$", "RIPEMD-160"),
-    "SHA1": (r"^[a-fA-F0-9]{40}$", "SHA-1"),
-    "SHA224": (r"^[a-fA-F0-9]{56}$", "SHA-224"),
-    "SHA256": (r"^[a-fA-F0-9]{64}$", "SHA-256"),
-    "SHA384": (r"^[a-fA-F0-9]{96}$", "SHA-384"),
-    "SHA512": (r"^[a-fA-F0-9]{128}$", "SHA-512"),
-    "SHA3224": (r"^[a-fA-F0-9]{56}$", "SHA3-224"),
-    "SHA3256": (r"^[a-fA-F0-9]{64}$", "SHA3-256"),
-    "SHA3384": (r"^[a-fA-F0-9]{96}$", "SHA3-384"),
-    "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
-    "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "SSDEEP"),
-    "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
-    "TLSH": (r"^[a-fA-F0-9]{70}$", "TLSH"),
-}
-
-
 class HashesProperty(DictionaryProperty):
+
+    def __init__(self, spec_hash_names, **kwargs):
+        super().__init__(**kwargs)
+
+        self.__spec_hash_names = spec_hash_names
+
+        # Map hash algorithm enum to the given spec mandated name, for those
+        # names which are recognized as hash algorithms by this library.
+        self.__alg_to_spec_name = {}
+        for spec_hash_name in spec_hash_names:
+            alg = stix2.hashes.infer_hash_algorithm(spec_hash_name)
+            if alg:
+                self.__alg_to_spec_name[alg] = spec_hash_name
 
     def clean(self, value, allow_custom):
         # ignore the has_custom return value here; there is no customization
         # of DictionaryProperties.
-        clean_dict, _ = super(HashesProperty, self).clean(
-            value, allow_custom,
-        )
+        clean_dict, _ = super().clean(value, allow_custom)
+
+        spec_dict = {}
 
         has_custom = False
-        for k, v in copy.deepcopy(clean_dict).items():
-            key = k.upper().replace('-', '')
-            if key in HASHES_REGEX:
-                vocab_key = HASHES_REGEX[key][1]
-                if vocab_key == "SSDEEP" and self.spec_version == "2.0":
-                    vocab_key = vocab_key.lower()
-                if not re.match(HASHES_REGEX[key][0], v):
-                    raise ValueError("'{0}' is not a valid {1} hash".format(v, vocab_key))
-                if k != vocab_key:
-                    clean_dict[vocab_key] = clean_dict[k]
-                    del clean_dict[k]
+        for hash_k, hash_v in clean_dict.items():
+            hash_alg = stix2.hashes.infer_hash_algorithm(hash_k)
+
+            if hash_alg:
+                # Library-supported hash algorithm: sanity check the value.
+                if not stix2.hashes.check_hash(hash_alg, hash_v):
+                    raise ValueError(
+                        "'{0}' is not a valid {1} hash".format(
+                            hash_v, hash_alg.name,
+                        ),
+                    )
+
+                spec_name = self.__alg_to_spec_name.get(hash_alg)
+                if not spec_name:
+                    # There is library support for the hash algorithm, but it's
+                    # not in the spec.  So it's custom.  Just use the user's
+                    # name as-is.
+                    has_custom = True
+                    spec_name = hash_k
 
             else:
-                has_custom = True
+                # Unrecognized hash algorithm; use as-is.  Hash algorithm name
+                # must be an exact match from spec, or it will be considered
+                # custom.
+                spec_name = hash_k
+                if spec_name not in self.__spec_hash_names:
+                    has_custom = True
 
             if not allow_custom and has_custom:
-                raise CustomContentError("custom hash found: " + k)
+                raise CustomContentError(
+                    "custom hash algorithm: " + hash_k,
+                )
 
-        return clean_dict, has_custom
+            spec_dict[spec_name] = hash_v
+
+        return spec_dict, has_custom
 
 
 class BinaryProperty(Property):
@@ -654,19 +668,49 @@ class EmbeddedObjectProperty(Property):
 
 
 class EnumProperty(StringProperty):
+    """
+    Used for enumeration type properties.  Properties of this type do not allow
+    customization.
+    """
 
     def __init__(self, allowed, **kwargs):
-        if type(allowed) is not list:
-            allowed = list(allowed)
+        if isinstance(allowed, str):
+            allowed = [allowed]
         self.allowed = allowed
         super(EnumProperty, self).__init__(**kwargs)
 
     def clean(self, value, allow_custom):
         cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
+
+        if cleaned_value not in self.allowed:
+            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+
+        return cleaned_value, False
+
+
+class OpenVocabProperty(StringProperty):
+    """
+    Used for open vocab type properties.
+    """
+
+    def __init__(self, allowed, **kwargs):
+        super(OpenVocabProperty, self).__init__(**kwargs)
+
+        if isinstance(allowed, str):
+            allowed = [allowed]
+        self.allowed = allowed
+
+    def clean(self, value, allow_custom):
+        cleaned_value, _ = super(OpenVocabProperty, self).clean(
+            value, allow_custom,
+        )
+
         has_custom = cleaned_value not in self.allowed
 
         if not allow_custom and has_custom:
-            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+            raise CustomContentError(
+                "custom value in open vocab: '{}'".format(cleaned_value),
+            )
 
         return cleaned_value, has_custom
 

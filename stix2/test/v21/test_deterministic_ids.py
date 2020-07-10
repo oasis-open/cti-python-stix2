@@ -14,6 +14,7 @@ from stix2.properties import (
     TypeProperty,
 )
 import stix2.v21
+from stix2.v21.vocab import HASHING_ALGORITHM
 
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
 
@@ -175,7 +176,7 @@ def test_empty_hash():
                     spec_version='2.1', enclosing_type=_type,
                 ),
             ),
-            ('hashes', HashesProperty()),
+            ('hashes', HashesProperty(HASHING_ALGORITHM)),
         ))
         _id_contributing_properties = ['hashes']
 

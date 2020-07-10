@@ -300,7 +300,7 @@ def test_memory_store_object_creator_of_present(mem_store):
     iden = Identity(
         id=IDENTITY_ID,
         name="Foo Corp.",
-        identity_class="corporation",
+        identity_class="organization",
     )
 
     mem_store.add(camp)

@@ -13,6 +13,7 @@ from ..properties import (
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase21
+from .vocab import HASHING_ALGORITHM
 
 
 class ExternalReference(_STIXBase21):
@@ -24,7 +25,7 @@ class ExternalReference(_STIXBase21):
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty(spec_version='2.1')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
         ('external_id', StringProperty()),
     ])
 

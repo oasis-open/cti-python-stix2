@@ -12,6 +12,7 @@ from ..properties import (
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase20
+from .vocab import HASHING_ALGORITHM
 
 
 def _should_set_millisecond(cr, marking_type):
@@ -38,7 +39,7 @@ class ExternalReference(_STIXBase20):
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty(spec_version='2.0')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version='2.0')),
         ('external_id', StringProperty()),
     ])
 

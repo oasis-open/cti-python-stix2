@@ -490,7 +490,7 @@ def test_object_similarity_on_same_identity2():
     IDEN_KWARGS = dict(
         name="John Smith",
         identity_class="individual",
-        sectors=["government", "critical-infrastructure"],
+        sectors=["government", "infrastructure"],
     )
     iden1 = stix2.v21.Identity(id=IDENTITY_ID, **IDEN_KWARGS)
     iden2 = stix2.v21.Identity(id=IDENTITY_ID, **IDEN_KWARGS)
@@ -723,7 +723,7 @@ def test_object_similarity_different_spec_version_raises():
 
 def test_object_similarity_zero_match():
     IND_KWARGS = dict(
-        indicator_types=["malicious-activity", "bar"],
+        indicator_types=["anomalous-activity"],
         pattern="[ipv4-addr:value = '192.168.1.1']",
         pattern_type="stix",
         valid_from="2019-01-01T12:34:56Z",
@@ -743,14 +743,14 @@ def test_object_similarity_zero_match():
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **IND_KWARGS)
     env = stix2.Environment().object_similarity(ind1, ind2, **weights)
-    assert round(env) == 8
+    assert round(env) == 0
     env = stix2.Environment().object_similarity(ind2, ind1, **weights)
-    assert round(env) == 8
+    assert round(env) == 0
 
 
 def test_object_similarity_different_spec_version():
     IND_KWARGS = dict(
-        labels=["APTX"],
+        labels=["malicious-activity"],
         pattern="[ipv4-addr:value = '192.168.1.1']",
     )
     weights = {

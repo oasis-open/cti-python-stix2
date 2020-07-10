@@ -8,9 +8,8 @@ from stix2.exceptions import (
     ExtraPropertiesError, ParseError,
 )
 from stix2.properties import (
-    DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty,
-    HashesProperty, IDProperty, ListProperty, ObservableProperty,
-    ReferenceProperty, STIXObjectProperty,
+    DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty, IDProperty,
+    ListProperty, ObservableProperty, ReferenceProperty, STIXObjectProperty,
 )
 from stix2.v20.common import MarkingProperty
 
@@ -352,45 +351,6 @@ def test_property_list_of_dictionary():
 
     test_obj = NewObj(property1=[{'foo': 'bar'}])
     assert test_obj.property1[0]['foo'] == 'bar'
-
-
-@pytest.mark.parametrize(
-    "value", [
-        {"sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b"},
-        [('MD5', '2dfb1bcc980200c6706feee399d41b3f'), ('RIPEMD-160', 'b3a8cd8a27c90af79b3c81754f267780f443dfef')],
-    ],
-)
-def test_hashes_property_valid(value):
-    hash_prop = HashesProperty()
-    _, has_custom = hash_prop.clean(value, False)
-    assert not has_custom
-
-
-@pytest.mark.parametrize(
-    "value", [
-        {"MD5": "a"},
-        {"SHA-256": "2dfb1bcc980200c6706feee399d41b3f"},
-    ],
-)
-def test_hashes_property_invalid(value):
-    hash_prop = HashesProperty()
-
-    with pytest.raises(ValueError):
-        hash_prop.clean(value, False)
-
-
-def test_hashes_property_custom():
-    value = {
-        "sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
-        "abc-123": "aaaaaaaaaaaaaaaaaaaaa",
-    }
-
-    hash_prop = HashesProperty()
-    result = hash_prop.clean(value, True)
-    assert result == (value, True)
-
-    with pytest.raises(CustomContentError):
-        hash_prop.clean(value, False)
 
 
 def test_embedded_property():

@@ -14,10 +14,17 @@ from ..properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
-    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    OpenVocabProperty, ReferenceProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from .base import _Extension, _Observable, _STIXBase21
 from .common import GranularMarking
+from .vocab import (
+    ACCOUNT_TYPE, ENCRYPTION_ALGORITHM, HASHING_ALGORITHM,
+    NETWORK_SOCKET_ADDRESS_FAMILY, NETWORK_SOCKET_TYPE,
+    WINDOWS_INTEGRITY_LEVEL, WINDOWS_PEBINARY_TYPE, WINDOWS_REGISTRY_DATATYPE,
+    WINDOWS_SERVICE_START_TYPE, WINDOWS_SERVICE_STATUS, WINDOWS_SERVICE_TYPE,
+)
 
 
 class Artifact(_Observable):
@@ -33,8 +40,8 @@ class Artifact(_Observable):
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty(spec_version='2.1')),
-        ('encryption_algorithm', StringProperty()),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
+        ('encryption_algorithm', EnumProperty(ENCRYPTION_ALGORITHM)),
         ('decryption_key', StringProperty()),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -212,7 +219,7 @@ class AlternateDataStream(_STIXBase21):
 
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
-        ('hashes', HashesProperty(spec_version='2.1')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
         ('size', IntegerProperty()),
     ])
 
@@ -294,7 +301,7 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
         ('size_of_heap_commit', IntegerProperty()),
         ('loader_flags_hex', HexProperty()),
         ('number_of_rva_and_sizes', IntegerProperty()),
-        ('hashes', HashesProperty(spec_version='2.1')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
     ])
 
     def _check_object_constraints(self):
@@ -311,7 +318,7 @@ class WindowsPESection(_STIXBase21):
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty(min=0)),
         ('entropy', FloatProperty()),
-        ('hashes', HashesProperty(spec_version='2.1')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
     ])
 
 
@@ -322,7 +329,7 @@ class WindowsPEBinaryExt(_Extension):
 
     _type = 'windows-pebinary-ext'
     _properties = OrderedDict([
-        ('pe_type', StringProperty(required=True)),  # open_vocab
+        ('pe_type', OpenVocabProperty(WINDOWS_PEBINARY_TYPE, required=True)),
         ('imphash', StringProperty()),
         ('machine_hex', HexProperty()),
         ('number_of_sections', IntegerProperty(min=0)),
@@ -331,7 +338,7 @@ class WindowsPEBinaryExt(_Extension):
         ('number_of_symbols', IntegerProperty(min=0)),
         ('size_of_optional_header', IntegerProperty(min=0)),
         ('characteristics_hex', HexProperty()),
-        ('file_header_hashes', HashesProperty(spec_version='2.1')),
+        ('file_header_hashes', HashesProperty(HASHING_ALGORITHM)),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
@@ -347,7 +354,7 @@ class File(_Observable):
         ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
-        ('hashes', HashesProperty(spec_version='2.1')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
         ('size', IntegerProperty(min=0)),
         ('name', StringProperty()),
         ('name_enc', StringProperty()),
@@ -487,34 +494,11 @@ class SocketExt(_Extension):
 
     _type = 'socket-ext'
     _properties = OrderedDict([
-        (
-            'address_family', EnumProperty(
-                allowed=[
-                    "AF_UNSPEC",
-                    "AF_INET",
-                    "AF_IPX",
-                    "AF_APPLETALK",
-                    "AF_NETBIOS",
-                    "AF_INET6",
-                    "AF_IRDA",
-                    "AF_BTH",
-                ], required=True,
-            ),
-        ),
+        ('address_family', EnumProperty(NETWORK_SOCKET_ADDRESS_FAMILY, required=True)),
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
         ('options', DictionaryProperty(spec_version='2.1')),
-        (
-            'socket_type', EnumProperty(
-                allowed=[
-                    "SOCK_STREAM",
-                    "SOCK_DGRAM",
-                    "SOCK_RAW",
-                    "SOCK_RDM",
-                    "SOCK_SEQPACKET",
-                ],
-            ),
-        ),
+        ('socket_type', EnumProperty(NETWORK_SOCKET_TYPE)),
         ('socket_descriptor', IntegerProperty(min=0)),
         ('socket_handle', IntegerProperty()),
     ])
@@ -613,16 +597,7 @@ class WindowsProcessExt(_Extension):
         ('owner_sid', StringProperty()),
         ('window_title', StringProperty()),
         ('startup_info', DictionaryProperty(spec_version='2.1')),
-        (
-            'integrity_level', EnumProperty(
-                allowed=[
-                    "low",
-                    "medium",
-                    "high",
-                    "system",
-                ],
-            ),
-        ),
+        ('integrity_level', EnumProperty(WINDOWS_INTEGRITY_LEVEL)),
     ])
 
 
@@ -637,41 +612,10 @@ class WindowsServiceExt(_Extension):
         ('descriptions', ListProperty(StringProperty)),
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
-        (
-            'start_type', EnumProperty(
-                allowed=[
-                    "SERVICE_AUTO_START",
-                    "SERVICE_BOOT_START",
-                    "SERVICE_DEMAND_START",
-                    "SERVICE_DISABLED",
-                    "SERVICE_SYSTEM_ALERT",
-                ],
-            ),
-        ),
+        ('start_type', EnumProperty(WINDOWS_SERVICE_START_TYPE)),
         ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version="2.1"))),
-        (
-            'service_type', EnumProperty(
-                allowed=[
-                    "SERVICE_KERNEL_DRIVER",
-                    "SERVICE_FILE_SYSTEM_DRIVER",
-                    "SERVICE_WIN32_OWN_PROCESS",
-                    "SERVICE_WIN32_SHARE_PROCESS",
-                ],
-            ),
-        ),
-        (
-            'service_status', EnumProperty(
-                allowed=[
-                    "SERVICE_CONTINUE_PENDING",
-                    "SERVICE_PAUSE_PENDING",
-                    "SERVICE_PAUSED",
-                    "SERVICE_RUNNING",
-                    "SERVICE_START_PENDING",
-                    "SERVICE_STOP_PENDING",
-                    "SERVICE_STOPPED",
-                ],
-            ),
-        ),
+        ('service_type', EnumProperty(WINDOWS_SERVICE_TYPE)),
+        ('service_status', EnumProperty(WINDOWS_SERVICE_STATUS)),
     ])
 
 
@@ -789,7 +733,7 @@ class UserAccount(_Observable):
         ('user_id', StringProperty()),
         ('credential', StringProperty()),
         ('account_login', StringProperty()),
-        ('account_type', StringProperty()),   # open vocab
+        ('account_type', OpenVocabProperty(ACCOUNT_TYPE)),
         ('display_name', StringProperty()),
         ('is_service_account', BooleanProperty()),
         ('is_privileged', BooleanProperty()),
@@ -817,25 +761,7 @@ class WindowsRegistryValueType(_STIXBase21):
     _properties = OrderedDict([
         ('name', StringProperty()),
         ('data', StringProperty()),
-        (
-            'data_type', EnumProperty(
-                allowed=[
-                    "REG_NONE",
-                    "REG_SZ",
-                    "REG_EXPAND_SZ",
-                    "REG_BINARY",
-                    "REG_DWORD",
-                    "REG_DWORD_BIG_ENDIAN",
-                    "REG_LINK",
-                    "REG_MULTI_SZ",
-                    "REG_RESOURCE_LIST",
-                    "REG_FULL_RESOURCE_DESCRIPTION",
-                    "REG_RESOURCE_REQUIREMENTS_LIST",
-                    "REG_QWORD",
-                    "REG_INVALID_TYPE",
-                ],
-            ),
-        ),
+        ('data_type', EnumProperty(WINDOWS_REGISTRY_DATATYPE)),
     ])
 
 
@@ -900,7 +826,7 @@ class X509Certificate(_Observable):
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('is_self_signed', BooleanProperty()),
-        ('hashes', HashesProperty(spec_version='2.1')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM)),
         ('version', StringProperty()),
         ('serial_number', StringProperty()),
         ('signature_algorithm', StringProperty()),
