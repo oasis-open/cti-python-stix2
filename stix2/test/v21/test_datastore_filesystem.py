@@ -654,6 +654,27 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
     assert camp_r.x_empire == camp.x_empire
 
 
+def test_filesystem_custom_object_dict(fs_store):
+    fs_store.sink.allow_custom = True
+    newobj = {
+        "type": "x-new-obj-2",
+        "id": "x-new-obj-2--d08dc866-6149-47db-aae6-7b58a827e7f0",
+        "spec_version": "2.1",
+        "created": "2020-07-20T03:45:02.879Z",
+        "modified": "2020-07-20T03:45:02.879Z",
+        "property1": "something",
+    }
+    fs_store.add(newobj)
+
+    newobj_r = fs_store.get(newobj["id"])
+    assert newobj_r["id"] == newobj["id"]
+    assert newobj_r["property1"] == 'something'
+
+    # remove dir
+    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj-2"), True)
+    fs_store.sink.allow_custom = False
+
+
 def test_filesystem_custom_object(fs_store):
     @stix2.v21.CustomObject(
         'x-new-obj-2', [

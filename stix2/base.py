@@ -30,7 +30,7 @@ except ImportError:
     from collections import Mapping
 
 
-__all__ = ['STIXJSONEncoder', '_STIXBase']
+__all__ = ['STIXJSONEncoder', '_STIXBase', 'serialize']
 
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
@@ -72,6 +72,43 @@ class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
             return dict(obj)
         else:
             return super(STIXJSONIncludeOptionalDefaultsEncoder, self).default(obj)
+
+
+def serialize(obj, pretty=False, include_optional_defaults=False, **kwargs):
+    """
+    Serialize a STIX object.
+
+    Args:
+        obj: The STIX object to be serialized.
+        pretty (bool): If True, output properties following the STIX specs
+            formatting. This includes indentation. Refer to notes for more
+            details. (Default: ``False``)
+        include_optional_defaults (bool): Determines whether to include
+            optional properties set to the default value defined in the spec.
+        **kwargs: The arguments for a json.dumps() call.
+
+    Returns:
+        str: The serialized JSON object.
+
+    Note:
+        The argument ``pretty=True`` will output the STIX object following
+        spec order. Using this argument greatly impacts object serialization
+        performance. If your use case is centered across machine-to-machine
+        operation it is recommended to set ``pretty=False``.
+
+        When ``pretty=True`` the following key-value pairs will be added or
+        overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
+    """
+    if pretty:
+        def sort_by(element):
+            return find_property_index(obj, *element)
+
+        kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
+
+    if include_optional_defaults:
+        return json.dumps(obj, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
+    else:
+        return json.dumps(obj, cls=STIXJSONEncoder, **kwargs)
 
 
 def get_required_properties(properties):
@@ -270,7 +307,7 @@ class _STIXBase(Mapping):
     def revoke(self):
         return _revoke(self)
 
-    def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
+    def serialize(self, *args, **kwargs):
         """
         Serialize a STIX object.
 
@@ -309,16 +346,7 @@ class _STIXBase(Mapping):
             When ``pretty=True`` the following key-value pairs will be added or
             overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
         """
-        if pretty:
-            def sort_by(element):
-                return find_property_index(self, *element)
-
-            kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
-
-        if include_optional_defaults:
-            return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
-        else:
-            return json.dumps(self, cls=STIXJSONEncoder, **kwargs)
+        return serialize(self, *args, **kwargs)
 
 
 class _DomainObject(_STIXBase, _MarkingsMixin):
