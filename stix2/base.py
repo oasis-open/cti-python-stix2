@@ -17,7 +17,7 @@ from .exceptions import (
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
-from .serialize import (
+from .serialization import (
     STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, serialize,
 )
 from .utils import NOW, PREFIX_21_REGEX, get_timestamp
