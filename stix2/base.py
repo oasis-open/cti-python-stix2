@@ -237,14 +237,6 @@ class _STIXBase(Mapping):
         """
         Serialize a STIX object.
 
-        Args:
-            pretty (bool): If True, output properties following the STIX specs
-                formatting. This includes indentation. Refer to notes for more
-                details. (Default: ``False``)
-            include_optional_defaults (bool): Determines whether to include
-                optional properties set to the default value defined in the spec.
-            **kwargs: The arguments for a json.dumps() call.
-
         Examples:
             >>> import stix2
             >>> identity = stix2.Identity(name='Example Corp.', identity_class='organization')
@@ -263,14 +255,8 @@ class _STIXBase(Mapping):
         Returns:
             str: The serialized JSON object.
 
-        Note:
-            The argument ``pretty=True`` will output the STIX object following
-            spec order. Using this argument greatly impacts object serialization
-            performance. If your use case is centered across machine-to-machine
-            operation it is recommended to set ``pretty=False``.
-
-            When ``pretty=True`` the following key-value pairs will be added or
-            overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
+        See Also:
+            ``stix2.serialization.serialize`` for options.
         """
         return serialize(self, *args, **kwargs)
 
