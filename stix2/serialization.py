@@ -5,7 +5,8 @@ import datetime as dt
 
 import simplejson as json
 
-from .base import _STIXBase
+import stix2.base
+
 from .utils import find_property_index, format_datetime
 
 
@@ -21,7 +22,7 @@ class STIXJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
-        elif isinstance(obj, _STIXBase):
+        elif isinstance(obj, stix2.base._STIXBase):
             tmp_obj = dict(copy.deepcopy(obj))
             for prop_name in obj._defaulted_optional_properties:
                 del tmp_obj[prop_name]
@@ -41,7 +42,7 @@ class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
-        elif isinstance(obj, _STIXBase):
+        elif isinstance(obj, stix2.base._STIXBase):
             return dict(obj)
         else:
             return super(STIXJSONIncludeOptionalDefaultsEncoder, self).default(obj)
