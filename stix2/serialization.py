@@ -7,7 +7,7 @@ import simplejson as json
 
 import stix2.base
 
-from .utils import find_property_index, format_datetime
+from .utils import format_datetime
 
 
 class STIXJSONEncoder(json.JSONEncoder):
@@ -83,3 +83,80 @@ def serialize(obj, pretty=False, include_optional_defaults=False, **kwargs):
         return json.dumps(obj, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
     else:
         return json.dumps(obj, cls=STIXJSONEncoder, **kwargs)
+
+
+def _find(seq, val):
+    """
+    Search sequence 'seq' for val.  This behaves like str.find(): if not found,
+    -1 is returned instead of throwing an exception.
+
+    Args:
+        seq: The sequence to search
+        val: The value to search for
+
+    Returns:
+        int: The index of the value if found, or -1 if not found
+    """
+    try:
+        return seq.index(val)
+    except ValueError:
+        return -1
+
+
+def _find_property_in_seq(seq, search_key, search_value):
+    """
+    Helper for find_property_index(): search for the property in all elements
+    of the given sequence.
+
+    Args:
+        seq: The sequence
+        search_key: Property name to find
+        search_value: Property value to find
+
+    Returns:
+        int: A property index, or -1 if the property was not found
+    """
+    idx = -1
+    for elem in seq:
+        idx = find_property_index(elem, search_key, search_value)
+        if idx >= 0:
+            break
+
+    return idx
+
+
+def find_property_index(obj, search_key, search_value):
+    """
+    Search (recursively) for the given key and value in the given object.
+    Return an index for the key, relative to whatever object it's found in.
+
+    Args:
+        obj: The object to search (list, dict, or stix object)
+        search_key: A search key
+        search_value: A search value
+
+    Returns:
+        int: An index; -1 if the key and value aren't found
+    """
+    # Special-case keys which are numbers-as-strings, e.g. for cyber-observable
+    # mappings.  Use the int value of the key as the index.
+    if search_key.isdigit():
+        return int(search_key)
+
+    if isinstance(obj, stix2.base._STIXBase):
+        if search_key in obj and obj[search_key] == search_value:
+            idx = _find(obj.object_properties(), search_key)
+        else:
+            idx = _find_property_in_seq(obj.values(), search_key, search_value)
+    elif isinstance(obj, dict):
+        if search_key in obj and obj[search_key] == search_value:
+            idx = _find(sorted(obj), search_key)
+        else:
+            idx = _find_property_in_seq(obj.values(), search_key, search_value)
+    elif isinstance(obj, list):
+        idx = _find_property_in_seq(obj, search_key, search_value)
+    else:
+        # Don't know how to search this type
+        idx = -1
+
+    return idx

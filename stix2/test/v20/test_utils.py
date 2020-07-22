@@ -6,6 +6,7 @@ from io import StringIO
 import pytest
 import pytz
 
+import stix2.serialization
 import stix2.utils
 
 from .constants import IDENTITY_ID
@@ -198,7 +199,7 @@ def test_deduplicate(stix_objs1):
     ],
 )
 def test_find_property_index(object, tuple_to_find, expected_index):
-    assert stix2.utils.find_property_index(
+    assert stix2.serialization.find_property_index(
         object,
         *tuple_to_find
     ) == expected_index
@@ -235,4 +236,4 @@ def test_find_property_index(object, tuple_to_find, expected_index):
     ],
 )
 def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
-    assert stix2.utils._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index
+    assert stix2.serialization._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index
