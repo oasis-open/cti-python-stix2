@@ -49,6 +49,9 @@ def check_for_valid_timetamp_syntax(timestamp_string):
     return _TIMESTAMP_RE.match(timestamp_string)
 
 
+def same_boolean_operator(current_op, op_token):
+    return current_op == op_token.symbol.text
+
 
 class STIXPatternVisitorForSTIX2():
     classes = {}
@@ -131,7 +134,7 @@ class STIXPatternVisitorForSTIX2():
         if len(children) == 1:
             return children[0]
         else:
-            if isinstance(children[0], _BooleanExpression):
+            if isinstance(children[0], _BooleanExpression) and same_boolean_operator(children[0].operator, children[1]):
                 children[0].operands.append(children[2])
                 return children[0]
             else:
