@@ -644,6 +644,16 @@ def test_parsing_boolean():
     assert str(patt_obj) == "[network-traffic:is_active = true]"
 
 
+def test_parsing_mixed_boolean_expression_1():
+    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]",)
+    assert str(patt_obj) == "[a:b = 1 AND a:b = 2 OR a:b = 3]"
+
+
+def test_parsing_mixed_boolean_expression_2():
+    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]",)
+    assert str(patt_obj) == "[a:b = 1 OR a:b = 2 AND a:b = 3]"
+
+
 def test_parsing_multiple_slashes_quotes():
     patt_obj = create_pattern_object("[ file:name = 'weird_name\\'' ]", version="2.1")
     assert str(patt_obj) == "[file:name = 'weird_name\\'']"
