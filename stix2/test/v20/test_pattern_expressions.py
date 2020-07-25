@@ -512,13 +512,18 @@ def test_parsing_start_stop_qualified_expression():
 
 
 def test_parsing_mixed_boolean_expression_1():
-    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]",)
+    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]")
     assert str(patt_obj) == "[a:b = 1 AND a:b = 2 OR a:b = 3]"
 
 
 def test_parsing_mixed_boolean_expression_2():
-    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]",)
+    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]")
     assert str(patt_obj) == "[a:b = 1 OR a:b = 2 AND a:b = 3]"
+
+
+def test_parsing_integer_index():
+    patt_obj = create_pattern_object("[a:b[1]=2]")
+    assert str(patt_obj) == "[a:b[1] = 2]"
 
 
 def test_parsing_illegal_start_stop_qualified_expression():
