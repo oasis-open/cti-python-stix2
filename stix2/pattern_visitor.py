@@ -259,6 +259,9 @@ class STIXPatternVisitorForSTIX2():
             if isinstance(next, TerminalNode):
                 property_path.append(self.instantiate("ListObjectPathComponent", current.property_name, next.getText()))
                 i += 2
+            if isinstance(next, IntegerConstant):
+                property_path.append(self.instantiate("ListObjectPathComponent", current.property_name, next.value))
+                i += 2
             else:
                 property_path.append(current)
                 i += 1
