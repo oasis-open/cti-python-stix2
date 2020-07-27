@@ -12,6 +12,7 @@
    pattern_visitor
    patterns
    properties
+   serialization
    utils
    v20
    v21

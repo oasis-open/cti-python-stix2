@@ -15,7 +15,8 @@ from stix2.datastore import (
 )
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.parsing import parse
-from stix2.utils import format_datetime, get_type_from_id
+from stix2.serialization import serialize
+from stix2.utils import format_datetime, get_type_from_id, parse_into_datetime
 
 
 def _timestamp2filename(timestamp):
@@ -24,10 +25,12 @@ def _timestamp2filename(timestamp):
     "modified" property value.  This should not include an extension.
 
     Args:
-        timestamp: A timestamp, as a datetime.datetime object.
+        timestamp: A timestamp, as a datetime.datetime object or string.
 
     """
     # The format_datetime will determine the correct level of precision.
+    if isinstance(timestamp, str):
+        timestamp = parse_into_datetime(timestamp)
     ts = format_datetime(timestamp)
     ts = re.sub(r"[-T:\.Z ]", "", ts)
     return ts
@@ -582,10 +585,10 @@ class FileSystemSink(DataSink):
 
         if os.path.isfile(file_path):
             raise DataSourceError("Attempted to overwrite file (!) at: {}".format(file_path))
-        else:
-            with io.open(file_path, 'w', encoding=encoding) as f:
-                stix_obj = stix_obj.serialize(pretty=True, encoding=encoding, ensure_ascii=False)
-                f.write(stix_obj)
+
+        with io.open(file_path, 'w', encoding=encoding) as f:
+            stix_obj = serialize(stix_obj, pretty=True, encoding=encoding, ensure_ascii=False)
+            f.write(stix_obj)
 
     def add(self, stix_data=None, version=None):
         """Add STIX objects to file directory.
@@ -614,8 +617,12 @@ class FileSystemSink(DataSink):
             self._check_path_and_write(stix_data)
 
         elif isinstance(stix_data, (str, dict)):
-            stix_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
-            self.add(stix_data, version=version)
+            parsed_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
+            if isinstance(parsed_data, _STIXBase):
+                self.add(parsed_data, version=version)
+            else:
+                # custom unregistered object type
+                self._check_path_and_write(parsed_data)
 
         elif isinstance(stix_data, list):
             # recursively add individual STIX objects
