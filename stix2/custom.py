@@ -35,6 +35,8 @@ def _custom_object_builder(cls, type, properties, version, base_class):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
+    _CustomObject.__name__ = cls.__name__
+
     _register_object(_CustomObject, version=version)
     return _CustomObject
 
@@ -50,6 +52,8 @@ def _custom_marking_builder(cls, type, properties, version, base_class):
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+
+    _CustomMarking.__name__ = cls.__name__
 
     _register_marking(_CustomMarking, version=version)
     return _CustomMarking
@@ -72,6 +76,8 @@ def _custom_observable_builder(cls, type, properties, version, base_class, id_co
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
+    _CustomObservable.__name__ = cls.__name__
+
     _register_observable(_CustomObservable, version=version)
     return _CustomObservable
 
@@ -87,6 +93,8 @@ def _custom_extension_builder(cls, observable, type, properties, version, base_c
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+
+    _CustomExtension.__name__ = cls.__name__
 
     _register_observable_extension(observable, _CustomExtension, version=version)
     return _CustomExtension
