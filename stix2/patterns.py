@@ -248,7 +248,10 @@ def make_constant(value):
 class _ObjectPathComponent(object):
     @staticmethod
     def create_ObjectPathComponent(component_name):
-        if component_name.endswith("_ref"):
+        # first case is to handle if component_name was quoted
+        if isinstance(component_name, StringConstant):
+            return BasicObjectPathComponent(component_name.value, False)
+        elif component_name.endswith("_ref"):
             return ReferenceObjectPathComponent(component_name)
         elif component_name.find("[") != -1:
             parse1 = component_name.split("[")
