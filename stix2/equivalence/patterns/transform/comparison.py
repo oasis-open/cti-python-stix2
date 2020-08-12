@@ -4,6 +4,9 @@ Transformation utilities for STIX pattern comparison expressions.
 import functools
 import itertools
 from stix2.equivalence.patterns.transform import Transformer
+from stix2.equivalence.patterns.transform.specials import (
+    windows_reg_key, ipv4_addr, ipv6_addr
+)
 from stix2.patterns import (
     _BooleanExpression, _ComparisonExpression, AndBooleanExpression,
     OrBooleanExpression, ParentheticalExpression
@@ -57,6 +60,7 @@ class ComparisonExpressionTransformer(Transformer):
     Specifically, subclasses can implement methods:
         "transform_or" for OR nodes
         "transform_and" for AND nodes
+        "transform_comparison" for plain comparison nodes (<prop> <op> <value>)
         "transform_default" for both types of nodes
 
     "transform_default" is a fallback, if a type-specific callback is not
@@ -69,8 +73,7 @@ class ComparisonExpressionTransformer(Transformer):
     method: a 2-tuple with the transformed AST and a boolean for change
     detection.  See doc for the superclass' method.
 
-    This process currently silently drops parenthetical nodes, and "leaf"
-    comparison expression nodes are left unchanged.
+    This process currently silently drops parenthetical nodes.
     """
 
     def transform(self, ast):
@@ -88,9 +91,7 @@ class ComparisonExpressionTransformer(Transformer):
                 changed = True
 
         elif isinstance(ast, _ComparisonExpression):
-            # Terminates recursion; we don't change these nodes
-            result = ast
-            changed = False
+            result, changed = self.__dispatch_transform(ast)
 
         elif isinstance(ast, ParentheticalExpression):
             # Drop these
@@ -115,6 +116,11 @@ class ComparisonExpressionTransformer(Transformer):
 
         elif isinstance(ast, OrBooleanExpression):
             meth = getattr(self, "transform_or", self.transform_default)
+
+        elif isinstance(ast, _ComparisonExpression):
+            meth = getattr(
+                self, "transform_comparison", self.transform_default
+            )
 
         else:
             meth = self.transform_default
@@ -142,7 +148,7 @@ class OrderDedupeTransformer(
         A or A => A
     """
 
-    def transform_default(self, ast):
+    def __transform(self, ast):
         """
         Sort/dedupe children.  AND and OR can be treated identically.
 
@@ -172,6 +178,12 @@ class OrderDedupeTransformer(
 
         return ast, changed
 
+    def transform_or(self, ast):
+        return self.__transform(ast)
+
+    def transform_and(self, ast):
+        return self.__transform(ast)
+
 
 class FlattenTransformer(ComparisonExpressionTransformer):
     """
@@ -182,7 +194,7 @@ class FlattenTransformer(ComparisonExpressionTransformer):
         (A) => A
     """
 
-    def transform_default(self, ast):
+    def __transform(self, ast):
         """
         Flatten children.  AND and OR can be treated mostly identically.  The
         little difference is that we can absorb AND children if we're an AND
@@ -192,14 +204,14 @@ class FlattenTransformer(ComparisonExpressionTransformer):
         :return: The same AST node, but with flattened children
         """
 
-        if isinstance(ast, _BooleanExpression) and len(ast.operands) == 1:
+        changed = False
+        if len(ast.operands) == 1:
             # Replace an AND/OR with one child, with the child itself.
             ast = ast.operands[0]
             changed = True
 
         else:
             flat_operands = []
-            changed = False
             for operand in ast.operands:
                 if isinstance(operand, _BooleanExpression) \
                         and ast.operator == operand.operator:
@@ -213,6 +225,12 @@ class FlattenTransformer(ComparisonExpressionTransformer):
 
         return ast, changed
 
+    def transform_or(self, ast):
+        return self.__transform(ast)
+
+    def transform_and(self, ast):
+        return self.__transform(ast)
+
 
 class AbsorptionTransformer(
     ComparisonExpressionTransformer
@@ -224,56 +242,61 @@ class AbsorptionTransformer(
         A or (A and B) = A
     """
 
-    def transform_default(self, ast):
+    def __transform(self, ast):
 
         changed = False
-        if isinstance(ast, _BooleanExpression):
-            secondary_op = "AND" if ast.operator == "OR" else "OR"
+        secondary_op = "AND" if ast.operator == "OR" else "OR"
 
-            to_delete = set()
+        to_delete = set()
 
-            # Check i (child1) against j to see if we can delete j.
-            for i, child1 in enumerate(ast.operands):
-                if i in to_delete:
+        # Check i (child1) against j to see if we can delete j.
+        for i, child1 in enumerate(ast.operands):
+            if i in to_delete:
+                continue
+
+            for j, child2 in enumerate(ast.operands):
+                if i == j or j in to_delete:
                     continue
 
-                for j, child2 in enumerate(ast.operands):
-                    if i == j or j in to_delete:
-                        continue
+                # We're checking if child1 is contained in child2, so
+                # child2 has to be a compound object, not just a simple
+                # comparison expression.  We also require the right operator
+                # for child2: "AND" if ast is "OR" and vice versa.
+                if not isinstance(child2, _BooleanExpression) \
+                        or child2.operator != secondary_op:
+                    continue
 
-                    # We're checking if child1 is contained in child2, so
-                    # child2 has to be a compound object, not just a simple
-                    # comparison expression.  We also require the right operator
-                    # for child2: "AND" if ast is "OR" and vice versa.
-                    if not isinstance(child2, _BooleanExpression) \
-                            or child2.operator != secondary_op:
-                        continue
+                # The simple check: is child1 contained in child2?
+                if iter_in(
+                    child1, child2.operands, comparison_expression_cmp
+                ):
+                    to_delete.add(j)
 
-                    # The simple check: is child1 contained in child2?
-                    if iter_in(
-                        child1, child2.operands, comparison_expression_cmp
+                # A more complicated check: does child1 occur in child2
+                # in a "flattened" form?
+                elif child1.operator == child2.operator:
+                    if all(
+                        iter_in(
+                            child1_operand, child2.operands,
+                            comparison_expression_cmp
+                        )
+                        for child1_operand in child1.operands
                     ):
                         to_delete.add(j)
 
-                    # A more complicated check: does child1 occur in child2
-                    # in a "flattened" form?
-                    elif child1.operator == child2.operator:
-                        if all(
-                            iter_in(
-                                child1_operand, child2.operands,
-                                comparison_expression_cmp
-                            )
-                            for child1_operand in child1.operands
-                        ):
-                            to_delete.add(j)
+        if to_delete:
+            changed = True
 
-            if to_delete:
-                changed = True
-
-                for i in reversed(sorted(to_delete)):
-                    del ast.operands[i]
+            for i in reversed(sorted(to_delete)):
+                del ast.operands[i]
 
         return ast, changed
+
+    def transform_or(self, ast):
+        return self.__transform(ast)
+
+    def transform_and(self, ast):
+        return self.__transform(ast)
 
 
 class DNFTransformer(ComparisonExpressionTransformer):
@@ -329,3 +352,26 @@ class DNFTransformer(ComparisonExpressionTransformer):
             result = ast
 
         return result, changed
+
+
+class SpecialValueCanonicalization(ComparisonExpressionTransformer):
+    """
+    Try to find particular leaf-node comparison expressions whose rhs (i.e. the
+    constant) can be canonicalized.  This is an idiosyncratic transformation
+    based on some ideas people had for context-sensitive semantic equivalence
+    in constant values.
+    """
+    def transform_comparison(self, ast):
+        if ast.lhs.object_type_name == "windows-registry-key":
+            windows_reg_key(ast)
+
+        elif ast.lhs.object_type_name == "ipv4-addr":
+            ipv4_addr(ast)
+
+        elif ast.lhs.object_type_name == "ipv6-addr":
+            ipv6_addr(ast)
+
+        # Hard-code False here since this particular canonicalization is never
+        # worth doing more than once.  I think it's okay to pretend nothing has
+        # changed.
+        return ast, False

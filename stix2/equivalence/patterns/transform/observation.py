@@ -15,7 +15,8 @@ from stix2.equivalence.patterns.transform.comparison import (
     FlattenTransformer as CFlattenTransformer,
     OrderDedupeTransformer as COrderDedupeTransformer,
     AbsorptionTransformer as CAbsorptionTransformer,
-    DNFTransformer as CDNFTransformer
+    DNFTransformer as CDNFTransformer,
+    SpecialValueCanonicalization
 )
 from stix2.equivalence.patterns.compare import iter_lex_cmp, iter_in
 from stix2.equivalence.patterns.compare.observation import observation_expression_cmp
@@ -473,9 +474,10 @@ class CanonicalizeComparisonExpressionsTransformer(
         simplify = ChainTransformer(comp_flatten, comp_order, comp_absorb)
         settle_simplify = SettleTransformer(simplify)
 
+        comp_special = SpecialValueCanonicalization()
         comp_dnf = CDNFTransformer()
         self.__comp_canonicalize = ChainTransformer(
-            settle_simplify, comp_dnf, settle_simplify
+            comp_special, settle_simplify, comp_dnf, settle_simplify
         )
 
     def transform_observation(self, ast):
