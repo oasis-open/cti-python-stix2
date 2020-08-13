@@ -2,6 +2,7 @@
 Some generic comparison utility functions.
 """
 
+
 def generic_cmp(value1, value2):
     """
     Generic comparator of values which uses the builtin '<' and '>' operators.

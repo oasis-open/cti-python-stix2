@@ -3,18 +3,18 @@ Comparison utilities for STIX pattern comparison expressions.
 """
 import base64
 import functools
-from stix2.patterns import (
-    _ComparisonExpression, AndBooleanExpression, OrBooleanExpression,
-    ListObjectPathComponent, IntegerConstant, FloatConstant, StringConstant,
-    BooleanConstant, TimestampConstant, HexConstant, BinaryConstant,
-    ListConstant
-)
-from stix2.equivalence.patterns.compare import generic_cmp, iter_lex_cmp
 
+from stix2.equivalence.patterns.compare import generic_cmp, iter_lex_cmp
+from stix2.patterns import (
+    AndBooleanExpression, BinaryConstant, BooleanConstant, FloatConstant,
+    HexConstant, IntegerConstant, ListConstant, ListObjectPathComponent,
+    OrBooleanExpression, StringConstant, TimestampConstant,
+    _ComparisonExpression,
+)
 
 _COMPARISON_OP_ORDER = (
     "=", "!=", "<>", "<", "<=", ">", ">=",
-    "IN", "LIKE", "MATCHES", "ISSUBSET", "ISSUPERSET"
+    "IN", "LIKE", "MATCHES", "ISSUBSET", "ISSUPERSET",
 )
 
 
@@ -23,7 +23,7 @@ _CONSTANT_TYPE_ORDER = (
     # treated equally as a generic "number" type.  So they aren't in this list.
     # See constant_cmp().
     StringConstant, BooleanConstant,
-    TimestampConstant, HexConstant, BinaryConstant, ListConstant
+    TimestampConstant, HexConstant, BinaryConstant, ListConstant,
 )
 
 
@@ -111,11 +111,11 @@ def list_cmp(value1, value2):
 
     # Achieve order-independence by sorting the lists first.
     sorted_value1 = sorted(
-        value1.value, key=functools.cmp_to_key(constant_cmp)
+        value1.value, key=functools.cmp_to_key(constant_cmp),
     )
 
     sorted_value2 = sorted(
-        value2.value, key=functools.cmp_to_key(constant_cmp)
+        value2.value, key=functools.cmp_to_key(constant_cmp),
     )
 
     result = iter_lex_cmp(sorted_value1, sorted_value2, constant_cmp)
@@ -131,7 +131,7 @@ _CONSTANT_COMPARATORS = {
     TimestampConstant: generic_constant_cmp,
     HexConstant: hex_cmp,
     BinaryConstant: bin_cmp,
-    ListConstant: list_cmp
+    ListConstant: list_cmp,
 }
 
 
@@ -214,7 +214,7 @@ def object_path_cmp(path1, path2):
         path_vals1 = object_path_to_raw_values(path1)
         path_vals2 = object_path_to_raw_values(path2)
         result = iter_lex_cmp(
-            path_vals1, path_vals2, object_path_component_cmp
+            path_vals1, path_vals2, object_path_component_cmp,
         )
 
     return result
@@ -345,7 +345,7 @@ def comparison_expression_cmp(expr1, expr2):
         # This will order according to recursive invocations of this comparator,
         # on sub-expressions.
         result = iter_lex_cmp(
-            expr1.operands, expr2.operands, comparison_expression_cmp
+            expr1.operands, expr2.operands, comparison_expression_cmp,
         )
 
     return result

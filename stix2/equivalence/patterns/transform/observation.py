@@ -3,23 +3,30 @@ Transformation utilities for STIX pattern observation expressions.
 """
 import functools
 import itertools
-from stix2.patterns import (
-    ObservationExpression, AndObservationExpression, OrObservationExpression,
-    QualifiedObservationExpression, _CompoundObservationExpression,
-    ParentheticalExpression, FollowedByObservationExpression
+
+from stix2.equivalence.patterns.compare import iter_in, iter_lex_cmp
+from stix2.equivalence.patterns.compare.observation import (
+    observation_expression_cmp,
 )
 from stix2.equivalence.patterns.transform import (
-    ChainTransformer, SettleTransformer, Transformer
+    ChainTransformer, SettleTransformer, Transformer,
 )
 from stix2.equivalence.patterns.transform.comparison import (
-    FlattenTransformer as CFlattenTransformer,
-    OrderDedupeTransformer as COrderDedupeTransformer,
-    AbsorptionTransformer as CAbsorptionTransformer,
-    DNFTransformer as CDNFTransformer,
-    SpecialValueCanonicalization
+    SpecialValueCanonicalization,
 )
-from stix2.equivalence.patterns.compare import iter_lex_cmp, iter_in
-from stix2.equivalence.patterns.compare.observation import observation_expression_cmp
+from stix2.equivalence.patterns.transform.comparison import \
+    AbsorptionTransformer as CAbsorptionTransformer
+from stix2.equivalence.patterns.transform.comparison import \
+    DNFTransformer as CDNFTransformer
+from stix2.equivalence.patterns.transform.comparison import \
+    FlattenTransformer as CFlattenTransformer
+from stix2.equivalence.patterns.transform.comparison import \
+    OrderDedupeTransformer as COrderDedupeTransformer
+from stix2.patterns import (
+    AndObservationExpression, FollowedByObservationExpression,
+    ObservationExpression, OrObservationExpression, ParentheticalExpression,
+    QualifiedObservationExpression, _CompoundObservationExpression,
+)
 
 
 def _dupe_ast(ast):
@@ -52,7 +59,7 @@ def _dupe_ast(ast):
     elif isinstance(ast, QualifiedObservationExpression):
         # Don't need to dupe the qualifier object at this point
         result = QualifiedObservationExpression(
-            _dupe_ast(ast.observation_expression), ast.qualifier
+            _dupe_ast(ast.observation_expression), ast.qualifier,
         )
 
     elif isinstance(ast, ObservationExpression):
@@ -100,7 +107,7 @@ class ObservationExpressionTransformer(Transformer):
         AndObservationExpression: "and",
         OrObservationExpression: "or",
         FollowedByObservationExpression: "followedby",
-        QualifiedObservationExpression: "qualified"
+        QualifiedObservationExpression: "qualified",
     }
 
     def transform(self, ast):
@@ -143,7 +150,7 @@ class ObservationExpressionTransformer(Transformer):
 
         else:
             raise TypeError("Not an observation expression: {}: {}".format(
-                type(ast).__name__, str(ast)
+                type(ast).__name__, str(ast),
             ))
 
         return result, changed
@@ -228,7 +235,7 @@ class OrderDedupeTransformer(
 
     def __transform(self, ast):
         sorted_children = sorted(
-            ast.operands, key=functools.cmp_to_key(observation_expression_cmp)
+            ast.operands, key=functools.cmp_to_key(observation_expression_cmp),
         )
 
         # Deduping only applies to ORs
@@ -236,15 +243,15 @@ class OrderDedupeTransformer(
             deduped_children = [
                 key.obj for key, _ in itertools.groupby(
                     sorted_children, key=functools.cmp_to_key(
-                        observation_expression_cmp
-                    )
+                        observation_expression_cmp,
+                    ),
                 )
             ]
         else:
             deduped_children = sorted_children
 
         changed = iter_lex_cmp(
-            ast.operands, deduped_children, observation_expression_cmp
+            ast.operands, deduped_children, observation_expression_cmp,
         ) != 0
 
         ast.operands = deduped_children
@@ -376,12 +383,12 @@ class AbsorptionTransformer(
                 if isinstance(
                     child2, (
                         AndObservationExpression,
-                        FollowedByObservationExpression
-                    )
+                        FollowedByObservationExpression,
+                    ),
                 ):
                     # The simple check: is child1 contained in child2?
                     if iter_in(
-                        child1, child2.operands, observation_expression_cmp
+                        child1, child2.operands, observation_expression_cmp,
                     ):
                         to_delete.add(j)
 
@@ -390,11 +397,11 @@ class AbsorptionTransformer(
                     elif type(child1) is type(child2):
                         if isinstance(child1, AndObservationExpression):
                             can_simplify = self.__is_contained_and(
-                                child1.operands, child2.operands
+                                child1.operands, child2.operands,
                             )
                         else:  # child1 and 2 are followedby nodes
                             can_simplify = self.__is_contained_followedby(
-                                child1.operands, child2.operands
+                                child1.operands, child2.operands,
                             )
 
                         if can_simplify:
@@ -434,7 +441,7 @@ class DNFTransformer(ObservationExpressionTransformer):
             distributed_children = [
                 root_type([
                     _dupe_ast(sub_ast) for sub_ast in itertools.chain(
-                        other_children, prod_seq
+                        other_children, prod_seq,
                     )
                 ])
                 for prod_seq in itertools.product(*or_children)
@@ -477,7 +484,7 @@ class CanonicalizeComparisonExpressionsTransformer(
         comp_special = SpecialValueCanonicalization()
         comp_dnf = CDNFTransformer()
         self.__comp_canonicalize = ChainTransformer(
-            comp_special, settle_simplify, comp_dnf, settle_simplify
+            comp_special, settle_simplify, comp_dnf, settle_simplify,
         )
 
     def transform_observation(self, ast):

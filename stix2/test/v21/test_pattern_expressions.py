@@ -658,6 +658,7 @@ def test_parsing_integer_index():
     patt_obj = create_pattern_object("[a:b[1]=2]")
     assert str(patt_obj) == "[a:b[1] = 2]"
 
+
 # This should never occur, because the first component will always be a property_name, and they should not be quoted.
 def test_parsing_quoted_first_path_component():
     patt_obj = create_pattern_object("[a:'b'[1]=2]")

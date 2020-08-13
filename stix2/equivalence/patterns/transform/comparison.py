@@ -3,18 +3,19 @@ Transformation utilities for STIX pattern comparison expressions.
 """
 import functools
 import itertools
+
+from stix2.equivalence.patterns.compare import iter_in, iter_lex_cmp
+from stix2.equivalence.patterns.compare.comparison import (
+    comparison_expression_cmp,
+)
 from stix2.equivalence.patterns.transform import Transformer
 from stix2.equivalence.patterns.transform.specials import (
-    windows_reg_key, ipv4_addr, ipv6_addr
+    ipv4_addr, ipv6_addr, windows_reg_key,
 )
 from stix2.patterns import (
-    _BooleanExpression, _ComparisonExpression, AndBooleanExpression,
-    OrBooleanExpression, ParentheticalExpression
+    AndBooleanExpression, OrBooleanExpression, ParentheticalExpression,
+    _BooleanExpression, _ComparisonExpression,
 )
-from stix2.equivalence.patterns.compare.comparison import (
-    comparison_expression_cmp
-)
-from stix2.equivalence.patterns.compare import iter_lex_cmp, iter_in
 
 
 def _dupe_ast(ast):
@@ -119,7 +120,7 @@ class ComparisonExpressionTransformer(Transformer):
 
         elif isinstance(ast, _ComparisonExpression):
             meth = getattr(
-                self, "transform_comparison", self.transform_default
+                self, "transform_comparison", self.transform_default,
             )
 
         else:
@@ -156,7 +157,7 @@ class OrderDedupeTransformer(
         :return: The same AST node, but with sorted children
         """
         sorted_children = sorted(
-            ast.operands, key=functools.cmp_to_key(comparison_expression_cmp)
+            ast.operands, key=functools.cmp_to_key(comparison_expression_cmp),
         )
 
         deduped_children = [
@@ -165,13 +166,13 @@ class OrderDedupeTransformer(
             # need key wrappers in our ASTs!
             k.obj for k, _ in itertools.groupby(
                 sorted_children, key=functools.cmp_to_key(
-                    comparison_expression_cmp
-                )
+                    comparison_expression_cmp,
+                ),
             )
         ]
 
         changed = iter_lex_cmp(
-            ast.operands, deduped_children, comparison_expression_cmp
+            ast.operands, deduped_children, comparison_expression_cmp,
         ) != 0
 
         ast.operands = deduped_children
@@ -268,7 +269,7 @@ class AbsorptionTransformer(
 
                 # The simple check: is child1 contained in child2?
                 if iter_in(
-                    child1, child2.operands, comparison_expression_cmp
+                    child1, child2.operands, comparison_expression_cmp,
                 ):
                     to_delete.add(j)
 
@@ -278,7 +279,7 @@ class AbsorptionTransformer(
                     if all(
                         iter_in(
                             child1_operand, child2.operands,
-                            comparison_expression_cmp
+                            comparison_expression_cmp,
                         )
                         for child1_operand in child1.operands
                     ):
@@ -326,7 +327,7 @@ class DNFTransformer(ComparisonExpressionTransformer):
                     # we should ensure each repetition is independent of the
                     # others.
                     _dupe_ast(sub_ast) for sub_ast in itertools.chain(
-                        other_children, prod_seq
+                        other_children, prod_seq,
                     )
                 ])
                 for prod_seq in itertools.product(*or_children)

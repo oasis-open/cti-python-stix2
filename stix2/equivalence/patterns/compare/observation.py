@@ -3,24 +3,23 @@ Comparison utilities for STIX pattern observation expressions.
 """
 from stix2.equivalence.patterns.compare import generic_cmp, iter_lex_cmp
 from stix2.equivalence.patterns.compare.comparison import (
-    comparison_expression_cmp, generic_constant_cmp
+    comparison_expression_cmp, generic_constant_cmp,
 )
 from stix2.patterns import (
-    ObservationExpression, AndObservationExpression, OrObservationExpression,
-    QualifiedObservationExpression, _CompoundObservationExpression,
-    RepeatQualifier, WithinQualifier, StartStopQualifier,
-    FollowedByObservationExpression
+    AndObservationExpression, FollowedByObservationExpression,
+    ObservationExpression, OrObservationExpression,
+    QualifiedObservationExpression, RepeatQualifier, StartStopQualifier,
+    WithinQualifier, _CompoundObservationExpression,
 )
-
 
 _OBSERVATION_EXPRESSION_TYPE_ORDER = (
     ObservationExpression, AndObservationExpression, OrObservationExpression,
-    FollowedByObservationExpression, QualifiedObservationExpression
+    FollowedByObservationExpression, QualifiedObservationExpression,
 )
 
 
 _QUALIFIER_TYPE_ORDER = (
-    RepeatQualifier, WithinQualifier, StartStopQualifier
+    RepeatQualifier, WithinQualifier, StartStopQualifier,
 )
 
 
@@ -36,7 +35,7 @@ def within_cmp(qual1, qual2):
     Compare WITHIN qualifiers.  This orders by number of seconds.
     """
     return generic_constant_cmp(
-        qual1.number_of_seconds, qual2.number_of_seconds
+        qual1.number_of_seconds, qual2.number_of_seconds,
     )
 
 
@@ -48,14 +47,14 @@ def startstop_cmp(qual1, qual2):
     return iter_lex_cmp(
         (qual1.start_time, qual1.stop_time),
         (qual2.start_time, qual2.stop_time),
-        generic_constant_cmp
+        generic_constant_cmp,
     )
 
 
 _QUALIFIER_COMPARATORS = {
     RepeatQualifier: repeats_cmp,
     WithinQualifier: within_cmp,
-    StartStopQualifier: startstop_cmp
+    StartStopQualifier: startstop_cmp,
 }
 
 
@@ -84,14 +83,14 @@ def observation_expression_cmp(expr1, expr2):
     # If they're simple, use contained comparison expression order
     elif type1 is ObservationExpression:
         result = comparison_expression_cmp(
-            expr1.operand, expr2.operand
+            expr1.operand, expr2.operand,
         )
 
     elif isinstance(expr1, _CompoundObservationExpression):
         # Both compound, and of same type (and/or/followedby): sort according
         # to contents.
         result = iter_lex_cmp(
-            expr1.operands, expr2.operands, observation_expression_cmp
+            expr1.operands, expr2.operands, observation_expression_cmp,
         )
 
     else:  # QualifiedObservationExpression
@@ -112,13 +111,13 @@ def observation_expression_cmp(expr1, expr2):
                 result = qual_cmp(expr1.qualifier, expr2.qualifier)
             else:
                 raise TypeError(
-                    "Can't compare qualifier type: " + qual1_type.__name__
+                    "Can't compare qualifier type: " + qual1_type.__name__,
                 )
 
         if result == 0:
             # Same qualifier type and details; use qualified expression order
             result = observation_expression_cmp(
-                expr1.observation_expression, expr2.observation_expression
+                expr1.observation_expression, expr2.observation_expression,
             )
 
     return result

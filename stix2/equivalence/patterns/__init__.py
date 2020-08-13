@@ -1,18 +1,14 @@
-import stix2.pattern_visitor
-from stix2.equivalence.patterns.transform import (
-    ChainTransformer, SettleTransformer
-)
 from stix2.equivalence.patterns.compare.observation import (
-    observation_expression_cmp
+    observation_expression_cmp,
+)
+from stix2.equivalence.patterns.transform import (
+    ChainTransformer, SettleTransformer,
 )
 from stix2.equivalence.patterns.transform.observation import (
-    CanonicalizeComparisonExpressionsTransformer,
-    AbsorptionTransformer,
-    FlattenTransformer,
-    DNFTransformer,
-    OrderDedupeTransformer
+    AbsorptionTransformer, CanonicalizeComparisonExpressionsTransformer,
+    DNFTransformer, FlattenTransformer, OrderDedupeTransformer,
 )
-
+import stix2.pattern_visitor
 
 # Lazy-initialize
 _pattern_canonicalizer = None
@@ -38,7 +34,7 @@ def _get_pattern_canonicalizer():
         obs_expr_order = OrderDedupeTransformer()
         obs_expr_absorb = AbsorptionTransformer()
         obs_simplify = ChainTransformer(
-            obs_expr_flatten, obs_expr_order, obs_expr_absorb
+            obs_expr_flatten, obs_expr_order, obs_expr_absorb,
         )
         obs_settle_simplify = SettleTransformer(obs_simplify)
 
@@ -46,7 +42,7 @@ def _get_pattern_canonicalizer():
 
         _pattern_canonicalizer = ChainTransformer(
             canonicalize_comp_expr,
-            obs_settle_simplify, obs_dnf, obs_settle_simplify
+            obs_settle_simplify, obs_dnf, obs_settle_simplify,
         )
 
     return _pattern_canonicalizer
@@ -86,12 +82,12 @@ def find_equivalent_patterns(search_pattern, patterns):
         patterns
     """
     search_pattern_ast = stix2.pattern_visitor.create_pattern_object(
-        search_pattern
+        search_pattern,
     )
 
     pattern_canonicalizer = _get_pattern_canonicalizer()
     canon_search_pattern_ast, _ = pattern_canonicalizer.transform(
-        search_pattern_ast
+        search_pattern_ast,
     )
 
     for pattern in patterns:
@@ -99,7 +95,7 @@ def find_equivalent_patterns(search_pattern, patterns):
         canon_pattern_ast, _ = pattern_canonicalizer.transform(pattern_ast)
 
         result = observation_expression_cmp(
-            canon_search_pattern_ast, canon_pattern_ast
+            canon_search_pattern_ast, canon_pattern_ast,
         )
 
         if result == 0:

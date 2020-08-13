@@ -2,6 +2,7 @@
 Generic AST transformation classes.
 """
 
+
 class Transformer:
     """
     Base class for AST transformers.
@@ -16,7 +17,7 @@ class Transformer:
             is useful in situations where a transformation needs to be repeated
             until the AST stops changing.
         """
-        raise NotImplemented("transform")
+        raise NotImplementedError("transform")
 
 
 class ChainTransformer(Transformer):

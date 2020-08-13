@@ -2,10 +2,10 @@
 Some simple comparison expression canonicalization functions.
 """
 import socket
-from stix2.equivalence.patterns.compare.comparison import (
-    object_path_to_raw_values
-)
 
+from stix2.equivalence.patterns.compare.comparison import (
+    object_path_to_raw_values,
+)
 
 # Values we can use as wildcards in path patterns
 _ANY_IDX = object()
