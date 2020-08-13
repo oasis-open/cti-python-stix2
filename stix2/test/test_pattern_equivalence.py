@@ -578,6 +578,35 @@ def test_comp_special_canonicalization_win_reg_key_not_equivalent(patt1, patt2):
     assert not equivalent_patterns(patt1, patt2)
 
 
+def test_comp_other_constant_types():
+    constants = [
+        "1.23",
+        "1",
+        "true",
+        "false",
+        "h'4fa2'",
+        "b'ZmpoZWll'",
+        "t'1982-12-31T02:14:17.232Z'",
+    ]
+
+    pattern_template = "[a:b={}]"
+    for i, const1 in enumerate(constants):
+        for j, const2 in enumerate(constants):
+            patt1 = pattern_template.format(const1)
+            patt2 = pattern_template.format(const2)
+
+            if i == j:
+                assert equivalent_patterns(patt1, patt2)
+            else:
+                assert not equivalent_patterns(patt1, patt2)
+
+    # can't use an "=" pattern with lists...
+    for const in constants:
+        patt1 = "[a:b={}]".format(const)
+        patt2 = "[a:b IN (1,2,3)]"
+        assert not equivalent_patterns(patt1, patt2)
+
+
 # #                                  # #
 # # find_equivalent_patterns() tests # #
 # #                                  # #
