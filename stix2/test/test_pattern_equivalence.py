@@ -1,5 +1,12 @@
 import pytest
-from stix2.equivalence.patterns import equivalent_patterns
+from stix2.equivalence.patterns import (
+    equivalent_patterns, find_equivalent_patterns
+)
+
+
+# #                                          # #
+# # Observation expression equivalence tests # #
+# #                                          # #
 
 
 @pytest.mark.parametrize(
@@ -569,3 +576,30 @@ def test_comp_special_canonicalization_win_reg_key(patt1, patt2):
 )
 def test_comp_special_canonicalization_win_reg_key_not_equivalent(patt1, patt2):
     assert not equivalent_patterns(patt1, patt2)
+
+
+# #                                  # #
+# # find_equivalent_patterns() tests # #
+# #                                  # #
+
+def test_find_equivalent_patterns():
+    search_pattern = "[a:b=1]"
+    other_patterns = [
+        "[a:b=2]",
+        "[a:b=1]",
+        "[a:b=1] WITHIN 1 SECONDS",
+        "[a:b=1] OR ([a:b=2] AND [a:b=1])",
+        "[(a:b=2 OR a:b=1) AND a:b=1]",
+        "[c:d=1]",
+        "[a:b>1]"
+    ]
+
+    result = list(
+        find_equivalent_patterns(search_pattern, other_patterns)
+    )
+
+    assert result == [
+        "[a:b=1]",
+        "[a:b=1] OR ([a:b=2] AND [a:b=1])",
+        "[(a:b=2 OR a:b=1) AND a:b=1]",
+    ]

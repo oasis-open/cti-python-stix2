@@ -70,3 +70,37 @@ def equivalent_patterns(pattern1, pattern2):
     result = observation_expression_cmp(canon_patt1, canon_patt2)
 
     return result == 0
+
+
+def find_equivalent_patterns(search_pattern, patterns):
+    """
+    Find patterns from a sequence which are equivalent to a given pattern.
+    This is more efficient than using equivalent_patterns() in a loop, because
+    it doesn't re-canonicalize the search pattern over and over.  This works
+    on an input iterable and is implemented as a generator of matches.  So you
+    can "stream" patterns in and matching patterns will be streamed out.
+
+    :param search_pattern: A search pattern as a string
+    :param patterns: An iterable over patterns as strings
+    :return: A generator iterator producing the semantically equivalent
+        patterns
+    """
+    search_pattern_ast = stix2.pattern_visitor.create_pattern_object(
+        search_pattern
+    )
+
+    pattern_canonicalizer = _get_pattern_canonicalizer()
+    canon_search_pattern_ast, _ = pattern_canonicalizer.transform(
+        search_pattern_ast
+    )
+
+    for pattern in patterns:
+        pattern_ast = stix2.pattern_visitor.create_pattern_object(pattern)
+        canon_pattern_ast, _ = pattern_canonicalizer.transform(pattern_ast)
+
+        result = observation_expression_cmp(
+            canon_search_pattern_ast, canon_pattern_ast
+        )
+
+        if result == 0:
+            yield pattern
