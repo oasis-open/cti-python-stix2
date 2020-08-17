@@ -60,7 +60,7 @@ setup(
         'Bug Tracker': 'https://github.com/oasis-open/cti-python-stix2/issues/',
     },
     extras_require={
-        'taxii': ['taxii2-client'],
+        'taxii': ['taxii2-client>=2.2.1'],
         'semantic': ['haversine', 'rapidfuzz'],
     },
 )
