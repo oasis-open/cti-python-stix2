@@ -59,6 +59,17 @@ def test_composite_datasource_operations(stix_objs1, stix_objs2):
     assert indicator["modified"] == parse_into_datetime("2017-01-31T13:49:53.935Z")
     assert indicator["type"] == "indicator"
 
+    sco = cds1.get("url--cc1deced-d99b-4d72-9268-8182420cb2fd")
+    assert sco["id"] == "url--cc1deced-d99b-4d72-9268-8182420cb2fd"
+
+    scos = cds1.all_versions("url--cc1deced-d99b-4d72-9268-8182420cb2fd")
+    assert len(scos) == 1
+    assert scos[0]["id"] == "url--cc1deced-d99b-4d72-9268-8182420cb2fd"
+
+    scos = cds1.query([Filter("value", "=", "http://example.com/")])
+    assert len(scos) == 1
+    assert scos[0]["id"] == "url--cc1deced-d99b-4d72-9268-8182420cb2fd"
+
     query1 = [
         Filter("type", "=", "indicator"),
     ]
