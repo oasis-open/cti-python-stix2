@@ -136,7 +136,7 @@ def stix_objs1():
         "type": "url",
         "spec_version": "2.1",
         "id": "url--cc1deced-d99b-4d72-9268-8182420cb2fd",
-        "value": "http://example.com/"
+        "value": "http://example.com/",
     }
     return [ind1, ind2, ind3, ind4, ind5, sco]
 
