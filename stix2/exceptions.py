@@ -176,6 +176,9 @@ class ImmutableError(STIXError):
 
 
 class VersioningError(STIXError):
+    """
+    Base class for object versioning errors.
+    """
     pass
 
 
@@ -192,6 +195,10 @@ class UnmodifiablePropertyError(VersioningError):
 
 
 class TypeNotVersionableError(VersioningError):
+    """
+    An object couldn't be versioned because it lacked the versioning properties
+    and its type does not support them.
+    """
     def __init__(self, obj):
         if isinstance(obj, dict):
             type_name = obj.get("type")
@@ -209,6 +216,10 @@ class TypeNotVersionableError(VersioningError):
 
 
 class ObjectNotVersionableError(VersioningError):
+    """
+    An object's type supports versioning, but the object couldn't be versioned
+    because it lacked sufficient versioning properties.
+    """
     def __init__(self, obj):
         self.object = obj
 
