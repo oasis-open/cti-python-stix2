@@ -9,13 +9,13 @@ import uuid
 import stix2.base
 import stix2.registry
 from stix2.utils import (
-    detect_spec_version, get_timestamp, is_sco, is_sdo, is_sro,
-    parse_into_datetime,
+    detect_spec_version, get_timestamp, is_sco, parse_into_datetime,
 )
 import stix2.v20
 
 from .exceptions import (
-    InvalidValueError, RevokeError, UnmodifiablePropertyError,
+    InvalidValueError, ObjectNotVersionableError, RevokeError,
+    TypeNotVersionableError, UnmodifiablePropertyError,
 )
 
 # STIX object properties that cannot be modified
@@ -56,27 +56,16 @@ def _fudge_modified(old_modified, new_modified, use_stix21):
     return new_modified
 
 
-def _is_versionable(data):
+def _get_stix_version(data):
     """
-    Determine whether the given object is versionable.  This check is done on
-    the basis of support for three properties for the object type: "created",
-    "modified", and "revoked".  If all three are supported, the object is
-    versionable; otherwise it is not.  Dicts must have a "type" property whose
-    value is for a registered object type.  This is used to determine a
-    complete set of supported properties for the type.
+    Bit of factored out functionality for getting/detecting the STIX version
+    of the given value.
 
-    Also, detect whether it represents a STIX 2.1 or greater spec version.
-
-    :param data: The object to check.  Must be either a stix object, or a dict
-        with a "type" property.
-    :return: A 2-tuple of bools: the first is True if the object is versionable
-        and False if not; the second is True if the object is STIX 2.1+ and
-        False if not.
+    :param data: An object, e.g. _STIXBase instance or dict
+    :return: The STIX version as a string in "X.Y" notation, or None if the
+        version could not be determined.
     """
-
-    is_versionable = False
     stix_version = None
-
     if isinstance(data, Mapping):
 
         # First, determine spec version.  It's easy for our stix2 objects; more
@@ -88,34 +77,110 @@ def _is_versionable(data):
         elif isinstance(data, dict):
             stix_version = detect_spec_version(data)
 
+    return stix_version
+
+
+def _is_versionable_type(data):
+    """
+    Determine whether type of the given object is versionable.  This check is
+    done on the basis of support for three properties for the object type:
+    "created", "modified", and "revoked".  If all three are supported, the
+    object type is versionable; otherwise it is not.  Dicts must have a "type"
+    property.  This is used in STIX version detection and to determine a
+    complete set of supported properties for the type.
+
+    If a dict is passed whose "type" is unregistered, then this library has no
+    knowledge of the type.  It can't determine what properties are "supported".
+    This function will be lax and treat the type as versionable.
+
+    Note that this support check is not sufficient for creating a new object
+    version.  Support for the versioning properties does not mean that
+    sufficient properties are actually present on the object.
+
+    Also, detect whether it represents a STIX 2.1 or greater spec version.
+
+    :param data: The object to check.  Must be either a stix object, or a dict
+        with a "type" property.
+    :return: A 2-tuple: the first element is True if the object is versionable
+        and False if not; the second is the STIX version as a string in "X.Y"
+        notation.
+    """
+
+    is_versionable = False
+    stix_version = None
+
+    if isinstance(data, Mapping):
+        # First, determine spec version
+        stix_version = _get_stix_version(data)
+
         # Then, determine versionability.
+        if isinstance(data, stix2.base._STIXBase):
+            is_versionable = _VERSIONING_PROPERTIES.issubset(
+                data._properties,
+            )
 
-        # This should be sufficient for STIX objects; maybe we get lucky with
-        # dicts here but probably not.
-        if data.keys() >= _VERSIONING_PROPERTIES:
-            is_versionable = True
-
-        # Tougher to handle dicts.  We need to consider STIX version, map to a
-        # registered class, and from that get a more complete picture of its
-        # properties.
         elif isinstance(data, dict):
-            obj_type = data["type"]
+            # Tougher to handle dicts.  We need to consider STIX version,
+            # map to a registered class, and from that get a more complete
+            # picture of its properties.
 
-            if is_sdo(obj_type, stix_version) or is_sro(obj_type, stix_version):
-                # Should we bother checking properties for SDOs/SROs?
-                # They were designed to be versionable.
-                is_versionable = True
-
-            elif is_sco(obj_type, stix_version):
-                # but do check SCOs
-                cls = stix2.registry.class_for_type(
-                    obj_type, stix_version, "observables",
-                )
+            cls = stix2.registry.class_for_type(data["type"], stix_version)
+            if cls:
                 is_versionable = _VERSIONING_PROPERTIES.issubset(
                     cls._properties,
                 )
 
+            else:
+                # The type is not registered, so we have no knowledge of
+                # what properties are supported.  Let's be lax and let them
+                # version it.
+                is_versionable = True
+
     return is_versionable, stix_version
+
+
+def _check_versionable_object(data):
+    """
+    Determine whether there are or may be sufficient properties present on
+    an object to allow versioning.  Raises an exception if the object can't be
+    versioned.
+
+    Also detect STIX spec version.
+
+    :param data: The object to check, e.g. dict with a "type" property, or
+        _STIXBase instance
+    :return: True if the object is STIX 2.1+, or False if not
+    :raises TypeNotVersionableError: If the object didn't have the versioning
+        properties and the type was found to not support them
+    :raises ObjectNotVersionableError: If the type was found to support
+        versioning but there were insufficient properties on the object
+    """
+    if isinstance(data, Mapping):
+        if data.keys() >= _VERSIONING_PROPERTIES:
+            # If the properties all already exist in the object, assume they
+            # are either supported by the type, or are custom properties, and
+            # allow versioning.
+            stix_version = _get_stix_version(data)
+
+        else:
+            is_versionable_type, stix_version = _is_versionable_type(data)
+            if is_versionable_type:
+                # The type supports the versioning properties (or we don't
+                # recognize it and just assume it does).  The question shifts
+                # to whether the object has sufficient properties to create a
+                # new version.  Just require "created" for now.  We need at
+                # least that as a starting point for new version timestamps.
+                is_versionable = "created" in data
+
+                if not is_versionable:
+                    raise ObjectNotVersionableError(data)
+            else:
+                raise TypeNotVersionableError(data)
+
+    else:
+        raise TypeNotVersionableError(data)
+
+    return stix_version
 
 
 def new_version(data, allow_custom=None, **kwargs):
@@ -134,13 +199,7 @@ def new_version(data, allow_custom=None, **kwargs):
     :return: The new object.
     """
 
-    is_versionable, stix_version = _is_versionable(data)
-
-    if not is_versionable:
-        raise ValueError(
-            "cannot create new version of object of this type! "
-            "Try a dictionary or instance of an SDO or SRO class.",
-        )
+    stix_version = _check_versionable_object(data)
 
     if data.get('revoked'):
         raise RevokeError("new_version")
@@ -178,36 +237,34 @@ def new_version(data, allow_custom=None, **kwargs):
     # to know which rules to apply.
     precision_constraint = "min" if stix_version == "2.1" else "exact"
 
+    old_modified = data.get("modified") or data.get("created")
+    old_modified = parse_into_datetime(
+        old_modified, precision="millisecond",
+        precision_constraint=precision_constraint,
+    )
+
     cls = type(data)
-    if 'modified' not in kwargs:
-        old_modified = parse_into_datetime(
-            data["modified"], precision="millisecond",
-            precision_constraint=precision_constraint,
-        )
-
-        new_modified = get_timestamp()
-        new_modified = _fudge_modified(
-            old_modified, new_modified, stix_version == "2.1",
-        )
-
-        kwargs['modified'] = new_modified
-
-    elif 'modified' in data:
-        old_modified_property = parse_into_datetime(
-            data.get('modified'), precision='millisecond',
-            precision_constraint=precision_constraint,
-        )
-        new_modified_property = parse_into_datetime(
+    if 'modified' in kwargs:
+        new_modified = parse_into_datetime(
             kwargs['modified'], precision='millisecond',
             precision_constraint=precision_constraint,
         )
-        if new_modified_property <= old_modified_property:
+        if new_modified <= old_modified:
             raise InvalidValueError(
                 cls, 'modified',
                 "The new modified datetime cannot be before than or equal to the current modified datetime."
                 "It cannot be equal, as according to STIX 2 specification, objects that are different "
                 "but have the same id and modified timestamp do not have defined consumer behavior.",
             )
+
+    else:
+        new_modified = get_timestamp()
+        new_modified = _fudge_modified(
+            old_modified, new_modified, stix_version!="2.0"
+        )
+
+        kwargs['modified'] = new_modified
+
     new_obj_inner.update(kwargs)
 
     # Set allow_custom appropriately if versioning an object.  We will ignore
