@@ -407,6 +407,30 @@ def test_version_sco_with_custom():
     assert revoked_d["revoked"]
 
 
+def test_version_marking():
+    m = stix2.v20.MarkingDefinition(
+        created="1982-11-29T12:20:13.723Z",
+        definition_type="statement",
+        definition={"statement": "Copyright (c) 2000-2020 Acme Corp"},
+    )
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+    m = {
+        "type": "marking-definition",
+        "id": "marking-definition--2a9f3f6e-5cbd-423b-a40d-02aefd29e612",
+        "created": "1982-11-29T12:20:13.723Z",
+        "definition_type": "statement",
+        "definition": {
+            "statement": "Copyright (c) 2000-2020 Acme Corp",
+        },
+    }
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+
 def test_version_disable_custom():
     m = stix2.v20.Malware(
         name="foo", labels=["label"], description="Steals your identity!",

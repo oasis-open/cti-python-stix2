@@ -452,6 +452,33 @@ def test_version_sco_id_contributing_properties_dict():
     assert e.value.unchangable_properties == {"name"}
 
 
+def test_version_marking():
+    m = stix2.v21.MarkingDefinition(
+        name="a name",
+        created="1982-11-29T12:20:13.723Z",
+        definition_type="statement",
+        definition={"statement": "Copyright (c) 2000-2020 Acme Corp"},
+    )
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+    m = {
+        "type": "marking-definition",
+        "id": "marking-definition--2a9f3f6e-5cbd-423b-a40d-02aefd29e612",
+        "spec_version": "2.1",
+        "name": "a name",
+        "created": "1982-11-29T12:20:13.723Z",
+        "definition_type": "statement",
+        "definition": {
+            "statement": "Copyright (c) 2000-2020 Acme Corp",
+        },
+    }
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+
 def test_version_disable_custom():
     m = stix2.v21.Malware(
         name="foo", description="Steals your identity!", is_family=False,
