@@ -1,6 +1,7 @@
 import logging
 import time
 
+from ...datastore import Filter
 from ...utils import STIXdatetime, parse_into_datetime
 
 logger = logging.getLogger(__name__)
@@ -296,6 +297,26 @@ def partial_location_distance(lat1, long1, lat2, long2, threshold):
     return result
 
 
+def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
+    # Checks multiple object versions if present in object.
+    # Maximizes for value for a particular version.
+    results = {}
+    objects1 = ds1.query([Filter("id", "=", ref1)])
+    objects2 = ds2.query([Filter("id", "=", ref2)])
+
+    if len(objects1) > 1 or len(objects2) > 1:
+        for o1 in objects1:
+            for o2 in objects2:
+                result = semantically_equivalent(o1, o2, **weights)
+                o1_id = o1["id"]
+                if ref1 not in results:
+                    results[ref1] = {"matched": ref2, "value": result}
+                elif result > results[o1_id]["value"]:
+                    results[ref1] = {"matched": ref2, "value": result}
+        return results.get(ref1, {}).get("value", 0)
+    return semantically_equivalent(ds1.get(ref1), ds2.get(ref2), **weights) / 100
+
+
 def semantic_check(ref1, ref2, ds1, ds2, **weights):
     """For two references, de-reference the object and perform object-based
     semantic equivalence. The score influences the result of an edge check."""
@@ -304,6 +325,8 @@ def semantic_check(ref1, ref2, ds1, ds2, **weights):
     if ref1 == ref2:
         return 1
     elif type1 == type2:
+        if weights["_internal"]["versioning_checks"]:
+            return _versioned_checks(ref1, ref2, ds1, ds2, **weights)
         return semantically_equivalent(ds1.get(ref1), ds2.get(ref2), **weights) / 100
     else:
         return 0
@@ -335,7 +358,11 @@ def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
             if ref1 == ref2:
                 results[ref1] = {"matched": ref2, "value": 100}
             elif type1 == type2:
-                result = semantically_equivalent(b1.get(ref1), b2.get(ref2), **weights)
+                if weights["_internal"]["versioning_checks"]:
+                    result = _versioned_checks(ref1, ref2, ds1, ds2, **weights)
+                else:
+                    result = semantically_equivalent(b1.get(ref1), b2.get(ref2), **weights)
+
                 if ref1 not in results:
                     results[ref1] = {"matched": ref2, "value": result}
                 elif result > results[ref1]["value"]:

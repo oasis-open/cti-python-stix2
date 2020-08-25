@@ -79,7 +79,8 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
     return equivalence_score
 
 
-# default weights used for the semantic equivalence process
+# default weights used for the graph semantic equivalence process
+# values are re-balanced to account for new property checks and add up to 100
 WEIGHTS = {
     "attack-pattern": {
         "name": (30, partial_string_based),
@@ -185,6 +186,7 @@ WEIGHTS = {
     },
     "_internal": {
         "ignore_spec_version": False,
+        "versioning_checks": False,
         "ds1": None,
         "ds2": None,
         "max_depth": 1,
