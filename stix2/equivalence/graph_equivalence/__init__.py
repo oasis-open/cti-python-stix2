@@ -11,6 +11,32 @@ logger = logging.getLogger(__name__)
 
 
 def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
+    """This method is meant to verify if two graphs are semantically
+    equivalent.
+
+    Args:
+        ds1: A DataStore object instance representing your graph
+        ds2: A DataStore object instance representing your graph
+        prop_scores: A dictionary that can hold individual property scores,
+            weights, contributing score, matching score and sum of weights.
+        weight_dict: A dictionary that can be used to override settings
+            in the semantic equivalence process
+
+    Returns:
+        float: A number between 0.0 and 100.0 as a measurement of equivalence.
+
+    Warning:
+        Some object types do not have an entry for use in the equivalence process.
+        In order for those objects to influence the final score a new entry needs to
+        be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
+        for a particular use case. Graph equivalence has additional entries.
+
+    Note:
+        Default weights_dict:
+
+        .. include:: ../default_sem_eq_weights.rst
+
+    """
     weights = WEIGHTS.copy()
 
     if weight_dict:

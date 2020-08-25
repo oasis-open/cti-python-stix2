@@ -22,8 +22,10 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
         float: A number between 0.0 and 100.0 as a measurement of equivalence.
 
     Warning:
-        Course of Action, Intrusion-Set, Observed-Data, Report are not supported
-        by this implementation. Indicator pattern check is also limited.
+        Some object types do not have an entry for use in the equivalence process.
+        In order for those objects to influence the final score a new entry needs to
+        be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
+        for a particular use case.
 
     Note:
         Default weights_dict:
@@ -31,7 +33,7 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
         .. include:: ../default_sem_eq_weights.rst
 
     Note:
-        This implementation follows the Committee Note on semantic equivalence.
+        This implementation follows the Semantic Equivalence Committee Note.
         see `the Committee Note <link here>`__.
 
     """
@@ -203,7 +205,7 @@ def custom_pattern_based(pattern1, pattern2):
         float: Number between 0.0 and 1.0 depending on match criteria.
 
     """
-    # logger.warning("Indicator pattern equivalence is not fully defined; will default to zero if not completely identical")
+    logger.warning("Indicator pattern equivalence is not fully defined; will default to zero if not completely identical")
     return exact_match(pattern1, pattern2)  # TODO: Implement pattern based equivalence
 
 
