@@ -29,7 +29,8 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
         Some object types do not have an entry for use in the equivalence process.
         In order for those objects to influence the final score a new entry needs to
         be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
-        for a particular use case. Graph equivalence has additional entries.
+        for a particular use case. Graph equivalence has additional entries. The
+        complete graph is needed for the two graphs that are being checked.
 
     Note:
         Default weights_dict:
@@ -43,6 +44,7 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
         weights.update(weight_dict)
 
     results = {}
+    depth = weights["_internal"]["max_depth"]
 
     graph1 = ds1.query([])
     graph2 = ds2.query([])
@@ -66,16 +68,19 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
             if object1["type"] == object2["type"]:
                 result = semantically_equivalent(object1, object2, prop_scores, **weights)
                 objects1_id = object1["id"]
+                weights["_internal"]["max_depth"] = depth
                 if objects1_id not in results:
                     results[objects1_id] = {"matched": object2["id"], "value": result}
                 elif result > results[objects1_id]["value"]:
                     results[objects1_id] = {"matched": object2["id"], "value": result}
 
-    sum_weights = sum(x["value"] for x in results.values())
-    matching_score = len(g1) * 100.0
-    equivalence_score = (sum_weights / matching_score) * 100
+    matching_score = sum(x["value"] for x in results.values())
+    sum_weights = len(g1) * 100.0
+    equivalence_score = (matching_score / sum_weights) * 100
+    prop_scores["matching_score"] = matching_score
+    prop_scores["sum_weights"] = sum_weights
 
-    logger.debug(f"DONE\nPOINT_SUM: {sum_weights:.2f}\tMAX_SCORE: {matching_score:.2f}\t PERCENTAGE: {equivalence_score:.2f}")
+    logger.debug(f"DONE\nSUM_WEIGHT: {sum_weights:.2f}\tMATCHING_SCORE: {matching_score:.2f}\t SCORE: {equivalence_score:.2f}")
     return equivalence_score
 
 
@@ -170,9 +175,11 @@ WEIGHTS = {
     },
     "report": {
         "object_refs": (60, list_semantic_check),
-        "name": (30, partial_string_based),
+        "name": (25, partial_string_based),
+        "published": (5, partial_timestamp_based),
         "created_by_ref": (5, semantic_check),
         "object_marking_refs": (5, list_semantic_check),
+        "tdelta": 1,  # One day interval
     },
     "sighting": {
         "first_seen": (5, partial_timestamp_based),
