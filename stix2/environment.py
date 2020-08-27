@@ -3,8 +3,16 @@ import copy
 
 from .datastore import CompositeDataSource, DataStoreMixin
 from .equivalence.graph_equivalence import graphically_equivalent
-from .equivalence.object_equivalence import semantically_equivalent
+from .equivalence.object_equivalence import (  # noqa: F401
+    check_property_present, custom_pattern_based, exact_match,
+    list_semantic_check, partial_external_reference_based, partial_list_based,
+    partial_location_distance, partial_string_based, partial_timestamp_based,
+    semantic_check, semantically_equivalent,
+)
 from .parsing import parse as _parse
+
+# TODO: Remove all unused imports that now belong to equivalence module in next major release.
+# Kept for backwards compatibility.
 
 
 class ObjectFactory(object):
