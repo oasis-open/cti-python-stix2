@@ -1,7 +1,10 @@
+import os
+
 import pytest
 
 import stix2
 import stix2.environment
+import stix2.equivalence.object_equivalence
 import stix2.exceptions
 
 from .constants import (
@@ -11,6 +14,8 @@ from .constants import (
     REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID, TOOL_KWARGS,
     VULNERABILITY_ID, VULNERABILITY_KWARGS,
 )
+
+FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
 
 @pytest.fixture
@@ -22,7 +27,37 @@ def ds():
     rel1 = stix2.v21.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
     rel2 = stix2.v21.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
     rel3 = stix2.v21.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
-    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
+    reprt = stix2.v21.Report(
+        name="Malware Report", published="2021-05-09T08:22:22Z",
+        object_refs=[mal.id, rel1.id, ind.id],
+    )
+    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3, reprt]
+    yield stix2.MemoryStore(stix_objs)
+
+
+@pytest.fixture
+def ds_graph():
+    cam = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = stix2.v21.Indicator(id=INDICATOR_ID, created_by_ref=idy.id, **INDICATOR_KWARGS)
+    indv2 = ind.new_version(external_references=[{
+        "source_name": "unknown",
+        "url": "https://examplewebsite.com/",
+    }])
+    mal = stix2.v21.Malware(id=MALWARE_ID, created_by_ref=idy.id, **MALWARE_KWARGS)
+    malv2 = mal.new_version(external_references=[{
+        "source_name": "unknown",
+        "url": "https://examplewebsite2.com/",
+    }])
+    rel1 = stix2.v21.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.v21.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.v21.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    stix_objs = [cam, idy, ind, indv2, mal, malv2, rel1, rel2, rel3]
+    reprt = stix2.v21.Report(
+        created_by_ref=idy.id, name="example",
+        published="2021-04-09T08:22:22Z", object_refs=stix_objs,
+    )
+    stix_objs.append(reprt)
     yield stix2.MemoryStore(stix_objs)
 
 
@@ -820,3 +855,61 @@ def test_semantic_equivalence_prop_scores_method_provided():
     assert len(prop_scores) == 2
     assert prop_scores["matching_score"] == 96.0
     assert prop_scores["sum_weights"] == 100.0
+
+
+def test_versioned_checks(ds, ds_graph):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": True,
+            "max_depth": 1,
+        },
+    }
+    score = stix2.equivalence.object_equivalence._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds_graph, **weights)
+    assert round(score) == 100
+
+
+def test_graph_equivalence_with_filesystem_source(ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    fs = stix2.FileSystemSource(FS_PATH)
+    env = stix2.Environment().graphically_equivalent(fs, ds, prop_scores, **weights)
+    assert round(env) == 14
+    assert round(prop_scores["matching_score"]) == 108
+    assert round(prop_scores["sum_weights"]) == 800
+
+
+def test_graph_equivalence_with_duplicate_graph(ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    env = stix2.Environment().graphically_equivalent(ds, ds, prop_scores, **weights)
+    assert round(env) == 100
+    assert round(prop_scores["matching_score"]) == 800
+    assert round(prop_scores["sum_weights"]) == 800
+
+
+def test_graph_equivalence_with_versioning_check_on(ds_graph, ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": True,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    env = stix2.Environment().graphically_equivalent(ds, ds_graph, prop_scores, **weights)
+    assert round(env) == 91
+    assert round(prop_scores["matching_score"]) == 730
+    assert round(prop_scores["sum_weights"]) == 800
