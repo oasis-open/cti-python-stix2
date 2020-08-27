@@ -304,7 +304,7 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
     objects1 = ds1.query([Filter("id", "=", ref1)])
     objects2 = ds2.query([Filter("id", "=", ref2)])
 
-    if len(objects1) > 1 or len(objects2) > 1:
+    if len(objects1) > 0 or len(objects2) > 0:
         for o1 in objects1:
             for o2 in objects2:
                 result = semantically_equivalent(o1, o2, **weights)
@@ -313,8 +313,7 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
                     results[ref1] = {"matched": ref2, "value": result}
                 elif result > results[o1_id]["value"]:
                     results[ref1] = {"matched": ref2, "value": result}
-        return results.get(ref1, {}).get("value", 0)
-    return semantically_equivalent(ds1.get(ref1), ds2.get(ref2), **weights) / 100
+    return results.get(ref1, {}).get("value", 0)
 
 
 def semantic_check(ref1, ref2, ds1, ds2, **weights):
@@ -327,9 +326,11 @@ def semantic_check(ref1, ref2, ds1, ds2, **weights):
     elif type1 == type2:
         if weights["_internal"]["versioning_checks"]:
             return _versioned_checks(ref1, ref2, ds1, ds2, **weights)
-        return semantically_equivalent(ds1.get(ref1), ds2.get(ref2), **weights) / 100
-    else:
-        return 0
+        o1, o2 = ds1.get(ref1), ds2.get(ref2)
+        if o1 and o2:
+            return semantically_equivalent(o1, o2, **weights) / 100
+
+    return 0
 
 
 def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
@@ -361,7 +362,11 @@ def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
                 if weights["_internal"]["versioning_checks"]:
                     result = _versioned_checks(ref1, ref2, ds1, ds2, **weights)
                 else:
-                    result = semantically_equivalent(b1.get(ref1), b2.get(ref2), **weights)
+                    o1, o2 = b1.get(ref1), b2.get(ref2)
+                    if o1 and o2:
+                        result = semantically_equivalent(o1, o2, **weights)
+                    else:
+                        result = 0
 
                 if ref1 not in results:
                     results[ref1] = {"matched": ref2, "value": result}
