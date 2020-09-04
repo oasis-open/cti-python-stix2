@@ -227,7 +227,7 @@ def make_constant(value):
         return value
 
     try:
-        return parse_into_datetime(value)
+        return TimestampConstant(value)
     except (ValueError, TypeError):
         pass
 
