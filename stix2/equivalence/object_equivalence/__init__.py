@@ -298,45 +298,56 @@ def partial_location_distance(lat1, long1, lat2, long2, threshold):
 
 
 def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
-    # Checks multiple object versions if present in object.
-    # Maximizes for value for a particular version.
+    """Checks multiple object versions if present in graph.
+    Maximizes for the semantic equivalence score of a particular version."""
     results = {}
     objects1 = ds1.query([Filter("id", "=", ref1)])
     objects2 = ds2.query([Filter("id", "=", ref2)])
 
-    if len(objects1) > 0 or len(objects2) > 0:
+    if len(objects1) > 0 and len(objects2) > 0:
         for o1 in objects1:
             for o2 in objects2:
                 result = semantically_equivalent(o1, o2, **weights)
-                o1_id = o1["id"]
                 if ref1 not in results:
                     results[ref1] = {"matched": ref2, "value": result}
-                elif result > results[o1_id]["value"]:
+                elif result > results[ref1]["value"]:
                     results[ref1] = {"matched": ref2, "value": result}
-    return results.get(ref1, {}).get("value", 0)
+    result = results.get(ref1, {}).get("value", 0.0)
+    logger.debug(
+        "--\t\t_versioned_checks '%s' '%s'\tresult: '%s'",
+        ref1, ref2, result,
+    )
+    return result
 
 
 def semantic_check(ref1, ref2, ds1, ds2, **weights):
     """For two references, de-reference the object and perform object-based
     semantic equivalence. The score influences the result of an edge check."""
     type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
+    result = 0.0
 
     if ref1 == ref2:
-        return 1
+        result = 1.0
     elif type1 == type2:
         if weights["_internal"]["versioning_checks"]:
-            return _versioned_checks(ref1, ref2, ds1, ds2, **weights)
-        o1, o2 = ds1.get(ref1), ds2.get(ref2)
-        if o1 and o2:
-            return semantically_equivalent(o1, o2, **weights) / 100
+            result = _versioned_checks(ref1, ref2, ds1, ds2, **weights) / 100
+        else:
+            o1, o2 = ds1.get(ref1), ds2.get(ref2)
+            if o1 and o2:
+                result = semantically_equivalent(o1, o2, **weights) / 100
 
-    return 0
+    logger.debug(
+        "--\t\tsemantic_check '%s' '%s'\tresult: '%s'",
+        ref1, ref2, result,
+    )
+    return result
 
 
 def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
     """For objects that contain multiple references (i.e., object_refs) perform
     the same de-reference for object-based semantic equivalence. The score influences
     the objects containing all references. The result is weighted on the longest ref list"""
+    results = {}
     if len(refs1) >= len(refs2):
         l1 = refs1
         l2 = refs2
@@ -351,32 +362,22 @@ def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
     l1.sort()
     l2.sort()
 
-    results = {}
-
     for ref1 in l1:
         for ref2 in l2:
             type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
-            if ref1 == ref2:
-                results[ref1] = {"matched": ref2, "value": 100}
-            elif type1 == type2:
-                if weights["_internal"]["versioning_checks"]:
-                    result = _versioned_checks(ref1, ref2, ds1, ds2, **weights)
-                else:
-                    o1, o2 = b1.get(ref1), b2.get(ref2)
-                    if o1 and o2:
-                        result = semantically_equivalent(o1, o2, **weights)
-                    else:
-                        result = 0
-
-                if ref1 not in results:
-                    results[ref1] = {"matched": ref2, "value": result}
-                elif result > results[ref1]["value"]:
-                    results[ref1] = {"matched": ref2, "value": result}
+            if type1 == type2:
+                score = semantic_check(ref1, ref2, b1, b2, **weights) * 100.0
+                results[ref1] = {"matched": ref2, "value": score}
 
     total_sum = sum(x["value"] for x in results.values())
-    max_score = max(len(refs1), len(refs2)) * 100
+    max_score = max(len(refs1), len(refs2)) * 100.0
+    result = total_sum / max_score
 
-    return total_sum / max_score
+    logger.debug(
+        "--\t\tlist_semantic_check '%s' '%s'\ttotal_sum: '%s'\tmax_score: '%s'\tresult: '%s'",
+        refs1, refs2, total_sum, max_score, result,
+    )
+    return result
 
 
 # default weights used for the semantic equivalence process
