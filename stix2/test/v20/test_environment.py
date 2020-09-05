@@ -3,6 +3,7 @@ import os
 import pytest
 
 import stix2
+import stix2.equivalence.graph_equivalence
 import stix2.equivalence.object_equivalence
 
 from .constants import (
@@ -34,7 +35,7 @@ def ds():
 
 
 @pytest.fixture
-def ds_graph():
+def ds2():
     cam = stix2.v20.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     idy = stix2.v20.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     ind = stix2.v20.Indicator(id=INDICATOR_ID, created_by_ref=idy.id, **INDICATOR_KWARGS)
@@ -412,16 +413,84 @@ def test_related_to_by_target(ds):
     assert any(x['id'] == INDICATOR_ID for x in resp)
 
 
-def test_versioned_checks(ds, ds_graph):
-    weights = {
+def test_versioned_checks(ds, ds2):
+    weights = stix2.equivalence.graph_equivalence.WEIGHTS.copy()
+    weights.update({
         "_internal": {
             "ignore_spec_version": True,
             "versioning_checks": True,
             "max_depth": 1,
         },
-    }
-    score = stix2.equivalence.object_equivalence._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds_graph, **weights)
+    })
+    score = stix2.equivalence.object_equivalence._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds2, **weights)
     assert round(score) == 100
+
+
+def test_semantic_check_with_versioning(ds, ds2):
+    weights = stix2.equivalence.graph_equivalence.WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": True,
+            "ds1": ds,
+            "ds2": ds2,
+            "max_depth": 1,
+        },
+    })
+    ind = stix2.v20.Indicator(
+        **dict(
+            labels=["malicious-activity"],
+            pattern="[file:hashes.'SHA-256' = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855']",
+            valid_from="2017-01-01T12:34:56Z",
+            external_references=[
+                {
+                  "source_name": "unknown",
+                  "url": "https://examplewebsite2.com/",
+                },
+            ],
+            object_marking_refs=[stix2.v20.TLP_WHITE],
+        )
+    )
+    ds.add(ind)
+    score = stix2.equivalence.object_equivalence.semantic_check(ind.id, INDICATOR_ID, ds, ds2, **weights)
+    assert round(score) == 0  # Since pattern is different score is really low
+
+
+def test_list_semantic_check(ds, ds2):
+    weights = stix2.equivalence.graph_equivalence.WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "ds1": ds,
+            "ds2": ds2,
+            "max_depth": 1,
+        },
+    })
+    object_refs1 = [
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "relationship--06520621-5352-4e6a-b976-e8fa3d437ffd",
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+    ]
+    object_refs2 = [
+        "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "relationship--06520621-5352-4e6a-b976-e8fa3d437ffd",
+        "relationship--181c9c09-43e6-45dd-9374-3bec192f05ef",
+        "relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70",
+    ]
+
+    score = stix2.equivalence.object_equivalence.list_semantic_check(
+        object_refs1,
+        object_refs2,
+        ds,
+        ds2,
+        **weights,
+    )
+    assert round(score) == 0  # Since pattern is different score is really low
 
 
 def test_graph_equivalence_with_filesystem_source(ds):
@@ -443,7 +512,7 @@ def test_graph_equivalence_with_filesystem_source(ds):
 def test_graph_equivalence_with_duplicate_graph(ds):
     weights = {
         "_internal": {
-            "ignore_spec_version": True,
+            "ignore_spec_version": False,
             "versioning_checks": False,
             "max_depth": 1,
         },
@@ -455,16 +524,31 @@ def test_graph_equivalence_with_duplicate_graph(ds):
     assert round(prop_scores["sum_weights"]) == 800
 
 
-def test_graph_equivalence_with_versioning_check_on(ds_graph, ds):
+def test_graph_equivalence_with_versioning_check_on(ds2, ds):
     weights = {
         "_internal": {
-            "ignore_spec_version": True,
+            "ignore_spec_version": False,
             "versioning_checks": True,
             "max_depth": 1,
         },
     }
     prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds_graph, prop_scores, **weights)
+    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
+    assert round(env) == 91
+    assert round(prop_scores["matching_score"]) == 730
+    assert round(prop_scores["sum_weights"]) == 800
+
+
+def test_graph_equivalence_with_versioning_check_off(ds2, ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
     assert round(env) == 91
     assert round(prop_scores["matching_score"]) == 730
     assert round(prop_scores["sum_weights"]) == 800
