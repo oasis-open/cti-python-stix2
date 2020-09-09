@@ -2,6 +2,7 @@
 
 import importlib
 import inspect
+from six import text_type
 
 from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternParser import TerminalNode
@@ -48,6 +49,9 @@ _TIMESTAMP_RE = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z')
 def check_for_valid_timetamp_syntax(timestamp_string):
     return _TIMESTAMP_RE.match(timestamp_string)
 
+
+def same_boolean_operator(current_op, op_token):
+    return current_op == op_token.getText()
 
 
 class STIXPatternVisitorForSTIX2():
@@ -131,7 +135,7 @@ class STIXPatternVisitorForSTIX2():
         if len(children) == 1:
             return children[0]
         else:
-            if isinstance(children[0], _BooleanExpression):
+            if isinstance(children[0], _BooleanExpression) and same_boolean_operator(children[0].operator, children[1]):
                 children[0].operands.append(children[2])
                 return children[0]
             else:
@@ -256,6 +260,11 @@ class STIXPatternVisitorForSTIX2():
             if isinstance(next, TerminalNode):
                 property_path.append(self.instantiate("ListObjectPathComponent", current.property_name, next.getText()))
                 i += 2
+            elif isinstance(next, IntegerConstant):
+                property_path.append(self.instantiate("ListObjectPathComponent",
+                                                      current.property_name if isinstance(current, BasicObjectPathComponent) else text_type(current),
+                                                      next.value))
+                i += 2
             else:
                 property_path.append(current)
                 i += 1
@@ -269,7 +278,12 @@ class STIXPatternVisitorForSTIX2():
     # Visit a parse tree produced by STIXPatternParser#firstPathComponent.
     def visitFirstPathComponent(self, ctx):
         children = self.visitChildren(ctx)
-        step = children[0].getText()
+        first_component = children[0]
+        # hack for when the first component isn't a TerminalNode (see issue #438)
+        if isinstance(first_component, TerminalNode):
+            step = first_component.getText()
+        else:
+            step = text_type(first_component)
         # if step.endswith("_ref"):
         #     return stix2.ReferenceObjectPathComponent(step)
         # else:
@@ -288,8 +302,8 @@ class STIXPatternVisitorForSTIX2():
     def visitKeyPathStep(self, ctx):
         children = self.visitChildren(ctx)
         if isinstance(children[1], StringConstant):
-            # special case for hashes
-            return children[1].value
+            # special case for hashes and quoted steps
+            return children[1]
         else:
             return self.instantiate("BasicObjectPathComponent", children[1].getText(), True)
 

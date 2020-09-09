@@ -52,7 +52,7 @@ setup(
         'requests',
         'simplejson',
         'six>=1.13.0',
-        'stix2-patterns',
+        'stix2-patterns>=1.2.0',
     ],
     project_urls={
         'Documentation': 'https://stix2.readthedocs.io/',
@@ -60,7 +60,7 @@ setup(
         'Bug Tracker': 'https://github.com/oasis-open/cti-python-stix2/issues/',
     },
     extras_require={
-        'taxii': ['taxii2-client'],
+        'taxii': ['taxii2-client>=2.2.1'],
         'semantic': ['haversine', 'rapidfuzz'],
     },
 )

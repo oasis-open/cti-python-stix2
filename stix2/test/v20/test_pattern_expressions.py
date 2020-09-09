@@ -511,6 +511,32 @@ def test_parsing_start_stop_qualified_expression():
     ) == "[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'"
 
 
+def test_parsing_mixed_boolean_expression_1():
+    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]")
+    assert str(patt_obj) == "[a:b = 1 AND a:b = 2 OR a:b = 3]"
+
+
+def test_parsing_mixed_boolean_expression_2():
+    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]")
+    assert str(patt_obj) == "[a:b = 1 OR a:b = 2 AND a:b = 3]"
+
+
+def test_parsing_integer_index():
+    patt_obj = create_pattern_object("[a:b[1]=2]")
+    assert str(patt_obj) == "[a:b[1] = 2]"
+
+
+# This should never occur, because the first component will always be a property_name, and they should not be quoted.
+def test_parsing_quoted_first_path_component():
+    patt_obj = create_pattern_object("[a:'b'[1]=2]")
+    assert str(patt_obj) == "[a:'b'[1] = 2]"
+
+
+def test_parsing_quoted_second_path_component():
+    patt_obj = create_pattern_object("[a:b.'b'[1]=2]")
+    assert str(patt_obj) == "[a:b.'b'[1] = 2]"
+
+
 def test_parsing_illegal_start_stop_qualified_expression():
     with pytest.raises(ValueError):
         create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01' STOP '2017-03-12T08:30:00Z'", version="2.0")

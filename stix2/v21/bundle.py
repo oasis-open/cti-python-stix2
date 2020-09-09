@@ -23,10 +23,14 @@ class Bundle(_STIXBase21):
     def __init__(self, *args, **kwargs):
         # Add any positional arguments to the 'objects' kwarg.
         if args:
-            if isinstance(args[0], list):
-                kwargs['objects'] = args[0] + list(args[1:]) + kwargs.get('objects', [])
-            else:
-                kwargs['objects'] = list(args) + kwargs.get('objects', [])
+            obj_list = []
+            for arg in args:
+                if isinstance(arg, list):
+                    obj_list = obj_list + arg
+                else:
+                    obj_list.append(arg)
+
+            kwargs['objects'] = obj_list + kwargs.get('objects', [])
 
         allow_custom = kwargs.get('allow_custom', False)
         self._allow_custom = allow_custom
