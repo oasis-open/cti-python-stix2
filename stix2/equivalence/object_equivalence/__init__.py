@@ -330,11 +330,11 @@ def semantic_check(ref1, ref2, ds1, ds2, **weights):
         result = 1.0
     elif type1 == type2:
         if weights["_internal"]["versioning_checks"]:
-            result = _versioned_checks(ref1, ref2, ds1, ds2, **weights) / 100
+            result = _versioned_checks(ref1, ref2, ds1, ds2, **weights) / 100.0
         else:
             o1, o2 = ds1.get(ref1), ds2.get(ref2)
             if o1 and o2:
-                result = semantically_equivalent(o1, o2, **weights) / 100
+                result = semantically_equivalent(o1, o2, **weights) / 100.0
 
     logger.debug(
         "--\t\tsemantic_check '%s' '%s'\tresult: '%s'",

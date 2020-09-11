@@ -81,9 +81,10 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
     equivalence_score = (matching_score / sum_weights) * 100
     prop_scores["matching_score"] = matching_score
     prop_scores["sum_weights"] = sum_weights
+    prop_scores["summary"] = results
 
     logger.debug(
-        "DONE\nSUM_WEIGHT: %.2f\tMATCHING_SCORE: %.2f\t SCORE: %.2f",
+        "DONE\t\tSUM_WEIGHT: %.2f\tMATCHING_SCORE: %.2f\t SCORE: %.2f",
         sum_weights,
         matching_score,
         equivalence_score,
