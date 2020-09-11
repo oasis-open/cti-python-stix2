@@ -6,6 +6,7 @@
    confidence
    datastore
    environment
+   equivalence
    exceptions
    markings
    parsing
