@@ -2,6 +2,7 @@ bumpversion
 ipython
 nbsphinx==0.4.3
 pre-commit
+pygments<3
 pytest
 pytest-cov
 sphinx<2
