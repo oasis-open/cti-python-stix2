@@ -367,7 +367,11 @@ def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
             type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
             if type1 == type2:
                 score = semantic_check(ref1, ref2, b1, b2, **weights) * 100.0
-                results[ref1] = {"matched": ref2, "value": score}
+
+                if ref1 not in results:
+                    results[ref1] = {"matched": ref2, "value": score}
+                elif score > results[ref1]["value"]:
+                    results[ref1] = {"matched": ref2, "value": score}
 
     total_sum = sum(x["value"] for x in results.values())
     max_score = max(len(refs1), len(refs2)) * 100.0

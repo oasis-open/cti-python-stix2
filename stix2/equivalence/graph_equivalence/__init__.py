@@ -66,13 +66,15 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
     for object1 in g1:
         for object2 in g2:
             if object1["type"] == object2["type"]:
-                result = semantically_equivalent(object1, object2, prop_scores, **weights)
+                iprop_score = {}
+                result = semantically_equivalent(object1, object2, iprop_score, **weights)
                 objects1_id = object1["id"]
                 weights["_internal"]["max_depth"] = depth
+
                 if objects1_id not in results:
-                    results[objects1_id] = {"matched": object2["id"], "value": result}
+                    results[objects1_id] = {"matched": object2["id"], "prop_score": iprop_score, "value": result}
                 elif result > results[objects1_id]["value"]:
-                    results[objects1_id] = {"matched": object2["id"], "value": result}
+                    results[objects1_id] = {"matched": object2["id"], "prop_score": iprop_score, "value": result}
 
     matching_score = sum(x["value"] for x in results.values())
     sum_weights = len(g1) * 100.0
