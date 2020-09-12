@@ -509,7 +509,7 @@ def test_make_constant_simple(input_, expected_class, expected_value):
 
 
 def test_make_constant_list():
-    list_const = stix2.patterns.make_constant([1,2,3])
+    list_const = stix2.patterns.make_constant([1, 2, 3])
 
     assert isinstance(list_const, stix2.patterns.ListConstant)
     assert all(
@@ -518,7 +518,7 @@ def test_make_constant_list():
     )
     assert all(
         int_const.value == test_elt
-        for int_const, test_elt in zip(list_const.value, [1,2,3])
+        for int_const, test_elt in zip(list_const.value, [1, 2, 3])
     )
 
 
