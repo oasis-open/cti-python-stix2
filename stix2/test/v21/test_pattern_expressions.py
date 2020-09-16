@@ -1,10 +1,12 @@
 import datetime
 
 import pytest
+import pytz
 from stix2patterns.exceptions import ParseException
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
+import stix2.utils
 
 
 def test_create_comparison_expression():
@@ -601,6 +603,44 @@ def test_invalid_startstop_qualifier():
             datetime.date(2016, 6, 1),
             'foo',
         )
+
+
+@pytest.mark.parametrize(
+    "input_, expected_class, expected_value", [
+        (1, stix2.patterns.IntegerConstant, 1),
+        (1.5, stix2.patterns.FloatConstant, 1.5),
+        ("abc", stix2.patterns.StringConstant, "abc"),
+        (True, stix2.patterns.BooleanConstant, True),
+        (
+            "2001-02-10T21:36:15Z", stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+        (
+            datetime.datetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+            stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+    ],
+)
+def test_make_constant_simple(input_, expected_class, expected_value):
+    const = stix2.patterns.make_constant(input_)
+
+    assert isinstance(const, expected_class)
+    assert const.value == expected_value
+
+
+def test_make_constant_list():
+    list_const = stix2.patterns.make_constant([1, 2, 3])
+
+    assert isinstance(list_const, stix2.patterns.ListConstant)
+    assert all(
+        isinstance(elt, stix2.patterns.IntegerConstant)
+        for elt in list_const.value
+    )
+    assert all(
+        int_const.value == test_elt
+        for int_const, test_elt in zip(list_const.value, [1, 2, 3])
+    )
 
 
 def test_make_constant_already_a_constant():
