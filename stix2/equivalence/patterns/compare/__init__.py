@@ -1,5 +1,13 @@
 """
 Some generic comparison utility functions.
+
+.. autosummary::
+   :toctree: compare
+
+   comparison
+   observation
+
+|
 """
 
 

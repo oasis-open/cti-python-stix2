@@ -1,5 +1,14 @@
 """
 Generic AST transformation classes.
+
+.. autosummary::
+   :toctree: transform
+
+   comparison
+   observation
+   specials
+
+|
 """
 
 
