@@ -364,7 +364,7 @@ def test_parsing_or_observable_expression():
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
 
 
-def test_invalid_and_observable_expression():
+def test_invalid_and_comparison_expression():
     with pytest.raises(ValueError):
         stix2.AndBooleanExpression([
             stix2.EqualityComparisonExpression(
@@ -376,6 +376,33 @@ def test_invalid_and_observable_expression():
                 stix2.StringConstant("admin"),
             ),
         ])
+
+
+@pytest.mark.parametrize(
+    "pattern, root_types", [
+        ("[a:a=1 AND a:b=1]", {"a"}),
+        ("[a:a=1 AND a:b=1 OR c:d=1]", {"a", "c"}),
+        ("[a:a=1 AND (a:b=1 OR c:d=1)]", {"a"}),
+        ("[(a:a=1 OR b:a=1) AND (b:a=1 OR c:c=1)]", {"b"}),
+        ("[(a:a=1 AND a:b=1) OR (b:a=1 AND b:c=1)]", {"a", "b"}),
+    ],
+)
+def test_comparison_expression_root_types(pattern, root_types):
+    ast = create_pattern_object(pattern)
+    assert ast.operand.root_types == root_types
+
+
+@pytest.mark.parametrize(
+    "pattern", [
+        "[a:b=1 AND b:c=1]",
+        "[a:b=1 AND (b:c=1 OR c:d=1)]",
+        "[(a:b=1 OR b:c=1) AND (c:d=1 OR d:e=1)]",
+        "[(a:b=1 AND b:c=1) OR (b:c=1 AND c:d=1)]",
+    ],
+)
+def test_comparison_expression_root_types_error(pattern):
+    with pytest.raises(ValueError):
+        create_pattern_object(pattern)
 
 
 def test_hex():
