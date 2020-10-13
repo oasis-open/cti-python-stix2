@@ -227,7 +227,7 @@ def make_constant(value):
         return value
 
     try:
-        return parse_into_datetime(value)
+        return TimestampConstant(value)
     except (ValueError, TypeError):
         pass
 
@@ -366,7 +366,7 @@ class _ComparisonExpression(_PatternExpression):
         else:
             self.rhs = make_constant(rhs)
         self.negated = negated
-        self.root_type = self.lhs.object_type_name
+        self.root_types = {self.lhs.object_type_name}
 
     def __str__(self):
         if self.negated:
@@ -506,15 +506,17 @@ class _BooleanExpression(_PatternExpression):
     """
     def __init__(self, operator, operands):
         self.operator = operator
-        self.operands = []
+        self.operands = list(operands)
         for arg in operands:
-            if not hasattr(self, "root_type"):
-                self.root_type = arg.root_type
-            elif self.root_type and (self.root_type != arg.root_type) and operator == "AND":
-                raise ValueError("All operands to an 'AND' expression must have the same object type")
-            elif self.root_type and (self.root_type != arg.root_type):
-                self.root_type = None
-            self.operands.append(arg)
+            if not hasattr(self, "root_types"):
+                self.root_types = arg.root_types
+            elif operator == "AND":
+                self.root_types &= arg.root_types
+            else:
+                self.root_types |= arg.root_types
+
+            if not self.root_types:
+                raise ValueError("All operands to an 'AND' expression must be satisfiable with the same object type")
 
     def __str__(self):
         sub_exprs = []
@@ -613,8 +615,8 @@ class ParentheticalExpression(_PatternExpression):
     """
     def __init__(self, exp):
         self.expression = exp
-        if hasattr(exp, "root_type"):
-            self.root_type = exp.root_type
+        if hasattr(exp, "root_types"):
+            self.root_types = exp.root_types
 
     def __str__(self):
         return "(%s)" % self.expression

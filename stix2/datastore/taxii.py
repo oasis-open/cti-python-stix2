@@ -210,7 +210,7 @@ class TAXIICollectionSource(DataSource):
 
         if len(stix_obj):
             stix_obj = parse(stix_obj[0], allow_custom=self.allow_custom, version=version)
-            if stix_obj.id != stix_id:
+            if stix_obj['id'] != stix_id:
                 # check - was added to handle erroneous TAXII servers
                 stix_obj = None
         else:
@@ -246,7 +246,7 @@ class TAXIICollectionSource(DataSource):
         all_data = [parse(stix_obj, allow_custom=self.allow_custom, version=version) for stix_obj in all_data]
 
         # check - was added to handle erroneous TAXII servers
-        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj.id == stix_id]
+        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj['id'] == stix_id]
 
         return all_data_clean
 

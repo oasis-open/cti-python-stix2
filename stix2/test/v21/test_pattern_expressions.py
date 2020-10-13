@@ -1,10 +1,12 @@
 import datetime
 
 import pytest
+import pytz
 from stix2patterns.exceptions import ParseException
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
+import stix2.utils
 
 
 def test_create_comparison_expression():
@@ -362,7 +364,7 @@ def test_parsing_or_observable_expression():
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
 
 
-def test_invalid_and_observable_expression():
+def test_invalid_and_comparison_expression():
     with pytest.raises(ValueError):
         stix2.AndBooleanExpression([
             stix2.EqualityComparisonExpression(
@@ -374,6 +376,33 @@ def test_invalid_and_observable_expression():
                 stix2.StringConstant("admin"),
             ),
         ])
+
+
+@pytest.mark.parametrize(
+    "pattern, root_types", [
+        ("[a:a=1 AND a:b=1]", {"a"}),
+        ("[a:a=1 AND a:b=1 OR c:d=1]", {"a", "c"}),
+        ("[a:a=1 AND (a:b=1 OR c:d=1)]", {"a"}),
+        ("[(a:a=1 OR b:a=1) AND (b:a=1 OR c:c=1)]", {"b"}),
+        ("[(a:a=1 AND a:b=1) OR (b:a=1 AND b:c=1)]", {"a", "b"}),
+    ],
+)
+def test_comparison_expression_root_types(pattern, root_types):
+    ast = create_pattern_object(pattern)
+    assert ast.operand.root_types == root_types
+
+
+@pytest.mark.parametrize(
+    "pattern", [
+        "[a:b=1 AND b:c=1]",
+        "[a:b=1 AND (b:c=1 OR c:d=1)]",
+        "[(a:b=1 OR b:c=1) AND (c:d=1 OR d:e=1)]",
+        "[(a:b=1 AND b:c=1) OR (b:c=1 AND c:d=1)]",
+    ],
+)
+def test_comparison_expression_root_types_error(pattern):
+    with pytest.raises(ValueError):
+        create_pattern_object(pattern)
 
 
 def test_hex():
@@ -601,6 +630,44 @@ def test_invalid_startstop_qualifier():
             datetime.date(2016, 6, 1),
             'foo',
         )
+
+
+@pytest.mark.parametrize(
+    "input_, expected_class, expected_value", [
+        (1, stix2.patterns.IntegerConstant, 1),
+        (1.5, stix2.patterns.FloatConstant, 1.5),
+        ("abc", stix2.patterns.StringConstant, "abc"),
+        (True, stix2.patterns.BooleanConstant, True),
+        (
+            "2001-02-10T21:36:15Z", stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+        (
+            datetime.datetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+            stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+    ],
+)
+def test_make_constant_simple(input_, expected_class, expected_value):
+    const = stix2.patterns.make_constant(input_)
+
+    assert isinstance(const, expected_class)
+    assert const.value == expected_value
+
+
+def test_make_constant_list():
+    list_const = stix2.patterns.make_constant([1, 2, 3])
+
+    assert isinstance(list_const, stix2.patterns.ListConstant)
+    assert all(
+        isinstance(elt, stix2.patterns.IntegerConstant)
+        for elt in list_const.value
+    )
+    assert all(
+        int_const.value == test_elt
+        for int_const, test_elt in zip(list_const.value, [1, 2, 3])
+    )
 
 
 def test_make_constant_already_a_constant():

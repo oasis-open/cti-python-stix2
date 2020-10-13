@@ -1,3 +1,14 @@
+"""Python APIs for STIX 2 Pattern Semantic Equivalence.
+
+.. autosummary::
+   :toctree: patterns
+
+   compare
+   transform
+
+|
+"""
+
 import stix2
 from stix2.equivalence.patterns.compare.observation import (
     observation_expression_cmp,
