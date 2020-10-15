@@ -65,7 +65,7 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
 
     for object1 in g1:
         for object2 in g2:
-            if object1["type"] == object2["type"]:
+            if object1["type"] == object2["type"] and object1["type"] in weights:
                 iprop_score = {}
                 result = semantically_equivalent(object1, object2, iprop_score, **weights)
                 objects1_id = object1["id"]
@@ -76,9 +76,11 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
                 elif result > results[objects1_id]["value"]:
                     results[objects1_id] = {"matched": object2["id"], "prop_score": iprop_score, "value": result}
 
+    equivalence_score = 0
     matching_score = sum(x["value"] for x in results.values())
-    sum_weights = len(g1) * 100.0
-    equivalence_score = (matching_score / sum_weights) * 100
+    sum_weights = len(results) * 100.0
+    if sum_weights > 0:
+        equivalence_score = (matching_score / sum_weights) * 100
     prop_scores["matching_score"] = matching_score
     prop_scores["sum_weights"] = sum_weights
     prop_scores["summary"] = results
@@ -132,6 +134,11 @@ WEIGHTS = {
     "malware": {
         "malware_types": (20, partial_list_based),
         "name": (80, partial_string_based),
+    },
+    "marking-definition": {
+        "name": (20, exact_match),
+        "definition": (60, exact_match),
+        "definition_type": (20, exact_match),
     },
     "relationship": {
         "source_ref": (40, reference_check),

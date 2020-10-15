@@ -945,7 +945,7 @@ def test_list_semantic_check(ds, ds2):
         ds2,
         **weights,
     )
-    assert round(score) == 0  # Since pattern is different score is really low
+    assert round(score) == 1
 
 
 def test_graph_equivalence_with_filesystem_source(ds):
@@ -959,9 +959,9 @@ def test_graph_equivalence_with_filesystem_source(ds):
     prop_scores = {}
     fs = stix2.FileSystemSource(FS_PATH)
     env = stix2.Environment().graphically_equivalent(fs, ds, prop_scores, **weights)
-    assert round(env) == 14
-    assert round(prop_scores["matching_score"]) == 108
-    assert round(prop_scores["sum_weights"]) == 800
+    assert round(env) == 24
+    assert round(prop_scores["matching_score"]) == 122
+    assert round(prop_scores["sum_weights"]) == 500
 
 
 def test_graph_equivalence_with_duplicate_graph(ds):
@@ -989,8 +989,8 @@ def test_graph_equivalence_with_versioning_check_on(ds2, ds):
     }
     prop_scores = {}
     env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
-    assert round(env) == 91
-    assert round(prop_scores["matching_score"]) == 730
+    assert round(env) == 93
+    assert round(prop_scores["matching_score"]) == 745
     assert round(prop_scores["sum_weights"]) == 800
 
 
@@ -1004,6 +1004,6 @@ def test_graph_equivalence_with_versioning_check_off(ds2, ds):
     }
     prop_scores = {}
     env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
-    assert round(env) == 91
-    assert round(prop_scores["matching_score"]) == 730
+    assert round(env) == 93
+    assert round(prop_scores["matching_score"]) == 745
     assert round(prop_scores["sum_weights"]) == 800

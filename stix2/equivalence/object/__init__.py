@@ -326,9 +326,7 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
     type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
     result = 0.0
 
-    if ref1 == ref2:
-        result = 1.0
-    elif type1 == type2:
+    if type1 == type2:
         if weights["_internal"]["versioning_checks"]:
             result = _versioned_checks(ref1, ref2, ds1, ds2, **weights) / 100.0
         else:
@@ -345,8 +343,9 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
 
 def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     """For objects that contain multiple references (i.e., object_refs) perform
-    the same de-reference for object-based semantic equivalence. The score influences
-    the objects containing all references. The result is weighted on the longest ref list"""
+    the same de-reference procedure and perform object-based semantic equivalence.
+    The score influences the objects containing these references. The result is
+    weighted on the amount of unique objects that could 1) be de-referenced 2) """
     results = {}
     if len(refs1) >= len(refs2):
         l1 = refs1
@@ -373,9 +372,12 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
                 elif score > results[ref1]["value"]:
                     results[ref1] = {"matched": ref2, "value": score}
 
+    result = 0.0
     total_sum = sum(x["value"] for x in results.values())
-    max_score = max(len(refs1), len(refs2)) * 100.0
-    result = total_sum / max_score
+    max_score = len(results) * 100.0
+
+    if max_score > 0:
+        result = total_sum / max_score
 
     logger.debug(
         "--\t\tlist_reference_check '%s' '%s'\ttotal_sum: '%s'\tmax_score: '%s'\tresult: '%s'",
