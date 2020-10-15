@@ -288,6 +288,18 @@ def test_custom_marking_no_init_2():
     assert no2.property1 == 'something'
 
 
+def test_register_duplicate_marking():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomMarking(
+            'x-new-obj2', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
 @stix2.v20.CustomObject(
     'x-new-type', [
         ('property1', stix2.properties.StringProperty(required=True)),
@@ -711,7 +723,7 @@ def test_custom_extension():
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         NewExtension(property2=42)
     assert excinfo.value.properties == ['property1']
-    assert str(excinfo.value) == "No values for required properties for _CustomExtension: (property1)."
+    assert str(excinfo.value) == "No values for required properties for NewExtension: (property1)."
 
     with pytest.raises(ValueError) as excinfo:
         NewExtension(property1='something', property2=4)
@@ -1117,17 +1129,5 @@ def test_register_duplicate_observable_extension():
             ],
         )
         class NewExtension2():
-            pass
-    assert "cannot be registered again" in str(excinfo.value)
-
-
-def test_register_duplicate_marking():
-    with pytest.raises(DuplicateRegistrationError) as excinfo:
-        @stix2.v20.CustomMarking(
-            'x-new-obj-2', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class NewObj2():
             pass
     assert "cannot be registered again" in str(excinfo.value)

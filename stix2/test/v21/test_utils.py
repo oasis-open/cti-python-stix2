@@ -6,6 +6,7 @@ from io import StringIO
 import pytest
 import pytz
 
+import stix2.serialization
 import stix2.utils
 
 from .constants import IDENTITY_ID
@@ -35,8 +36,6 @@ def test_timestamp_formatting(dttm, timestamp):
         (dt.datetime(2017, 1, 1, 0, tzinfo=pytz.utc), dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
         (dt.date(2017, 1, 1), dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
         ('2017-01-01T00:00:00Z', dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
-        ('2017-01-01T02:00:00+2:00', dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
-        ('2017-01-01T00:00:00', dt.datetime(2017, 1, 1, 0, 0, 0, tzinfo=pytz.utc)),
     ],
 )
 def test_parse_datetime(timestamp, dttm):
@@ -45,11 +44,11 @@ def test_parse_datetime(timestamp, dttm):
 
 @pytest.mark.parametrize(
     'timestamp, dttm, precision', [
-        ('2017-01-01T01:02:03.000001', dt.datetime(2017, 1, 1, 1, 2, 3, 0, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.001', dt.datetime(2017, 1, 1, 1, 2, 3, 1000, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.1', dt.datetime(2017, 1, 1, 1, 2, 3, 100000, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.45', dt.datetime(2017, 1, 1, 1, 2, 3, 450000, tzinfo=pytz.utc), 'millisecond'),
-        ('2017-01-01T01:02:03.45', dt.datetime(2017, 1, 1, 1, 2, 3, tzinfo=pytz.utc), 'second'),
+        ('2017-01-01T01:02:03.000001Z', dt.datetime(2017, 1, 1, 1, 2, 3, 0, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.001Z', dt.datetime(2017, 1, 1, 1, 2, 3, 1000, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.1Z', dt.datetime(2017, 1, 1, 1, 2, 3, 100000, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.45Z', dt.datetime(2017, 1, 1, 1, 2, 3, 450000, tzinfo=pytz.utc), 'millisecond'),
+        ('2017-01-01T01:02:03.45Z', dt.datetime(2017, 1, 1, 1, 2, 3, tzinfo=pytz.utc), 'second'),
     ],
 )
 def test_parse_datetime_precision(timestamp, dttm, precision):
@@ -105,17 +104,18 @@ def test_get_type_from_id(stix_id, type):
 def test_deduplicate(stix_objs1):
     unique = stix2.utils.deduplicate(stix_objs1)
 
-    # Only 3 objects are unique
-    # 2 id's vary
+    # Only 4 objects are unique
+    # 3 id's vary
     # 2 modified times vary for a particular id
 
-    assert len(unique) == 3
+    assert len(unique) == 4
 
     ids = [obj['id'] for obj in unique]
-    mods = [obj['modified'] for obj in unique]
+    mods = [obj.get('modified') for obj in unique]
 
     assert "indicator--00000000-0000-4000-8000-000000000001" in ids
-    assert "indicator--00000000-0000-4000-8000-000000000001" in ids
+    assert "indicator--00000000-0000-4000-8000-000000000002" in ids
+    assert "url--cc1deced-d99b-4d72-9268-8182420cb2fd" in ids
     assert "2017-01-27T13:49:53.935Z" in mods
     assert "2017-01-27T13:49:53.936Z" in mods
 
@@ -203,7 +203,7 @@ def test_deduplicate(stix_objs1):
     ],
 )
 def test_find_property_index(object, tuple_to_find, expected_index):
-    assert stix2.utils.find_property_index(
+    assert stix2.serialization.find_property_index(
         object,
         *tuple_to_find
     ) == expected_index
@@ -240,4 +240,4 @@ def test_find_property_index(object, tuple_to_find, expected_index):
     ],
 )
 def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
-    assert stix2.utils._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index
+    assert stix2.serialization._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index

@@ -1,7 +1,6 @@
 """Base classes for type definitions in the STIX2 library."""
 
 import copy
-import datetime as dt
 import re
 import uuid
 
@@ -18,60 +17,24 @@ from .exceptions import (
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
-from .utils import (
-    NOW, PREFIX_21_REGEX, find_property_index, format_datetime, get_timestamp,
+from .serialization import (
+    STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, serialize,
 )
-from .utils import new_version as _new_version
-from .utils import revoke as _revoke
+from .utils import NOW, PREFIX_21_REGEX, get_timestamp
+from .versioning import new_version as _new_version
+from .versioning import revoke as _revoke
 
 try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
 
-
-__all__ = ['STIXJSONEncoder', '_STIXBase']
+# TODO: Remove STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, serialize from __all__ on next major release.
+# Kept for backwards compatibility.
+__all__ = ['STIXJSONEncoder', 'STIXJSONIncludeOptionalDefaultsEncoder', '_STIXBase', 'serialize']
 
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
-
-
-class STIXJSONEncoder(json.JSONEncoder):
-    """Custom JSONEncoder subclass for serializing Python ``stix2`` objects.
-
-    If an optional property with a default value specified in the STIX 2 spec
-    is set to that default value, it will be left out of the serialized output.
-
-    An example of this type of property include the ``revoked`` common property.
-    """
-
-    def default(self, obj):
-        if isinstance(obj, (dt.date, dt.datetime)):
-            return format_datetime(obj)
-        elif isinstance(obj, _STIXBase):
-            tmp_obj = dict(copy.deepcopy(obj))
-            for prop_name in obj._defaulted_optional_properties:
-                del tmp_obj[prop_name]
-            return tmp_obj
-        else:
-            return super(STIXJSONEncoder, self).default(obj)
-
-
-class STIXJSONIncludeOptionalDefaultsEncoder(json.JSONEncoder):
-    """Custom JSONEncoder subclass for serializing Python ``stix2`` objects.
-
-    Differs from ``STIXJSONEncoder`` in that if an optional property with a default
-    value specified in the STIX 2 spec is set to that default value, it will be
-    included in the serialized output.
-    """
-
-    def default(self, obj):
-        if isinstance(obj, (dt.date, dt.datetime)):
-            return format_datetime(obj)
-        elif isinstance(obj, _STIXBase):
-            return dict(obj)
-        else:
-            return super(STIXJSONIncludeOptionalDefaultsEncoder, self).default(obj)
 
 
 def get_required_properties(properties):
@@ -270,17 +233,9 @@ class _STIXBase(Mapping):
     def revoke(self):
         return _revoke(self)
 
-    def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
+    def serialize(self, *args, **kwargs):
         """
         Serialize a STIX object.
-
-        Args:
-            pretty (bool): If True, output properties following the STIX specs
-                formatting. This includes indentation. Refer to notes for more
-                details. (Default: ``False``)
-            include_optional_defaults (bool): Determines whether to include
-                optional properties set to the default value defined in the spec.
-            **kwargs: The arguments for a json.dumps() call.
 
         Examples:
             >>> import stix2
@@ -300,25 +255,10 @@ class _STIXBase(Mapping):
         Returns:
             str: The serialized JSON object.
 
-        Note:
-            The argument ``pretty=True`` will output the STIX object following
-            spec order. Using this argument greatly impacts object serialization
-            performance. If your use case is centered across machine-to-machine
-            operation it is recommended to set ``pretty=False``.
-
-            When ``pretty=True`` the following key-value pairs will be added or
-            overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
+        See Also:
+            ``stix2.serialization.serialize`` for options.
         """
-        if pretty:
-            def sort_by(element):
-                return find_property_index(self, *element)
-
-            kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
-
-        if include_optional_defaults:
-            return json.dumps(self, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
-        else:
-            return json.dumps(self, cls=STIXJSONEncoder, **kwargs)
+        return serialize(self, *args, **kwargs)
 
 
 class _DomainObject(_STIXBase, _MarkingsMixin):
@@ -334,23 +274,20 @@ class _Observable(_STIXBase):
     def __init__(self, **kwargs):
         # the constructor might be called independently of an observed data object
         self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
-
-        self._allow_custom = kwargs.get('allow_custom', False)
         self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
-
-        try:
-            # Since `spec_version` is optional, this is how we check for a 2.1 SCO
-            self._id_contributing_properties
-
-            if 'id' not in kwargs:
-                possible_id = self._generate_id(kwargs)
-                if possible_id is not None:
-                    kwargs['id'] = possible_id
-        except AttributeError:
-            # End up here if handling a 2.0 SCO, and don't need to do anything further
-            pass
-
         super(_Observable, self).__init__(**kwargs)
+
+        if 'id' not in kwargs and not isinstance(self, stix2.v20._Observable):
+            # Specific to 2.1+ observables: generate a deterministic ID
+            id_ = self._generate_id()
+
+            # Spec says fall back to UUIDv4 if no contributing properties were
+            # given.  That's what already happened (the following is actually
+            # overwriting the default uuidv4), so nothing to do here.
+            if id_ is not None:
+                # Can't assign to self (we're immutable), so slip the ID in
+                # more sneakily.
+                self._inner["id"] = id_
 
     def _check_ref(self, ref, prop, prop_name):
         """
@@ -396,42 +333,53 @@ class _Observable(_STIXBase):
                 for ref in kwargs[prop_name]:
                     self._check_ref(ref, prop, prop_name)
 
-    def _generate_id(self, kwargs):
-        required_prefix = self._type + "--"
+    def _generate_id(self):
+        """
+        Generate a UUIDv5 for this observable, using its "ID contributing
+        properties".
 
-        properties_to_use = self._id_contributing_properties
-        if properties_to_use:
-            streamlined_object = {}
-            if "hashes" in kwargs and "hashes" in properties_to_use:
-                possible_hash = _choose_one_hash(kwargs["hashes"])
-                if possible_hash:
-                    streamlined_object["hashes"] = possible_hash
-            for key in properties_to_use:
-                if key != "hashes" and key in kwargs:
-                    if isinstance(kwargs[key], dict) or isinstance(kwargs[key], _STIXBase):
-                        temp_deep_copy = copy.deepcopy(dict(kwargs[key]))
-                        _recursive_stix_to_dict(temp_deep_copy)
-                        streamlined_object[key] = temp_deep_copy
-                    elif isinstance(kwargs[key], list):
-                        temp_deep_copy = copy.deepcopy(kwargs[key])
-                        _recursive_stix_list_to_dict(temp_deep_copy)
-                        streamlined_object[key] = temp_deep_copy
-                    else:
-                        streamlined_object[key] = kwargs[key]
-            if streamlined_object:
-                data = canonicalize(streamlined_object, utf8=False)
+        :return: The ID, or None if no ID contributing properties are set
+        """
 
-                # The situation is complicated w.r.t. python 2/3 behavior, so
-                # I'd rather not rely on particular exceptions being raised to
-                # determine what to do.  Better to just check the python version
-                # directly.
-                if six.PY3:
-                    return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, data))
+        id_ = None
+        json_serializable_object = {}
+
+        for key in self._id_contributing_properties:
+
+            if key in self:
+                obj_value = self[key]
+
+                if key == "hashes":
+                    serializable_value = _choose_one_hash(obj_value)
+
+                    if serializable_value is None:
+                        raise InvalidValueError(
+                            self, key, "No hashes given",
+                        )
+
                 else:
-                    return required_prefix + six.text_type(uuid.uuid5(SCO_DET_ID_NAMESPACE, data.encode("utf-8")))
+                    serializable_value = _make_json_serializable(obj_value)
 
-        # We return None if there are no values specified for any of the id-contributing-properties
-        return None
+                json_serializable_object[key] = serializable_value
+
+        if json_serializable_object:
+
+            data = canonicalize(json_serializable_object, utf8=False)
+
+            # The situation is complicated w.r.t. python 2/3 behavior, so
+            # I'd rather not rely on particular exceptions being raised to
+            # determine what to do.  Better to just check the python version
+            # directly.
+            if six.PY3:
+                uuid_ = uuid.uuid5(SCO_DET_ID_NAMESPACE, data)
+            else:
+                uuid_ = uuid.uuid5(
+                    SCO_DET_ID_NAMESPACE, data.encode("utf-8"),
+                )
+
+            id_ = "{}--{}".format(self._type, six.text_type(uuid_))
+
+        return id_
 
 
 class _Extension(_STIXBase):
@@ -455,35 +403,102 @@ def _choose_one_hash(hash_dict):
         if k is not None:
             return {k: hash_dict[k]}
 
+    return None
+
 
 def _cls_init(cls, obj, kwargs):
     if getattr(cls, '__init__', object.__init__) is not object.__init__:
         cls.__init__(obj, **kwargs)
 
 
-def _recursive_stix_to_dict(input_dict):
-    for key in input_dict:
-        if isinstance(input_dict[key], dict):
-            _recursive_stix_to_dict(input_dict[key])
-        elif isinstance(input_dict[key], _STIXBase):
-            input_dict[key] = dict(input_dict[key])
+def _make_json_serializable(value):
+    """
+    Make the given value JSON-serializable; required for the JSON canonicalizer
+    to work.  This recurses into lists/dicts, converts stix objects to dicts,
+    etc.  "Convenience" types this library uses as property values are
+    JSON-serialized to produce a JSON-serializable value.  (So you will always
+    get strings for those.)
 
-            # There may stil be nested _STIXBase objects
-            _recursive_stix_to_dict(input_dict[key])
-        elif isinstance(input_dict[key], list):
-            _recursive_stix_list_to_dict(input_dict[key])
-        else:
-            pass
+    The conversion will not affect the passed in value.
+
+    :param value: The value to make JSON-serializable.
+    :return: The JSON-serializable value.
+    :raises ValueError: If value is None (since nulls are not allowed in STIX
+        objects).
+    """
+    if value is None:
+        raise ValueError("Illegal null value found in a STIX object")
+
+    json_value = value  # default assumption
+
+    if isinstance(value, Mapping):
+        json_value = {
+            k: _make_json_serializable(v)
+            for k, v in value.items()
+        }
+
+    elif isinstance(value, list):
+        json_value = [
+            _make_json_serializable(v)
+            for v in value
+        ]
+
+    elif not isinstance(value, (int, float, six.string_types, bool)):
+        # If a "simple" value which is not already JSON-serializable,
+        # JSON-serialize to a string and use that as our JSON-serializable
+        # value.  This applies to our datetime objects currently (timestamp
+        # properties), and could apply to any other "convenience" types this
+        # library uses for property values in the future.
+        json_value = json.dumps(value, ensure_ascii=False, cls=STIXJSONEncoder)
+
+        # If it looks like a string literal was output, strip off the quotes.
+        # Otherwise, a second pair will be added when it's canonicalized.  Also
+        # to be extra safe, we need to unescape.
+        if len(json_value) >= 2 and \
+                json_value[0] == '"' and json_value[-1] == '"':
+            json_value = _un_json_escape(json_value[1:-1])
+
+    return json_value
 
 
-def _recursive_stix_list_to_dict(input_list):
-    for i in range(len(input_list)):
-        if isinstance(input_list[i], _STIXBase):
-            input_list[i] = dict(input_list[i])
-        elif isinstance(input_list[i], dict):
-            pass
-        elif isinstance(input_list[i], list):
-            _recursive_stix_list_to_dict(input_list[i])
-        else:
-            continue
-        _recursive_stix_to_dict(input_list[i])
+_JSON_ESCAPE_RE = re.compile(r"\\.")
+# I don't think I should need to worry about the unicode escapes (\uXXXX)
+# since I use ensure_ascii=False when generating it.  I will just fix all
+# the other escapes, e.g. \n, \r, etc.
+#
+# This list is taken from RFC8259 section 7:
+# https://tools.ietf.org/html/rfc8259#section-7
+# Maps the second char of a "\X" style escape, to a replacement char
+_JSON_ESCAPE_MAP = {
+    '"': '"',
+    "\\": "\\",
+    "/": "/",
+    "b": "\b",
+    "f": "\f",
+    "n": "\n",
+    "r": "\r",
+    "t": "\t",
+}
+
+
+def _un_json_escape(json_string):
+    """
+    Removes JSON string literal escapes.  We should undo these things Python's
+    serializer does, so we can ensure they're done canonically.  The
+    canonicalizer should be in charge of everything, as much as is feasible.
+
+    :param json_string: String literal output of Python's JSON serializer,
+        minus the surrounding quotes.
+    :return: The unescaped string
+    """
+
+    def replace(m):
+        replacement = _JSON_ESCAPE_MAP.get(m.group(0)[1])
+        if replacement is None:
+            raise ValueError("Unrecognized JSON escape: " + m.group(0))
+
+        return replacement
+
+    result = _JSON_ESCAPE_RE.sub(replace, json_string)
+
+    return result

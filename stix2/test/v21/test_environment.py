@@ -787,7 +787,7 @@ def test_semantic_equivalence_prop_scores():
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
     stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores)
     assert len(prop_scores) == 4
-    assert round(prop_scores["matching_score"], 1) == 8.8
+    assert round(prop_scores["matching_score"], 1) == 8.9
     assert round(prop_scores["sum_weights"], 1) == 100.0
 
 

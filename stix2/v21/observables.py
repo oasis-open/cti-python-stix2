@@ -14,8 +14,7 @@ from ..properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
-    ObjectReferenceProperty, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from .base import _Extension, _Observable, _STIXBase21
 from .common import GranularMarking
@@ -144,7 +143,7 @@ class EmailMIMEComponent(_STIXBase21):
 
     _properties = OrderedDict([
         ('body', StringProperty()),
-        ('body_raw_ref', ObjectReferenceProperty(valid_types=['artifact', 'file'])),
+        ('body_raw_ref', ReferenceProperty(valid_types=['artifact', 'file'], spec_version="2.1")),
         ('content_type', StringProperty()),
         ('content_disposition', StringProperty()),
     ])
@@ -201,7 +200,7 @@ class ArchiveExt(_Extension):
 
     _type = 'archive-ext'
     _properties = OrderedDict([
-        ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']), required=True)),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version="2.1"), required=True)),
         ('comment', StringProperty()),
     ])
 
@@ -353,7 +352,6 @@ class File(_Observable):
         ('name_enc', StringProperty()),
         ('magic_number_hex', HexProperty()),
         ('mime_type', StringProperty()),
-        # these are not the created/modified timestamps of the object itself
         ('ctime', TimestampProperty()),
         ('mtime', TimestampProperty()),
         ('atime', TimestampProperty()),
@@ -465,7 +463,7 @@ class HTTPRequestExt(_Extension):
         ('request_version', StringProperty()),
         ('request_header', DictionaryProperty(spec_version='2.1')),
         ('message_body_length', IntegerProperty()),
-        ('message_body_data_ref', ObjectReferenceProperty(valid_types='artifact')),
+        ('message_body_data_ref', ReferenceProperty(valid_types='artifact', spec_version="2.1")),
     ])
 
 
@@ -505,16 +503,6 @@ class SocketExt(_Extension):
         ),
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
-        (
-            'protocol_family', EnumProperty(allowed=[
-                "PF_INET",
-                "PF_IPX",
-                "PF_APPLETALK",
-                "PF_INET6",
-                "PF_AX25",
-                "PF_NETROM",
-            ]),
-        ),
         ('options', DictionaryProperty(spec_version='2.1')),
         (
             'socket_type', EnumProperty(allowed=[
@@ -654,7 +642,7 @@ class WindowsServiceExt(_Extension):
                 "SERVICE_SYSTEM_ALERT",
             ]),
         ),
-        ('service_dll_refs', ListProperty(ObjectReferenceProperty(valid_types='file'))),
+        ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version="2.1"))),
         (
             'service_type', EnumProperty(allowed=[
                 "SERVICE_KERNEL_DRIVER",

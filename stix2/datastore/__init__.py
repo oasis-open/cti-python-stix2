@@ -481,14 +481,14 @@ class CompositeDataSource(DataSource):
             if data:
                 all_data.append(data)
 
-        # remove duplicate versions
-        if len(all_data) > 0:
-            all_data = deduplicate(all_data)
-        else:
-            return None
+        # Search for latest version
+        stix_obj = latest_ver = None
+        for obj in all_data:
+            ver = obj.get("modified") or obj.get("created")
 
-        # reduce to most recent version
-        stix_obj = sorted(all_data, key=lambda k: k['modified'], reverse=True)[0]
+            if stix_obj is None or ver is None or ver > latest_ver:
+                stix_obj = obj
+                latest_ver = ver
 
         return stix_obj
 

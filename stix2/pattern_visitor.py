@@ -1,6 +1,9 @@
+"""STIX2 classes and methods to generate AST from patterns"""
+
 import importlib
 import inspect
 
+from six import text_type
 from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternParser import TerminalNode
 from stix2patterns.v20.grammars.STIXPatternParser import \
@@ -40,7 +43,15 @@ def remove_terminal_nodes(parse_tree_nodes):
     return values
 
 
+_TIMESTAMP_RE = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?Z')
 
+
+def check_for_valid_timetamp_syntax(timestamp_string):
+    return _TIMESTAMP_RE.match(timestamp_string)
+
+
+def same_boolean_operator(current_op, op_token):
+    return current_op == op_token.getText()
 
 
 class STIXPatternVisitorForSTIX2():
@@ -124,7 +135,7 @@ class STIXPatternVisitorForSTIX2():
         if len(children) == 1:
             return children[0]
         else:
-            if isinstance(children[0], _BooleanExpression):
+            if isinstance(children[0], _BooleanExpression) and same_boolean_operator(children[0].operator, children[1]):
                 children[0].operands.append(children[2])
                 return children[0]
             else:
@@ -214,6 +225,14 @@ class STIXPatternVisitorForSTIX2():
     # Visit a parse tree produced by STIXPatternParser#startStopQualifier.
     def visitStartStopQualifier(self, ctx):
         children = self.visitChildren(ctx)
+        # 2.0 parser will accept any string, need to make sure it is a full STIX timestamp
+        if isinstance(children[1], StringConstant):
+            if not check_for_valid_timetamp_syntax(children[1].value):
+                raise (ValueError("Start time is not a legal timestamp"))
+        if isinstance(children[3], StringConstant):
+            if not check_for_valid_timetamp_syntax(children[3].value):
+                raise (ValueError("Stop time is not a legal timestamp"))
+
         return StartStopQualifier(children[1], children[3])
 
     # Visit a parse tree produced by STIXPatternParser#withinQualifier.
@@ -241,6 +260,13 @@ class STIXPatternVisitorForSTIX2():
             if isinstance(next, TerminalNode):
                 property_path.append(self.instantiate("ListObjectPathComponent", current.property_name, next.getText()))
                 i += 2
+            elif isinstance(next, IntegerConstant):
+                property_path.append(self.instantiate(
+                    "ListObjectPathComponent",
+                    current.property_name if isinstance(current, BasicObjectPathComponent) else text_type(current),
+                    next.value,
+                ))
+                i += 2
             else:
                 property_path.append(current)
                 i += 1
@@ -254,7 +280,12 @@ class STIXPatternVisitorForSTIX2():
     # Visit a parse tree produced by STIXPatternParser#firstPathComponent.
     def visitFirstPathComponent(self, ctx):
         children = self.visitChildren(ctx)
-        step = children[0].getText()
+        first_component = children[0]
+        # hack for when the first component isn't a TerminalNode (see issue #438)
+        if isinstance(first_component, TerminalNode):
+            step = first_component.getText()
+        else:
+            step = text_type(first_component)
         # if step.endswith("_ref"):
         #     return stix2.ReferenceObjectPathComponent(step)
         # else:
@@ -273,8 +304,8 @@ class STIXPatternVisitorForSTIX2():
     def visitKeyPathStep(self, ctx):
         children = self.visitChildren(ctx)
         if isinstance(children[1], StringConstant):
-            # special case for hashes
-            return children[1].value
+            # special case for hashes and quoted steps
+            return children[1]
         else:
             return self.instantiate("BasicObjectPathComponent", children[1].getText(), True)
 
@@ -310,7 +341,11 @@ class STIXPatternVisitorForSTIX2():
         elif node.symbol.type == self.parser_class.BoolLiteral:
             return BooleanConstant(node.getText())
         elif node.symbol.type == self.parser_class.TimestampLiteral:
-            return TimestampConstant(node.getText())
+            value = node.getText()
+            # STIX 2.1 uses a special timestamp literal syntax
+            if value.startswith("t"):
+                value = value[2:-1]
+            return TimestampConstant(value)
         else:
             return node
 

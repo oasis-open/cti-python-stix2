@@ -14,19 +14,18 @@ import stix2
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
-    MutuallyExclusivePropertiesError,
+    MutuallyExclusivePropertiesError, STIXError,
 )
 from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
-from .utils import (
-    TYPE_21_REGEX, TYPE_REGEX, _get_dict, get_class_hierarchy_names,
-    parse_into_datetime,
-)
+from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
 
+TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )
@@ -169,6 +168,13 @@ class Property(object):
 
     def __init__(self, required=False, fixed=None, default=None):
         self.required = required
+
+        if required and default:
+            raise STIXError(
+                "Cant't use 'required' and 'default' together. 'required'"
+                "really means 'the user must provide this.'",
+            )
+
         if fixed:
             self._fixed_value = fixed
             self.clean = self._default_clean
@@ -190,15 +196,29 @@ class ListProperty(Property):
 
     def __init__(self, contained, **kwargs):
         """
-        ``contained`` should be a function which returns an object from the value.
+        ``contained`` should be a Property class or instance, or a _STIXBase
+        subclass.
         """
-        if inspect.isclass(contained) and issubclass(contained, Property):
-            # If it's a class and not an instance, instantiate it so that
-            # clean() can be called on it, and ListProperty.clean() will
-            # use __call__ when it appends the item.
-            self.contained = contained()
-        else:
+        self.contained = None
+
+        if inspect.isclass(contained):
+            # Property classes are instantiated; _STIXBase subclasses are left
+            # as-is.
+            if issubclass(contained, Property):
+                self.contained = contained()
+            elif issubclass(contained, _STIXBase):
+                self.contained = contained
+
+        elif isinstance(contained, Property):
             self.contained = contained
+
+        if not self.contained:
+            raise TypeError(
+                "Invalid list element type: {}".format(
+                    str(contained),
+                ),
+            )
+
         super(ListProperty, self).__init__(**kwargs)
 
     def clean(self, value):
@@ -210,40 +230,28 @@ class ListProperty(Property):
         if isinstance(value, (_STIXBase, string_types)):
             value = [value]
 
-        result = []
-        for item in value:
-            try:
-                valid = self.contained.clean(item)
-            except ValueError:
-                raise
-            except AttributeError:
-                # type of list has no clean() function (eg. built in Python types)
-                # TODO Should we raise an error here?
-                valid = item
+        if isinstance(self.contained, Property):
+            result = [
+                self.contained.clean(item)
+                for item in value
+            ]
 
-            if type(self.contained) is EmbeddedObjectProperty:
-                obj_type = self.contained.type
-            elif type(self.contained).__name__ == "STIXObjectProperty":
-                # ^ this way of checking doesn't require a circular import
-                # valid is already an instance of a python-stix2 class; no need
-                # to turn it into a dictionary and then pass it to the class
-                # constructor again
-                result.append(valid)
-                continue
-            elif type(self.contained) is DictionaryProperty:
-                obj_type = dict
-            else:
-                obj_type = self.contained
+        else:  # self.contained must be a _STIXBase subclass
+            result = []
+            for item in value:
+                if isinstance(item, self.contained):
+                    valid = item
 
-            if isinstance(valid, Mapping):
-                try:
-                    valid._allow_custom
-                except AttributeError:
-                    result.append(obj_type(**valid))
+                elif isinstance(item, Mapping):
+                    # attempt a mapping-like usage...
+                    valid = self.contained(**item)
+
                 else:
-                    result.append(obj_type(allow_custom=True, **valid))
-            else:
-                result.append(obj_type(valid))
+                    raise ValueError("Can't create a {} out of {}".format(
+                        self.contained._type, str(item),
+                    ))
+
+                result.append(valid)
 
         # STIX spec forbids empty lists
         if len(result) < 1:
@@ -537,7 +545,7 @@ def enumerate_types(types, spec_version):
     return return_types
 
 
-SELECTOR_REGEX = re.compile(r"^[a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*$")
+SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*|id)$")
 
 
 class SelectorProperty(Property):

@@ -1,4 +1,4 @@
-"""Classes to aid in working with the STIX 2 patterning language."""
+"""Classes to aid in working with the STIX2 patterning language."""
 
 import base64
 import binascii
@@ -227,8 +227,8 @@ def make_constant(value):
         return value
 
     try:
-        return parse_into_datetime(value)
-    except ValueError:
+        return TimestampConstant(value)
+    except (ValueError, TypeError):
         pass
 
     if isinstance(value, str):
@@ -248,7 +248,10 @@ def make_constant(value):
 class _ObjectPathComponent(object):
     @staticmethod
     def create_ObjectPathComponent(component_name):
-        if component_name.endswith("_ref"):
+        # first case is to handle if component_name was quoted
+        if isinstance(component_name, StringConstant):
+            return BasicObjectPathComponent(component_name.value, False)
+        elif component_name.endswith("_ref"):
             return ReferenceObjectPathComponent(component_name)
         elif component_name.find("[") != -1:
             parse1 = component_name.split("[")
@@ -363,7 +366,7 @@ class _ComparisonExpression(_PatternExpression):
         else:
             self.rhs = make_constant(rhs)
         self.negated = negated
-        self.root_type = self.lhs.object_type_name
+        self.root_types = {self.lhs.object_type_name}
 
     def __str__(self):
         if self.negated:
@@ -503,15 +506,17 @@ class _BooleanExpression(_PatternExpression):
     """
     def __init__(self, operator, operands):
         self.operator = operator
-        self.operands = []
+        self.operands = list(operands)
         for arg in operands:
-            if not hasattr(self, "root_type"):
-                self.root_type = arg.root_type
-            elif self.root_type and (self.root_type != arg.root_type) and operator == "AND":
-                raise ValueError("All operands to an 'AND' expression must have the same object type")
-            elif self.root_type and (self.root_type != arg.root_type):
-                self.root_type = None
-            self.operands.append(arg)
+            if not hasattr(self, "root_types"):
+                self.root_types = arg.root_types
+            elif operator == "AND":
+                self.root_types &= arg.root_types
+            else:
+                self.root_types |= arg.root_types
+
+            if not self.root_types:
+                raise ValueError("All operands to an 'AND' expression must be satisfiable with the same object type")
 
     def __str__(self):
         sub_exprs = []
@@ -610,8 +615,8 @@ class ParentheticalExpression(_PatternExpression):
     """
     def __init__(self, exp):
         self.expression = exp
-        if hasattr(exp, "root_type"):
-            self.root_type = exp.root_type
+        if hasattr(exp, "root_types"):
+            self.root_types = exp.root_types
 
     def __str__(self):
         return "(%s)" % self.expression
@@ -669,12 +674,16 @@ class StartStopQualifier(_ExpressionQualifier):
             self.start_time = start_time
         elif isinstance(start_time, datetime.date):
             self.start_time = TimestampConstant(start_time)
+        elif isinstance(start_time, StringConstant):
+            self.start_time = StringConstant(start_time.value)
         else:
             raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % start_time)
         if isinstance(stop_time, TimestampConstant):
             self.stop_time = stop_time
         elif isinstance(stop_time, datetime.date):
             self.stop_time = TimestampConstant(stop_time)
+        elif isinstance(stop_time, StringConstant):
+            self.stop_time = StringConstant(stop_time.value)
         else:
             raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % stop_time)
 
