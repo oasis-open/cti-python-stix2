@@ -132,11 +132,12 @@ def deduplicate(stix_obj_list):
     unique_objs = {}
 
     for obj in stix_obj_list:
-        try:
-            unique_objs[(obj['id'], obj['modified'])] = obj
-        except KeyError:
-            # Handle objects with no `modified` property, e.g. marking-definition
-            unique_objs[(obj['id'], obj['created'])] = obj
+        ver = obj.get("modified") or obj.get("created")
+
+        if ver is None:
+            unique_objs[obj["id"]] = obj
+        else:
+            unique_objs[(obj['id'], ver)] = obj
 
     return list(unique_objs.values())
 
