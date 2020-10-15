@@ -4,8 +4,8 @@
    :toctree: equivalence
 
    patterns
-   graph_equivalence
-   object_equivalence
+   graph
+   object
 
 |
 """

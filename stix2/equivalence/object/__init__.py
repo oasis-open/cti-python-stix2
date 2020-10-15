@@ -75,7 +75,7 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
                     elif comp_funct == partial_location_distance:
                         threshold = weights[type1]["threshold"]
                         contributing_score = w * comp_funct(obj1["latitude"], obj1["longitude"], obj2["latitude"], obj2["longitude"], threshold)
-                    elif comp_funct == semantic_check or comp_funct == list_semantic_check:
+                    elif comp_funct == reference_check or comp_funct == list_reference_check:
                         max_depth = weights["_internal"]["max_depth"]
                         if max_depth < 0:
                             continue  # prevent excessive recursion
@@ -320,7 +320,7 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
     return result
 
 
-def semantic_check(ref1, ref2, ds1, ds2, **weights):
+def reference_check(ref1, ref2, ds1, ds2, **weights):
     """For two references, de-reference the object and perform object-based
     semantic equivalence. The score influences the result of an edge check."""
     type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
@@ -337,13 +337,13 @@ def semantic_check(ref1, ref2, ds1, ds2, **weights):
                 result = semantically_equivalent(o1, o2, **weights) / 100.0
 
     logger.debug(
-        "--\t\tsemantic_check '%s' '%s'\tresult: '%s'",
+        "--\t\treference_check '%s' '%s'\tresult: '%s'",
         ref1, ref2, result,
     )
     return result
 
 
-def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
+def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     """For objects that contain multiple references (i.e., object_refs) perform
     the same de-reference for object-based semantic equivalence. The score influences
     the objects containing all references. The result is weighted on the longest ref list"""
@@ -366,7 +366,7 @@ def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
         for ref2 in l2:
             type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
             if type1 == type2:
-                score = semantic_check(ref1, ref2, b1, b2, **weights) * 100.0
+                score = reference_check(ref1, ref2, b1, b2, **weights) * 100.0
 
                 if ref1 not in results:
                     results[ref1] = {"matched": ref2, "value": score}
@@ -378,7 +378,7 @@ def list_semantic_check(refs1, refs2, ds1, ds2, **weights):
     result = total_sum / max_score
 
     logger.debug(
-        "--\t\tlist_semantic_check '%s' '%s'\ttotal_sum: '%s'\tmax_score: '%s'\tresult: '%s'",
+        "--\t\tlist_reference_check '%s' '%s'\ttotal_sum: '%s'\tmax_score: '%s'\tresult: '%s'",
         refs1, refs2, total_sum, max_score, result,
     )
     return result

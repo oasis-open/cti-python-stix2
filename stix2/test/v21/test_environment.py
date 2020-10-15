@@ -4,8 +4,8 @@ import pytest
 
 import stix2
 import stix2.environment
-import stix2.equivalence.graph_equivalence
-import stix2.equivalence.object_equivalence
+import stix2.equivalence.graph
+import stix2.equivalence.object
 import stix2.exceptions
 
 from .constants import (
@@ -868,7 +868,7 @@ def test_semantic_equivalence_prop_scores_method_provided():
 
 
 def test_versioned_checks(ds, ds2):
-    weights = stix2.equivalence.graph_equivalence.WEIGHTS.copy()
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": True,
@@ -876,12 +876,12 @@ def test_versioned_checks(ds, ds2):
             "max_depth": 1,
         },
     })
-    score = stix2.equivalence.object_equivalence._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds2, **weights)
+    score = stix2.equivalence.object._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds2, **weights)
     assert round(score) == 100
 
 
 def test_semantic_check_with_versioning(ds, ds2):
-    weights = stix2.equivalence.graph_equivalence.WEIGHTS.copy()
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": False,
@@ -907,12 +907,12 @@ def test_semantic_check_with_versioning(ds, ds2):
         )
     )
     ds.add(ind)
-    score = stix2.equivalence.object_equivalence.semantic_check(ind.id, INDICATOR_ID, ds, ds2, **weights)
+    score = stix2.equivalence.object.reference_check(ind.id, INDICATOR_ID, ds, ds2, **weights)
     assert round(score) == 0  # Since pattern is different score is really low
 
 
 def test_list_semantic_check(ds, ds2):
-    weights = stix2.equivalence.graph_equivalence.WEIGHTS.copy()
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": False,
@@ -938,7 +938,7 @@ def test_list_semantic_check(ds, ds2):
         "relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70",
     ]
 
-    score = stix2.equivalence.object_equivalence.list_semantic_check(
+    score = stix2.equivalence.object.list_reference_check(
         object_refs1,
         object_refs2,
         ds,

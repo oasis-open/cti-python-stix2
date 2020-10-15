@@ -2,12 +2,12 @@
 import copy
 
 from .datastore import CompositeDataSource, DataStoreMixin
-from .equivalence.graph_equivalence import graphically_equivalent
-from .equivalence.object_equivalence import (  # noqa: F401
+from .equivalence.graph import graphically_equivalent
+from .equivalence.object import (  # noqa: F401
     check_property_present, custom_pattern_based, exact_match,
-    list_semantic_check, partial_external_reference_based, partial_list_based,
+    list_reference_check, partial_external_reference_based, partial_list_based,
     partial_location_distance, partial_string_based, partial_timestamp_based,
-    semantic_check, semantically_equivalent,
+    reference_check, semantically_equivalent,
 )
 from .parsing import parse as _parse
 
@@ -213,10 +213,10 @@ class Environment(DataStoreMixin):
             float: A number between 0.0 and 100.0 as a measurement of equivalence.
 
         Warning:
-            Some object types do not have an entry for use in the equivalence process.
-            In order for those objects to influence the final score a new entry needs to
-            be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
-            for a particular use case.
+            Object types need to have property weights defined for the equivalence process.
+            Otherwise, those objects will not influence the final score. Use the WEIGHTS
+            dictionary under `stix2.equivalence.object` to add new entries. Similarly,
+            the values or methods can be fine tuned for a particular use case.
 
         Note:
             Default weights_dict:
@@ -247,10 +247,11 @@ class Environment(DataStoreMixin):
             float: A number between 0.0 and 100.0 as a measurement of equivalence.
 
         Warning:
-            Some object types do not have an entry for use in the equivalence process.
-            In order for those objects to influence the final score a new entry needs to
-            be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
-            for a particular use case. Graph equivalence has additional entries.
+            Object types need to have property weights defined for the equivalence process.
+            Otherwise, those objects will not influence the final score. Use the WEIGHTS
+            dictionary under `stix2.equivalence.graph` to add new entries. Similarly,
+            the values or methods can be fine tuned for a particular use case.
+            Graph equivalence has additional entries and methods defined.
 
         Note:
             Default weights_dict:

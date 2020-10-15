@@ -1,10 +1,10 @@
 import logging
 
-from ..object_equivalence import (
-    custom_pattern_based, exact_match, list_semantic_check,
+from ..object import (
+    custom_pattern_based, exact_match, list_reference_check,
     partial_external_reference_based, partial_list_based,
     partial_location_distance, partial_string_based, partial_timestamp_based,
-    semantic_check, semantically_equivalent,
+    reference_check, semantically_equivalent,
 )
 
 logger = logging.getLogger(__name__)
@@ -97,107 +97,73 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
 WEIGHTS = {
     "attack-pattern": {
         "name": (30, partial_string_based),
-        "external_references": (60, partial_external_reference_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "external_references": (70, partial_external_reference_based),
     },
     "campaign": {
-        "name": (50, partial_string_based),
+        "name": (60, partial_string_based),
         "aliases": (40, partial_list_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
     },
     "course-of-action": {
-        "name": (30, partial_string_based),
-        "external_references": (60, partial_external_reference_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "name": (60, partial_string_based),
+        "external_references": (40, partial_external_reference_based),
     },
     "identity": {
-        "name": (50, partial_string_based),
+        "name": (60, partial_string_based),
         "identity_class": (20, exact_match),
         "sectors": (20, partial_list_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
     },
     "indicator": {
         "indicator_types": (15, partial_list_based),
-        "pattern": (70, custom_pattern_based),
+        "pattern": (80, custom_pattern_based),
         "valid_from": (5, partial_timestamp_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
         "tdelta": 1,  # One day interval
     },
     "intrusion-set": {
-        "name": (10, partial_string_based),
+        "name": (20, partial_string_based),
         "external_references": (60, partial_external_reference_based),
         "aliases": (20, partial_list_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
     },
     "location": {
-        "longitude_latitude": (30, partial_location_distance),
-        "region": (30, exact_match),
-        "country": (30, exact_match),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "longitude_latitude": (34, partial_location_distance),
+        "region": (33, exact_match),
+        "country": (33, exact_match),
         "threshold": 1000.0,
     },
     "malware": {
         "malware_types": (20, partial_list_based),
-        "name": (70, partial_string_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
-    },
-    "marking-definition": {
-        "definition_type": (90, exact_match),
-        # "definition": (30, definition_check),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
-    },
-    "threat-actor": {
-        "name": (55, partial_string_based),
-        "threat_actor_types": (15, partial_list_based),
-        "aliases": (20, partial_list_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
-    },
-    "tool": {
-        "tool_types": (20, partial_list_based),
-        "name": (70, partial_string_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
-    },
-    "vulnerability": {
-        "name": (30, partial_string_based),
-        "external_references": (60, partial_external_reference_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "name": (80, partial_string_based),
     },
     "relationship": {
-        "source_ref": (43, semantic_check),
-        "target_ref": (43, semantic_check),
-        "relationship_type": (4, exact_match),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "source_ref": (40, reference_check),
+        "target_ref": (40, reference_check),
+        "relationship_type": (20, exact_match),
     },
     "report": {
-        "object_refs": (60, list_semantic_check),
-        "name": (25, partial_string_based),
-        "published": (5, partial_timestamp_based),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "object_refs": (60, list_reference_check),
+        "name": (30, partial_string_based),
+        "published": (10, partial_timestamp_based),
         "tdelta": 1,  # One day interval
     },
     "sighting": {
         "first_seen": (5, partial_timestamp_based),
         "last_seen": (5, partial_timestamp_based),
-        "where_sighted_refs": (20, list_semantic_check),
-        "observed_data_refs": (20, list_semantic_check),
-        "sighting_of_ref": (35, semantic_check),
-        "summary": (5, exact_match),
-        "created_by_ref": (5, semantic_check),
-        "object_marking_refs": (5, list_semantic_check),
+        "where_sighted_refs": (20, list_reference_check),
+        "observed_data_refs": (20, list_reference_check),
+        "sighting_of_ref": (40, reference_check),
+        "summary": (10, exact_match),
+    },
+    "threat-actor": {
+        "name": (60, partial_string_based),
+        "threat_actor_types": (20, partial_list_based),
+        "aliases": (20, partial_list_based),
+    },
+    "tool": {
+        "tool_types": (20, partial_list_based),
+        "name": (80, partial_string_based),
+    },
+    "vulnerability": {
+        "name": (30, partial_string_based),
+        "external_references": (70, partial_external_reference_based),
     },
     "_internal": {
         "ignore_spec_version": False,
