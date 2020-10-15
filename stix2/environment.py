@@ -1,5 +1,4 @@
 """Python STIX2 Environment API."""
-
 import copy
 import logging
 import time
@@ -200,6 +199,8 @@ class Environment(DataStoreMixin):
         Args:
             obj1: A stix2 object instance
             obj2: A stix2 object instance
+            prop_scores: A dictionary that can hold individual property scores,
+                weights, contributing score, matching score and sum of weights.
             weight_dict: A dictionary that can be used to override settings
                 in the semantic equivalence process
 
@@ -248,7 +249,7 @@ class Environment(DataStoreMixin):
                 sum_weights = 0.0
 
                 for prop in weights[type1]:
-                    if check_property_present(prop, obj1, obj2) or prop == "longitude_latitude":
+                    if check_property_present(prop, obj1, obj2):
                         w = weights[type1][prop][0]
                         comp_funct = weights[type1][prop][1]
 
@@ -289,7 +290,10 @@ class Environment(DataStoreMixin):
 
 def check_property_present(prop, obj1, obj2):
     """Helper method checks if a property is present on both objects."""
-    if prop in obj1 and prop in obj2:
+    if prop == "longitude_latitude":
+        if "latitude" in obj1 and "latitude" in obj2 and "longitude" in obj1 and "longitude" in obj2:
+            return True
+    elif prop in obj1 and prop in obj2:
         return True
     return False
 
@@ -363,8 +367,8 @@ def partial_string_based(str1, str2):
         float: Number between 0.0 and 1.0 depending on match criteria.
 
     """
-    from fuzzywuzzy import fuzz
-    result = fuzz.token_sort_ratio(str1, str2, force_ascii=False)
+    from rapidfuzz import fuzz
+    result = fuzz.token_sort_ratio(str1, str2)
     logger.debug("--\t\tpartial_string_based '%s' '%s'\tresult: '%s'", str1, str2, result)
     return result / 100.0
 
@@ -461,7 +465,7 @@ def partial_location_distance(lat1, long1, lat2, long2, threshold):
         float: Number between 0.0 and 1.0 depending on match.
 
     """
-    from haversine import haversine, Unit
+    from haversine import Unit, haversine
     distance = haversine((lat1, long1), (lat2, long2), unit=Unit.KILOMETERS)
     result = 1 - (distance / threshold)
     logger.debug(
