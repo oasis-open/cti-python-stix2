@@ -1,3 +1,4 @@
+"""Python APIs for STIX 2 Object-based Semantic Equivalence."""
 import logging
 import time
 
@@ -32,7 +33,7 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
     Note:
         Default weights_dict:
 
-        .. include:: ../default_sem_eq_weights.rst
+        .. include:: ../../object_default_sem_eq_weights.rst
 
     Note:
         This implementation follows the Semantic Equivalence Committee Note.
@@ -448,4 +449,4 @@ WEIGHTS = {
     "_internal": {
         "ignore_spec_version": False,
     },
-}  #: :autodoc-skip:
+}  # :autodoc-skip:

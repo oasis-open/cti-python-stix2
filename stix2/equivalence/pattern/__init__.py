@@ -1,7 +1,7 @@
 """Python APIs for STIX 2 Pattern Semantic Equivalence.
 
 .. autosummary::
-   :toctree: patterns
+   :toctree: pattern
 
    compare
    transform

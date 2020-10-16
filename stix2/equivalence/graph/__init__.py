@@ -1,3 +1,4 @@
+"""Python APIs for STIX 2 Graph-based Semantic Equivalence."""
 import logging
 
 from ..object import (
@@ -36,7 +37,7 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
     Note:
         Default weights_dict:
 
-        .. include:: ../default_sem_eq_weights.rst
+        .. include:: ../../graph_default_sem_eq_weights.rst
 
     Note:
         This implementation follows the Semantic Equivalence Committee Note.
@@ -133,4 +134,4 @@ GRAPH_WEIGHTS.update({
         "ds2": None,
         "max_depth": 1,
     },
-})  #: :autodoc-skip:
+})  # :autodoc-skip:
