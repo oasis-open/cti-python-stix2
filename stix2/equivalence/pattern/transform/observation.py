@@ -4,23 +4,23 @@ Transformation utilities for STIX pattern observation expressions.
 import functools
 import itertools
 
-from stix2.equivalence.patterns.compare import iter_in, iter_lex_cmp
-from stix2.equivalence.patterns.compare.observation import (
+from stix2.equivalence.pattern.compare import iter_in, iter_lex_cmp
+from stix2.equivalence.pattern.compare.observation import (
     observation_expression_cmp,
 )
-from stix2.equivalence.patterns.transform import (
+from stix2.equivalence.pattern.transform import (
     ChainTransformer, SettleTransformer, Transformer,
 )
-from stix2.equivalence.patterns.transform.comparison import (
+from stix2.equivalence.pattern.transform.comparison import (
     SpecialValueCanonicalization,
 )
-from stix2.equivalence.patterns.transform.comparison import \
+from stix2.equivalence.pattern.transform.comparison import \
     AbsorptionTransformer as CAbsorptionTransformer
-from stix2.equivalence.patterns.transform.comparison import \
+from stix2.equivalence.pattern.transform.comparison import \
     DNFTransformer as CDNFTransformer
-from stix2.equivalence.patterns.transform.comparison import \
+from stix2.equivalence.pattern.transform.comparison import \
     FlattenTransformer as CFlattenTransformer
-from stix2.equivalence.patterns.transform.comparison import \
+from stix2.equivalence.pattern.transform.comparison import \
     OrderDedupeTransformer as COrderDedupeTransformer
 from stix2.patterns import (
     AndObservationExpression, FollowedByObservationExpression,

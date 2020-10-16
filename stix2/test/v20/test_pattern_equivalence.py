@@ -4,7 +4,7 @@ Pattern equivalence unit tests which use STIX 2.0-specific pattern features
 
 import pytest
 
-from stix2.equivalence.patterns import equivalent_patterns
+from stix2.equivalence.pattern import equivalent_patterns
 
 
 @pytest.mark.parametrize(

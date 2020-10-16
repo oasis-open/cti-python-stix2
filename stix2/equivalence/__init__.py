@@ -3,7 +3,9 @@
 .. autosummary::
    :toctree: equivalence
 
-   patterns
+   pattern
+   graph
+   object
 
 |
 """

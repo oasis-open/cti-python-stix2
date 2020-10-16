@@ -4,12 +4,12 @@ Transformation utilities for STIX pattern comparison expressions.
 import functools
 import itertools
 
-from stix2.equivalence.patterns.compare import iter_in, iter_lex_cmp
-from stix2.equivalence.patterns.compare.comparison import (
+from stix2.equivalence.pattern.compare import iter_in, iter_lex_cmp
+from stix2.equivalence.pattern.compare.comparison import (
     comparison_expression_cmp,
 )
-from stix2.equivalence.patterns.transform import Transformer
-from stix2.equivalence.patterns.transform.specials import (
+from stix2.equivalence.pattern.transform import Transformer
+from stix2.equivalence.pattern.transform.specials import (
     ipv4_addr, ipv6_addr, windows_reg_key,
 )
 from stix2.patterns import (

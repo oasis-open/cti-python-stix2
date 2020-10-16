@@ -3,7 +3,7 @@ Some simple comparison expression canonicalization functions.
 """
 import socket
 
-from stix2.equivalence.patterns.compare.comparison import (
+from stix2.equivalence.pattern.compare.comparison import (
     object_path_to_raw_values,
 )
 

@@ -4,7 +4,7 @@ Comparison utilities for STIX pattern comparison expressions.
 import base64
 import functools
 
-from stix2.equivalence.patterns.compare import generic_cmp, iter_lex_cmp
+from stix2.equivalence.pattern.compare import generic_cmp, iter_lex_cmp
 from stix2.patterns import (
     AndBooleanExpression, BinaryConstant, BooleanConstant, FloatConstant,
     HexConstant, IntegerConstant, ListConstant, ListObjectPathComponent,

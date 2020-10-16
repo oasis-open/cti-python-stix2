@@ -1,7 +1,11 @@
+import os
+
 import pytest
 
 import stix2
 import stix2.environment
+import stix2.equivalence.graph
+import stix2.equivalence.object
 import stix2.exceptions
 
 from .constants import (
@@ -11,6 +15,8 @@ from .constants import (
     REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID, TOOL_KWARGS,
     VULNERABILITY_ID, VULNERABILITY_KWARGS,
 )
+
+FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
 
 @pytest.fixture
@@ -22,7 +28,46 @@ def ds():
     rel1 = stix2.v21.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
     rel2 = stix2.v21.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
     rel3 = stix2.v21.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
-    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
+    reprt = stix2.v21.Report(
+        name="Malware Report", published="2021-05-09T08:22:22Z",
+        object_refs=[mal.id, rel1.id, ind.id],
+    )
+    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3, reprt]
+    yield stix2.MemoryStore(stix_objs)
+
+
+@pytest.fixture
+def ds2():
+    cam = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = stix2.v21.Indicator(id=INDICATOR_ID, created_by_ref=idy.id, **INDICATOR_KWARGS)
+    indv2 = ind.new_version(
+        external_references=[
+            {
+                "source_name": "unknown",
+                "url": "https://examplewebsite.com/",
+            },
+        ],
+        object_marking_refs=[stix2.v21.TLP_WHITE],
+    )
+    mal = stix2.v21.Malware(id=MALWARE_ID, created_by_ref=idy.id, **MALWARE_KWARGS)
+    malv2 = mal.new_version(
+        external_references=[
+            {
+                "source_name": "unknown",
+                "url": "https://examplewebsite2.com/",
+            },
+        ],
+    )
+    rel1 = stix2.v21.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.v21.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.v21.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    stix_objs = [cam, idy, ind, indv2, mal, malv2, rel1, rel2, rel3]
+    reprt = stix2.v21.Report(
+        created_by_ref=idy.id, name="example",
+        published="2021-04-09T08:22:22Z", object_refs=stix_objs,
+    )
+    stix_objs.append(reprt)
     yield stix2.MemoryStore(stix_objs)
 
 
@@ -820,3 +865,145 @@ def test_semantic_equivalence_prop_scores_method_provided():
     assert len(prop_scores) == 2
     assert prop_scores["matching_score"] == 96.0
     assert prop_scores["sum_weights"] == 100.0
+
+
+def test_versioned_checks(ds, ds2):
+    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": True,
+            "max_depth": 1,
+        },
+    })
+    score = stix2.equivalence.object._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds2, **weights)
+    assert round(score) == 100
+
+
+def test_semantic_check_with_versioning(ds, ds2):
+    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": True,
+            "ds1": ds,
+            "ds2": ds2,
+            "max_depth": 1,
+        },
+    })
+    ind = stix2.v21.Indicator(
+        **dict(
+            indicator_types=["malicious-activity"],
+            pattern_type="stix",
+            pattern="[file:hashes.'SHA-256' = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855']",
+            valid_from="2017-01-01T12:34:56Z",
+            external_references=[
+                {
+                  "source_name": "unknown",
+                  "url": "https://examplewebsite2.com/",
+                },
+            ],
+            object_marking_refs=[stix2.v21.TLP_WHITE],
+        )
+    )
+    ds.add(ind)
+    score = stix2.equivalence.object.reference_check(ind.id, INDICATOR_ID, ds, ds2, **weights)
+    assert round(score) == 0  # Since pattern is different score is really low
+
+
+def test_list_semantic_check(ds, ds2):
+    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "ds1": ds,
+            "ds2": ds2,
+            "max_depth": 1,
+        },
+    })
+    object_refs1 = [
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "relationship--06520621-5352-4e6a-b976-e8fa3d437ffd",
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+    ]
+    object_refs2 = [
+        "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "relationship--06520621-5352-4e6a-b976-e8fa3d437ffd",
+        "relationship--181c9c09-43e6-45dd-9374-3bec192f05ef",
+        "relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70",
+    ]
+
+    score = stix2.equivalence.object.list_reference_check(
+        object_refs1,
+        object_refs2,
+        ds,
+        ds2,
+        **weights,
+    )
+    assert round(score) == 1
+
+
+def test_graph_equivalence_with_filesystem_source(ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    fs = stix2.FileSystemSource(FS_PATH)
+    env = stix2.Environment().graphically_equivalent(fs, ds, prop_scores, **weights)
+    assert round(env) == 24
+    assert round(prop_scores["matching_score"]) == 122
+    assert round(prop_scores["sum_weights"]) == 500
+
+
+def test_graph_equivalence_with_duplicate_graph(ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    env = stix2.Environment().graphically_equivalent(ds, ds, prop_scores, **weights)
+    assert round(env) == 100
+    assert round(prop_scores["matching_score"]) == 800
+    assert round(prop_scores["sum_weights"]) == 800
+
+
+def test_graph_equivalence_with_versioning_check_on(ds2, ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": True,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
+    assert round(env) == 93
+    assert round(prop_scores["matching_score"]) == 745
+    assert round(prop_scores["sum_weights"]) == 800
+
+
+def test_graph_equivalence_with_versioning_check_off(ds2, ds):
+    weights = {
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores = {}
+    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
+    assert round(env) == 93
+    assert round(prop_scores["matching_score"]) == 745
+    assert round(prop_scores["sum_weights"]) == 800
