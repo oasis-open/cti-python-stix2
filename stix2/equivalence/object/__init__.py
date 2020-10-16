@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
-    """This method is meant to verify if two objects of the same type are
+    """This method verifies if two objects of the same type are
     semantically equivalent.
 
     Args:
@@ -23,10 +23,11 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
         float: A number between 0.0 and 100.0 as a measurement of equivalence.
 
     Warning:
-        Some object types do not have an entry for use in the equivalence process.
-        In order for those objects to influence the final score a new entry needs to
-        be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
-        for a particular use case.
+        Object types need to have property weights defined for the equivalence process.
+        Otherwise, those objects will not influence the final score. The WEIGHTS
+        dictionary under `stix2.equivalence.object` can give you an idea on how to add
+        new entries and pass them via the `weight_dict` argument. Similarly, the values
+        or methods can be fine tuned for a particular use case.
 
     Note:
         Default weights_dict:
@@ -396,6 +397,10 @@ WEIGHTS = {
         "name": (60, partial_string_based),
         "aliases": (40, partial_list_based),
     },
+    "course-of-action": {
+        "name": (60, partial_string_based),
+        "external_references": (40, partial_external_reference_based),
+    },
     "identity": {
         "name": (60, partial_string_based),
         "identity_class": (20, exact_match),
@@ -407,6 +412,11 @@ WEIGHTS = {
         "valid_from": (5, partial_timestamp_based),
         "tdelta": 1,  # One day interval
     },
+    "intrusion-set": {
+        "name": (20, partial_string_based),
+        "external_references": (60, partial_external_reference_based),
+        "aliases": (20, partial_list_based),
+    },
     "location": {
         "longitude_latitude": (34, partial_location_distance),
         "region": (33, exact_match),
@@ -416,6 +426,11 @@ WEIGHTS = {
     "malware": {
         "malware_types": (20, partial_list_based),
         "name": (80, partial_string_based),
+    },
+    "marking-definition": {
+        "name": (20, exact_match),
+        "definition": (60, exact_match),
+        "definition_type": (20, exact_match),
     },
     "threat-actor": {
         "name": (60, partial_string_based),

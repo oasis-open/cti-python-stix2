@@ -198,7 +198,7 @@ class Environment(DataStoreMixin):
 
     @staticmethod
     def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
-        """This method is meant to verify if two objects of the same type are
+        """This method verifies if two objects of the same type are
         semantically equivalent.
 
         Args:
@@ -214,9 +214,10 @@ class Environment(DataStoreMixin):
 
         Warning:
             Object types need to have property weights defined for the equivalence process.
-            Otherwise, those objects will not influence the final score. Use the WEIGHTS
-            dictionary under `stix2.equivalence.object` to add new entries. Similarly,
-            the values or methods can be fine tuned for a particular use case.
+            Otherwise, those objects will not influence the final score. The WEIGHTS
+            dictionary under `stix2.equivalence.object` can give you an idea on how to add
+            new entries and pass them via the `weight_dict` argument. Similarly, the values
+            or methods can be fine tuned for a particular use case.
 
         Note:
             Default weights_dict:
@@ -232,8 +233,11 @@ class Environment(DataStoreMixin):
 
     @staticmethod
     def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
-        """This method is meant to verify if two graphs are semantically
-        equivalent.
+        """This method verifies if two graphs are semantically equivalent.
+        Each DataStore can contain a connected or disconnected graph and the
+        final result is weighted over the amount of objects we managed to compare.
+        This approach builds on top of the object-based semantic equivalence process
+        and each comparison can return a value between 0 and 100.
 
         Args:
             ds1: A DataStore object instance representing your graph
@@ -248,15 +252,19 @@ class Environment(DataStoreMixin):
 
         Warning:
             Object types need to have property weights defined for the equivalence process.
-            Otherwise, those objects will not influence the final score. Use the WEIGHTS
-            dictionary under `stix2.equivalence.graph` to add new entries. Similarly,
-            the values or methods can be fine tuned for a particular use case.
-            Graph equivalence has additional entries and methods defined.
+            Otherwise, those objects will not influence the final score. The WEIGHTS
+            dictionary under `stix2.equivalence.graph` can give you an idea on how to add
+            new entries and pass them via the `weight_dict` argument. Similarly, the values
+            or methods can be fine tuned for a particular use case.
 
         Note:
             Default weights_dict:
 
             .. include:: ../default_sem_eq_weights.rst
+
+        Note:
+            This implementation follows the Semantic Equivalence Committee Note.
+            see `the Committee Note <link here>`__.
 
         """
         return graphically_equivalent(ds1, ds2, prop_scores, **weight_dict)

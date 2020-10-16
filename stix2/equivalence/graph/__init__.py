@@ -1,18 +1,19 @@
 import logging
 
 from ..object import (
-    custom_pattern_based, exact_match, list_reference_check,
-    partial_external_reference_based, partial_list_based,
-    partial_location_distance, partial_string_based, partial_timestamp_based,
-    reference_check, semantically_equivalent,
+    WEIGHTS, exact_match, list_reference_check, partial_string_based,
+    partial_timestamp_based, reference_check, semantically_equivalent,
 )
 
 logger = logging.getLogger(__name__)
 
 
 def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
-    """This method is meant to verify if two graphs are semantically
-    equivalent.
+    """This method verifies if two graphs are semantically equivalent.
+    Each DataStore can contain a connected or disconnected graph and the
+    final result is weighted over the amount of objects we managed to compare.
+    This approach builds on top of the object-based semantic equivalence process
+    and each comparison can return a value between 0 and 100.
 
     Args:
         ds1: A DataStore object instance representing your graph
@@ -26,16 +27,20 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
         float: A number between 0.0 and 100.0 as a measurement of equivalence.
 
     Warning:
-        Some object types do not have an entry for use in the equivalence process.
-        In order for those objects to influence the final score a new entry needs to
-        be defined in the WEIGHTS dictionary. Similarly, the values can be fine tuned
-        for a particular use case. Graph equivalence has additional entries. The
-        complete graph is needed for the two graphs that are being checked.
+        Object types need to have property weights defined for the equivalence process.
+        Otherwise, those objects will not influence the final score. The WEIGHTS
+        dictionary under `stix2.equivalence.graph` can give you an idea on how to add
+        new entries and pass them via the `weight_dict` argument. Similarly, the values
+        or methods can be fine tuned for a particular use case.
 
     Note:
         Default weights_dict:
 
         .. include:: ../default_sem_eq_weights.rst
+
+    Note:
+        This implementation follows the Semantic Equivalence Committee Note.
+        see `the Committee Note <link here>`__.
 
     """
     weights = WEIGHTS.copy()
@@ -95,82 +100,30 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
 
 
 # default weights used for the graph semantic equivalence process
-# values are re-balanced to account for new property checks and add up to 100
-WEIGHTS = {
-    "attack-pattern": {
-        "name": (30, partial_string_based),
-        "external_references": (70, partial_external_reference_based),
-    },
-    "campaign": {
-        "name": (60, partial_string_based),
-        "aliases": (40, partial_list_based),
-    },
-    "course-of-action": {
-        "name": (60, partial_string_based),
-        "external_references": (40, partial_external_reference_based),
-    },
-    "identity": {
-        "name": (60, partial_string_based),
-        "identity_class": (20, exact_match),
-        "sectors": (20, partial_list_based),
-    },
-    "indicator": {
-        "indicator_types": (15, partial_list_based),
-        "pattern": (80, custom_pattern_based),
-        "valid_from": (5, partial_timestamp_based),
-        "tdelta": 1,  # One day interval
-    },
-    "intrusion-set": {
+WEIGHTS.update({
+    "grouping": {
         "name": (20, partial_string_based),
-        "external_references": (60, partial_external_reference_based),
-        "aliases": (20, partial_list_based),
-    },
-    "location": {
-        "longitude_latitude": (34, partial_location_distance),
-        "region": (33, exact_match),
-        "country": (33, exact_match),
-        "threshold": 1000.0,
-    },
-    "malware": {
-        "malware_types": (20, partial_list_based),
-        "name": (80, partial_string_based),
-    },
-    "marking-definition": {
-        "name": (20, exact_match),
-        "definition": (60, exact_match),
-        "definition_type": (20, exact_match),
+        "context": (20, partial_string_based),
+        "object_refs": (60, list_reference_check),
     },
     "relationship": {
+        "relationship_type": (20, exact_match),
         "source_ref": (40, reference_check),
         "target_ref": (40, reference_check),
-        "relationship_type": (20, exact_match),
     },
     "report": {
-        "object_refs": (60, list_reference_check),
         "name": (30, partial_string_based),
         "published": (10, partial_timestamp_based),
+        "object_refs": (60, list_reference_check),
         "tdelta": 1,  # One day interval
     },
     "sighting": {
         "first_seen": (5, partial_timestamp_based),
         "last_seen": (5, partial_timestamp_based),
-        "where_sighted_refs": (20, list_reference_check),
-        "observed_data_refs": (20, list_reference_check),
         "sighting_of_ref": (40, reference_check),
+        "observed_data_refs": (20, list_reference_check),
+        "where_sighted_refs": (20, list_reference_check),
         "summary": (10, exact_match),
-    },
-    "threat-actor": {
-        "name": (60, partial_string_based),
-        "threat_actor_types": (20, partial_list_based),
-        "aliases": (20, partial_list_based),
-    },
-    "tool": {
-        "tool_types": (20, partial_list_based),
-        "name": (80, partial_string_based),
-    },
-    "vulnerability": {
-        "name": (30, partial_string_based),
-        "external_references": (70, partial_external_reference_based),
     },
     "_internal": {
         "ignore_spec_version": False,
@@ -179,4 +132,4 @@ WEIGHTS = {
         "ds2": None,
         "max_depth": 1,
     },
-}  #: :autodoc-skip:
+})  #: :autodoc-skip:
