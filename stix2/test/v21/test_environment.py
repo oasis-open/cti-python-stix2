@@ -868,7 +868,7 @@ def test_semantic_equivalence_prop_scores_method_provided():
 
 
 def test_versioned_checks(ds, ds2):
-    weights = stix2.equivalence.graph.WEIGHTS.copy()
+    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": True,
@@ -881,7 +881,7 @@ def test_versioned_checks(ds, ds2):
 
 
 def test_semantic_check_with_versioning(ds, ds2):
-    weights = stix2.equivalence.graph.WEIGHTS.copy()
+    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": False,
@@ -912,7 +912,7 @@ def test_semantic_check_with_versioning(ds, ds2):
 
 
 def test_list_semantic_check(ds, ds2):
-    weights = stix2.equivalence.graph.WEIGHTS.copy()
+    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": False,

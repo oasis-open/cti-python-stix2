@@ -43,7 +43,7 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
         see `the Committee Note <link here>`__.
 
     """
-    weights = WEIGHTS.copy()
+    weights = GRAPH_WEIGHTS.copy()
 
     if weight_dict:
         weights.update(weight_dict)
@@ -100,7 +100,8 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
 
 
 # default weights used for the graph semantic equivalence process
-WEIGHTS.update({
+GRAPH_WEIGHTS = WEIGHTS.copy()
+GRAPH_WEIGHTS.update({
     "grouping": {
         "name": (20, partial_string_based),
         "context": (20, partial_string_based),

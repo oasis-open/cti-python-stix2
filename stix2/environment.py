@@ -11,7 +11,7 @@ from .equivalence.object import (  # noqa: F401
 )
 from .parsing import parse as _parse
 
-# TODO: Remove all unused imports that now belong to equivalence module in next major release.
+# TODO: Remove all unused imports that now belong to the equivalence module in the next major release.
 # Kept for backwards compatibility.
 
 
