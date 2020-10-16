@@ -55,7 +55,8 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 .ipynb_checkpoints
-default_sem_eq_weights.rst
+graph_default_sem_eq_weights.rst
+object_default_sem_eq_weights.rst
 
 # PyBuilder
 target/
