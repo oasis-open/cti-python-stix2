@@ -1,6 +1,6 @@
 import pytest
 
-from stix2.equivalence.patterns import (
+from stix2.equivalence.pattern import (
     equivalent_patterns, find_equivalent_patterns,
 )
 

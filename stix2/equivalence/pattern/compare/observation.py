@@ -1,8 +1,8 @@
 """
 Comparison utilities for STIX pattern observation expressions.
 """
-from stix2.equivalence.patterns.compare import generic_cmp, iter_lex_cmp
-from stix2.equivalence.patterns.compare.comparison import (
+from stix2.equivalence.pattern.compare import generic_cmp, iter_lex_cmp
+from stix2.equivalence.pattern.compare.comparison import (
     comparison_expression_cmp, generic_constant_cmp,
 )
 from stix2.patterns import (

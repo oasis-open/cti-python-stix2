@@ -10,13 +10,13 @@
 """
 
 import stix2
-from stix2.equivalence.patterns.compare.observation import (
+from stix2.equivalence.pattern.compare.observation import (
     observation_expression_cmp,
 )
-from stix2.equivalence.patterns.transform import (
+from stix2.equivalence.pattern.transform import (
     ChainTransformer, SettleTransformer,
 )
-from stix2.equivalence.patterns.transform.observation import (
+from stix2.equivalence.pattern.transform.observation import (
     AbsorptionTransformer, CanonicalizeComparisonExpressionsTransformer,
     DNFTransformer, FlattenTransformer, OrderDedupeTransformer,
 )
