@@ -4,7 +4,7 @@ import copy
 from .datastore import CompositeDataSource, DataStoreMixin
 from .equivalence.graph import graphically_equivalent
 from .equivalence.object import (  # noqa: F401
-    check_property_present, custom_pattern_based, exact_match,
+    WEIGHTS, check_property_present, custom_pattern_based, exact_match,
     list_reference_check, partial_external_reference_based, partial_list_based,
     partial_location_distance, partial_string_based, partial_timestamp_based,
     reference_check, semantically_equivalent,
@@ -220,9 +220,9 @@ class Environment(DataStoreMixin):
             or methods can be fine tuned for a particular use case.
 
         Note:
-            Default weights_dict:
+            Default weight_dict:
 
-            .. include:: ../default_sem_eq_weights.rst
+            .. include:: ../object_default_sem_eq_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
@@ -258,9 +258,9 @@ class Environment(DataStoreMixin):
             or methods can be fine tuned for a particular use case.
 
         Note:
-            Default weights_dict:
+            Default weight_dict:
 
-            .. include:: ../default_sem_eq_weights.rst
+            .. include:: ../graph_default_sem_eq_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
