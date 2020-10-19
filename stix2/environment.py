@@ -220,7 +220,7 @@ class Environment(DataStoreMixin):
             or methods can be fine tuned for a particular use case.
 
         Note:
-            Default weights_dict:
+            Default weight_dict:
 
             .. include:: ../object_default_sem_eq_weights.rst
 
@@ -258,7 +258,7 @@ class Environment(DataStoreMixin):
             or methods can be fine tuned for a particular use case.
 
         Note:
-            Default weights_dict:
+            Default weight_dict:
 
             .. include:: ../graph_default_sem_eq_weights.rst
 
