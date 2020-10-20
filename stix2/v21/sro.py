@@ -3,8 +3,9 @@
 from collections import OrderedDict
 
 from ..properties import (
-    BooleanProperty, IDProperty, IntegerProperty, ListProperty,
-    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, ExtensionsProperty, IDProperty, IntegerProperty,
+    ListProperty, ReferenceProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from ..utils import NOW
 from .base import _RelationshipObject
@@ -39,6 +40,7 @@ class Relationship(_RelationshipObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
@@ -95,6 +97,7 @@ class Sighting(_RelationshipObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     # Explicitly define the first kwargs to make readable Sighting declarations.

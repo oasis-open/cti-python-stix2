@@ -197,12 +197,13 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-        ('definition_type', StringProperty(required=True)),
+        ('definition_type', StringProperty()),
         ('name', StringProperty()),
-        ('definition', MarkingProperty(required=True)),
+        ('definition', MarkingProperty()),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def __init__(self, **kwargs):

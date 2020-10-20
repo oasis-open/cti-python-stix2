@@ -21,7 +21,7 @@ from .bundle import Bundle
 from .common import (
     TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
     GranularMarking, KillChainPhase, LanguageContent, MarkingDefinition,
-    StatementMarking, TLPMarking,
+    StatementMarking, STIXExtension, TLPMarking,
 )
 from .observables import (
     URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
@@ -65,6 +65,7 @@ OBJ_MAP = {
     'threat-actor': ThreatActor,
     'tool': Tool,
     'sighting': Sighting,
+    'stix-extension': STIXExtension,
     'vulnerability': Vulnerability,
 }
 
@@ -121,7 +122,7 @@ __all__ = """
 
     TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
     GranularMarking, KillChainPhase, LanguageContent, MarkingDefinition,
-    StatementMarking, TLPMarking,
+    StatementMarking, STIXExtension, TLPMarking,
 
     URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
     CustomExtension, CustomObservable, Directory, DomainName, EmailAddress,

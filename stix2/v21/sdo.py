@@ -12,9 +12,10 @@ from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
 )
 from ..properties import (
-    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
-    ListProperty, ObservableProperty, PatternProperty, ReferenceProperty,
-    StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+    IDProperty, IntegerProperty, ListProperty, ObservableProperty,
+    PatternProperty, ReferenceProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from ..utils import NOW
 from .base import _DomainObject
@@ -45,6 +46,7 @@ class AttackPattern(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -74,6 +76,7 @@ class Campaign(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -109,6 +112,7 @@ class CourseOfAction(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -136,6 +140,7 @@ class Grouping(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -165,6 +170,7 @@ class Identity(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -197,6 +203,7 @@ class Indicator(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def __init__(self, *args, **kwargs):
@@ -254,6 +261,7 @@ class Infrastructure(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -296,6 +304,7 @@ class IntrusionSet(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -340,6 +349,7 @@ class Location(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -449,6 +459,7 @@ class Malware(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -504,6 +515,7 @@ class MalwareAnalysis(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -536,6 +548,7 @@ class Note(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -564,6 +577,7 @@ class ObservedData(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def __init__(self, *args, **kwargs):
@@ -628,6 +642,7 @@ class Opinion(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -656,6 +671,7 @@ class Report(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -692,6 +708,7 @@ class ThreatActor(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
     def _check_object_constraints(self):
@@ -731,6 +748,7 @@ class Tool(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -756,6 +774,7 @@ class Vulnerability(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
     ])
 
 
@@ -807,6 +826,7 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('external_references', ListProperty(ExternalReference)),
                 ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
                 ('granular_markings', ListProperty(GranularMarking)),
+                ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type)),
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
