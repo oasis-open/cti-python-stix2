@@ -7,9 +7,10 @@ from ..exceptions import InvalidValueError
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
 from ..properties import (
-    BooleanProperty, DictionaryProperty, HashesProperty, IDProperty,
-    IntegerProperty, ListProperty, Property, ReferenceProperty,
-    SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, DictionaryProperty, EnumProperty, ExtensionsProperty,
+    HashesProperty, IDProperty, IntegerProperty, ListProperty, Property,
+    ReferenceProperty, SelectorProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase21
@@ -97,6 +98,46 @@ class LanguageContent(_STIXBase21):
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+    ])
+
+
+class STIXExtension(_STIXBase21):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <link here>`__.
+    """
+
+    _type = 'stix-extension'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type, spec_version='2.1')),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1', required=True)),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('schema', StringProperty(required=True)),
+        ('version', StringProperty(required=True)),
+        (
+            'extension_types', ListProperty(
+                EnumProperty(
+                    allowed=[
+                            'new-sdo',
+                            'new-sco',
+                            'new-sro',
+                            'property-extension',
+                            'toplevel-property-extension',
+                    ],
+                ), required=True,
+            ),
+        ),
+        ('extension_properties', ListProperty(StringProperty)),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
