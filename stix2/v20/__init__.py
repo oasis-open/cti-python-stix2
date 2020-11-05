@@ -32,7 +32,7 @@ from .observables import (
     UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
     WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
     WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
-    X509Certificate, X509V3ExtenstionsType,
+    X509Certificate, X509V3ExtensionsType,
 )
 from .sdo import (
     AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
@@ -123,7 +123,7 @@ __all__ = """
     UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
     WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
     WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
-    X509Certificate, X509V3ExtenstionsType,
+    X509Certificate, X509V3ExtensionsType,
 
     AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
     IntrusionSet, Malware, ObservedData, Report, ThreatActor, Tool,

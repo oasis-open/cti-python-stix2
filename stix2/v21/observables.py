@@ -851,7 +851,7 @@ class WindowsRegistryKey(_Observable):
     _id_contributing_properties = ["key", "values"]
 
 
-class X509V3ExtenstionsType(_STIXBase21):
+class X509V3ExtensionsType(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_c1kt4dheb6vz>`__.
     """
@@ -899,7 +899,7 @@ class X509Certificate(_Observable):
         ('subject_public_key_algorithm', StringProperty()),
         ('subject_public_key_modulus', StringProperty()),
         ('subject_public_key_exponent', IntegerProperty()),
-        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
+        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtensionsType)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
