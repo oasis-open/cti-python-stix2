@@ -68,7 +68,7 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
             sum_weights = 0.0
 
             for prop in weights[type1]:
-                if check_property_present(prop, obj1, obj2) or prop == "longitude_latitude":
+                if check_property_present(prop, obj1, obj2):
                     w = weights[type1][prop][0]
                     comp_funct = weights[type1][prop][1]
 
@@ -117,7 +117,11 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
 
 def check_property_present(prop, obj1, obj2):
     """Helper method checks if a property is present on both objects."""
-    if prop in obj1 and prop in obj2:
+    if prop == "longitude_latitude":
+        # if "latitude" in obj1 and "latitude" in obj2 and "longitude" in obj1 and "longitude" in obj2:
+        if all(x in obj1 and x in obj2 for x in ['latitude', 'longitude']):
+            return True
+    elif prop in obj1 and prop in obj2:
         return True
     return False
 
