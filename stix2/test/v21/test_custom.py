@@ -893,7 +893,7 @@ def test_custom_observable_object_no_id_contrib_props():
 
 
 @stix2.v21.CustomExtension(
-    stix2.v21.DomainName, 'x-new-ext', [
+    'x-new-ext', [
         ('property1', stix2.properties.StringProperty(required=True)),
         ('property2', stix2.properties.IntegerProperty()),
     ],
@@ -955,8 +955,8 @@ def test_custom_extension_wrong_observable_type():
 )
 def test_custom_extension_with_list_and_dict_properties_observable_type(data):
     @stix2.v21.CustomExtension(
-        stix2.v21.UserAccount, 'x-some-extension-ext', [
-            ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
+        'x-some-extension-ext', [
+                ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
         ],
     )
     class SomeCustomExtension:
@@ -966,53 +966,11 @@ def test_custom_extension_with_list_and_dict_properties_observable_type(data):
     assert data == str(example)
 
 
-def test_custom_extension_invalid_observable():
-    # These extensions are being applied to improperly-created Observables.
-    # The Observable classes should have been created with the CustomObservable decorator.
-    class Foo(object):
-        pass
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(
-            Foo, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class FooExtension():
-            pass  # pragma: no cover
-    assert str(excinfo.value) == "'observable' must be a valid Observable class!"
-
-    class Bar(stix2.v21.observables._Observable):
-        pass
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(
-            Bar, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class BarExtension():
-            pass
-    assert "Unknown observable type" in str(excinfo.value)
-    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
-
-    class Baz(stix2.v21.observables._Observable):
-        _type = 'Baz'
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(
-            Baz, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class BazExtension():
-            pass
-    assert "Unknown observable type" in str(excinfo.value)
-    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
-
-
 def test_custom_extension_invalid_type_name():
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.File, 'x', {
-                'property1': stix2.properties.StringProperty(required=True),
+            'x', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class FooExtension():
@@ -1021,8 +979,8 @@ def test_custom_extension_invalid_type_name():
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.File, 'x_new_ext', {
-                'property1': stix2.properties.StringProperty(required=True),
+            'x_new_ext', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class BlaExtension():
@@ -1031,8 +989,8 @@ def test_custom_extension_invalid_type_name():
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.File, '7x-new-ext', {
-                'property1': stix2.properties.StringProperty(required=True),
+            '7x-new-ext', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class Bla2Extension():
@@ -1042,29 +1000,29 @@ def test_custom_extension_invalid_type_name():
 
 def test_custom_extension_no_properties():
     with pytest.raises(ValueError):
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', None)
+        @stix2.v21.CustomExtension('x-new2-ext', None)
         class BarExtension():
             pass
 
 
 def test_custom_extension_empty_properties():
     with pytest.raises(ValueError):
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', [])
+        @stix2.v21.CustomExtension('x-new2-ext', [])
         class BarExtension():
             pass
 
 
 def test_custom_extension_dict_properties():
     with pytest.raises(ValueError):
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', {})
+        @stix2.v21.CustomExtension('x-new2-ext', {})
         class BarExtension():
             pass
 
 
 def test_custom_extension_no_init_1():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new-extension-ext', [
-            ('property1', stix2.properties.StringProperty(required=True)),
+        'x-new-extension-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
     class NewExt():
@@ -1076,8 +1034,8 @@ def test_custom_extension_no_init_1():
 
 def test_custom_extension_no_init_2():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new2-ext', [
-            ('property1', stix2.properties.StringProperty(required=True)),
+        'x-new2-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
     class NewExt2(object):
@@ -1090,8 +1048,8 @@ def test_custom_extension_no_init_2():
 def test_invalid_custom_property_in_extension():
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.DomainName, 'x-new3-ext', [
-                ('6property1', stix2.properties.StringProperty(required=True)),
+            'x-new3-ext', [
+                    ('6property1', stix2.properties.StringProperty(required=True)),
             ],
         )
         class NewExt():
@@ -1205,7 +1163,7 @@ def test_register_custom_object():
 
 def test_extension_property_location():
     assert 'extensions' in stix2.v21.OBJ_MAP_OBSERVABLE['x-new-observable']._properties
-    assert 'extensions' not in stix2.v21.EXT_MAP['domain-name']['x-new-ext']._properties
+    assert 'extensions' not in stix2.v21.EXT_MAP['x-new-ext']._properties
 
 
 @pytest.mark.parametrize(
@@ -1312,9 +1270,9 @@ def test_register_duplicate_observable():
 
 def test_register_observable_custom_extension():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new-2-ext', [
-            ('property1', stix2.properties.StringProperty(required=True)),
-            ('property2', stix2.properties.IntegerProperty()),
+        'x-new-2-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+                ('property2', stix2.properties.IntegerProperty()),
         ],
     )
     class NewExtension2():
@@ -1324,15 +1282,15 @@ def test_register_observable_custom_extension():
     v = 'v21'
 
     assert 'domain-name' in stix2.parsing.STIX2_OBJ_MAPS[v]['observables']
-    assert example._type in stix2.parsing.STIX2_OBJ_MAPS[v]['observable-extensions']['domain-name']
+    assert example._type in stix2.parsing.STIX2_OBJ_MAPS[v]['extensions']
 
 
 def test_register_duplicate_observable_extension():
     with pytest.raises(DuplicateRegistrationError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.DomainName, 'x-new-2-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-                ('property2', stix2.properties.IntegerProperty()),
+            'x-new-2-ext', [
+                    ('property1', stix2.properties.StringProperty(required=True)),
+                    ('property2', stix2.properties.IntegerProperty()),
             ],
         )
         class NewExtension2():
