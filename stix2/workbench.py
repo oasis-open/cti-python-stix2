@@ -55,7 +55,7 @@ from . import (  # noqa: F401
     WindowsPEBinaryExt, WindowsPEOptionalHeaderType,
     WindowsPESection, WindowsProcessExt, WindowsRegistryKey,
     WindowsRegistryValueType, WindowsServiceExt, X509Certificate,
-    X509V3ExtenstionsType
+    X509V3ExtensionsType
 )
 from .datastore.filters import FilterSet
 

@@ -24,8 +24,8 @@ try:
 except ImportError:
     from collections import Mapping
 
-TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
-TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
+TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )
@@ -638,9 +638,8 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
+    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, required=False):
         self.allow_custom = allow_custom
-        self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
     def clean(self, value):
@@ -655,10 +654,10 @@ class ExtensionsProperty(DictionaryProperty):
 
         v = 'v' + self.spec_version.replace('.', '')
 
-        specific_type_map = STIX2_OBJ_MAPS[v]['observable-extensions'].get(self.enclosing_type, {})
+        extension_type_map = STIX2_OBJ_MAPS[v].get('extensions', {})
         for key, subvalue in dictified.items():
-            if key in specific_type_map:
-                cls = specific_type_map[key]
+            if key in extension_type_map:
+                cls = extension_type_map[key]
                 if type(subvalue) is dict:
                     if self.allow_custom:
                         subvalue['allow_custom'] = True
@@ -672,6 +671,9 @@ class ExtensionsProperty(DictionaryProperty):
                     raise ValueError("Cannot determine extension type.")
             else:
                 if self.allow_custom:
+                    dictified[key] = subvalue
+                elif key.startswith('stix-extension--'):
+                    _validate_id(key, '2.1', 'stix-extension')
                     dictified[key] = subvalue
                 else:
                     raise CustomContentError("Can't parse unknown extension type: {}".format(key))

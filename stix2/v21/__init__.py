@@ -91,28 +91,19 @@ OBJ_MAP_OBSERVABLE = {
 }
 
 EXT_MAP = {
-    'file': {
-        'archive-ext': ArchiveExt,
-        'ntfs-ext': NTFSExt,
-        'pdf-ext': PDFExt,
-        'raster-image-ext': RasterImageExt,
-        'windows-pebinary-ext': WindowsPEBinaryExt,
-    },
-    'network-traffic': {
-        'http-request-ext': HTTPRequestExt,
-        'icmp-ext': ICMPExt,
-        'socket-ext': SocketExt,
-        'tcp-ext': TCPExt,
-    },
-    'process': {
-        'windows-process-ext': WindowsProcessExt,
-        'windows-service-ext': WindowsServiceExt,
-    },
-    'user-account': {
-        'unix-account-ext': UNIXAccountExt,
-    },
+    'archive-ext': ArchiveExt,
+    'ntfs-ext': NTFSExt,
+    'pdf-ext': PDFExt,
+    'raster-image-ext': RasterImageExt,
+    'windows-pebinary-ext': WindowsPEBinaryExt,
+    'http-request-ext': HTTPRequestExt,
+    'icmp-ext': ICMPExt,
+    'socket-ext': SocketExt,
+    'tcp-ext': TCPExt,
+    'windows-process-ext': WindowsProcessExt,
+    'windows-service-ext': WindowsServiceExt,
+    'unix-account-ext': UNIXAccountExt,
 }
-
 
 # Ensure star-imports from this module get the right symbols.  "base" is a
 # known problem, since there are multiple modules with that name and one can
