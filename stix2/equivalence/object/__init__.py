@@ -118,7 +118,6 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
 def check_property_present(prop, obj1, obj2):
     """Helper method checks if a property is present on both objects."""
     if prop == "longitude_latitude":
-        # if "latitude" in obj1 and "latitude" in obj2 and "longitude" in obj1 and "longitude" in obj2:
         if all(x in obj1 and x in obj2 for x in ['latitude', 'longitude']):
             return True
     elif prop in obj1 and prop in obj2:
