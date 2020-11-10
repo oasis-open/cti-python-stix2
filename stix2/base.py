@@ -127,8 +127,18 @@ class _STIXBase(Mapping):
             raise ValueError("'custom_properties' must be a dictionary")
 
         extra_kwargs = list(set(kwargs) - set(self._properties))
+        if extra_kwargs and issubclass(cls, stix2.v21._Extension):
+            props_to_remove = ['extends_stix_object_definition', 'is_new_object', 'is_extension_so']
+            extra_kwargs = [prop for prop in extra_kwargs if prop not in props_to_remove]
+
         if extra_kwargs and not self._allow_custom:
-            raise ExtraPropertiesError(cls, extra_kwargs)
+            ext_found = False
+            for key_id, ext_def in kwargs.get('extensions', {}).items():
+                if key_id.startswith('stix-extension--'):
+                    ext_found = True
+                    break
+            if ext_found is False:
+                raise ExtraPropertiesError(cls, extra_kwargs)
 
         # because allow_custom is true, any extra kwargs are custom
         if custom_props or extra_kwargs:
@@ -155,7 +165,13 @@ class _STIXBase(Mapping):
         required_properties = set(get_required_properties(self._properties))
         missing_kwargs = required_properties - set(setting_kwargs)
         if missing_kwargs:
-            raise MissingPropertiesError(cls, missing_kwargs)
+            new_ext_check = (
+                getattr(self, 'extends_stix_object_definition', False) or
+                getattr(self, 'is_new_object', False) or
+                getattr(self, 'is_extension_so', False)
+            ) and issubclass(cls, stix2.v21._Extension)
+            if new_ext_check is False:
+                raise MissingPropertiesError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in self._properties.items():
             self._check_property(prop_name, prop_metadata, setting_kwargs)
@@ -274,20 +290,7 @@ class _Observable(_STIXBase):
     def __init__(self, **kwargs):
         # the constructor might be called independently of an observed data object
         self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
-        self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
         super(_Observable, self).__init__(**kwargs)
-
-        if 'id' not in kwargs and not isinstance(self, stix2.v20._Observable):
-            # Specific to 2.1+ observables: generate a deterministic ID
-            id_ = self._generate_id()
-
-            # Spec says fall back to UUIDv4 if no contributing properties were
-            # given.  That's what already happened (the following is actually
-            # overwriting the default uuidv4), so nothing to do here.
-            if id_ is not None:
-                # Can't assign to self (we're immutable), so slip the ID in
-                # more sneakily.
-                self._inner["id"] = id_
 
     def _check_ref(self, ref, prop, prop_name):
         """

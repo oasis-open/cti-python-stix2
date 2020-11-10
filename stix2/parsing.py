@@ -7,7 +7,7 @@ import re
 
 import stix2
 
-from .base import _DomainObject, _Observable
+from .base import _DomainObject
 from .exceptions import DuplicateRegistrationError, ParseError
 from .utils import PREFIX_21_REGEX, _get_dict, get_class_hierarchy_names
 
@@ -90,6 +90,12 @@ def _detect_spec_version(stix_dict):
     return v
 
 
+def _get_extension_class(extension_uuid, version):
+    """Retrieve a registered class Extension"""
+    v = 'v' + version.replace('.', '')
+    return STIX2_OBJ_MAPS[v]['extensions'].get(extension_uuid)
+
+
 def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     """convert dictionary to full python-stix2 object
 
@@ -137,6 +143,13 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX object, returned as is
             return stix_dict
+        for key_id, ext_def in stix_dict.get('extensions', {}).items():
+            if key_id.startswith('stix-extension--') and (
+                    ext_def.get('is_new_object', False) or ext_def.get('is_extension_so', False)
+            ):
+                # prevents ParseError for unregistered objects when
+                # 'is_new_object' or 'is_extension_so' are set to True and allow_custom=False
+                return stix_dict
         raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
 
     return obj_class(allow_custom=allow_custom, **stix_dict)
@@ -318,26 +331,19 @@ def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 
-def _register_observable_extension(
-    observable, new_extension, version=stix2.DEFAULT_VERSION,
+def _register_extension(
+    new_extension, version=stix2.DEFAULT_VERSION,
 ):
-    """Register a custom extension to a STIX Cyber Observable type.
+    """Register a custom extension to any STIX Object type.
 
     Args:
-        observable: An observable class or instance
-        new_extension (class): A class to register in the Observables
-            Extensions map.
+        new_extension (class): A class to register in the Extensions map.
         version (str): Which STIX2 version to use. (e.g. "2.0", "2.1").
             Defaults to the latest supported version.
 
     """
-    obs_class = observable if isinstance(observable, type) else \
-        type(observable)
     ext_type = new_extension._type
     properties = new_extension._properties
-
-    if not issubclass(obs_class, _Observable):
-        raise ValueError("'observable' must be a valid Observable class!")
 
     stix2.properties._validate_type(ext_type, version)
 
@@ -348,42 +354,22 @@ def _register_observable_extension(
         )
 
     if version == "2.1":
-        if not ext_type.endswith('-ext'):
+        if not (ext_type.endswith('-ext') or ext_type.startswith('stix-extension--')):
             raise ValueError(
-                "Invalid extension type name '%s': must end with '-ext'." %
+                "Invalid extension type name '%s': must end with '-ext' or start with 'stix-extension--<UUID>'." %
                 ext_type,
             )
 
-        for prop_name, prop_value in properties.items():
+        for prop_name in properties.keys():
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
     v = 'v' + version.replace('.', '')
+    EXT_MAP = STIX2_OBJ_MAPS[v]['extensions']
 
-    try:
-        observable_type = observable._type
-    except AttributeError:
-        raise ValueError(
-            "Unknown observable type. Custom observables must be "
-            "created with the @CustomObservable decorator.",
-        )
-
-    OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
-    EXT_MAP = STIX2_OBJ_MAPS[v]['observable-extensions']
-
-    try:
-        if ext_type in EXT_MAP[observable_type].keys():
-            raise DuplicateRegistrationError("Observable Extension", ext_type)
-        EXT_MAP[observable_type][ext_type] = new_extension
-    except KeyError:
-        if observable_type not in OBJ_MAP_OBSERVABLE:
-            raise ValueError(
-                "Unknown observable type '%s'. Custom observables "
-                "must be created with the @CustomObservable decorator."
-                % observable_type,
-            )
-        else:
-            EXT_MAP[observable_type] = {ext_type: new_extension}
+    if ext_type in EXT_MAP:
+        raise DuplicateRegistrationError("Extension", ext_type)
+    EXT_MAP[ext_type] = new_extension
 
 
 def _collect_stix2_mappings():
@@ -401,7 +387,7 @@ def _collect_stix2_mappings():
                 STIX2_OBJ_MAPS[ver] = {}
                 STIX2_OBJ_MAPS[ver]['objects'] = mod.OBJ_MAP
                 STIX2_OBJ_MAPS[ver]['observables'] = mod.OBJ_MAP_OBSERVABLE
-                STIX2_OBJ_MAPS[ver]['observable-extensions'] = mod.EXT_MAP
+                STIX2_OBJ_MAPS[ver]['extensions'] = mod.EXT_MAP
             elif re.match(r'^stix2\.v2[0-9]\.common$', name) and is_pkg is False:
                 mod = importlib.import_module(name, str(top_level_module.__name__))
                 STIX2_OBJ_MAPS[ver]['markings'] = mod.OBJ_MAP_MARKING

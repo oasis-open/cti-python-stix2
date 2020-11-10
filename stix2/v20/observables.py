@@ -793,15 +793,15 @@ def CustomObservable(type='x-custom-observable', properties=None):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type, spec_version='2.0'))],
             properties,
-            [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
+            [('extensions', ExtensionsProperty(spec_version='2.0'))],
         ]))
         return _custom_observable_builder(cls, type, _properties, '2.0', _Observable)
     return wrapper
 
 
-def CustomExtension(observable=None, type='x-custom-observable-ext', properties=None):
+def CustomExtension(type='x-custom-observable-ext', properties=None):
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.0', _Extension)
+        return _custom_extension_builder(cls, type, properties, '2.0', _Extension)
     return wrapper

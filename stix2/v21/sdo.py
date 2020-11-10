@@ -7,6 +7,7 @@ import warnings
 from six.moves.urllib.parse import quote_plus
 from stix2patterns.validator import run_validator
 
+from . import observables
 from ..custom import _custom_object_builder
 from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
@@ -778,7 +779,7 @@ class Vulnerability(_DomainObject):
     ])
 
 
-def CustomObject(type='x-custom-type', properties=None):
+def CustomObject(type='x-custom-type', properties=None, extension_name=None):
     """Custom STIX Object type decorator.
 
     Example:
@@ -808,6 +809,7 @@ def CustomObject(type='x-custom-type', properties=None):
 
     """
     def wrapper(cls):
+        extension_properties = [x for x in properties if not x[0].startswith('x_')]
         _properties = list(itertools.chain.from_iterable([
             [
                 ('type', TypeProperty(type, spec_version='2.1')),
@@ -817,7 +819,7 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
                 ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
             ],
-            [x for x in properties if not x[0].startswith('x_')],
+            extension_properties,
             [
                 ('revoked', BooleanProperty(default=lambda: False)),
                 ('labels', ListProperty(StringProperty)),
@@ -826,10 +828,19 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('external_references', ListProperty(ExternalReference)),
                 ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
                 ('granular_markings', ListProperty(GranularMarking)),
-                ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type)),
+                ('extensions', ExtensionsProperty(spec_version='2.1')),
             ],
             sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
         ]))
+        if extension_name:
+            @observables.CustomExtension(type=extension_name, properties=extension_properties)
+            class NameExtension:
+                is_new_object = True
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'STIXExtension' + extension
+            cls.with_extension = extension_name
         return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 
     return wrapper

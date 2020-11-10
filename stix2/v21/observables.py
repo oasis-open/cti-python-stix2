@@ -920,7 +920,7 @@ class X509Certificate(_Observable):
         self._check_at_least_one_property(att_list)
 
 
-def CustomObservable(type='x-custom-observable', properties=None, id_contrib_props=None):
+def CustomObservable(type='x-custom-observable', properties=None, id_contrib_props=None, extension_name=None):
     """Custom STIX Cyber Observable Object type decorator.
 
     Example:
@@ -939,15 +939,24 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
             [('type', TypeProperty(type, spec_version='2.1'))],
             [('id', IDProperty(type, spec_version='2.1'))],
             properties,
-            [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
+            [('extensions', ExtensionsProperty(spec_version='2.1'))],
         ]))
+        if extension_name:
+            @CustomExtension(type=extension_name, properties=properties)
+            class NameExtension:
+                is_extension_so = True
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'STIXExtension' + extension
+            cls.with_extension = extension_name
         return _custom_observable_builder(cls, type, _properties, '2.1', _Observable, id_contrib_props)
     return wrapper
 
 
-def CustomExtension(observable=None, type='x-custom-observable-ext', properties=None):
-    """Decorator for custom extensions to STIX Cyber Observables.
+def CustomExtension(type='x-custom-observable-ext', properties=None):
+    """Custom STIX Object Extension decorator.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.1', _Extension)
+        return _custom_extension_builder(cls, type, properties, '2.1', _Extension)
     return wrapper
