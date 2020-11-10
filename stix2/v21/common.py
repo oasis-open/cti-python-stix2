@@ -101,7 +101,7 @@ class LanguageContent(_STIXBase21):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
@@ -203,7 +203,7 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, **kwargs):

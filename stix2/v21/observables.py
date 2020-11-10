@@ -39,7 +39,7 @@ class Artifact(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["hashes", "payload_bin"]
 
@@ -65,7 +65,7 @@ class AutonomousSystem(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["number"]
 
@@ -90,7 +90,7 @@ class Directory(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["path"]
 
@@ -110,7 +110,7 @@ class DomainName(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
@@ -131,7 +131,7 @@ class EmailAddress(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
@@ -143,7 +143,7 @@ class EmailMIMEComponent(_STIXBase21):
 
     _properties = OrderedDict([
         ('body', StringProperty()),
-        ('body_raw_ref', ReferenceProperty(valid_types=['artifact', 'file'], spec_version="2.1")),
+        ('body_raw_ref', ReferenceProperty(valid_types=['artifact', 'file'], spec_version='2.1')),
         ('content_type', StringProperty()),
         ('content_disposition', StringProperty()),
     ])
@@ -181,7 +181,7 @@ class EmailMessage(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["from_ref", "subject", "body"]
 
@@ -200,7 +200,7 @@ class ArchiveExt(_Extension):
 
     _type = 'archive-ext'
     _properties = OrderedDict([
-        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version="2.1"), required=True)),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version='2.1'), required=True)),
         ('comment', StringProperty()),
     ])
 
@@ -362,7 +362,7 @@ class File(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["hashes", "name", "parent_directory_ref", "extensions"]
 
@@ -387,7 +387,7 @@ class IPv4Address(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
@@ -408,7 +408,7 @@ class IPv6Address(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
@@ -427,7 +427,7 @@ class MACAddress(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
@@ -446,7 +446,7 @@ class Mutex(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["name"]
 
@@ -463,7 +463,7 @@ class HTTPRequestExt(_Extension):
         ('request_version', StringProperty()),
         ('request_header', DictionaryProperty(spec_version='2.1')),
         ('message_body_length', IntegerProperty()),
-        ('message_body_data_ref', ReferenceProperty(valid_types='artifact', spec_version="2.1")),
+        ('message_body_data_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
     ])
 
 
@@ -573,7 +573,7 @@ class NetworkTraffic(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["start", "src_ref", "dst_ref", "src_port", "dst_port", "protocols"]
 
@@ -642,7 +642,7 @@ class WindowsServiceExt(_Extension):
                 "SERVICE_SYSTEM_ALERT",
             ]),
         ),
-        ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version="2.1"))),
+        ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version='2.1'))),
         (
             'service_type', EnumProperty(allowed=[
                 "SERVICE_KERNEL_DRIVER",
@@ -690,7 +690,7 @@ class Process(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = []
 
@@ -728,7 +728,7 @@ class Software(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["name", "cpe", "swid", "vendor", "version"]
 
@@ -747,7 +747,7 @@ class URL(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
@@ -793,7 +793,7 @@ class UserAccount(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["account_type", "user_id", "account_login"]
 
@@ -846,7 +846,7 @@ class WindowsRegistryKey(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["key", "values"]
 
@@ -903,7 +903,7 @@ class X509Certificate(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["hashes", "serial_number"]
 
