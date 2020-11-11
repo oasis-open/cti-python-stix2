@@ -259,7 +259,7 @@ def iterpath(obj, path=None):
 def check_tlp_marking(marking_obj, spec_version):
     # Specific TLP Marking validation case.
 
-    if marking_obj["definition_type"] == "tlp":
+    if marking_obj.get("definition_type", "") == "tlp":
         color = marking_obj["definition"]["tlp"]
 
         if color == "white":

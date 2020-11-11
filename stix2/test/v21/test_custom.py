@@ -1296,3 +1296,230 @@ def test_register_duplicate_observable_extension():
         class NewExtension2():
             pass
     assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_unregistered_top_level_extension_passes_with_allow_custom_false():
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        rank=5,
+        toxicity=8,
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e': {
+                'extends_stix_object_definition': True,
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.rank == 5
+    assert indicator.toxicity == 8
+    assert isinstance(indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e'], dict)
+
+
+def test_unregistered_embedded_extension_passes_with_allow_custom_false():
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e': {
+                'rank': 5,
+                'toxicity': 8,
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['rank'] == 5
+    assert indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['toxicity'] == 8
+    assert isinstance(indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e'], dict)
+
+
+def test_registered_top_level_extension_passes_with_allow_custom_false():
+    @stix2.v21.CustomExtension(
+        'stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e', [
+                ('rank', stix2.properties.IntegerProperty(required=True)),
+                ('toxicity', stix2.properties.IntegerProperty(required=True)),
+        ],
+    )
+    class ExtensionFoo1:
+        extends_stix_object_definition = True
+
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        rank=5,
+        toxicity=8,
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e': {
+                'extends_stix_object_definition': True,
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.rank == 5
+    assert indicator.toxicity == 8
+    assert isinstance(indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e'], ExtensionFoo1)
+
+
+def test_registered_embedded_extension_passes_with_allow_custom_false():
+    @stix2.v21.CustomExtension(
+        'stix-extension--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e', [
+                ('rank', stix2.properties.IntegerProperty(required=True)),
+                ('toxicity', stix2.properties.IntegerProperty(required=True)),
+        ],
+    )
+    class ExtensionFoo1:
+        pass
+
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'stix-extension--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e': {
+                'rank': 5,
+                'toxicity': 8,
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e']['rank'] == 5
+    assert indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e']['toxicity'] == 8
+    assert isinstance(indicator.extensions['stix-extension--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e'], ExtensionFoo1)
+
+
+def test_registered_new_extension_sdo_allow_custom_false():
+    @stix2.v21.CustomObject(
+        'my-favorite-sdo', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_property_name1', stix2.properties.StringProperty(required=True)),
+            ('some_property_name2', stix2.properties.StringProperty()),
+        ], 'stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e9999',
+    )
+    class MyFavSDO:
+        pass
+
+    my_favorite_sdo = {
+        'type': 'my-favorite-sdo',
+        'spec_version': '2.1',
+        'id': 'my-favorite-sdo--c5ba9dba-5ad9-4bbe-9825-df4cb8675774',
+        'created': '2014-02-20T09:16:08.989000Z',
+        'modified': '2014-02-20T09:16:08.989000Z',
+        'name': 'This is the name of my favorite',
+        'some_property_name1': 'value1',
+        'some_property_name2': 'value2',
+        # 'extensions': {
+        #     'stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e9999': STIXExtensiond83fce45ef584c6ca3f41fbc32e98c6e()
+        # }
+    }
+    sdo_object = stix2.parse(my_favorite_sdo)
+    assert isinstance(sdo_object, MyFavSDO)
+    assert isinstance(
+        sdo_object.extensions['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e9999'],
+        stix2.v21.EXT_MAP['stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e9999'],
+    )
+
+    sdo_serialized = sdo_object.serialize()
+    assert '"extensions": {"stix-extension--d83fce45-ef58-4c6c-a3f4-1fbc32e9999": {"is_new_object": true}}' in sdo_serialized
+
+
+def test_registered_new_extension_sco_allow_custom_false():
+    @stix2.v21.CustomObservable(
+        'my-favorite-sco', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_network_protocol_field', stix2.properties.StringProperty(required=True)),
+        ], ['name', 'some_network_protocol_field'], 'stix-extension--a932fcc6-e032-177c-126f-cb970a5a1fff',
+    )
+    class MyFavSCO:
+        pass
+
+    my_favorite_sco = {
+        'type': 'my-favorite-sco',
+        'spec_version': '2.1',
+        'id': 'my-favorite-sco--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
+        'name': 'This is the name of my favorite SCO',
+        'some_network_protocol_field': 'value',
+        # 'extensions': {
+        #     'stix-extension--a932fcc6-e032-177c-126f-cb970a5a1fff': {
+        #         'is_extension_so': true
+        #     }
+        # }
+    }
+
+    sco_object = stix2.parse(my_favorite_sco)
+    assert isinstance(sco_object, MyFavSCO)
+    assert isinstance(
+        sco_object.extensions['stix-extension--a932fcc6-e032-177c-126f-cb970a5a1fff'],
+        stix2.v21.EXT_MAP['stix-extension--a932fcc6-e032-177c-126f-cb970a5a1fff'],
+    )
+
+    sco_serialized = sco_object.serialize()
+    assert '"extensions": {"stix-extension--a932fcc6-e032-177c-126f-cb970a5a1fff": {"is_extension_so": true}}' in sco_serialized
+
+
+def test_registered_new_extension_marking_allow_custom_false():
+    @stix2.v21.CustomMarking(
+        'my-favorite-marking', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_marking_field', stix2.properties.StringProperty(required=True)),
+        ], 'stix-extension--a932fcc6-e032-176c-126f-cb970a5a1fff',
+    )
+    class MyFavMarking:
+        pass
+
+    my_favorite_marking = {
+        'type': 'marking-definition',
+        'spec_version': '2.1',
+        'id': 'marking-definition--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
+        'name': 'This is the name of my favorite Marking',
+        'some_marking_field': 'value',
+        'extensions': {
+            'stix-extension--a932fcc6-e032-176c-126f-cb970a5a1fff': {
+                'extends_stix_object_definition': True,
+            },
+        },
+    }
+
+    marking_object = stix2.parse(my_favorite_marking)
+    assert isinstance(marking_object, stix2.v21.MarkingDefinition)
+    assert isinstance(
+        marking_object.extensions['stix-extension--a932fcc6-e032-176c-126f-cb970a5a1fff'],
+        stix2.v21.EXT_MAP['stix-extension--a932fcc6-e032-176c-126f-cb970a5a1fff'],
+    )
+
+    marking_serialized = marking_object.serialize()
+    assert '"extensions": {"stix-extension--a932fcc6-e032-176c-126f-cb970a5a1fff": {"extends_stix_object_definition": true}}' in marking_serialized

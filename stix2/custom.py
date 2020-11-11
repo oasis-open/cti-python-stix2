@@ -56,12 +56,12 @@ def _custom_marking_builder(cls, type, properties, version, base_class):
 
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
+            _cls_init(cls, self, kwargs)
             ext = getattr(self, 'with_extension', None)
             if ext and version != '2.0':
                 if 'extensions' not in self._inner:
                     self._inner['extensions'] = {}
                 self._inner['extensions'][ext] = _get_extension_class(ext, version)()
-            _cls_init(cls, self, kwargs)
 
     _CustomMarking.__name__ = cls.__name__
 

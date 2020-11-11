@@ -235,7 +235,7 @@ OBJ_MAP_MARKING = {
 }
 
 
-def CustomMarking(type='x-custom-marking', properties=None):
+def CustomMarking(type='x-custom-marking', properties=None, extension_name=None):
     """Custom STIX Marking decorator.
 
     Example:
@@ -250,6 +250,18 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
     """
     def wrapper(cls):
+        if extension_name:
+            from . import observables
+
+            @observables.CustomExtension(type=extension_name, properties=properties)
+            class NameExtension:
+                # might not be correct
+                extends_stix_object_definition = True
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'STIXExtension' + extension
+            cls.with_extension = extension_name
         return _custom_marking_builder(cls, type, properties, '2.1', _STIXBase21)
     return wrapper
 
