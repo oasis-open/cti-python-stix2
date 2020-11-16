@@ -5,7 +5,7 @@ import pytz
 
 import stix2
 
-from .constants import IDENTITY_ID, INDICATOR_ID, SIGHTING_ID, SIGHTING_KWARGS
+from .constants import IDENTITY_ID, INDICATOR_ID, LOCATION_ID, SIGHTING_ID, SIGHTING_KWARGS
 
 EXPECTED_SIGHTING = """{
     "type": "sighting",
@@ -15,7 +15,8 @@ EXPECTED_SIGHTING = """{
     "modified": "2016-04-06T20:06:37.000Z",
     "sighting_of_ref": "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
     "where_sighted_refs": [
-        "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
+        "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+        "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64"
     ]
 }"""
 
@@ -41,7 +42,7 @@ def test_sighting_all_required_properties():
         created=now,
         modified=now,
         sighting_of_ref=INDICATOR_ID,
-        where_sighted_refs=[IDENTITY_ID],
+        where_sighted_refs=[IDENTITY_ID, LOCATION_ID],
     )
     assert str(s) == EXPECTED_SIGHTING
 
@@ -101,6 +102,7 @@ def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
             "type": "sighting",
             "where_sighted_refs": [
                 IDENTITY_ID,
+                LOCATION_ID
             ],
         },
     ],
@@ -114,4 +116,4 @@ def test_parse_sighting(data):
     assert sighting.created == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
     assert sighting.modified == dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
     assert sighting.sighting_of_ref == INDICATOR_ID
-    assert sighting.where_sighted_refs == [IDENTITY_ID]
+    assert sighting.where_sighted_refs == [IDENTITY_ID, LOCATION_ID]
