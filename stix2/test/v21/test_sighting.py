@@ -5,7 +5,9 @@ import pytz
 
 import stix2
 
-from .constants import IDENTITY_ID, INDICATOR_ID, LOCATION_ID, SIGHTING_ID, SIGHTING_KWARGS
+from .constants import (
+    IDENTITY_ID, INDICATOR_ID, LOCATION_ID, SIGHTING_ID, SIGHTING_KWARGS,
+)
 
 EXPECTED_SIGHTING = """{
     "type": "sighting",
@@ -102,7 +104,7 @@ def test_create_sighting_from_objects_rather_than_ids(malware):  # noqa: F811
             "type": "sighting",
             "where_sighted_refs": [
                 IDENTITY_ID,
-                LOCATION_ID
+                LOCATION_ID,
             ],
         },
     ],
