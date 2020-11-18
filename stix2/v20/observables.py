@@ -724,7 +724,7 @@ class WindowsRegistryKey(_Observable):
     ])
 
 
-class X509V3ExtenstionsType(_STIXBase20):
+class X509V3ExtensionsType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716298>`__.
     """  # noqa
@@ -770,7 +770,7 @@ class X509Certificate(_Observable):
         ('subject_public_key_algorithm', StringProperty()),
         ('subject_public_key_modulus', StringProperty()),
         ('subject_public_key_exponent', IntegerProperty()),
-        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
+        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtensionsType)),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
