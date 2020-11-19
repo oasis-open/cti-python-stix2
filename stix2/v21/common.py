@@ -94,7 +94,7 @@ class LanguageContent(_STIXBase21):
         ('object_modified', TimestampProperty(precision='millisecond')),
         # TODO: 'contents' https://docs.google.com/document/d/1ShNq4c3e1CkfANmD9O--mdZ5H0O_GLnjN28a_yrEaco/edit#heading=h.cfz5hcantmvx
         ('contents', DictionaryProperty(spec_version='2.1', required=True)),
-        ('revoked', BooleanProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
         ('external_references', ListProperty(ExternalReference)),
@@ -156,12 +156,12 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
         ('id', IDProperty(_type)),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-        ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-        ('granular_markings', ListProperty(GranularMarking)),
         ('definition_type', StringProperty(required=True)),
         ('name', StringProperty()),
         ('definition', MarkingProperty(required=True)),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def __init__(self, **kwargs):
