@@ -937,6 +937,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
     def wrapper(cls):
         _properties = list(itertools.chain.from_iterable([
             [('type', TypeProperty(type, spec_version='2.1'))],
+            [('spec_version', StringProperty(fixed='2.1'))],
             [('id', IDProperty(type, spec_version='2.1'))],
             properties,
             [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
