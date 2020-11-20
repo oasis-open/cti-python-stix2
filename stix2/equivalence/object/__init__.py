@@ -4,6 +4,7 @@ import time
 
 from ...datastore import Filter
 from ...utils import STIXdatetime, parse_into_datetime
+from ..pattern import equivalent_patterns
 
 logger = logging.getLogger(__name__)
 
@@ -211,8 +212,7 @@ def custom_pattern_based(pattern1, pattern2):
         float: Number between 0.0 and 1.0 depending on match criteria.
 
     """
-    logger.warning("Indicator pattern equivalence is not fully defined; will default to zero if not completely identical")
-    return exact_match(pattern1, pattern2)  # TODO: Implement pattern based equivalence
+    return equivalent_patterns(pattern1, pattern2)
 
 
 def partial_external_reference_based(refs1, refs2):
