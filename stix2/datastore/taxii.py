@@ -300,10 +300,10 @@ class TAXIICollectionSource(DataSource):
 
                 # The while loop will not be executed if the response is received in full.
                 while envelope.get("more", False):
-                    envelope = self.collection.get_objects(limit=self.items_per_page, next=envelope.get("next", ""))
+                    envelope = self.collection.get_objects(limit=self.items_per_page, next=envelope.get("next", ""), **taxii_filters_dict)
                     all_data.extend(envelope.get("objects", []))
             else:
-                for bundle in tcv20.as_pages(self.collection.get_objects, per_request=self.items_per_page):
+                for bundle in tcv20.as_pages(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
                     all_data.extend(bundle.get("objects", []))
 
             # deduplicate data (before filtering as reduces wasted filtering)
