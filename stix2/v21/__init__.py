@@ -36,7 +36,7 @@ from .observables import (
 )
 from .sdo import (
     AttackPattern, Campaign, CourseOfAction, CustomObject, Grouping, Identity,
-    Indicator, Infrastructure, IntrusionSet, Location, Malware,
+    Incident, Indicator, Infrastructure, IntrusionSet, Location, Malware,
     MalwareAnalysis, Note, ObservedData, Opinion, Report, ThreatActor, Tool,
     Vulnerability,
 )
@@ -49,6 +49,7 @@ OBJ_MAP = {
     'course-of-action': CourseOfAction,
     'grouping': Grouping,
     'identity': Identity,
+    'incident': Incident,
     'indicator': Indicator,
     'infrastructure': Infrastructure,
     'intrusion-set': IntrusionSet,
@@ -126,7 +127,7 @@ __all__ = """
     X509Certificate, X509V3ExtensionsType,
 
     AttackPattern, Campaign, CourseOfAction, CustomObject, Grouping, Identity,
-    Indicator, Infrastructure, IntrusionSet, Location, Malware,
+    Incident, Indicator, Infrastructure, IntrusionSet, Location, Malware,
     MalwareAnalysis, Note, ObservedData, Opinion, Report, ThreatActor, Tool,
     Vulnerability,
 
