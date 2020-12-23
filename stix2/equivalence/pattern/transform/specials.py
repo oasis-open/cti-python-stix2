@@ -25,9 +25,12 @@ def _path_is(object_path, path_pattern):
     index path step; _ANY_KEY matches any key path step, and _ANY matches any
     path step.
 
-    :param object_path: An ObjectPath instance
-    :param path_pattern: An iterable giving the pattern path steps
-    :return: True if the path matches the pattern; False if not
+    Args:
+        object_path: An ObjectPath instance
+        path_pattern: An iterable giving the pattern path steps
+
+    Returns:
+        True if the path matches the pattern; False if not
     """
     path_values = object_path_to_raw_values(object_path)
 
@@ -70,8 +73,9 @@ def _mask_bytes(ip_bytes, prefix_size):
     Retain the high-order 'prefix_size' bits from ip_bytes, and zero out the
     remaining low-order bits.  This side-effects ip_bytes.
 
-    :param ip_bytes: A mutable byte sequence (e.g. a bytearray)
-    :param prefix_size: An integer prefix size
+    Args:
+        ip_bytes: A mutable byte sequence (e.g. a bytearray)
+        prefix_size: An integer prefix size
     """
     addr_size_bytes = len(ip_bytes)
     addr_size_bits = 8 * addr_size_bytes
@@ -99,8 +103,9 @@ def windows_reg_key(comp_expr):
     being compared.  This enables case-insensitive comparisons between two
     patterns, for those values.  This side-effects the given AST.
 
-    :param comp_expr: A _ComparisonExpression object whose type is
-        windows-registry-key
+    Args:
+        comp_expr: A _ComparisonExpression object whose type is
+            windows-registry-key
     """
     if _path_is(comp_expr.lhs, ("key",)) \
             or _path_is(comp_expr.lhs, ("values", _ANY_IDX, "name")):
@@ -119,7 +124,8 @@ def ipv4_addr(comp_expr):
 
     This side-effects the given AST.
 
-    :param comp_expr: A _ComparisonExpression object whose type is ipv4-addr.
+    Args:
+        comp_expr: A _ComparisonExpression object whose type is ipv4-addr.
     """
     if _path_is(comp_expr.lhs, ("value",)):
         value = comp_expr.rhs.value
@@ -179,7 +185,8 @@ def ipv6_addr(comp_expr):
 
     This side-effects the given AST.
 
-    :param comp_expr: A _ComparisonExpression object whose type is ipv6-addr.
+    Args:
+        comp_expr: A _ComparisonExpression object whose type is ipv6-addr.
     """
     if _path_is(comp_expr.lhs, ("value",)):
         value = comp_expr.rhs.value

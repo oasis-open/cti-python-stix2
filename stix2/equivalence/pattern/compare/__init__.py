@@ -16,9 +16,12 @@ def generic_cmp(value1, value2):
     Generic comparator of values which uses the builtin '<' and '>' operators.
     Assumes the values can be compared that way.
 
-    :param value1: The first value
-    :param value2: The second value
-    :return: -1, 0, or 1 depending on whether value1 is less, equal, or greater
+    Args:
+        value1: The first value
+        value2: The second value
+
+    Returns:
+        -1, 0, or 1 depending on whether value1 is less, equal, or greater
         than value2
     """
 
@@ -30,12 +33,15 @@ def iter_lex_cmp(seq1, seq2, cmp):
     Generic lexicographical compare function, which works on two iterables and
     a comparator function.
 
-    :param seq1: The first iterable
-    :param seq2: The second iterable
-    :param cmp: a two-arg callable comparator for values iterated over.  It
-        must behave analogously to this function, returning <0, 0, or >0 to
-        express the ordering of the two values.
-    :return: <0 if seq1 < seq2; >0 if seq1 > seq2; 0 if they're equal
+    Args:
+        seq1: The first iterable
+        seq2: The second iterable
+        cmp: a two-arg callable comparator for values iterated over.  It
+            must behave analogously to this function, returning <0, 0, or >0 to
+            express the ordering of the two values.
+
+    Returns:
+        <0 if seq1 < seq2; >0 if seq1 > seq2; 0 if they're equal
     """
 
     it1 = iter(seq1)
@@ -84,11 +90,14 @@ def iter_in(value, seq, cmp):
     a comparator function.  This function checks whether the given value is
     contained in the given iterable.
 
-    :param value: A value
-    :param seq: An iterable
-    :param cmp: A 2-arg comparator function which must return 0 if the args
-        are equal
-    :return: True if the value is found in the iterable, False if it is not
+    Args:
+        value: A value
+        seq: An iterable
+        cmp: A 2-arg comparator function which must return 0 if the args
+            are equal
+
+    Returns:
+        True if the value is found in the iterable, False if it is not
     """
     result = False
     for seq_val in seq:

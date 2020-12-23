@@ -4,6 +4,7 @@ import time
 
 from ...datastore import Filter
 from ...utils import STIXdatetime, parse_into_datetime
+from ..pattern import equivalent_patterns
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,7 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
             sum_weights = 0.0
 
             for prop in weights[type1]:
-                if check_property_present(prop, obj1, obj2) or prop == "longitude_latitude":
+                if check_property_present(prop, obj1, obj2):
                     w = weights[type1][prop][0]
                     comp_funct = weights[type1][prop][1]
 
@@ -117,7 +118,10 @@ def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
 
 def check_property_present(prop, obj1, obj2):
     """Helper method checks if a property is present on both objects."""
-    if prop in obj1 and prop in obj2:
+    if prop == "longitude_latitude":
+        if all(x in obj1 and x in obj2 for x in ['latitude', 'longitude']):
+            return True
+    elif prop in obj1 and prop in obj2:
         return True
     return False
 
@@ -208,8 +212,7 @@ def custom_pattern_based(pattern1, pattern2):
         float: Number between 0.0 and 1.0 depending on match criteria.
 
     """
-    logger.warning("Indicator pattern equivalence is not fully defined; will default to zero if not completely identical")
-    return exact_match(pattern1, pattern2)  # TODO: Implement pattern based equivalence
+    return equivalent_patterns(pattern1, pattern2)
 
 
 def partial_external_reference_based(refs1, refs2):

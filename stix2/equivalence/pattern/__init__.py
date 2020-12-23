@@ -30,7 +30,8 @@ def _get_pattern_canonicalizer():
     """
     Get a canonicalization transformer for STIX patterns.
 
-    :return: The transformer
+    Returns:
+        The transformer
     """
 
     # The transformers are either stateless or contain no state which changes
@@ -64,11 +65,14 @@ def equivalent_patterns(pattern1, pattern2, stix_version=stix2.DEFAULT_VERSION):
     """
     Determine whether two STIX patterns are semantically equivalent.
 
-    :param pattern1: The first STIX pattern
-    :param pattern2: The second STIX pattern
-    :param stix_version: The STIX version to use for pattern parsing, as a
-        string ("2.0", "2.1", etc).  Defaults to library-wide default version.
-    :return: True if the patterns are semantically equivalent; False if not
+    Args:
+        pattern1: The first STIX pattern
+        pattern2: The second STIX pattern
+        stix_version: The STIX version to use for pattern parsing, as a string
+            ("2.0", "2.1", etc).  Defaults to library-wide default version.
+
+    Returns:
+        True if the patterns are semantically equivalent; False if not
     """
     patt_ast1 = stix2.pattern_visitor.create_pattern_object(
         pattern1, version=stix_version,
@@ -96,12 +100,14 @@ def find_equivalent_patterns(
     on an input iterable and is implemented as a generator of matches.  So you
     can "stream" patterns in and matching patterns will be streamed out.
 
-    :param search_pattern: A search pattern as a string
-    :param patterns: An iterable over patterns as strings
-    :param stix_version: The STIX version to use for pattern parsing, as a
-        string ("2.0", "2.1", etc).  Defaults to library-wide default version.
-    :return: A generator iterator producing the semantically equivalent
-        patterns
+    Args:
+        search_pattern: A search pattern as a string
+        patterns: An iterable over patterns as strings
+        stix_version: The STIX version to use for pattern parsing, as a string
+            ("2.0", "2.1", etc).  Defaults to library-wide default version.
+
+    Returns:
+        A generator iterator producing the semantically equivalent patterns
     """
     search_pattern_ast = stix2.pattern_visitor.create_pattern_object(
         search_pattern, version=stix_version,
