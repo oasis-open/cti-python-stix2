@@ -672,8 +672,8 @@ class ExtensionsProperty(DictionaryProperty):
             else:
                 if self.allow_custom:
                     dictified[key] = subvalue
-                elif key.startswith('stix-extension--'):
-                    _validate_id(key, '2.1', 'stix-extension')
+                elif key.startswith('extension-definition--'):
+                    _validate_id(key, '2.1', 'extension-definition')
                     dictified[key] = subvalue
                 else:
                     raise CustomContentError("Can't parse unknown extension type: {}".format(key))

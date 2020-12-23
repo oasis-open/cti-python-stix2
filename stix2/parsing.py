@@ -144,7 +144,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             # be parsed into STIX object, returned as is
             return stix_dict
         for key_id, ext_def in stix_dict.get('extensions', {}).items():
-            if key_id.startswith('stix-extension--') and ext_def.get('extension_type', None):
+            if key_id.startswith('extension-definition--') and ext_def.get('extension_type', None):
                 # prevents ParseError for unregistered objects when
                 # 'is_new_object' or 'is_extension_so' are set to True and allow_custom=False
                 return stix_dict
@@ -352,9 +352,9 @@ def _register_extension(
         )
 
     if version == "2.1":
-        if not (ext_type.endswith('-ext') or ext_type.startswith('stix-extension--')):
+        if not (ext_type.endswith('-ext') or ext_type.startswith('extension-definition--')):
             raise ValueError(
-                "Invalid extension type name '%s': must end with '-ext' or start with 'stix-extension--<UUID>'." %
+                "Invalid extension type name '%s': must end with '-ext' or start with 'extension-definition--<UUID>'." %
                 ext_type,
             )
 

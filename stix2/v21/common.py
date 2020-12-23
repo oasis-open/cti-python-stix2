@@ -105,12 +105,12 @@ class LanguageContent(_STIXBase21):
     ])
 
 
-class STIXExtension(_STIXBase21):
+class ExtensionDefinition(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <link here>`__.
     """
 
-    _type = 'stix-extension'
+    _type = 'extension-definition'
     _properties = OrderedDict([
         ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),

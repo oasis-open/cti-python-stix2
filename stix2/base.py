@@ -134,7 +134,7 @@ class _STIXBase(Mapping):
         if extra_kwargs and not self._allow_custom:
             ext_found = False
             for key_id, ext_def in kwargs.get('extensions', {}).items():
-                if key_id.startswith('stix-extension--'):
+                if key_id.startswith('extension-definition--'):
                     ext_found = True
                     break
             if ext_found is False:
