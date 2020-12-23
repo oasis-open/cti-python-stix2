@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from ..custom import _custom_marking_builder
-from ..exceptions import InvalidValueError
+from ..exceptions import InvalidValueError, PropertyPresenceError
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
 from ..properties import (
@@ -222,6 +222,23 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
 
     def _check_object_constraints(self):
         super(MarkingDefinition, self)._check_object_constraints()
+
+        definition = self.get("definition")
+        definition_type = self.get("definition_type")
+        extensions = self.get("extensions")
+        if not extensions and not definition:
+            raise PropertyPresenceError(
+                "MarkingDefinition objects must have the property 'definition' "
+                "if 'extensions' is not present",
+                MarkingDefinition,
+            )
+        if not extensions and not definition_type:
+            raise PropertyPresenceError(
+                "MarkingDefinition objects must have the property 'definition_type' "
+                "if 'extensions' is not present",
+                MarkingDefinition,
+            )
+
         check_tlp_marking(self, '2.1')
 
     def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
