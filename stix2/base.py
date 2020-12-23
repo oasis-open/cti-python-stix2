@@ -128,7 +128,7 @@ class _STIXBase(Mapping):
 
         extra_kwargs = list(set(kwargs) - set(self._properties))
         if extra_kwargs and issubclass(cls, stix2.v21._Extension):
-            props_to_remove = ['extends_stix_object_definition', 'is_new_object', 'is_extension_so']
+            props_to_remove = ['extension_type']
             extra_kwargs = [prop for prop in extra_kwargs if prop not in props_to_remove]
 
         if extra_kwargs and not self._allow_custom:
@@ -166,9 +166,7 @@ class _STIXBase(Mapping):
         missing_kwargs = required_properties - set(setting_kwargs)
         if missing_kwargs:
             new_ext_check = (
-                getattr(self, 'extends_stix_object_definition', False) or
-                getattr(self, 'is_new_object', False) or
-                getattr(self, 'is_extension_so', False)
+                bool(getattr(self, "extension_type", None))
             ) and issubclass(cls, stix2.v21._Extension)
             if new_ext_check is False:
                 raise MissingPropertiesError(cls, missing_kwargs)

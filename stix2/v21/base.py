@@ -31,25 +31,17 @@ class _Observable(_Observable, _STIXBase21):
 
 
 class _Extension(_Extension, _STIXBase21):
-    extends_stix_object_definition = False
-    is_new_object = False
-    is_extension_so = False
+    extension_type = None
 
     def __init__(self, **kwargs):
         super(_Extension, self).__init__(**kwargs)
-        if getattr(self, "extends_stix_object_definition", False):
-            self._inner["extends_stix_object_definition"] = True
-        elif getattr(self, "is_new_object", False):
-            self._inner["is_new_object"] = True
-        elif getattr(self, "is_extension_so", False):
-            self._inner["is_extension_so"] = True
+        if getattr(self, "extension_type", None):
+            self._inner["extension_type"] = self.extension_type
 
     def _check_at_least_one_property(self, list_of_properties=None):
-        new_ext_check = (getattr(self, "extends_stix_object_definition", False) or
-                         getattr(self, "is_new_object", False) or
-                         getattr(self, "is_extension_so", False))
+        new_ext_check = getattr(self, "extension_type", None)
 
-        if new_ext_check is False:
+        if new_ext_check is None:
             super(_Extension, self)._check_at_least_one_property(list_of_properties=list_of_properties)
 
 

@@ -945,7 +945,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
         if extension_name:
             @CustomExtension(type=extension_name, properties=properties)
             class NameExtension:
-                is_extension_so = True
+                extension_type = 'new-sco'
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')

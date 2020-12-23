@@ -255,8 +255,7 @@ def CustomMarking(type='x-custom-marking', properties=None, extension_name=None)
 
             @observables.CustomExtension(type=extension_name, properties=properties)
             class NameExtension:
-                # might not be correct
-                extends_stix_object_definition = True
+                extension_type = 'property-extension'
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')

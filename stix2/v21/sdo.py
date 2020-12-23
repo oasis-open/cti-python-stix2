@@ -862,7 +862,7 @@ def CustomObject(type='x-custom-type', properties=None, extension_name=None):
         if extension_name:
             @observables.CustomExtension(type=extension_name, properties=extension_properties)
             class NameExtension:
-                is_new_object = True
+                extension_type = 'new-sdo'
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')

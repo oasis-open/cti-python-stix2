@@ -144,9 +144,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             # be parsed into STIX object, returned as is
             return stix_dict
         for key_id, ext_def in stix_dict.get('extensions', {}).items():
-            if key_id.startswith('stix-extension--') and (
-                    ext_def.get('is_new_object', False) or ext_def.get('is_extension_so', False)
-            ):
+            if key_id.startswith('stix-extension--') and ext_def.get('extension_type', None):
                 # prevents ParseError for unregistered objects when
                 # 'is_new_object' or 'is_extension_so' are set to True and allow_custom=False
                 return stix_dict
