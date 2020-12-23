@@ -866,7 +866,7 @@ def CustomObject(type='x-custom-type', properties=None, extension_name=None):
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')
-            NameExtension.__name__ = 'STIXExtension' + extension
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
             cls.with_extension = extension_name
         return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 

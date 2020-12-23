@@ -1449,7 +1449,7 @@ def test_registered_new_extension_sdo_allow_custom_false():
         'some_property_name1': 'value1',
         'some_property_name2': 'value2',
         # 'extensions': {
-        #     'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999': STIXExtensiond83fce45ef584c6ca3f41fbc32e98c6e()
+        #     'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999': ExtensionDefinitiond83fce45ef584c6ca3f41fbc32e98c6e()
         # }
     }
     sdo_object = stix2.parse(my_favorite_sdo)

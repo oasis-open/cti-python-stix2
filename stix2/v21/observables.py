@@ -950,7 +950,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')
-            NameExtension.__name__ = 'STIXExtension' + extension
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
             cls.with_extension = extension_name
         return _custom_observable_builder(cls, type, _properties, '2.1', _Observable, id_contrib_props)
     return wrapper

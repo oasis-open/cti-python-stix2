@@ -259,7 +259,7 @@ def CustomMarking(type='x-custom-marking', properties=None, extension_name=None)
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')
-            NameExtension.__name__ = 'STIXExtension' + extension
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
             cls.with_extension = extension_name
         return _custom_marking_builder(cls, type, properties, '2.1', _STIXBase21)
     return wrapper
