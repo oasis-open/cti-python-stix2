@@ -9,6 +9,11 @@ import pytz
 import six
 
 import stix2
+try:
+    import stix2.parsing as mappings
+except ImportError:
+    import stix2.core as mappings
+
 
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
@@ -313,18 +318,177 @@ def get_type_from_id(stix_id):
     return stix_id.split('--', 1)[0]
 
 
-def is_marking(obj_or_id):
-    """Determines whether the given object or object ID is/is for a marking
-    definition.
+def _stix_type_of(value):
+    """
+    Get a STIX type from the given value: if a STIX ID is passed, the type
+    prefix is extracted; if string which is not a STIX ID is passed, it is
+    assumed to be a STIX type and is returned; otherwise it is assumed to be a
+    mapping with a "type" property, and the value of that property is returned.
 
-    :param obj_or_id: A STIX object or object ID as a string.
-    :return: True if a marking definition, False otherwise.
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :return: A STIX type
+    """
+    if isinstance(value, str):
+        if "--" in value:
+            type_ = get_type_from_id(value)
+        else:
+            type_ = value
+    else:
+        type_ = value["type"]
+
+    return type_
+
+
+def _get_stix2_class_maps(stix_version):
+    """
+    Get the stix2 class mappings for the given STIX version.
+
+    :param stix_version: A STIX version as a string
+    :return: The class mappings.  This will be a dict mapping from some general
+        category name, e.g. "object" to another mapping from STIX type
+        to a stix2 class.
+    """
+    stix_vid = "v" + stix_version.replace(".", "")
+    cls_maps = mappings.STIX2_OBJ_MAPS[stix_vid]
+
+    return cls_maps
+
+
+def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an SDO.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is an SDO type; False
+        if not
     """
 
-    if isinstance(obj_or_id, (stix2.base._STIXBase, dict)):
-        result = obj_or_id["type"] == "marking-definition"
+    # Eventually this needs to be moved into the stix2 library (and maybe
+    # improved?); see cti-python-stix2 github issue #450.
+
+    cls_maps = _get_stix2_class_maps(stix_version)
+    type_ = _stix_type_of(value)
+    result = type_ in cls_maps["objects"] and type_ not in {
+        "relationship", "sighting", "marking-definition", "bundle",
+        "language-content"
+    }
+
+    return result
+
+
+def is_sco(value, stix_version=stix2.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an SCO.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is an SCO type; False
+        if not
+    """
+    cls_maps = _get_stix2_class_maps(stix_version)
+    type_ = _stix_type_of(value)
+    result = type_ in cls_maps["observables"]
+
+    return result
+
+
+def is_sro(value, stix_version=stix2.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an SCO.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is an SRO type; False
+        if not
+    """
+
+    # No STIX version dependence here yet...
+    type_ = _stix_type_of(value)
+    result = type_ in ("sighting", "relationship")
+
+    return result
+
+
+def is_object(value, stix_version=stix2.DEFAULT_VERSION):
+    """
+    Determine whether an object, type, or ID is/is for any STIX object.  This
+    includes all SDOs, SCOs, meta-objects, and bundle.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is a valid STIX type with
+        respect to the given STIX version; False if not
+    """
+    cls_maps = _get_stix2_class_maps(stix_version)
+    type_ = _stix_type_of(value)
+    result = type_ in cls_maps["observables"] or type_ in cls_maps["objects"]
+
+    return result
+
+
+def is_marking(value, stix_version=stix2.DEFAULT_VERSION):
+    """Determines whether the given value is/is for a marking definition.
+
+    :param value: A STIX object, object ID, or type as a string.
+    :param stix_version: A STIX version as a string
+    :return: True if the value is/is for a marking definition, False otherwise.
+    """
+
+    # No STIX version dependence here yet...
+    type_ = _stix_type_of(value)
+    result = type_ == "marking-definition"
+
+    return result
+
+
+class STIXTypeClass(enum.Enum):
+    """
+    Represents different classes of STIX type.
+    """
+    SDO = 0
+    SCO = 1
+    SRO = 2
+
+
+def is_stix_type(value, stix_version=stix2.DEFAULT_VERSION, *types):
+    """
+    Determine whether the type of the given value satisfies the given
+    constraints.  'types' must contain STIX types as strings, and/or the
+    STIXTypeClass enum values.  STIX types imply an exact match constraint;
+    STIXTypeClass enum values imply a more general constraint, that the object
+    or type be in that class of STIX type.  These constraints are implicitly
+    OR'd together.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :param types: A sequence of STIX type strings or STIXTypeClass enum values
+    :return: True if the object or type satisfies the constraints; False if not
+    """
+
+    for type_ in types:
+        if type_ is STIXTypeClass.SDO:
+            result = is_sdo(value, stix_version)
+        elif type_ is STIXTypeClass.SCO:
+            result = is_sco(value, stix_version)
+        elif type_ is STIXTypeClass.SRO:
+            result = is_sro(value, stix_version)
+        else:
+            # Assume a string STIX type is given instead of a class enum,
+            # and just check for exact match.
+            obj_type = _stix_type_of(value)
+            result = is_object(obj_type, stix_version) and obj_type == type_
+
+        if result:
+            break
+
     else:
-        # it's a string ID
-        result = obj_or_id.startswith("marking-definition--")
+        result = False
 
     return result
