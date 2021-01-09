@@ -1,7 +1,9 @@
 import pytest
 
 import stix2
-from stix2 import parsing
+import stix2.parsing
+import stix2.registry
+import stix2.registration
 import stix2.v20
 
 from ...exceptions import DuplicateRegistrationError, InvalidValueError
@@ -981,7 +983,7 @@ def test_register_custom_object():
         _type = 'awesome-object'
 
     with pytest.raises(ValueError):
-        stix2.parsing._register_object(CustomObject2, version="2.0")
+        stix2.registration._register_object(CustomObject2, version="2.0")
 
 
 def test_extension_property_location():
@@ -1041,10 +1043,10 @@ def test_register_custom_object_with_version():
         "id": "x-new-type-2--00000000-0000-4000-8000-000000000007",
     }
 
-    cust_obj_1 = parsing.dict_to_stix2(custom_obj_1, version='2.0')
+    cust_obj_1 = stix2.parsing.dict_to_stix2(custom_obj_1, version='2.0')
     v = 'v20'
 
-    assert cust_obj_1.type in parsing.STIX2_OBJ_MAPS[v]['objects']
+    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS[v]['objects']
     # spec_version is not in STIX 2.0, and is required in 2.1, so this
     # suffices as a test for a STIX 2.0 object.
     assert "spec_version" not in cust_obj_1
@@ -1076,7 +1078,7 @@ def test_register_observable_with_version():
     custom_obs = NewObservable2(property1="Test Observable")
     v = 'v20'
 
-    assert custom_obs.type in parsing.STIX2_OBJ_MAPS[v]['observables']
+    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS[v]['observables']
 
 
 def test_register_duplicate_observable_with_version():
@@ -1102,7 +1104,7 @@ def test_register_marking_with_version():
     v = 'v20'
 
     no = NewObj2(property1='something')
-    assert no._type in parsing.STIX2_OBJ_MAPS[v]['markings']
+    assert no._type in stix2.registry.STIX2_OBJ_MAPS[v]['markings']
 
 
 def test_register_observable_extension_with_version():
@@ -1117,7 +1119,7 @@ def test_register_observable_extension_with_version():
     v = 'v20'
     example = SomeCustomExtension2(keys='test123')
 
-    assert example._type in parsing.STIX2_OBJ_MAPS[v]['observable-extensions']['user-account']
+    assert example._type in stix2.registry.STIX2_OBJ_MAPS[v]['observable-extensions']['user-account']
 
 
 def test_register_duplicate_observable_extension():

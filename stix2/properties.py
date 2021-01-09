@@ -16,7 +16,8 @@ from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
     MutuallyExclusivePropertiesError, STIXError,
 )
-from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
+from .parsing import parse, parse_observable
+from .registry import STIX2_OBJ_MAPS
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 try:

@@ -3,7 +3,7 @@ from collections import OrderedDict
 import pytest
 
 import stix2
-from stix2 import exceptions, parsing
+from stix2 import exceptions, parsing, registration, registry
 
 BUNDLE = {
     "type": "bundle",
@@ -73,8 +73,8 @@ def test_register_marking_with_version():
         _type = 'x-new-marking1'
         _properties = OrderedDict()
 
-    parsing._register_marking(NewMarking1, version='2.0')
+    registration._register_marking(NewMarking1, version='2.0')
     v = 'v20'
 
-    assert NewMarking1._type in parsing.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(parsing.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])
+    assert NewMarking1._type in registry.STIX2_OBJ_MAPS[v]['markings']
+    assert v in str(registry.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])

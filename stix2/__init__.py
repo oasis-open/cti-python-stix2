@@ -41,7 +41,7 @@ from .markings import (
     add_markings, clear_markings, get_markings, is_marked, remove_markings,
     set_markings,
 )
-from .parsing import _collect_stix2_mappings, parse, parse_observable
+from .parsing import parse, parse_observable
 from .patterns import (
     AndBooleanExpression, AndObservationExpression, BasicObjectPathComponent,
     BinaryConstant, BooleanConstant, EqualityComparisonExpression,
@@ -61,4 +61,5 @@ from .v21 import *  # This import will always be the latest STIX 2.X version
 from .version import __version__
 from .versioning import new_version, revoke
 
-_collect_stix2_mappings()
+import stix2.registry
+stix2.registry._collect_stix2_mappings()
