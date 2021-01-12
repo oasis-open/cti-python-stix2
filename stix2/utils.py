@@ -10,7 +10,7 @@ import six
 
 import stix2
 try:
-    import stix2.parsing as mappings
+    import stix2.registry as mappings
 except ImportError:
     import stix2.core as mappings
 
