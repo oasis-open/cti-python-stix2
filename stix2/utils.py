@@ -340,21 +340,6 @@ def _stix_type_of(value):
     return type_
 
 
-def _get_stix2_class_maps(stix_version):
-    """
-    Get the stix2 class mappings for the given STIX version.
-
-    :param stix_version: A STIX version as a string
-    :return: The class mappings.  This will be a dict mapping from some general
-        category name, e.g. "object" to another mapping from STIX type
-        to a stix2 class.
-    """
-    stix_vid = "v" + stix_version.replace(".", "")
-    cls_maps = mappings.STIX2_OBJ_MAPS[stix_vid]
-
-    return cls_maps
-
-
 def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an SDO.
@@ -369,7 +354,7 @@ def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
     # Eventually this needs to be moved into the stix2 library (and maybe
     # improved?); see cti-python-stix2 github issue #450.
 
-    cls_maps = _get_stix2_class_maps(stix_version)
+    cls_maps = mappings.get_stix2_class_maps(stix_version)
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["objects"] and type_ not in {
         "relationship", "sighting", "marking-definition", "bundle",
@@ -389,7 +374,7 @@ def is_sco(value, stix_version=stix2.DEFAULT_VERSION):
     :return: True if the type of the given value is an SCO type; False
         if not
     """
-    cls_maps = _get_stix2_class_maps(stix_version)
+    cls_maps = mappings.get_stix2_class_maps(stix_version)
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["observables"]
 
@@ -425,7 +410,7 @@ def is_object(value, stix_version=stix2.DEFAULT_VERSION):
     :return: True if the type of the given value is a valid STIX type with
         respect to the given STIX version; False if not
     """
-    cls_maps = _get_stix2_class_maps(stix_version)
+    cls_maps = mappings.get_stix2_class_maps(stix_version)
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["observables"] or type_ in cls_maps["objects"]
 

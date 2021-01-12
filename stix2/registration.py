@@ -68,13 +68,11 @@ def _register_marking(new_marking, version=DEFAULT_VERSION):
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
+    class_maps = registry.get_stix2_class_maps(
+        version or DEFAULT_VERSION
+    )
 
-    OBJ_MAP_MARKING = registry.STIX2_OBJ_MAPS[v]['markings']
+    OBJ_MAP_MARKING = class_maps['markings']
     if mark_type in OBJ_MAP_MARKING.keys():
         raise DuplicateRegistrationError("STIX Marking", mark_type)
     OBJ_MAP_MARKING[mark_type] = new_marking
@@ -130,13 +128,11 @@ def _register_observable(new_observable, version=DEFAULT_VERSION):
                     "is not a ListProperty containing ReferenceProperty." % prop_name,
                 )
 
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
+    class_maps = registry.get_stix2_class_maps(
+        version or DEFAULT_VERSION
+    )
 
-    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
+    OBJ_MAP_OBSERVABLE = class_maps['observables']
     if new_observable._type in OBJ_MAP_OBSERVABLE.keys():
         raise DuplicateRegistrationError("Cyber Observable", new_observable._type)
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
@@ -182,8 +178,6 @@ def _register_observable_extension(
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
-    v = 'v' + version.replace('.', '')
-
     try:
         observable_type = observable._type
     except AttributeError:
@@ -192,8 +186,9 @@ def _register_observable_extension(
             "created with the @CustomObservable decorator.",
         )
 
-    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
-    EXT_MAP = registry.STIX2_OBJ_MAPS[v]['observable-extensions']
+    class_maps = registry.get_stix2_class_maps(version)
+    OBJ_MAP_OBSERVABLE = class_maps['observables']
+    EXT_MAP = class_maps['observable-extensions']
 
     try:
         if ext_type in EXT_MAP[observable_type].keys():
