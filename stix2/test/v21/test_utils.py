@@ -241,3 +241,40 @@ def test_find_property_index(object, tuple_to_find, expected_index):
 )
 def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
     assert stix2.serialization._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index
+
+
+# Only 2.1-specific types/behaviors tested here.
+@pytest.mark.parametrize(
+    "type_", [
+        "grouping",
+        "infrastructure",
+        "location",
+        "malware-analysis",
+        "note",
+        "opinion"
+    ]
+)
+def test_is_sdo(type_):
+    assert stix2.utils.is_sdo(type_, "2.1")
+
+    id_ = type_ + "--a12fa04c-6586-4128-8d1a-cfe0d1c081f5"
+    assert stix2.utils.is_sdo(id_, "2.1")
+
+    d = {
+        "type": type_
+    }
+    assert stix2.utils.is_sdo(d, "2.1")
+
+    assert stix2.utils.is_stix_type(
+        type_, "2.1", stix2.utils.STIXTypeClass.SDO
+    )
+
+
+def test_type_checks_language_content():
+    assert stix2.utils.is_object("language-content", "2.1")
+    assert not stix2.utils.is_sdo("language-content", "2.1")
+    assert not stix2.utils.is_sco("language-content", "2.1")
+    assert not stix2.utils.is_sro("language-content", "2.1")
+    assert stix2.utils.is_stix_type(
+        "language-content", "2.1", "language-content"
+    )
