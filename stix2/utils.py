@@ -350,10 +350,6 @@ def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
     :return: True if the type of the given value is an SDO type; False
         if not
     """
-
-    # Eventually this needs to be moved into the stix2 library (and maybe
-    # improved?); see cti-python-stix2 github issue #450.
-
     cls_maps = mappings.get_stix2_class_maps(stix_version)
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["objects"] and type_ not in {
