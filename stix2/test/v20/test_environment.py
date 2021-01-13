@@ -39,15 +39,19 @@ def ds2():
     cam = stix2.v20.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     idy = stix2.v20.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     ind = stix2.v20.Indicator(id=INDICATOR_ID, created_by_ref=idy.id, **INDICATOR_KWARGS)
-    indv2 = ind.new_version(external_references=[{
-        "source_name": "unknown",
-        "url": "https://examplewebsite.com/",
-    }])
+    indv2 = ind.new_version(
+        external_references=[{
+            "source_name": "unknown",
+            "url": "https://examplewebsite.com/",
+        }],
+    )
     mal = stix2.v20.Malware(id=MALWARE_ID, created_by_ref=idy.id, **MALWARE_KWARGS)
-    malv2 = mal.new_version(external_references=[{
-        "source_name": "unknown",
-        "url": "https://examplewebsite2.com/",
-    }])
+    malv2 = mal.new_version(
+        external_references=[{
+            "source_name": "unknown",
+            "url": "https://examplewebsite2.com/",
+        }],
+    )
     rel1 = stix2.v20.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
     rel2 = stix2.v20.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
     rel3 = stix2.v20.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])

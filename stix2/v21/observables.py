@@ -505,13 +505,15 @@ class SocketExt(_Extension):
         ('is_listening', BooleanProperty()),
         ('options', DictionaryProperty(spec_version='2.1')),
         (
-            'socket_type', EnumProperty(allowed=[
-                "SOCK_STREAM",
-                "SOCK_DGRAM",
-                "SOCK_RAW",
-                "SOCK_RDM",
-                "SOCK_SEQPACKET",
-            ]),
+            'socket_type', EnumProperty(
+                allowed=[
+                    "SOCK_STREAM",
+                    "SOCK_DGRAM",
+                    "SOCK_RAW",
+                    "SOCK_RDM",
+                    "SOCK_SEQPACKET",
+                ],
+            ),
         ),
         ('socket_descriptor', IntegerProperty(min=0)),
         ('socket_handle', IntegerProperty()),
@@ -612,12 +614,14 @@ class WindowsProcessExt(_Extension):
         ('window_title', StringProperty()),
         ('startup_info', DictionaryProperty(spec_version='2.1')),
         (
-            'integrity_level', EnumProperty(allowed=[
-                "low",
-                "medium",
-                "high",
-                "system",
-            ]),
+            'integrity_level', EnumProperty(
+                allowed=[
+                    "low",
+                    "medium",
+                    "high",
+                    "system",
+                ],
+            ),
         ),
     ])
 
@@ -634,33 +638,39 @@ class WindowsServiceExt(_Extension):
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
         (
-            'start_type', EnumProperty(allowed=[
-                "SERVICE_AUTO_START",
-                "SERVICE_BOOT_START",
-                "SERVICE_DEMAND_START",
-                "SERVICE_DISABLED",
-                "SERVICE_SYSTEM_ALERT",
-            ]),
+            'start_type', EnumProperty(
+                allowed=[
+                    "SERVICE_AUTO_START",
+                    "SERVICE_BOOT_START",
+                    "SERVICE_DEMAND_START",
+                    "SERVICE_DISABLED",
+                    "SERVICE_SYSTEM_ALERT",
+                ],
+            ),
         ),
         ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version="2.1"))),
         (
-            'service_type', EnumProperty(allowed=[
-                "SERVICE_KERNEL_DRIVER",
-                "SERVICE_FILE_SYSTEM_DRIVER",
-                "SERVICE_WIN32_OWN_PROCESS",
-                "SERVICE_WIN32_SHARE_PROCESS",
-            ]),
+            'service_type', EnumProperty(
+                allowed=[
+                    "SERVICE_KERNEL_DRIVER",
+                    "SERVICE_FILE_SYSTEM_DRIVER",
+                    "SERVICE_WIN32_OWN_PROCESS",
+                    "SERVICE_WIN32_SHARE_PROCESS",
+                ],
+            ),
         ),
         (
-            'service_status', EnumProperty(allowed=[
-                "SERVICE_CONTINUE_PENDING",
-                "SERVICE_PAUSE_PENDING",
-                "SERVICE_PAUSED",
-                "SERVICE_RUNNING",
-                "SERVICE_START_PENDING",
-                "SERVICE_STOP_PENDING",
-                "SERVICE_STOPPED",
-            ]),
+            'service_status', EnumProperty(
+                allowed=[
+                    "SERVICE_CONTINUE_PENDING",
+                    "SERVICE_PAUSE_PENDING",
+                    "SERVICE_PAUSED",
+                    "SERVICE_RUNNING",
+                    "SERVICE_START_PENDING",
+                    "SERVICE_STOP_PENDING",
+                    "SERVICE_STOPPED",
+                ],
+            ),
         ),
     ])
 
@@ -808,21 +818,23 @@ class WindowsRegistryValueType(_STIXBase21):
         ('name', StringProperty()),
         ('data', StringProperty()),
         (
-            'data_type', EnumProperty(allowed=[
-                "REG_NONE",
-                "REG_SZ",
-                "REG_EXPAND_SZ",
-                "REG_BINARY",
-                "REG_DWORD",
-                "REG_DWORD_BIG_ENDIAN",
-                "REG_LINK",
-                "REG_MULTI_SZ",
-                "REG_RESOURCE_LIST",
-                "REG_FULL_RESOURCE_DESCRIPTION",
-                "REG_RESOURCE_REQUIREMENTS_LIST",
-                "REG_QWORD",
-                "REG_INVALID_TYPE",
-            ]),
+            'data_type', EnumProperty(
+                allowed=[
+                    "REG_NONE",
+                    "REG_SZ",
+                    "REG_EXPAND_SZ",
+                    "REG_BINARY",
+                    "REG_DWORD",
+                    "REG_DWORD_BIG_ENDIAN",
+                    "REG_LINK",
+                    "REG_MULTI_SZ",
+                    "REG_RESOURCE_LIST",
+                    "REG_FULL_RESOURCE_DESCRIPTION",
+                    "REG_RESOURCE_REQUIREMENTS_LIST",
+                    "REG_QWORD",
+                    "REG_INVALID_TYPE",
+                ],
+            ),
         ),
     ])
 
@@ -935,13 +947,15 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
 
     """
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [('type', TypeProperty(type, spec_version='2.1'))],
-            [('spec_version', StringProperty(fixed='2.1'))],
-            [('id', IDProperty(type, spec_version='2.1'))],
-            properties,
-            [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
-        ]))
+        _properties = list(
+            itertools.chain.from_iterable([
+                [('type', TypeProperty(type, spec_version='2.1'))],
+                [('spec_version', StringProperty(fixed='2.1'))],
+                [('id', IDProperty(type, spec_version='2.1'))],
+                properties,
+                [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
+            ]),
+        )
         return _custom_observable_builder(cls, type, _properties, '2.1', _Observable, id_contrib_props)
     return wrapper
 

@@ -50,10 +50,12 @@ def test_making_new_version_with_embedded_object():
         **CAMPAIGN_MORE_KWARGS
     )
 
-    campaign_v2 = campaign_v1.new_version(external_references=[{
-            "source_name": "capec",
-            "external_id": "CAPEC-164",
-    }])
+    campaign_v2 = campaign_v1.new_version(
+        external_references=[{
+                "source_name": "capec",
+                "external_id": "CAPEC-164",
+        }],
+    )
 
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.spec_version == campaign_v2.spec_version

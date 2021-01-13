@@ -144,7 +144,7 @@ class ComparisonExpressionTransformer(Transformer):
 
 
 class OrderDedupeTransformer(
-    ComparisonExpressionTransformer
+    ComparisonExpressionTransformer,
 ):
     """
     Canonically order the children of all nodes in the AST.  Because the
@@ -247,7 +247,7 @@ class FlattenTransformer(ComparisonExpressionTransformer):
 
 
 class AbsorptionTransformer(
-    ComparisonExpressionTransformer
+    ComparisonExpressionTransformer,
 ):
     """
     Applies boolean "absorption" rules for AST simplification.  E.g.:

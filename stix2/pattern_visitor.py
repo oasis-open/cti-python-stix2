@@ -261,11 +261,13 @@ class STIXPatternVisitorForSTIX2():
                 property_path.append(self.instantiate("ListObjectPathComponent", current.property_name, next.getText()))
                 i += 2
             elif isinstance(next, IntegerConstant):
-                property_path.append(self.instantiate(
-                    "ListObjectPathComponent",
-                    current.property_name if isinstance(current, BasicObjectPathComponent) else text_type(current),
-                    next.value,
-                ))
+                property_path.append(
+                    self.instantiate(
+                        "ListObjectPathComponent",
+                        current.property_name if isinstance(current, BasicObjectPathComponent) else text_type(current),
+                        next.value,
+                    ),
+                )
                 i += 2
             else:
                 property_path.append(current)
