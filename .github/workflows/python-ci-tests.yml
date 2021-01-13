@@ -1,0 +1,32 @@
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: cti-python-stix2 test harness
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install and update essential dependencies
+      run: |
+        pip install -U pip setuptools
+        pip install tox-gh-actions
+        pip install codecov
+    - name: Test with Tox
+      run: |
+        tox
+    - name: Upload coverage information to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        fail_ci_if_error: true # optional (default = false)
+        verbose: true # optional (default = false)
