@@ -31,7 +31,7 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join(
     pattern_type='stix',
     pattern_version='2.1',
     valid_from='1970-01-01T00:00:01Z'
-""".split()
+""".split(),
 ) + ")"
 
 
