@@ -1180,50 +1180,56 @@ def test_process_example_extensions_empty():
 
 
 def test_process_example_with_WindowsProcessExt_Object():
-    p = stix2.v20.Process(extensions={
-        "windows-process-ext": stix2.v20.WindowsProcessExt(
-            aslr_enabled=True,
-            dep_enabled=True,
-            priority="HIGH_PRIORITY_CLASS",
-            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
-        ),   # noqa
-    })
+    p = stix2.v20.Process(
+        extensions={
+            "windows-process-ext": stix2.v20.WindowsProcessExt(
+                aslr_enabled=True,
+                dep_enabled=True,
+                priority="HIGH_PRIORITY_CLASS",
+                owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
+            ),   # noqa
+        },
+    )
 
     assert p.extensions["windows-process-ext"].dep_enabled
     assert p.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_process_example_with_WindowsServiceExt():
-    p = stix2.v20.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v20.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
         },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
 
 
 def test_process_example_with_WindowsProcessServiceExt():
-    p = stix2.v20.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v20.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
+            "windows-process-ext": {
+                "aslr_enabled": True,
+                "dep_enabled": True,
+                "priority": "HIGH_PRIORITY_CLASS",
+                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
+            },
         },
-        "windows-process-ext": {
-            "aslr_enabled": True,
-            "dep_enabled": True,
-            "priority": "HIGH_PRIORITY_CLASS",
-            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
-        },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"

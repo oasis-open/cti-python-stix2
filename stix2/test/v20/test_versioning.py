@@ -46,10 +46,12 @@ def test_making_new_version_with_embedded_object():
         **CAMPAIGN_MORE_KWARGS
     )
 
-    campaign_v2 = campaign_v1.new_version(external_references=[{
-            "source_name": "capec",
-            "external_id": "CAPEC-164",
-    }])
+    campaign_v2 = campaign_v1.new_version(
+        external_references=[{
+                "source_name": "capec",
+                "external_id": "CAPEC-164",
+        }],
+    )
 
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.created_by_ref == campaign_v2.created_by_ref
@@ -237,8 +239,10 @@ def test_remove_custom_stix_property():
     mal_nc = stix2.versioning.remove_custom_stix(mal)
 
     assert "x_custom" not in mal_nc
-    assert (stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") <
-            stix2.utils.parse_into_datetime(mal_nc["modified"], precision="millisecond"))
+    assert (
+        stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") <
+        stix2.utils.parse_into_datetime(mal_nc["modified"], precision="millisecond")
+    )
 
 
 def test_remove_custom_stix_object():

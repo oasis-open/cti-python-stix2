@@ -247,9 +247,11 @@ class ListProperty(Property):
                     valid = self.contained(**item)
 
                 else:
-                    raise ValueError("Can't create a {} out of {}".format(
-                        self.contained._type, str(item),
-                    ))
+                    raise ValueError(
+                        "Can't create a {} out of {}".format(
+                            self.contained._type, str(item),
+                        ),
+                    )
 
                 result.append(valid)
 
@@ -688,8 +690,10 @@ class STIXObjectProperty(Property):
     def clean(self, value):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
-        if any(x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
-               for x in get_class_hierarchy_names(value)):
+        if any(
+            x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
+            for x in get_class_hierarchy_names(value)
+        ):
             # A simple "is this a spec version 2.1+ object" test.  For now,
             # limit 2.0 bundles to 2.0 objects.  It's not possible yet to
             # have validation co-constraints among properties, e.g. have

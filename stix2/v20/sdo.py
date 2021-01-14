@@ -356,23 +356,25 @@ def CustomObject(type='x-custom-type', properties=None):
 
     """
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [
-                ('type', TypeProperty(type, spec_version='2.0')),
-                ('id', IDProperty(type, spec_version='2.0')),
-                ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
-                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-            ],
-            [x for x in properties if not x[0].startswith('x_')],
-            [
-                ('revoked', BooleanProperty(default=lambda: False)),
-                ('labels', ListProperty(StringProperty)),
-                ('external_references', ListProperty(ExternalReference)),
-                ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
-                ('granular_markings', ListProperty(GranularMarking)),
-            ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-        ]))
+        _properties = list(
+            itertools.chain.from_iterable([
+                [
+                    ('type', TypeProperty(type, spec_version='2.0')),
+                    ('id', IDProperty(type, spec_version='2.0')),
+                    ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
+                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                    ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+                ],
+                [x for x in properties if not x[0].startswith('x_')],
+                [
+                    ('revoked', BooleanProperty(default=lambda: False)),
+                    ('labels', ListProperty(StringProperty)),
+                    ('external_references', ListProperty(ExternalReference)),
+                    ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
+                    ('granular_markings', ListProperty(GranularMarking)),
+                ],
+                sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
+            ]),
+        )
         return _custom_object_builder(cls, type, _properties, '2.0', _DomainObject)
     return wrapper

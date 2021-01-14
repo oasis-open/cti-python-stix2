@@ -186,8 +186,10 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX observable object, just returned as is
             return obj
-        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
-                         "use the CustomObservable decorator." % obj['type'])
+        raise ParseError(
+            "Can't parse unknown observable type '%s'! For custom observables, "
+            "use the CustomObservable decorator." % obj['type'],
+        )
 
     return obj_class(allow_custom=allow_custom, **obj)
 
@@ -283,8 +285,12 @@ def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
                     "'%s' is named like an object reference property but "
                     "is not an ObjectReferenceProperty." % prop_name,
                 )
-            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
-                                                   'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+            elif (
+                prop_name.endswith('_refs') and (
+                    'ListProperty' not in get_class_hierarchy_names(prop) or
+                    'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained)
+                )
+            ):
                 raise ValueError(
                     "'%s' is named like an object reference list property but "
                     "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
@@ -299,8 +305,12 @@ def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
                     "'%s' is named like a reference property but "
                     "is not a ReferenceProperty." % prop_name,
                 )
-            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
-                                                   'ReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+            elif (
+                prop_name.endswith('_refs') and (
+                    'ListProperty' not in get_class_hierarchy_names(prop) or
+                    'ReferenceProperty' not in get_class_hierarchy_names(prop.contained)
+                )
+            ):
                 raise ValueError(
                     "'%s' is named like a reference list property but "
                     "is not a ListProperty containing ReferenceProperty." % prop_name,

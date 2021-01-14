@@ -71,7 +71,7 @@ def test_parse_datetime_invalid(ts):
         {"a": 1},
         '{"a": 1}',
         StringIO(u'{"a": 1}'),
-        [("a", 1,)],
+        [("a", 1)],
     ],
 )
 def test_get_dict(data):
