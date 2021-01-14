@@ -31,18 +31,15 @@ def _register_object(new_type, version=DEFAULT_VERSION):
 
     properties = new_type._properties
 
+    if not version:
+        version = DEFAULT_VERSION
+
     if version == "2.1":
         for prop_name, prop in properties.items():
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character" % prop_name)
 
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP = registry.STIX2_OBJ_MAPS[v]['objects']
+    OBJ_MAP = registry.STIX2_OBJ_MAPS[version]['objects']
     if new_type._type in OBJ_MAP.keys():
         raise DuplicateRegistrationError("STIX Object", new_type._type)
     OBJ_MAP[new_type._type] = new_type
@@ -61,6 +58,9 @@ def _register_marking(new_marking, version=DEFAULT_VERSION):
     mark_type = new_marking._type
     properties = new_marking._properties
 
+    if not version:
+        version = DEFAULT_VERSION
+
     _validate_type(mark_type, version)
 
     if version == "2.1":
@@ -68,9 +68,7 @@ def _register_marking(new_marking, version=DEFAULT_VERSION):
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
-    class_maps = registry.get_stix2_class_maps(
-        version or DEFAULT_VERSION
-    )
+    class_maps = registry.get_stix2_class_maps(version)
 
     OBJ_MAP_MARKING = class_maps['markings']
     if mark_type in OBJ_MAP_MARKING.keys():
@@ -88,6 +86,9 @@ def _register_observable(new_observable, version=DEFAULT_VERSION):
 
     """
     properties = new_observable._properties
+
+    if not version:
+        version = stix2.DEFAULT_VERSION
 
     if version == "2.0":
         # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
@@ -128,9 +129,7 @@ def _register_observable(new_observable, version=DEFAULT_VERSION):
                     "is not a ListProperty containing ReferenceProperty." % prop_name,
                 )
 
-    class_maps = registry.get_stix2_class_maps(
-        version or DEFAULT_VERSION
-    )
+    class_maps = registry.get_stix2_class_maps(version)
 
     OBJ_MAP_OBSERVABLE = class_maps['observables']
     if new_observable._type in OBJ_MAP_OBSERVABLE.keys():

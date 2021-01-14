@@ -503,14 +503,14 @@ class ReferenceProperty(Property):
         possible_prefix = value[:value.index('--')]
 
         if self.valid_types:
-            ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
+            ref_valid_types = enumerate_types(self.valid_types, self.spec_version)
 
             if possible_prefix in ref_valid_types:
                 required_prefix = possible_prefix
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
         elif self.invalid_types:
-            ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
+            ref_invalid_types = enumerate_types(self.invalid_types, self.spec_version)
 
             if possible_prefix not in ref_invalid_types:
                 required_prefix = possible_prefix
@@ -655,9 +655,7 @@ class ExtensionsProperty(DictionaryProperty):
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
 
-        v = 'v' + self.spec_version.replace('.', '')
-
-        specific_type_map = STIX2_OBJ_MAPS[v]['observable-extensions'].get(self.enclosing_type, {})
+        specific_type_map = STIX2_OBJ_MAPS[self.spec_version]['observable-extensions'].get(self.enclosing_type, {})
         for key, subvalue in dictified.items():
             if key in specific_type_map:
                 cls = specific_type_map[key]

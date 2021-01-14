@@ -75,7 +75,7 @@ def _is_versionable(data):
 
     is_versionable = False
     is_21 = False
-    stix_vid = None
+    stix_version = None
 
     if isinstance(data, Mapping):
 
@@ -87,8 +87,8 @@ def _is_versionable(data):
             # (is_21 means 2.1 or later; try not to be 2.1-specific)
             is_21 = True
         elif isinstance(data, dict):
-            stix_vid = stix2.parsing._detect_spec_version(data)
-            is_21 = stix_vid != "v20"
+            stix_version = stix2.parsing._detect_spec_version(data)
+            is_21 = stix_version != "2.0"
 
         # Then, determine versionability.
 
@@ -110,7 +110,7 @@ def _is_versionable(data):
         # registered class, and from that get a more complete picture of its
         # properties.
         elif isinstance(data, dict):
-            class_maps = stix2.registry.STIX2_OBJ_MAPS[stix_vid]
+            class_maps = stix2.registry.STIX2_OBJ_MAPS[stix_version]
             obj_type = data["type"]
 
             if obj_type in class_maps["objects"]:
