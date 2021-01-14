@@ -42,17 +42,3 @@ def _collect_stix2_mappings():
                 ver = _stix_vid_to_version(stix_vid)
                 mod = importlib.import_module(name, str(top_level_module.__name__))
                 STIX2_OBJ_MAPS[ver]['markings'] = mod.OBJ_MAP_MARKING
-
-
-def get_stix2_class_maps(stix_version):
-    """
-    Get the stix2 class mappings for the given STIX version.
-
-    :param stix_version: A STIX version as a string
-    :return: The class mappings.  This will be a dict mapping from some general
-        category name, e.g. "object" to another mapping from STIX type
-        to a stix2 class.
-    """
-    cls_maps = STIX2_OBJ_MAPS[stix_version]
-
-    return cls_maps

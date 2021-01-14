@@ -350,7 +350,7 @@ def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
     :return: True if the type of the given value is an SDO type; False
         if not
     """
-    cls_maps = mappings.get_stix2_class_maps(stix_version)
+    cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["objects"] and type_ not in {
         "relationship", "sighting", "marking-definition", "bundle",
@@ -370,7 +370,7 @@ def is_sco(value, stix_version=stix2.DEFAULT_VERSION):
     :return: True if the type of the given value is an SCO type; False
         if not
     """
-    cls_maps = mappings.get_stix2_class_maps(stix_version)
+    cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["observables"]
 
@@ -406,7 +406,7 @@ def is_object(value, stix_version=stix2.DEFAULT_VERSION):
     :return: True if the type of the given value is a valid STIX type with
         respect to the given STIX version; False if not
     """
-    cls_maps = mappings.get_stix2_class_maps(stix_version)
+    cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
     type_ = _stix_type_of(value)
     result = type_ in cls_maps["observables"] or type_ in cls_maps["objects"]
 
