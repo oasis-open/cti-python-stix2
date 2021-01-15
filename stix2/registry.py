@@ -2,7 +2,6 @@ import importlib
 import pkgutil
 import re
 
-
 # Collects information on which classes implement which STIX types, for the
 # various STIX spec versions.
 STIX2_OBJ_MAPS = {}

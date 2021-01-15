@@ -24,8 +24,6 @@
 
 # flake8: noqa
 
-from .version import DEFAULT_VERSION
-
 from .confidence import scales
 from .datastore import CompositeDataSource
 from .datastore.filesystem import (
@@ -57,9 +55,9 @@ from .patterns import (
     RepeatQualifier, StartStopQualifier, StringConstant, TimestampConstant,
     WithinQualifier,
 )
+from .registry import _collect_stix2_mappings
 from .v21 import *  # This import will always be the latest STIX 2.X version
-from .version import __version__
+from .version import DEFAULT_VERSION, __version__
 from .versioning import new_version, revoke
 
-from .registry import _collect_stix2_mappings
 _collect_stix2_mappings()

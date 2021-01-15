@@ -2,6 +2,7 @@ import re
 
 import stix2
 import stix2.registry
+
 from .base import _DomainObject, _Observable
 from .exceptions import DuplicateRegistrationError
 from .utils import PREFIX_21_REGEX, get_class_hierarchy_names

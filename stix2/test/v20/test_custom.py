@@ -2,8 +2,8 @@ import pytest
 
 import stix2
 import stix2.parsing
-import stix2.registry
 import stix2.registration
+import stix2.registry
 import stix2.v20
 
 from ...exceptions import DuplicateRegistrationError, InvalidValueError
