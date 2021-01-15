@@ -2,7 +2,7 @@
 
 import copy
 
-import stix2.registry
+from . import registry
 from .exceptions import ParseError
 from .utils import _get_dict
 
@@ -72,7 +72,7 @@ def _detect_spec_version(stix_dict):
                 _detect_spec_version(obj) for obj in stix_dict["objects"]
             ),
         )
-    elif obj_type in stix2.registry.STIX2_OBJ_MAPS["v21"]["observables"]:
+    elif obj_type in registry.STIX2_OBJ_MAPS["v21"]["observables"]:
         # Non-bundle object with an ID and without spec_version.  Could be a
         # 2.1 SCO or 2.0 SDO/SRO/marking.  Check for 2.1 SCO...
         v = "v21"
@@ -122,8 +122,8 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         v = _detect_spec_version(stix_dict)
 
     OBJ_MAP = dict(
-        stix2.registry.STIX2_OBJ_MAPS[v]['objects'],
-        **stix2.registry.STIX2_OBJ_MAPS[v]['observables']
+        registry.STIX2_OBJ_MAPS[v]['objects'],
+        **registry.STIX2_OBJ_MAPS[v]['observables']
     )
 
     try:
@@ -175,7 +175,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
         v = _detect_spec_version(obj)
 
     try:
-        OBJ_MAP_OBSERVABLE = stix2.registry.STIX2_OBJ_MAPS[v]['observables']
+        OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
         obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
     except KeyError:
         if allow_custom:
