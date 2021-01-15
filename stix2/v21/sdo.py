@@ -837,28 +837,30 @@ def CustomObject(type='x-custom-type', properties=None, extension_name=None):
     """
     def wrapper(cls):
         extension_properties = [x for x in properties if not x[0].startswith('x_')]
-        _properties = list(itertools.chain.from_iterable([
-            [
-                ('type', TypeProperty(type, spec_version='2.1')),
-                ('spec_version', StringProperty(fixed='2.1')),
-                ('id', IDProperty(type, spec_version='2.1')),
-                ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-            ],
-            extension_properties,
-            [
-                ('revoked', BooleanProperty(default=lambda: False)),
-                ('labels', ListProperty(StringProperty)),
-                ('confidence', IntegerProperty()),
-                ('lang', StringProperty()),
-                ('external_references', ListProperty(ExternalReference)),
-                ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-                ('granular_markings', ListProperty(GranularMarking)),
-                ('extensions', ExtensionsProperty(spec_version='2.1')),
-            ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-        ]))
+        _properties = list(
+            itertools.chain.from_iterable([
+                [
+                    ('type', TypeProperty(type, spec_version='2.1')),
+                    ('spec_version', StringProperty(fixed='2.1')),
+                    ('id', IDProperty(type, spec_version='2.1')),
+                    ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+                    ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+                ],
+                extension_properties,
+                [
+                    ('revoked', BooleanProperty(default=lambda: False)),
+                    ('labels', ListProperty(StringProperty)),
+                    ('confidence', IntegerProperty()),
+                    ('lang', StringProperty()),
+                    ('external_references', ListProperty(ExternalReference)),
+                    ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+                    ('granular_markings', ListProperty(GranularMarking)),
+                    ('extensions', ExtensionsProperty(spec_version='2.1')),
+                ],
+                sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
+            ]),
+        )
         if extension_name:
             @observables.CustomExtension(type=extension_name, properties=extension_properties)
             class NameExtension:

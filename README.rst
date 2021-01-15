@@ -163,8 +163,8 @@ questions about TC Open Repository participation to OASIS Staff at
 repository-admin@oasis-open.org and any specific CLA-related questions
 to repository-cla@oasis-open.org.
 
-.. |Build_Status| image:: https://travis-ci.org/oasis-open/cti-python-stix2.svg?branch=master
-   :target: https://travis-ci.org/oasis-open/cti-python-stix2
+.. |Build_Status| image:: https://github.com/oasis-open/cti-python-stix2/workflows/cti-python-stix2%20test%20harness/badge.svg
+   :target: https://github.com/oasis-open/cti-python-stix2/actions?query=workflow%3A%22cti-python-stix2+test+harness%22
    :alt: Build Status
 .. |Coverage| image:: https://codecov.io/gh/oasis-open/cti-python-stix2/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/oasis-open/cti-python-stix2

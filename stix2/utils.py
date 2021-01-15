@@ -71,9 +71,11 @@ def _to_enum(value, enum_type, enum_default=None):
         elif isinstance(value, six.string_types):
             value = enum_type[value.upper()]
         else:
-            raise TypeError("Not a valid {}: {}".format(
-                enum_type.__name__, value,
-            ))
+            raise TypeError(
+                "Not a valid {}: {}".format(
+                    enum_type.__name__, value,
+                ),
+            )
 
     return value
 

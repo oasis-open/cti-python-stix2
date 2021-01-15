@@ -20,7 +20,8 @@ EXPECTED_INDICATOR = """{
     "valid_from": "1970-01-01T00:00:01Z"
 }"""
 
-EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
+EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join(
+    """
     type='indicator',
     spec_version='2.1',
     id='indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7',
@@ -30,7 +31,8 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
     pattern_type='stix',
     pattern_version='2.1',
     valid_from='1970-01-01T00:00:01Z'
-""".split()) + ")"
+""".split(),
+) + ")"
 
 
 def test_indicator_with_all_required_properties():

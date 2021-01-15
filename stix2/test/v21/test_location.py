@@ -19,14 +19,16 @@ EXPECTED_LOCATION_1 = """{
     "longitude": 2.3522
 }"""
 
-EXPECTED_LOCATION_1_REPR = "Location(" + " ".join("""
+EXPECTED_LOCATION_1_REPR = "Location(" + " ".join(
+    """
     type='location',
     spec_version='2.1',
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
     latitude=48.8566,
-    longitude=2.3522""".split()) + ")"
+    longitude=2.3522""".split(),
+) + ")"
 
 EXPECTED_LOCATION_2 = """{
     "type": "location",
@@ -38,13 +40,15 @@ EXPECTED_LOCATION_2 = """{
 }
 """
 
-EXPECTED_LOCATION_2_REPR = "Location(" + " ".join("""
+EXPECTED_LOCATION_2_REPR = "Location(" + " ".join(
+    """
     type='location',
     spec_version='2.1',
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
-    region='north-america'""".split()) + ")"
+    region='north-america'""".split(),
+) + ")"
 
 
 def test_location_with_some_required_properties():
