@@ -151,7 +151,7 @@ def test_marking_definition_missing_definition():
         'spec_version': '2.1',
         'id': 'marking-definition--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
         'name': 'This is the name of my favorite Marking',
-        'definition_type': 'foobar'
+        'definition_type': 'foobar',
     }
     with pytest.raises(exceptions.PropertyPresenceError):
         parse(my_favorite_marking)
@@ -164,8 +164,8 @@ def test_marking_definition_missing_definition_type():
         'id': 'marking-definition--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
         'name': 'This is the name of my favorite Marking',
         'definition': {
-            'some_type': 'foobar'
-        }
+            'some_type': 'foobar',
+        },
     }
     with pytest.raises(exceptions.InvalidValueError):
         parse(my_favorite_marking)
