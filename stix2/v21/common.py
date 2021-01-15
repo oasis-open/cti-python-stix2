@@ -226,16 +226,11 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
         definition = self.get("definition")
         definition_type = self.get("definition_type")
         extensions = self.get("extensions")
-        if not extensions and not definition:
+
+        if not (definition_type and definition) and not extensions:
             raise PropertyPresenceError(
-                "MarkingDefinition objects must have the property 'definition' "
-                "if 'extensions' is not present",
-                MarkingDefinition,
-            )
-        if not extensions and not definition_type:
-            raise PropertyPresenceError(
-                "MarkingDefinition objects must have the property 'definition_type' "
-                "if 'extensions' is not present",
+                "MarkingDefinition objects must have the properties "
+                "'definition_type' and 'definition' if 'extensions' is not present",
                 MarkingDefinition,
             )
 
