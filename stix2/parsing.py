@@ -182,7 +182,9 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX observable object, just returned as is
             return obj
-        raise ParseError("Can't parse unknown observable type '%s'! For custom observables, "
-                         "use the CustomObservable decorator." % obj['type'])
+        raise ParseError(
+            "Can't parse unknown observable type '%s'! For custom observables, "
+            "use the CustomObservable decorator." % obj['type'],
+        )
 
     return obj_class(allow_custom=allow_custom, **obj)

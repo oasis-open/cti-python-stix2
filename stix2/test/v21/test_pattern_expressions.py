@@ -444,10 +444,12 @@ def test_multiple_qualifiers():
 
 
 def test_set_op():
-    exp = stix2.ObservationExpression(stix2.IsSubsetComparisonExpression(
-        "network-traffic:dst_ref.value",
-        "2001:0db8:dead:beef:0000:0000:0000:0000/64",
-    ))
+    exp = stix2.ObservationExpression(
+        stix2.IsSubsetComparisonExpression(
+            "network-traffic:dst_ref.value",
+            "2001:0db8:dead:beef:0000:0000:0000:0000/64",
+        ),
+    )
     assert str(exp) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
 
 
@@ -712,12 +714,12 @@ def test_parsing_boolean():
 
 
 def test_parsing_mixed_boolean_expression_1():
-    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]",)
+    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]")
     assert str(patt_obj) == "[a:b = 1 AND a:b = 2 OR a:b = 3]"
 
 
 def test_parsing_mixed_boolean_expression_2():
-    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]",)
+    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]")
     assert str(patt_obj) == "[a:b = 1 OR a:b = 2 AND a:b = 3]"
 
 

@@ -496,12 +496,14 @@ def test_parse_email_message_not_multipart(data):
 def test_parse_file_archive(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
-    assert all(x in odata.objects["3"].extensions['archive-ext'].contains_refs
-               for x in [
-                   "file--ecd47d73-15e4-5250-afda-ef8897b22340",
-                   "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
-                   "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
-               ])
+    assert all(
+        x in odata.objects["3"].extensions['archive-ext'].contains_refs
+        for x in [
+            "file--ecd47d73-15e4-5250-afda-ef8897b22340",
+            "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
+            "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
+        ]
+    )
 
 
 @pytest.mark.parametrize(
@@ -904,14 +906,14 @@ def test_file_with_archive_ext_object():
     f_obj = stix2.v21.File(
         name="foo", extensions={
             "archive-ext": {
-                "contains_refs": [ad, ],
+                "contains_refs": [ad],
             },
         },
     )
     f_ref = stix2.v21.File(
         name="foo", extensions={
             "archive-ext": {
-                "contains_refs": [ad.id, ],
+                "contains_refs": [ad.id],
             },
         },
     )
@@ -1229,9 +1231,11 @@ def test_process_example_empty_error():
 
 def test_process_example_empty_with_extensions():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.v21.Process(extensions={
-            "windows-process-ext": {},
-        })
+        stix2.v21.Process(
+            extensions={
+                "windows-process-ext": {},
+            },
+        )
 
     assert excinfo.value.cls == stix2.v21.Process
 
@@ -1276,50 +1280,56 @@ def test_process_example_extensions_empty():
 
 
 def test_process_example_with_WindowsProcessExt_Object():
-    p = stix2.v21.Process(extensions={
-        "windows-process-ext": stix2.v21.WindowsProcessExt(
-            aslr_enabled=True,
-            dep_enabled=True,
-            priority="HIGH_PRIORITY_CLASS",
-            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
-        ),   # noqa
-    })
+    p = stix2.v21.Process(
+        extensions={
+            "windows-process-ext": stix2.v21.WindowsProcessExt(
+                aslr_enabled=True,
+                dep_enabled=True,
+                priority="HIGH_PRIORITY_CLASS",
+                owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
+            ),   # noqa
+        },
+    )
 
     assert p.extensions["windows-process-ext"].dep_enabled
     assert p.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_process_example_with_WindowsServiceExt():
-    p = stix2.v21.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v21.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
         },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
 
 
 def test_process_example_with_WindowsProcessServiceExt():
-    p = stix2.v21.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v21.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
+            "windows-process-ext": {
+                "aslr_enabled": True,
+                "dep_enabled": True,
+                "priority": "HIGH_PRIORITY_CLASS",
+                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
+            },
         },
-        "windows-process-ext": {
-            "aslr_enabled": True,
-            "dep_enabled": True,
-            "priority": "HIGH_PRIORITY_CLASS",
-            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
-        },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"

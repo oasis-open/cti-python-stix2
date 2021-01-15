@@ -75,8 +75,10 @@ class _ObjectFamily(object):
 
     def add(self, obj):
         self.all_versions[obj["modified"]] = obj
-        if (self.latest_version is None or
-                obj["modified"] > self.latest_version["modified"]):
+        if (
+            self.latest_version is None or
+            obj["modified"] > self.latest_version["modified"]
+        ):
             self.latest_version = obj
 
     def __str__(self):
@@ -188,11 +190,13 @@ class MemorySink(DataSink):
     def save_to_file(self, path, encoding="utf-8"):
         path = os.path.abspath(path)
 
-        all_objs = list(itertools.chain.from_iterable(
-            value.all_versions.values() if isinstance(value, _ObjectFamily)
-            else [value]
-            for value in self._data.values()
-        ))
+        all_objs = list(
+            itertools.chain.from_iterable(
+                value.all_versions.values() if isinstance(value, _ObjectFamily)
+                else [value]
+                for value in self._data.values()
+            ),
+        )
 
         if any("spec_version" in x for x in all_objs):
             bundle = v21.Bundle(all_objs, allow_custom=self.allow_custom)

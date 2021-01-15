@@ -1,14 +1,14 @@
 import re
 
-import stix2
-import stix2.registry
-
+from . import registry
 from .base import _DomainObject, _Observable
 from .exceptions import DuplicateRegistrationError
+from .properties import _validate_type
 from .utils import PREFIX_21_REGEX, get_class_hierarchy_names
+from .version import DEFAULT_VERSION
 
 
-def _register_object(new_type, version=stix2.DEFAULT_VERSION):
+def _register_object(new_type, version=DEFAULT_VERSION):
     """Register a custom STIX Object type.
 
     Args:
@@ -40,15 +40,15 @@ def _register_object(new_type, version=stix2.DEFAULT_VERSION):
         v = 'v' + version.replace('.', '')
     else:
         # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+        v = 'v' + DEFAULT_VERSION.replace('.', '')
 
-    OBJ_MAP = stix2.registry.STIX2_OBJ_MAPS[v]['objects']
+    OBJ_MAP = registry.STIX2_OBJ_MAPS[v]['objects']
     if new_type._type in OBJ_MAP.keys():
         raise DuplicateRegistrationError("STIX Object", new_type._type)
     OBJ_MAP[new_type._type] = new_type
 
 
-def _register_marking(new_marking, version=stix2.DEFAULT_VERSION):
+def _register_marking(new_marking, version=DEFAULT_VERSION):
     """Register a custom STIX Marking Definition type.
 
     Args:
@@ -61,7 +61,7 @@ def _register_marking(new_marking, version=stix2.DEFAULT_VERSION):
     mark_type = new_marking._type
     properties = new_marking._properties
 
-    stix2.properties._validate_type(mark_type, version)
+    _validate_type(mark_type, version)
 
     if version == "2.1":
         for prop_name, prop_value in properties.items():
@@ -72,15 +72,15 @@ def _register_marking(new_marking, version=stix2.DEFAULT_VERSION):
         v = 'v' + version.replace('.', '')
     else:
         # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+        v = 'v' + DEFAULT_VERSION.replace('.', '')
 
-    OBJ_MAP_MARKING = stix2.registry.STIX2_OBJ_MAPS[v]['markings']
+    OBJ_MAP_MARKING = registry.STIX2_OBJ_MAPS[v]['markings']
     if mark_type in OBJ_MAP_MARKING.keys():
         raise DuplicateRegistrationError("STIX Marking", mark_type)
     OBJ_MAP_MARKING[mark_type] = new_marking
 
 
-def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
+def _register_observable(new_observable, version=DEFAULT_VERSION):
     """Register a custom STIX Cyber Observable type.
 
     Args:
@@ -99,8 +99,12 @@ def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
                     "'%s' is named like an object reference property but "
                     "is not an ObjectReferenceProperty." % prop_name,
                 )
-            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
-                                                   'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+            elif (
+                prop_name.endswith('_refs') and (
+                    'ListProperty' not in get_class_hierarchy_names(prop) or
+                    'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained)
+                )
+            ):
                 raise ValueError(
                     "'%s' is named like an object reference list property but "
                     "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
@@ -115,8 +119,12 @@ def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
                     "'%s' is named like a reference property but "
                     "is not a ReferenceProperty." % prop_name,
                 )
-            elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
-                                                   'ReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
+            elif (
+                prop_name.endswith('_refs') and (
+                    'ListProperty' not in get_class_hierarchy_names(prop) or
+                    'ReferenceProperty' not in get_class_hierarchy_names(prop.contained)
+                )
+            ):
                 raise ValueError(
                     "'%s' is named like a reference list property but "
                     "is not a ListProperty containing ReferenceProperty." % prop_name,
@@ -126,16 +134,16 @@ def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
         v = 'v' + version.replace('.', '')
     else:
         # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
+        v = 'v' + DEFAULT_VERSION.replace('.', '')
 
-    OBJ_MAP_OBSERVABLE = stix2.registry.STIX2_OBJ_MAPS[v]['observables']
+    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
     if new_observable._type in OBJ_MAP_OBSERVABLE.keys():
         raise DuplicateRegistrationError("Cyber Observable", new_observable._type)
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 
 def _register_observable_extension(
-    observable, new_extension, version=stix2.DEFAULT_VERSION,
+    observable, new_extension, version=DEFAULT_VERSION,
 ):
     """Register a custom extension to a STIX Cyber Observable type.
 
@@ -155,7 +163,7 @@ def _register_observable_extension(
     if not issubclass(obs_class, _Observable):
         raise ValueError("'observable' must be a valid Observable class!")
 
-    stix2.properties._validate_type(ext_type, version)
+    _validate_type(ext_type, version)
 
     if not new_extension._properties:
         raise ValueError(
@@ -184,8 +192,8 @@ def _register_observable_extension(
             "created with the @CustomObservable decorator.",
         )
 
-    OBJ_MAP_OBSERVABLE = stix2.registry.STIX2_OBJ_MAPS[v]['observables']
-    EXT_MAP = stix2.registry.STIX2_OBJ_MAPS[v]['observable-extensions']
+    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
+    EXT_MAP = registry.STIX2_OBJ_MAPS[v]['observable-extensions']
 
     try:
         if ext_type in EXT_MAP[observable_type].keys():

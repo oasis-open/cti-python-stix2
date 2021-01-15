@@ -152,9 +152,11 @@ class ObservationExpressionTransformer(Transformer):
             changed = True
 
         else:
-            raise TypeError("Not an observation expression: {}: {}".format(
-                type(ast).__name__, str(ast),
-            ))
+            raise TypeError(
+                "Not an observation expression: {}: {}".format(
+                    type(ast).__name__, str(ast),
+                ),
+            )
 
         return result, changed
 
@@ -229,7 +231,7 @@ class FlattenTransformer(ObservationExpressionTransformer):
 
 
 class OrderDedupeTransformer(
-    ObservationExpressionTransformer
+    ObservationExpressionTransformer,
 ):
     """
     Canonically order AND/OR expressions, and dedupe ORs.  E.g.:
@@ -272,7 +274,7 @@ class OrderDedupeTransformer(
 
 
 class AbsorptionTransformer(
-    ObservationExpressionTransformer
+    ObservationExpressionTransformer,
 ):
     """
     Applies boolean "absorption" rules for observation expressions, for AST
@@ -479,7 +481,7 @@ class DNFTransformer(ObservationExpressionTransformer):
 
 
 class CanonicalizeComparisonExpressionsTransformer(
-    ObservationExpressionTransformer
+    ObservationExpressionTransformer,
 ):
     """
     Canonicalize all comparison expressions.

@@ -306,10 +306,12 @@ def test_multiple_qualifiers():
 
 
 def test_set_op():
-    exp = stix2.ObservationExpression(stix2.IsSubsetComparisonExpression(
-        "network-traffic:dst_ref.value",
-        "2001:0db8:dead:beef:0000:0000:0000:0000/64",
-    ))
+    exp = stix2.ObservationExpression(
+        stix2.IsSubsetComparisonExpression(
+            "network-traffic:dst_ref.value",
+            "2001:0db8:dead:beef:0000:0000:0000:0000/64",
+        ),
+    )
     assert str(exp) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
 
 

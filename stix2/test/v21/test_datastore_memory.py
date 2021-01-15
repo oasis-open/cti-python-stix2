@@ -191,11 +191,13 @@ def test_memory_source_get_nonexistant_object(mem_source):
 
 def test_memory_store_all_versions(mem_store):
     # Add bundle of items to sink
-    mem_store.add(dict(
-        id="bundle--%s" % make_id(),
-        objects=STIX_OBJS2,
-        type="bundle",
-    ))
+    mem_store.add(
+        dict(
+            id="bundle--%s" % make_id(),
+            objects=STIX_OBJS2,
+            type="bundle",
+        ),
+    )
 
     resp = mem_store.all_versions("indicator--00000000-0000-4000-8000-000000000001")
     assert len(resp) == 3

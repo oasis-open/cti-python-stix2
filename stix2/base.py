@@ -164,8 +164,10 @@ class _STIXBase(Mapping):
         defaulted = []
         for name, prop in self._properties.items():
             try:
-                if (not prop.required and not hasattr(prop, '_fixed_value') and
-                        prop.default() == setting_kwargs[name]):
+                if (
+                    not prop.required and not hasattr(prop, '_fixed_value') and
+                    prop.default() == setting_kwargs[name]
+                ):
                     defaulted.append(name)
             except (AttributeError, KeyError):
                 continue
@@ -194,8 +196,10 @@ class _STIXBase(Mapping):
         unpickling = '_inner' not in self.__dict__
         if not unpickling and name in self:
             return self.__getitem__(name)
-        raise AttributeError("'%s' object has no attribute '%s'" %
-                             (self.__class__.__name__, name))
+        raise AttributeError(
+            "'%s' object has no attribute '%s'" %
+            (self.__class__.__name__, name),
+        )
 
     def __setattr__(self, name, value):
         if not name.startswith("_"):

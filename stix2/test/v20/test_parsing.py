@@ -2,8 +2,7 @@ from collections import OrderedDict
 
 import pytest
 
-import stix2
-from stix2 import exceptions, parsing, registration, registry
+from stix2 import DEFAULT_VERSION, exceptions, parsing, registration, registry
 
 BUNDLE = {
     "type": "bundle",
@@ -59,7 +58,7 @@ def test_parse_observable_with_version():
     assert v in str(obs_obj.__class__)
 
 
-@pytest.mark.xfail(reason="The default version is no longer 2.0", condition=stix2.DEFAULT_VERSION != "2.0")
+@pytest.mark.xfail(reason="The default version is no longer 2.0", condition=DEFAULT_VERSION != "2.0")
 def test_parse_observable_with_no_version():
     observable = {"type": "file", "name": "foo.exe"}
     obs_obj = parsing.parse_observable(observable)
