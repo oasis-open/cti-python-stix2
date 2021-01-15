@@ -379,7 +379,7 @@ def is_sco(value, stix_version=stix2.DEFAULT_VERSION):
 
 def is_sro(value, stix_version=stix2.DEFAULT_VERSION):
     """
-    Determine whether the given object, type, or ID is/is for an SCO.
+    Determine whether the given object, type, or ID is/is for an SRO.
 
     :param value: A mapping with a "type" property, or a STIX ID or type
         as a string
