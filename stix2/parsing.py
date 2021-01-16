@@ -71,7 +71,7 @@ def _detect_spec_version(stix_dict):
                 _detect_spec_version(obj) for obj in stix_dict["objects"]
             ),
         )
-    elif obj_type in registry.STIX2_OBJ_MAPS["v21"]["observables"]:
+    elif obj_type in registry.STIX2_OBJ_MAPS["2.1"]["observables"]:
         # Non-bundle object with an ID and without spec_version.  Could be a
         # 2.1 SCO or 2.0 SDO/SRO/marking.  Check for 2.1 SCO...
         v = "2.1"

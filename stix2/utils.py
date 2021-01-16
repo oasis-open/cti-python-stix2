@@ -8,7 +8,7 @@ import re
 import pytz
 import six
 
-import stix2
+import stix2.version
 try:
     import stix2.registry as mappings
 except ImportError:
@@ -340,7 +340,7 @@ def _stix_type_of(value):
     return type_
 
 
-def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
+def is_sdo(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an SDO.
 
@@ -360,7 +360,7 @@ def is_sdo(value, stix_version=stix2.DEFAULT_VERSION):
     return result
 
 
-def is_sco(value, stix_version=stix2.DEFAULT_VERSION):
+def is_sco(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an SCO.
 
@@ -377,7 +377,7 @@ def is_sco(value, stix_version=stix2.DEFAULT_VERSION):
     return result
 
 
-def is_sro(value, stix_version=stix2.DEFAULT_VERSION):
+def is_sro(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an SRO.
 
@@ -395,7 +395,7 @@ def is_sro(value, stix_version=stix2.DEFAULT_VERSION):
     return result
 
 
-def is_object(value, stix_version=stix2.DEFAULT_VERSION):
+def is_object(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether an object, type, or ID is/is for any STIX object.  This
     includes all SDOs, SCOs, meta-objects, and bundle.
@@ -413,7 +413,7 @@ def is_object(value, stix_version=stix2.DEFAULT_VERSION):
     return result
 
 
-def is_marking(value, stix_version=stix2.DEFAULT_VERSION):
+def is_marking(value, stix_version=stix2.version.DEFAULT_VERSION):
     """Determines whether the given value is/is for a marking definition.
 
     :param value: A STIX object, object ID, or type as a string.
@@ -437,7 +437,7 @@ class STIXTypeClass(enum.Enum):
     SRO = 2
 
 
-def is_stix_type(value, stix_version=stix2.DEFAULT_VERSION, *types):
+def is_stix_type(value, stix_version=stix2.version.DEFAULT_VERSION, *types):
     """
     Determine whether the type of the given value satisfies the given
     constraints.  'types' must contain STIX types as strings, and/or the

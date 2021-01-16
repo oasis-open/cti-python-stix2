@@ -86,7 +86,7 @@ def _register_observable(new_observable, version=DEFAULT_VERSION):
     properties = new_observable._properties
 
     if not version:
-        version = stix2.DEFAULT_VERSION
+        version = DEFAULT_VERSION
 
     if version == "2.0":
         # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
