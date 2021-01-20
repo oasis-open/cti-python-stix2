@@ -77,19 +77,16 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     if not version:
         version = detect_spec_version(stix_dict)
 
-    OBJ_MAP = dict(
-        registry.STIX2_OBJ_MAPS[version]['objects'],
-        **registry.STIX2_OBJ_MAPS[version]['observables']
-    )
+    obj_type = stix_dict["type"]
+    obj_class = registry.class_for_type(obj_type, version, "objects") \
+        or registry.class_for_type(obj_type, version, "observables")
 
-    try:
-        obj_class = OBJ_MAP[stix_dict['type']]
-    except KeyError:
+    if not obj_class:
         if allow_custom:
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX object, returned as is
             return stix_dict
-        raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
+        raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % obj_type)
 
     return obj_class(allow_custom=allow_custom, **stix_dict)
 
@@ -127,10 +124,9 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
     if not version:
         version = detect_spec_version(obj)
 
-    try:
-        OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[version]['observables']
-        obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
-    except KeyError:
+    obj_type = obj["type"]
+    obj_class = registry.class_for_type(obj_type, version, "observables")
+    if not obj_class:
         if allow_custom:
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX observable object, just returned as is

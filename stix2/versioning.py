@@ -10,7 +10,10 @@ from six.moves.collections_abc import Mapping
 
 import stix2.base
 import stix2.registry
-from stix2.utils import get_timestamp, parse_into_datetime, detect_spec_version
+from stix2.utils import (
+    get_timestamp, parse_into_datetime, detect_spec_version,
+    is_sdo, is_sro, is_sco
+)
 import stix2.v20
 
 from .exceptions import (
@@ -74,7 +77,6 @@ def _is_versionable(data):
     """
 
     is_versionable = False
-    is_21 = False
     stix_version = None
 
     if isinstance(data, Mapping):
@@ -82,13 +84,12 @@ def _is_versionable(data):
         # First, determine spec version.  It's easy for our stix2 objects; more
         # work for dicts.
         is_21 = False
-        if isinstance(data, stix2.base._STIXBase) and \
-                not isinstance(data, stix2.v20._STIXBase20):
-            # (is_21 means 2.1 or later; try not to be 2.1-specific)
-            is_21 = True
+        if isinstance(data, stix2.v20._STIXBase20):
+            stix_version = "2.0"
+        elif isinstance(data, stix2.v21._STIXBase21):
+            stix_version = "2.1"
         elif isinstance(data, dict):
             stix_version = detect_spec_version(data)
-            is_21 = stix_version != "2.0"
 
         # Then, determine versionability.
 
@@ -110,22 +111,23 @@ def _is_versionable(data):
         # registered class, and from that get a more complete picture of its
         # properties.
         elif isinstance(data, dict):
-            class_maps = stix2.registry.STIX2_OBJ_MAPS[stix_version]
             obj_type = data["type"]
 
-            if obj_type in class_maps["objects"]:
+            if is_sdo(obj_type, stix_version) or is_sro(obj_type, stix_version):
                 # Should we bother checking properties for SDOs/SROs?
                 # They were designed to be versionable.
                 is_versionable = True
 
-            elif obj_type in class_maps["observables"]:
+            elif is_sco(obj_type, stix_version):
                 # but do check SCOs
-                cls = class_maps["observables"][obj_type]
+                cls = stix2.registry.class_for_type(
+                    obj_type, stix_version, "observables"
+                )
                 is_versionable = _VERSIONING_PROPERTIES.issubset(
                     cls._properties,
                 )
 
-    return is_versionable, is_21
+    return is_versionable, stix_version
 
 
 def new_version(data, allow_custom=None, **kwargs):
@@ -144,7 +146,7 @@ def new_version(data, allow_custom=None, **kwargs):
     :return: The new object.
     """
 
-    is_versionable, is_21 = _is_versionable(data)
+    is_versionable, stix_version = _is_versionable(data)
 
     if not is_versionable:
         raise ValueError(
@@ -165,10 +167,13 @@ def new_version(data, allow_custom=None, **kwargs):
     # probably were).  That would imply an ID change, which is not allowed
     # across versions.
     sco_locked_props = []
-    if is_21 and isinstance(data, stix2.base._Observable):
+    if is_sco(data, "2.1"):
+        cls = stix2.registry.class_for_type(
+            data["type"], stix_version, "observables"
+        )
         uuid_ = uuid.UUID(data["id"][-36:])
         if uuid_.variant == uuid.RFC_4122 and uuid_.version == 5:
-            sco_locked_props = data._id_contributing_properties
+            sco_locked_props = cls._id_contributing_properties
 
     unchangable_properties = set()
     for prop in itertools.chain(STIX_UNMOD_PROPERTIES, sco_locked_props):
@@ -179,7 +184,7 @@ def new_version(data, allow_custom=None, **kwargs):
 
     # Different versioning precision rules in STIX 2.0 vs 2.1, so we need
     # to know which rules to apply.
-    precision_constraint = "min" if is_21 else "exact"
+    precision_constraint = "min" if stix_version == "2.1" else "exact"
 
     cls = type(data)
     if 'modified' not in kwargs:
@@ -189,7 +194,9 @@ def new_version(data, allow_custom=None, **kwargs):
         )
 
         new_modified = get_timestamp()
-        new_modified = _fudge_modified(old_modified, new_modified, is_21)
+        new_modified = _fudge_modified(
+            old_modified, new_modified, stix_version == "2.1"
+        )
 
         kwargs['modified'] = new_modified
 
