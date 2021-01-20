@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import pytest
 
-from stix2.parsing import _detect_spec_version
+from stix2.utils import detect_spec_version
 
 
 @pytest.mark.parametrize(
@@ -207,6 +207,6 @@ from stix2.parsing import _detect_spec_version
     ],
 )
 def test_spec_version_detect(obj_dict, expected_ver):
-    detected_ver = _detect_spec_version(obj_dict)
+    detected_ver = detect_spec_version(obj_dict)
 
     assert detected_ver == expected_ver

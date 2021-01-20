@@ -10,7 +10,7 @@ from six.moves.collections_abc import Mapping
 
 import stix2.base
 import stix2.registry
-from stix2.utils import get_timestamp, parse_into_datetime
+from stix2.utils import get_timestamp, parse_into_datetime, detect_spec_version
 import stix2.v20
 
 from .exceptions import (
@@ -87,7 +87,7 @@ def _is_versionable(data):
             # (is_21 means 2.1 or later; try not to be 2.1-specific)
             is_21 = True
         elif isinstance(data, dict):
-            stix_version = stix2.parsing._detect_spec_version(data)
+            stix_version = detect_spec_version(data)
             is_21 = stix_version != "2.0"
 
         # Then, determine versionability.

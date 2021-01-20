@@ -4,7 +4,7 @@ import copy
 
 from . import registry
 from .exceptions import ParseError
-from .utils import _get_dict
+from .utils import _get_dict, detect_spec_version
 
 
 def parse(data, allow_custom=False, version=None):
@@ -42,46 +42,6 @@ def parse(data, allow_custom=False, version=None):
     return obj
 
 
-def _detect_spec_version(stix_dict):
-    """
-    Given a dict representing a STIX object, try to detect what spec version
-    it is likely to comply with.
-
-    :param stix_dict: A dict with some STIX content.  Must at least have a
-        "type" property.
-    :return: A STIX version in "X.Y" format
-    """
-
-    obj_type = stix_dict["type"]
-
-    if 'spec_version' in stix_dict:
-        # For STIX 2.0, applies to bundles only.
-        # For STIX 2.1+, applies to SCOs, SDOs, SROs, and markings only.
-        v = stix_dict['spec_version']
-    elif "id" not in stix_dict:
-        # Only 2.0 SCOs don't have ID properties
-        v = "2.0"
-    elif obj_type == 'bundle':
-        # Bundle without a spec_version property: must be 2.1.  But to
-        # future-proof, use max version over all contained SCOs, with 2.1
-        # minimum.
-        v = max(
-            "2.1",
-            max(
-                _detect_spec_version(obj) for obj in stix_dict["objects"]
-            ),
-        )
-    elif obj_type in registry.STIX2_OBJ_MAPS["2.1"]["observables"]:
-        # Non-bundle object with an ID and without spec_version.  Could be a
-        # 2.1 SCO or 2.0 SDO/SRO/marking.  Check for 2.1 SCO...
-        v = "2.1"
-    else:
-        # Not a 2.1 SCO; must be a 2.0 object.
-        v = "2.0"
-
-    return v
-
-
 def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     """convert dictionary to full python-stix2 object
 
@@ -115,7 +75,7 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
         raise ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
 
     if not version:
-        version = _detect_spec_version(stix_dict)
+        version = detect_spec_version(stix_dict)
 
     OBJ_MAP = dict(
         registry.STIX2_OBJ_MAPS[version]['objects'],
@@ -165,7 +125,7 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
     obj['_valid_refs'] = _valid_refs or []
 
     if not version:
-        version = _detect_spec_version(obj)
+        version = detect_spec_version(obj)
 
     try:
         OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[version]['observables']

@@ -30,11 +30,6 @@ def test_is_sdo(type_, stix_version):
     id_ = type_ + "--a12fa04c-6586-4128-8d1a-cfe0d1c081f5"
     assert stix2.utils.is_sdo(id_, stix_version)
 
-    d = {
-        "type": type_
-    }
-    assert stix2.utils.is_sdo(d, stix_version)
-
     assert stix2.utils.is_stix_type(
         type_, stix_version, stix2.utils.STIXTypeClass.SDO
     )
@@ -97,11 +92,6 @@ def test_is_sco(type_, stix_version):
     id_ = type_ + "--a12fa04c-6586-4128-8d1a-cfe0d1c081f5"
     assert stix2.utils.is_sco(id_, stix_version)
 
-    d = {
-        "type": type_
-    }
-    assert stix2.utils.is_sco(d, stix_version)
-
     assert stix2.utils.is_stix_type(
         type_, stix_version, stix2.utils.STIXTypeClass.SCO
     )
@@ -147,11 +137,6 @@ def test_is_sro(type_, stix_version):
     id_ = type_ + "--a12fa04c-6586-4128-8d1a-cfe0d1c081f5"
     assert stix2.utils.is_sro(id_, stix_version)
 
-    d = {
-        "type": type_
-    }
-    assert stix2.utils.is_sro(d, stix_version)
-
     assert stix2.utils.is_stix_type(
         type_, stix_version, stix2.utils.STIXTypeClass.SRO
     )
@@ -190,11 +175,6 @@ def test_is_marking(stix_version):
 
     id_ = "marking-definition--a12fa04c-6586-4128-8d1a-cfe0d1c081f5"
     assert stix2.utils.is_marking(id_, stix_version)
-
-    d = {
-        "type": "marking-definition"
-    }
-    assert stix2.utils.is_marking(d, stix_version)
 
     assert stix2.utils.is_stix_type(
         "marking-definition", stix_version, "marking-definition"
@@ -243,11 +223,6 @@ def test_is_object(type_, stix_version):
 
     id_ = type_ + "--a12fa04c-6586-4128-8d1a-cfe0d1c081f5"
     assert stix2.utils.is_object(id_, stix_version)
-
-    d = {
-        "type": type_
-    }
-    assert stix2.utils.is_object(d, stix_version)
 
 
 @pytest.mark.parametrize("stix_version", ["2.0", "2.1"])
