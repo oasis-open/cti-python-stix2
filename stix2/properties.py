@@ -9,15 +9,15 @@ import uuid
 
 from six import string_types, text_type
 
-import stix2
-
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
     MutuallyExclusivePropertiesError, STIXError,
 )
-from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
+from .parsing import parse, parse_observable
+from .registry import STIX2_OBJ_MAPS
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
+from .version import DEFAULT_VERSION
 
 try:
     from collections.abc import Mapping
@@ -275,7 +275,7 @@ class StringProperty(Property):
 
 class TypeProperty(Property):
 
-    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+    def __init__(self, type, spec_version=DEFAULT_VERSION):
         _validate_type(type, spec_version)
         self.spec_version = spec_version
         super(TypeProperty, self).__init__(fixed=type)
@@ -283,7 +283,7 @@ class TypeProperty(Property):
 
 class IDProperty(Property):
 
-    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+    def __init__(self, type, spec_version=DEFAULT_VERSION):
         self.required_prefix = type + "--"
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
@@ -382,7 +382,7 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -471,7 +471,7 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
@@ -605,7 +605,7 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
@@ -640,7 +640,7 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
+    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
         self.allow_custom = allow_custom
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
@@ -682,7 +682,7 @@ class ExtensionsProperty(DictionaryProperty):
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)

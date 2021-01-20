@@ -3,7 +3,7 @@ from collections import OrderedDict
 import six
 
 from .base import _cls_init
-from .parsing import (
+from .registration import (
     _register_marking, _register_object, _register_observable,
     _register_observable_extension,
 )

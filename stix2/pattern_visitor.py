@@ -17,10 +17,9 @@ from stix2patterns.v21.grammars.STIXPatternVisitor import \
     STIXPatternVisitor as STIXPatternVisitor21
 from stix2patterns.v21.pattern import Pattern as Pattern21
 
-import stix2
-
 from .patterns import *
 from .patterns import _BooleanExpression
+from .version import DEFAULT_VERSION
 
 # flake8: noqa F405
 
@@ -391,7 +390,7 @@ class STIXPatternVisitorForSTIX20(STIXPatternVisitorForSTIX2, STIXPatternVisitor
         super(STIXPatternVisitor20, self).__init__()
 
 
-def create_pattern_object(pattern, module_suffix="", module_name="", version=stix2.DEFAULT_VERSION):
+def create_pattern_object(pattern, module_suffix="", module_name="", version=DEFAULT_VERSION):
     """
     Create a STIX pattern AST from a pattern string.
     """

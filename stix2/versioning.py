@@ -9,6 +9,7 @@ import six
 from six.moves.collections_abc import Mapping
 
 import stix2.base
+import stix2.registry
 from stix2.utils import get_timestamp, parse_into_datetime
 import stix2.v20
 
@@ -109,7 +110,7 @@ def _is_versionable(data):
         # registered class, and from that get a more complete picture of its
         # properties.
         elif isinstance(data, dict):
-            class_maps = stix2.parsing.STIX2_OBJ_MAPS[stix_vid]
+            class_maps = stix2.registry.STIX2_OBJ_MAPS[stix_vid]
             obj_type = data["type"]
 
             if obj_type in class_maps["objects"]:

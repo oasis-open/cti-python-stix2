@@ -22,8 +22,6 @@
 
 import functools
 
-import stix2
-
 from . import AttackPattern as _AttackPattern
 from . import Campaign as _Campaign
 from . import CourseOfAction as _CourseOfAction
@@ -36,12 +34,14 @@ from . import Location as _Location
 from . import Malware as _Malware
 from . import MalwareAnalysis as _MalwareAnalysis
 from . import Note as _Note
+from . import OBJ_MAP
 from . import ObservedData as _ObservedData
 from . import Opinion as _Opinion
 from . import Report as _Report
 from . import ThreatActor as _ThreatActor
 from . import Tool as _Tool
 from . import Vulnerability as _Vulnerability
+from .version import DEFAULT_VERSION
 
 from . import (  # noqa: F401  isort:skip
     AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
@@ -64,7 +64,7 @@ from .datastore.filters import FilterSet  # isort:skip
 
 
 # Enable some adaptation to the current default supported STIX version.
-_STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
+_STIX_VID = "v" + DEFAULT_VERSION.replace(".", "")
 
 
 # Use an implicit MemoryStore
@@ -164,7 +164,7 @@ def _setup_workbench():
         # Add our new "class" to this module's globals and to the library-wide
         # mapping.  This allows parse() to use the wrapped classes.
         globals()[obj_type.__name__] = factory_func
-        stix2.OBJ_MAP[obj_type._type] = factory_func
+        OBJ_MAP[obj_type._type] = factory_func
 
 
 _setup_workbench()
