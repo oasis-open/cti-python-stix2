@@ -1,11 +1,10 @@
 """STIX2 core versioning methods."""
 
+from collections.abc import Mapping
 import copy
 import datetime as dt
 import itertools
 import uuid
-
-from collections.abc import Mapping
 
 import stix2.base
 import stix2.registry
