@@ -168,11 +168,15 @@ def new_version(data, allow_custom=None, **kwargs):
     # across versions.
     sco_locked_props = []
     if is_sco(data, "2.1"):
-        cls = stix2.registry.class_for_type(
-            data["type"], stix_version, "observables"
-        )
         uuid_ = uuid.UUID(data["id"][-36:])
         if uuid_.variant == uuid.RFC_4122 and uuid_.version == 5:
+            if isinstance(data, stix2.base._Observable):
+                cls = data.__class__
+            else:
+                cls = stix2.registry.class_for_type(
+                    data["type"], stix_version, "observables"
+                )
+
             sco_locked_props = cls._id_contributing_properties
 
     unchangable_properties = set()
