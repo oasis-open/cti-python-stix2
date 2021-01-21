@@ -264,13 +264,13 @@ def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
         "location",
         "malware-analysis",
         "note",
-        "opinion"
-    ]
+        "opinion",
+    ],
 )
 def test_is_sdo_dict(type_):
     d = {
         "type": type_,
-        "spec_version": "2.1"
+        "spec_version": "2.1",
     }
     assert stix2.utils.is_sdo(d, "2.1")
 
@@ -289,7 +289,7 @@ def test_is_sdo_dict(type_):
         {"type": "relationship", "spec_version": "2.1"},
         {"type": "relationship"},
         {"type": "foo", "spec_version": "2.1"},
-    ]
+    ],
 )
 def test_is_not_sdo_dict(dict_):
     assert not stix2.utils.is_sdo(dict_, "2.1")
@@ -298,7 +298,7 @@ def test_is_not_sdo_dict(dict_):
 def test_is_sco_dict():
     d = {
         "type": "file",
-        "spec_version": "2.1"
+        "spec_version": "2.1",
     }
 
     assert stix2.utils.is_sco(d, "2.1")
@@ -318,7 +318,7 @@ def test_is_sco_dict():
         {"type": "relationship", "spec_version": "2.1"},
         {"type": "relationship"},
         {"type": "foo", "spec_version": "2.1"},
-    ]
+    ],
 )
 def test_is_not_sco_dict(dict_):
     assert not stix2.utils.is_sco(dict_, "2.1")
@@ -328,7 +328,7 @@ def test_is_not_sco_dict(dict_):
     "dict_", [
         {"type": "relationship", "spec_version": "2.1"},
         {"type": "sighting", "spec_version": "2.1"},
-    ]
+    ],
 )
 def test_is_sro_dict(dict_):
     assert stix2.utils.is_sro(dict_, "2.1")
@@ -349,7 +349,7 @@ def test_is_sro_dict(dict_):
         {"type": "relationship"},
         {"type": "sighting"},
         {"type": "foo", "spec_version": "2.1"},
-    ]
+    ],
 )
 def test_is_not_sro_dict(dict_):
     assert not stix2.utils.is_sro(dict_, "2.1")
@@ -369,9 +369,9 @@ def test_is_not_sro_dict(dict_):
                 {"type": "software", "spec_version": "2.1"},
                 {"type": "marking-definition", "spec_version": "2.1"},
                 {"type": "language-content", "spec_version": "2.1"},
-            ]
+            ],
         },
-    ]
+    ],
 )
 def test_is_object_dict(dict_):
     assert stix2.utils.is_object(dict_, "2.1")
@@ -387,7 +387,7 @@ def test_is_object_dict(dict_):
         {"type": "relationship"},
         {"type": "sighting"},
         {"type": "foo"},
-    ]
+    ],
 )
 def test_is_not_object_dict(dict_):
     assert not stix2.utils.is_object(dict_, "2.1")

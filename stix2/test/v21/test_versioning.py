@@ -369,7 +369,7 @@ def test_version_sco_id_contributing_properties_dict():
         "name": "data.txt",
         "created": "1973-11-23T02:31:37Z",
         "modified": "1991-05-13T19:24:57Z",
-        "revoked": False
+        "revoked": False,
     }
 
     with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as e:

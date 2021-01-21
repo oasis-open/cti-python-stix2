@@ -11,8 +11,8 @@ from six.moves.collections_abc import Mapping
 import stix2.base
 import stix2.registry
 from stix2.utils import (
-    get_timestamp, parse_into_datetime, detect_spec_version,
-    is_sdo, is_sro, is_sco
+    detect_spec_version, get_timestamp, is_sco, is_sdo, is_sro,
+    parse_into_datetime,
 )
 import stix2.v20
 
@@ -83,7 +83,6 @@ def _is_versionable(data):
 
         # First, determine spec version.  It's easy for our stix2 objects; more
         # work for dicts.
-        is_21 = False
         if isinstance(data, stix2.v20._STIXBase20):
             stix_version = "2.0"
         elif isinstance(data, stix2.v21._STIXBase21):
@@ -121,7 +120,7 @@ def _is_versionable(data):
             elif is_sco(obj_type, stix_version):
                 # but do check SCOs
                 cls = stix2.registry.class_for_type(
-                    obj_type, stix_version, "observables"
+                    obj_type, stix_version, "observables",
                 )
                 is_versionable = _VERSIONING_PROPERTIES.issubset(
                     cls._properties,
@@ -174,7 +173,7 @@ def new_version(data, allow_custom=None, **kwargs):
                 cls = data.__class__
             else:
                 cls = stix2.registry.class_for_type(
-                    data["type"], stix_version, "observables"
+                    data["type"], stix_version, "observables",
                 )
 
             sco_locked_props = cls._id_contributing_properties
@@ -199,7 +198,7 @@ def new_version(data, allow_custom=None, **kwargs):
 
         new_modified = get_timestamp()
         new_modified = _fudge_modified(
-            old_modified, new_modified, stix_version == "2.1"
+            old_modified, new_modified, stix_version == "2.1",
         )
 
         kwargs['modified'] = new_modified

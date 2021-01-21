@@ -10,6 +10,7 @@ import pytz
 import six
 
 import stix2.version
+
 try:
     import stix2.registry as mappings
 except ImportError:
@@ -408,7 +409,7 @@ def is_sdo(value, stix_version=stix2.version.DEFAULT_VERSION):
         type_ = _stix_type_of(value)
         result = type_ in cls_maps["objects"] and type_ not in {
             "relationship", "sighting", "marking-definition", "bundle",
-            "language-content"
+            "language-content",
         }
 
     return result
@@ -500,7 +501,7 @@ def is_object(value, stix_version=stix2.version.DEFAULT_VERSION):
         cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
         type_ = _stix_type_of(value)
         result = type_ in cls_maps["observables"] \
-                 or type_ in cls_maps["objects"]
+            or type_ in cls_maps["objects"]
 
     return result
 

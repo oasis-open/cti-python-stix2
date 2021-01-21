@@ -1,9 +1,9 @@
 import pytest
+
 import stix2.utils
 
-
 ###
-### Tests using types/behaviors common to STIX 2.0 and 2.1.
+# Tests using types/behaviors common to STIX 2.0 and 2.1.
 ###
 
 
@@ -21,8 +21,8 @@ import stix2.utils
         "report",
         "threat-actor",
         "tool",
-        "vulnerability"
-    ]
+        "vulnerability",
+    ],
 )
 def test_is_sdo(type_, stix_version):
     assert stix2.utils.is_sdo(type_, stix_version)
@@ -31,7 +31,7 @@ def test_is_sdo(type_, stix_version):
     assert stix2.utils.is_sdo(id_, stix_version)
 
     assert stix2.utils.is_stix_type(
-        type_, stix_version, stix2.utils.STIXTypeClass.SDO
+        type_, stix_version, stix2.utils.STIXTypeClass.SDO,
     )
 
 
@@ -44,8 +44,8 @@ def test_is_sdo(type_, stix_version):
         "bundle",
         "language-content",
         "ipv4-addr",
-        "foo"
-    ]
+        "foo",
+    ],
 )
 def test_is_not_sdo(type_, stix_version):
     assert not stix2.utils.is_sdo(type_, stix_version)
@@ -54,12 +54,12 @@ def test_is_not_sdo(type_, stix_version):
     assert not stix2.utils.is_sdo(id_, stix_version)
 
     d = {
-        "type": type_
+        "type": type_,
     }
     assert not stix2.utils.is_sdo(d, stix_version)
 
     assert not stix2.utils.is_stix_type(
-        type_, stix_version, stix2.utils.STIXTypeClass.SDO
+        type_, stix_version, stix2.utils.STIXTypeClass.SDO,
     )
 
 
@@ -83,8 +83,8 @@ def test_is_not_sdo(type_, stix_version):
         "url",
         "user-account",
         "windows-registry-key",
-        "x509-certificate"
-    ]
+        "x509-certificate",
+    ],
 )
 def test_is_sco(type_, stix_version):
     assert stix2.utils.is_sco(type_, stix_version)
@@ -93,7 +93,7 @@ def test_is_sco(type_, stix_version):
     assert stix2.utils.is_sco(id_, stix_version)
 
     assert stix2.utils.is_stix_type(
-        type_, stix_version, stix2.utils.STIXTypeClass.SCO
+        type_, stix_version, stix2.utils.STIXTypeClass.SCO,
     )
 
 
@@ -105,8 +105,8 @@ def test_is_sco(type_, stix_version):
         "marking-definition",
         "bundle",
         "language-content",
-        "foo"
-    ]
+        "foo",
+    ],
 )
 def test_is_not_sco(type_, stix_version):
     assert not stix2.utils.is_sco(type_, stix_version)
@@ -115,12 +115,12 @@ def test_is_not_sco(type_, stix_version):
     assert not stix2.utils.is_sco(id_, stix_version)
 
     d = {
-        "type": type_
+        "type": type_,
     }
     assert not stix2.utils.is_sco(d, stix_version)
 
     assert not stix2.utils.is_stix_type(
-        type_, stix_version, stix2.utils.STIXTypeClass.SCO
+        type_, stix_version, stix2.utils.STIXTypeClass.SCO,
     )
 
 
@@ -128,8 +128,8 @@ def test_is_not_sco(type_, stix_version):
 @pytest.mark.parametrize(
     "type_", [
         "relationship",
-        "sighting"
-    ]
+        "sighting",
+    ],
 )
 def test_is_sro(type_, stix_version):
     assert stix2.utils.is_sro(type_, stix_version)
@@ -138,7 +138,7 @@ def test_is_sro(type_, stix_version):
     assert stix2.utils.is_sro(id_, stix_version)
 
     assert stix2.utils.is_stix_type(
-        type_, stix_version, stix2.utils.STIXTypeClass.SRO
+        type_, stix_version, stix2.utils.STIXTypeClass.SRO,
     )
 
 
@@ -150,8 +150,8 @@ def test_is_sro(type_, stix_version):
         "bundle",
         "language-content",
         "ipv4-addr",
-        "foo"
-    ]
+        "foo",
+    ],
 )
 def test_is_not_sro(type_, stix_version):
     assert not stix2.utils.is_sro(type_, stix_version)
@@ -160,12 +160,12 @@ def test_is_not_sro(type_, stix_version):
     assert not stix2.utils.is_sro(id_, stix_version)
 
     d = {
-        "type": type_
+        "type": type_,
     }
     assert not stix2.utils.is_sro(d, stix_version)
 
     assert not stix2.utils.is_stix_type(
-        type_, stix_version, stix2.utils.STIXTypeClass.SRO
+        type_, stix_version, stix2.utils.STIXTypeClass.SRO,
     )
 
 
@@ -177,7 +177,7 @@ def test_is_marking(stix_version):
     assert stix2.utils.is_marking(id_, stix_version)
 
     assert stix2.utils.is_stix_type(
-        "marking-definition", stix_version, "marking-definition"
+        "marking-definition", stix_version, "marking-definition",
     )
 
 
@@ -188,8 +188,8 @@ def test_is_marking(stix_version):
         "bundle",
         "language-content",
         "ipv4-addr",
-        "foo"
-    ]
+        "foo",
+    ],
 )
 def test_is_not_marking(type_, stix_version):
     assert not stix2.utils.is_marking(type_, stix_version)
@@ -198,12 +198,12 @@ def test_is_not_marking(type_, stix_version):
     assert not stix2.utils.is_marking(id_, stix_version)
 
     d = {
-        "type": type_
+        "type": type_,
     }
     assert not stix2.utils.is_marking(d, stix_version)
 
     assert not stix2.utils.is_stix_type(
-        type_, stix_version, "marking-definition"
+        type_, stix_version, "marking-definition",
     )
 
 
@@ -215,8 +215,8 @@ def test_is_not_marking(type_, stix_version):
         "sighting",
         "marking-definition",
         "bundle",
-        "ipv4-addr"
-    ]
+        "ipv4-addr",
+    ],
 )
 def test_is_object(type_, stix_version):
     assert stix2.utils.is_object(type_, stix_version)
@@ -233,7 +233,7 @@ def test_is_not_object(stix_version):
     assert not stix2.utils.is_object(id_, stix_version)
 
     d = {
-        "type": "foo"
+        "type": "foo",
     }
     assert not stix2.utils.is_object(d, stix_version)
 
@@ -242,21 +242,21 @@ def test_is_not_object(stix_version):
 def test_is_stix_type(stix_version):
 
     assert not stix2.utils.is_stix_type(
-        "foo", stix_version, stix2.utils.STIXTypeClass.SDO, "foo"
+        "foo", stix_version, stix2.utils.STIXTypeClass.SDO, "foo",
     )
 
     assert stix2.utils.is_stix_type(
-        "bundle", stix_version, "foo", "bundle"
+        "bundle", stix_version, "foo", "bundle",
     )
 
     assert stix2.utils.is_stix_type(
         "identity", stix_version,
         stix2.utils.STIXTypeClass.SDO,
-        stix2.utils.STIXTypeClass.SRO
+        stix2.utils.STIXTypeClass.SRO,
     )
 
     assert stix2.utils.is_stix_type(
         "software", stix_version,
         stix2.utils.STIXTypeClass.SDO,
-        stix2.utils.STIXTypeClass.SCO
+        stix2.utils.STIXTypeClass.SCO,
     )
