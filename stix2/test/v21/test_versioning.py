@@ -346,6 +346,38 @@ def test_version_sco_with_custom():
     assert revoked_obj.revoked
 
 
+def test_version_sco_id_contributing_properties():
+    file_sco_obj = stix2.v21.File(
+        name="data.txt",
+        created="1973-11-23T02:31:37Z",
+        modified="1991-05-13T19:24:57Z",
+        revoked=False,
+        allow_custom=True,
+    )
+
+    with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as e:
+        stix2.versioning.new_version(file_sco_obj, name="foo.dat")
+
+    assert e.value.unchangable_properties == {"name"}
+
+
+def test_version_sco_id_contributing_properties_dict():
+    file_sco_dict = {
+        "type": "file",
+        "id": "file--c27c572c-2e17-5ce1-817e-67bb97629a56",
+        "spec_version": "2.1",
+        "name": "data.txt",
+        "created": "1973-11-23T02:31:37Z",
+        "modified": "1991-05-13T19:24:57Z",
+        "revoked": False
+    }
+
+    with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as e:
+        stix2.versioning.new_version(file_sco_dict, name="foo.dat")
+
+    assert e.value.unchangable_properties == {"name"}
+
+
 def test_version_disable_custom():
     m = stix2.v21.Malware(
         name="foo", description="Steals your identity!", is_family=False,
