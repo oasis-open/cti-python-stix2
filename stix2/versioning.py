@@ -260,7 +260,7 @@ def new_version(data, allow_custom=None, **kwargs):
     else:
         new_modified = get_timestamp()
         new_modified = _fudge_modified(
-            old_modified, new_modified, stix_version!="2.0"
+            old_modified, new_modified, stix_version != "2.0",
         )
 
         kwargs['modified'] = new_modified
