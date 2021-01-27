@@ -953,6 +953,9 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
                 [('spec_version', StringProperty(fixed='2.1'))],
                 [('id', IDProperty(type, spec_version='2.1'))],
                 properties,
+                [('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1')))],
+                [('granular_markings', ListProperty(GranularMarking))],
+                [('defanged', BooleanProperty(default=lambda: False))],
                 [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
             ]),
         )
