@@ -449,10 +449,10 @@ def is_sro(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an SRO of the
     given STIX version.  If value is a type or ID, this just checks whether
-    the type was registered as an SRO in the given STIX version.  If a mapping,
-    *simple* STIX version inference is additionally done on the value, and the
-    result is checked against stix_version.  It does not attempt to fully
-    validate the value.
+    the type is an SRO in the given STIX version.  If a mapping, *simple* STIX
+    version inference is additionally done on the value, and the result is
+    checked against stix_version.  It does not attempt to fully validate the
+    value.
 
     :param value: A mapping with a "type" property, or a STIX ID or type
         as a string
@@ -510,10 +510,10 @@ def is_marking(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an marking
     definition of the given STIX version.  If value is a type or ID, this just
-    checks whether the type was registered as an SDO in the given STIX version.
-    If a mapping, *simple* STIX version inference is additionally done on the
-    value, and the result is checked against stix_version.  It does not attempt
-    to fully validate the value.
+    checks whether the type is "marking-definition".  If a mapping, *simple*
+    STIX version inference is additionally done on the value, and the result
+    is checked against stix_version.  It does not attempt to fully validate the
+    value.
 
     :param value: A STIX object, object ID, or type as a string.
     :param stix_version: A STIX version as a string
