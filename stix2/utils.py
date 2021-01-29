@@ -444,7 +444,7 @@ def is_sro(value, stix_version=stix2.version.DEFAULT_VERSION):
     """
     Determine whether the given object, type, or ID is/is for an SRO of the
     given STIX version.  If value is a type or ID, this just checks whether
-    the type is an SRO in the given STIX version.  If a mapping, *simple* STIX
+    the type is "sighting" or "relationship".  If a mapping, *simple* STIX
     version inference is additionally done on the value, and the result is
     checked against stix_version.  It does not attempt to fully validate the
     value.
