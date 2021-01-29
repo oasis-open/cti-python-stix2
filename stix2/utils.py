@@ -9,9 +9,8 @@ import re
 import pytz
 import six
 
-import stix2.version
 import stix2.registry as mappings
-
+import stix2.version
 
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
