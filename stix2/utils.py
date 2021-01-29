@@ -10,11 +10,7 @@ import pytz
 import six
 
 import stix2.version
-
-try:
-    import stix2.registry as mappings
-except ImportError:
-    import stix2.core as mappings
+import stix2.registry as mappings
 
 
 # Sentinel value for properties that should be set to the current time.
