@@ -73,7 +73,6 @@ def test_register_marking_with_version():
         _properties = OrderedDict()
 
     registration._register_marking(NewMarking1, version='2.0')
-    v = 'v20'
 
-    assert NewMarking1._type in registry.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(registry.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])
+    assert NewMarking1._type in registry.STIX2_OBJ_MAPS['2.0']['markings']
+    assert 'v20' in str(registry.STIX2_OBJ_MAPS['2.0']['markings'][NewMarking1._type])

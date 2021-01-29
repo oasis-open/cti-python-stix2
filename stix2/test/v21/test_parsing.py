@@ -78,10 +78,9 @@ def test_register_marking_with_version():
         _properties = OrderedDict()
 
     registration._register_marking(NewMarking1, version='2.1')
-    v = 'v21'
 
-    assert NewMarking1._type in registry.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(registry.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])
+    assert NewMarking1._type in registry.STIX2_OBJ_MAPS['2.1']['markings']
+    assert 'v21' in str(registry.STIX2_OBJ_MAPS['2.1']['markings'][NewMarking1._type])
 
 
 @pytest.mark.xfail(reason="The default version is not 2.1", condition=DEFAULT_VERSION != "2.1")
@@ -92,7 +91,6 @@ def test_register_marking_with_no_version():
         _properties = OrderedDict()
 
     registration._register_marking(NewMarking2)
-    v = 'v21'
 
-    assert NewMarking2._type in registry.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(registry.STIX2_OBJ_MAPS[v]['markings'][NewMarking2._type])
+    assert NewMarking2._type in registry.STIX2_OBJ_MAPS['2.1']['markings']
+    assert 'v21' in str(registry.STIX2_OBJ_MAPS['2.1']['markings'][NewMarking2._type])

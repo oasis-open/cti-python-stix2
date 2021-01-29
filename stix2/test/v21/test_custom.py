@@ -1265,9 +1265,8 @@ def test_register_custom_object_with_version():
     }
 
     cust_obj_1 = stix2.parsing.dict_to_stix2(custom_obj_1, version='2.1')
-    v = 'v21'
 
-    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS[v]['objects']
+    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS['2.1']['objects']
     assert cust_obj_1.spec_version == "2.1"
 
 
@@ -1295,9 +1294,8 @@ class NewObservable3(object):
 
 def test_register_observable():
     custom_obs = NewObservable3(property1="Test Observable")
-    v = 'v21'
 
-    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS[v]['observables']
+    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS['2.1']['observables']
 
 
 def test_register_duplicate_observable():
@@ -1323,10 +1321,9 @@ def test_register_observable_custom_extension():
         pass
 
     example = NewExtension2(property1="Hi there")
-    v = 'v21'
 
-    assert 'domain-name' in stix2.registry.STIX2_OBJ_MAPS[v]['observables']
-    assert example._type in stix2.registry.STIX2_OBJ_MAPS[v]['observable-extensions']['domain-name']
+    assert 'domain-name' in stix2.registry.STIX2_OBJ_MAPS['2.1']['observables']
+    assert example._type in stix2.registry.STIX2_OBJ_MAPS['2.1']['observable-extensions']['domain-name']
 
 
 def test_register_duplicate_observable_extension():

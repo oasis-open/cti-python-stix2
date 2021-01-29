@@ -2,7 +2,7 @@ from __future__ import unicode_literals
 
 import pytest
 
-from stix2.parsing import _detect_spec_version
+from stix2.utils import detect_spec_version
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,7 @@ from stix2.parsing import _detect_spec_version
                 "name": "alice",
                 "identity_class": "individual",
             },
-            "v20",
+            "2.0",
         ),
         (
             {
@@ -29,14 +29,14 @@ from stix2.parsing import _detect_spec_version
                 "target_ref": "identity--ba18dde2-56d3-4a34-aa0b-fc56f5be568f",
                 "relationship_type": "targets",
             },
-            "v20",
+            "2.0",
         ),
         (
             {
                 "type": "file",
                 "name": "notes.txt",
             },
-            "v20",
+            "2.0",
         ),
         (
             {
@@ -48,7 +48,7 @@ from stix2.parsing import _detect_spec_version
                     "statement": "Copyright (c) ACME Corp.",
                 },
             },
-            "v20",
+            "2.0",
         ),
         (
             {
@@ -75,7 +75,7 @@ from stix2.parsing import _detect_spec_version
                     },
                 ],
             },
-            "v20",
+            "2.0",
         ),
         # STIX 2.1 examples
         (
@@ -87,7 +87,7 @@ from stix2.parsing import _detect_spec_version
                 "modified": "2001-07-01T09:33:17.000Z",
                 "name": "alice",
             },
-            "v21",
+            "2.1",
         ),
         (
             {
@@ -100,7 +100,7 @@ from stix2.parsing import _detect_spec_version
                 "target_ref": "identity--ba18dde2-56d3-4a34-aa0b-fc56f5be568f",
                 "relationship_type": "targets",
             },
-            "v21",
+            "2.1",
         ),
         (
             {
@@ -109,7 +109,7 @@ from stix2.parsing import _detect_spec_version
                 "spec_version": "2.1",
                 "name": "notes.txt",
             },
-            "v21",
+            "2.1",
         ),
         (
             {
@@ -117,7 +117,7 @@ from stix2.parsing import _detect_spec_version
                 "id": "file--5eef3404-6a94-4db3-9a1a-5684cbea0dfe",
                 "name": "notes.txt",
             },
-            "v21",
+            "2.1",
         ),
         (
             {
@@ -131,7 +131,7 @@ from stix2.parsing import _detect_spec_version
                     "tlp": "green",
                 },
             },
-            "v21",
+            "2.1",
         ),
         (
             {
@@ -153,7 +153,7 @@ from stix2.parsing import _detect_spec_version
                     },
                 ],
             },
-            "v21",
+            "2.1",
         ),
         # Mixed spec examples
         (
@@ -180,7 +180,7 @@ from stix2.parsing import _detect_spec_version
                     },
                 ],
             },
-            "v21",
+            "2.1",
         ),
         (
             {
@@ -202,11 +202,11 @@ from stix2.parsing import _detect_spec_version
                     },
                 ],
             },
-            "v21",
+            "2.1",
         ),
     ],
 )
 def test_spec_version_detect(obj_dict, expected_ver):
-    detected_ver = _detect_spec_version(obj_dict)
+    detected_ver = detect_spec_version(obj_dict)
 
     assert detected_ver == expected_ver

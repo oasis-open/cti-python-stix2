@@ -1044,9 +1044,8 @@ def test_register_custom_object_with_version():
     }
 
     cust_obj_1 = stix2.parsing.dict_to_stix2(custom_obj_1, version='2.0')
-    v = 'v20'
 
-    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS[v]['objects']
+    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS['2.0']['objects']
     # spec_version is not in STIX 2.0, and is required in 2.1, so this
     # suffices as a test for a STIX 2.0 object.
     assert "spec_version" not in cust_obj_1
@@ -1076,9 +1075,8 @@ class NewObservable2(object):
 
 def test_register_observable_with_version():
     custom_obs = NewObservable2(property1="Test Observable")
-    v = 'v20'
 
-    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS[v]['observables']
+    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS['2.0']['observables']
 
 
 def test_register_duplicate_observable_with_version():
@@ -1101,10 +1099,9 @@ def test_register_marking_with_version():
     )
     class NewObj2():
         pass
-    v = 'v20'
 
     no = NewObj2(property1='something')
-    assert no._type in stix2.registry.STIX2_OBJ_MAPS[v]['markings']
+    assert no._type in stix2.registry.STIX2_OBJ_MAPS['2.0']['markings']
 
 
 def test_register_observable_extension_with_version():
@@ -1116,10 +1113,9 @@ def test_register_observable_extension_with_version():
     class SomeCustomExtension2:
         pass
 
-    v = 'v20'
     example = SomeCustomExtension2(keys='test123')
 
-    assert example._type in stix2.registry.STIX2_OBJ_MAPS[v]['observable-extensions']['user-account']
+    assert example._type in stix2.registry.STIX2_OBJ_MAPS['2.0']['observable-extensions']['user-account']
 
 
 def test_register_duplicate_observable_extension():

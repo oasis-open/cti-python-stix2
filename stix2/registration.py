@@ -31,18 +31,15 @@ def _register_object(new_type, version=DEFAULT_VERSION):
 
     properties = new_type._properties
 
+    if not version:
+        version = DEFAULT_VERSION
+
     if version == "2.1":
         for prop_name, prop in properties.items():
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character" % prop_name)
 
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP = registry.STIX2_OBJ_MAPS[v]['objects']
+    OBJ_MAP = registry.STIX2_OBJ_MAPS[version]['objects']
     if new_type._type in OBJ_MAP.keys():
         raise DuplicateRegistrationError("STIX Object", new_type._type)
     OBJ_MAP[new_type._type] = new_type
@@ -61,6 +58,9 @@ def _register_marking(new_marking, version=DEFAULT_VERSION):
     mark_type = new_marking._type
     properties = new_marking._properties
 
+    if not version:
+        version = DEFAULT_VERSION
+
     _validate_type(mark_type, version)
 
     if version == "2.1":
@@ -68,13 +68,7 @@ def _register_marking(new_marking, version=DEFAULT_VERSION):
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP_MARKING = registry.STIX2_OBJ_MAPS[v]['markings']
+    OBJ_MAP_MARKING = registry.STIX2_OBJ_MAPS[version]['markings']
     if mark_type in OBJ_MAP_MARKING.keys():
         raise DuplicateRegistrationError("STIX Marking", mark_type)
     OBJ_MAP_MARKING[mark_type] = new_marking
@@ -90,6 +84,9 @@ def _register_observable(new_observable, version=DEFAULT_VERSION):
 
     """
     properties = new_observable._properties
+
+    if not version:
+        version = DEFAULT_VERSION
 
     if version == "2.0":
         # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
@@ -130,13 +127,7 @@ def _register_observable(new_observable, version=DEFAULT_VERSION):
                     "is not a ListProperty containing ReferenceProperty." % prop_name,
                 )
 
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
+    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[version]['observables']
     if new_observable._type in OBJ_MAP_OBSERVABLE.keys():
         raise DuplicateRegistrationError("Cyber Observable", new_observable._type)
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
@@ -182,8 +173,6 @@ def _register_observable_extension(
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 
-    v = 'v' + version.replace('.', '')
-
     try:
         observable_type = observable._type
     except AttributeError:
@@ -192,8 +181,8 @@ def _register_observable_extension(
             "created with the @CustomObservable decorator.",
         )
 
-    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[v]['observables']
-    EXT_MAP = registry.STIX2_OBJ_MAPS[v]['observable-extensions']
+    OBJ_MAP_OBSERVABLE = registry.STIX2_OBJ_MAPS[version]['observables']
+    EXT_MAP = registry.STIX2_OBJ_MAPS[version]['observable-extensions']
 
     try:
         if ext_type in EXT_MAP[observable_type].keys():
