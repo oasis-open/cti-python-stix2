@@ -20,7 +20,8 @@ EXPECTED_INDICATOR = """{
     ]
 }"""
 
-EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
+EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join(
+    """
     type='indicator',
     id='indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7',
     created='2017-01-01T00:00:01.000Z',
@@ -28,7 +29,8 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     valid_from='1970-01-01T00:00:01Z',
     labels=['malicious-activity']
-""".split()) + ")"
+""".split(),
+) + ")"
 
 
 def test_indicator_with_all_required_properties():

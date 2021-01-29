@@ -21,7 +21,7 @@
 """
 
 import functools
-import stix2
+
 from . import AttackPattern as _AttackPattern
 from . import Campaign as _Campaign
 from . import CourseOfAction as _CourseOfAction
@@ -34,34 +34,37 @@ from . import Location as _Location
 from . import Malware as _Malware
 from . import MalwareAnalysis as _MalwareAnalysis
 from . import Note as _Note
+from . import OBJ_MAP
 from . import ObservedData as _ObservedData
 from . import Opinion as _Opinion
 from . import Report as _Report
 from . import ThreatActor as _ThreatActor
 from . import Tool as _Tool
 from . import Vulnerability as _Vulnerability
-from . import (  # noqa: F401
+from .version import DEFAULT_VERSION
+
+from . import (  # noqa: F401  isort:skip
     AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
     Bundle, CustomExtension, CustomMarking, CustomObservable,
     Directory, DomainName, EmailAddress, EmailMessage,
     EmailMIMEComponent, Environment, ExternalReference, File,
     FileSystemSource, Filter, GranularMarking, HTTPRequestExt,
-    ICMPExt, IPv4Address, IPv6Address, KillChainPhase, LanguageContent, MACAddress,
-    MarkingDefinition, MemoryStore, Mutex, NetworkTraffic, NTFSExt,
-    parse_observable, PDFExt, Process, RasterImageExt, Relationship,
+    ICMPExt, IPv4Address, IPv6Address, KillChainPhase, LanguageContent,
+    MACAddress, MarkingDefinition, MemoryStore, Mutex, NetworkTraffic,
+    NTFSExt, parse_observable, PDFExt, Process, RasterImageExt, Relationship,
     Sighting, SocketExt, Software, StatementMarking,
     TAXIICollectionSource, TCPExt, TLP_AMBER, TLP_GREEN, TLP_RED,
     TLP_WHITE, TLPMarking, UNIXAccountExt, URL, UserAccount,
     WindowsPEBinaryExt, WindowsPEOptionalHeaderType,
     WindowsPESection, WindowsProcessExt, WindowsRegistryKey,
     WindowsRegistryValueType, WindowsServiceExt, X509Certificate,
-    X509V3ExtenstionsType
+    X509V3ExtensionsType,
 )
-from .datastore.filters import FilterSet
+from .datastore.filters import FilterSet  # isort:skip
 
 
 # Enable some adaptation to the current default supported STIX version.
-_STIX_VID = "v" + stix2.DEFAULT_VERSION.replace(".", "")
+_STIX_VID = "v" + DEFAULT_VERSION.replace(".", "")
 
 
 # Use an implicit MemoryStore
@@ -161,7 +164,7 @@ def _setup_workbench():
         # Add our new "class" to this module's globals and to the library-wide
         # mapping.  This allows parse() to use the wrapped classes.
         globals()[obj_type.__name__] = factory_func
-        stix2.OBJ_MAP[obj_type._type] = factory_func
+        OBJ_MAP[obj_type._type] = factory_func
 
 
 _setup_workbench()

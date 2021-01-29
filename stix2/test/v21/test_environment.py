@@ -11,9 +11,9 @@ import stix2.exceptions
 from .constants import (
     ATTACK_PATTERN_ID, ATTACK_PATTERN_KWARGS, CAMPAIGN_ID, CAMPAIGN_KWARGS,
     FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS, INDICATOR_ID, INDICATOR_KWARGS,
-    LOCATION_ID, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS, REPORT_ID,
-    REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID, TOOL_KWARGS,
-    VULNERABILITY_ID, VULNERABILITY_KWARGS,
+    LOCATION_ID, LOCATION_KWARGS, MALWARE_ID, MALWARE_KWARGS, RELATIONSHIP_IDS,
+    REPORT_ID, REPORT_KWARGS, THREAT_ACTOR_ID, THREAT_ACTOR_KWARGS, TOOL_ID,
+    TOOL_KWARGS, VULNERABILITY_ID, VULNERABILITY_KWARGS,
 )
 
 FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
@@ -495,24 +495,32 @@ def test_semantic_equivalence_on_same_indicator():
 
 
 def test_semantic_equivalence_on_same_location1():
-    LOCATION_KWARGS = dict(latitude=45, longitude=179)
-    loc1 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
-    loc2 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
+    location_kwargs = dict(latitude=45, longitude=179)
+    loc1 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
+    loc2 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
     env = stix2.Environment().semantically_equivalent(loc1, loc2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_location2():
-    LOCATION_KWARGS = dict(
+    location_kwargs = dict(
         latitude=38.889,
         longitude=-77.023,
         region="northern-america",
         country="us",
     )
-    loc1 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
-    loc2 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
+    loc1 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
+    loc2 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
     env = stix2.Environment().semantically_equivalent(loc1, loc2)
     assert round(env) == 100
+
+
+def test_semantic_equivalence_location_with_no_latlong():
+    loc_kwargs = dict(country="US", administrative_area="US-DC")
+    loc1 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
+    loc2 = stix2.v21.Location(id=LOCATION_ID, **loc_kwargs)
+    env = stix2.Environment().semantically_equivalent(loc1, loc2)
+    assert round(env) != 100
 
 
 def test_semantic_equivalence_on_same_malware():

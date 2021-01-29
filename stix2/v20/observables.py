@@ -440,24 +440,28 @@ class SocketExt(_Extension):
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
         (
-            'protocol_family', EnumProperty(allowed=[
-                "PF_INET",
-                "PF_IPX",
-                "PF_APPLETALK",
-                "PF_INET6",
-                "PF_AX25",
-                "PF_NETROM",
-            ]),
+            'protocol_family', EnumProperty(
+                allowed=[
+                    "PF_INET",
+                    "PF_IPX",
+                    "PF_APPLETALK",
+                    "PF_INET6",
+                    "PF_AX25",
+                    "PF_NETROM",
+                ],
+            ),
         ),
         ('options', DictionaryProperty(spec_version="2.0")),
         (
-            'socket_type', EnumProperty(allowed=[
-                "SOCK_STREAM",
-                "SOCK_DGRAM",
-                "SOCK_RAW",
-                "SOCK_RDM",
-                "SOCK_SEQPACKET",
-            ]),
+            'socket_type', EnumProperty(
+                allowed=[
+                    "SOCK_STREAM",
+                    "SOCK_DGRAM",
+                    "SOCK_RAW",
+                    "SOCK_RDM",
+                    "SOCK_SEQPACKET",
+                ],
+            ),
         ),
         ('socket_descriptor', IntegerProperty()),
         ('socket_handle', IntegerProperty()),
@@ -537,33 +541,39 @@ class WindowsServiceExt(_Extension):
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
         (
-            'start_type', EnumProperty(allowed=[
-                "SERVICE_AUTO_START",
-                "SERVICE_BOOT_START",
-                "SERVICE_DEMAND_START",
-                "SERVICE_DISABLED",
-                "SERVICE_SYSTEM_ALERT",
-            ]),
+            'start_type', EnumProperty(
+                allowed=[
+                    "SERVICE_AUTO_START",
+                    "SERVICE_BOOT_START",
+                    "SERVICE_DEMAND_START",
+                    "SERVICE_DISABLED",
+                    "SERVICE_SYSTEM_ALERT",
+                ],
+            ),
         ),
         ('service_dll_refs', ListProperty(ObjectReferenceProperty(valid_types='file'))),
         (
-            'service_type', EnumProperty(allowed=[
-                "SERVICE_KERNEL_DRIVER",
-                "SERVICE_FILE_SYSTEM_DRIVER",
-                "SERVICE_WIN32_OWN_PROCESS",
-                "SERVICE_WIN32_SHARE_PROCESS",
-            ]),
+            'service_type', EnumProperty(
+                allowed=[
+                    "SERVICE_KERNEL_DRIVER",
+                    "SERVICE_FILE_SYSTEM_DRIVER",
+                    "SERVICE_WIN32_OWN_PROCESS",
+                    "SERVICE_WIN32_SHARE_PROCESS",
+                ],
+            ),
         ),
         (
-            'service_status', EnumProperty(allowed=[
-                "SERVICE_CONTINUE_PENDING",
-                "SERVICE_PAUSE_PENDING",
-                "SERVICE_PAUSED",
-                "SERVICE_RUNNING",
-                "SERVICE_START_PENDING",
-                "SERVICE_STOP_PENDING",
-                "SERVICE_STOPPED",
-            ]),
+            'service_status', EnumProperty(
+                allowed=[
+                    "SERVICE_CONTINUE_PENDING",
+                    "SERVICE_PAUSE_PENDING",
+                    "SERVICE_PAUSED",
+                    "SERVICE_RUNNING",
+                    "SERVICE_START_PENDING",
+                    "SERVICE_STOP_PENDING",
+                    "SERVICE_STOPPED",
+                ],
+            ),
         ),
     ])
 
@@ -687,21 +697,23 @@ class WindowsRegistryValueType(_STIXBase20):
         ('name', StringProperty(required=True)),
         ('data', StringProperty()),
         (
-            'data_type', EnumProperty(allowed=[
-                "REG_NONE",
-                "REG_SZ",
-                "REG_EXPAND_SZ",
-                "REG_BINARY",
-                "REG_DWORD",
-                "REG_DWORD_BIG_ENDIAN",
-                "REG_LINK",
-                "REG_MULTI_SZ",
-                "REG_RESOURCE_LIST",
-                "REG_FULL_RESOURCE_DESCRIPTION",
-                "REG_RESOURCE_REQUIREMENTS_LIST",
-                "REG_QWORD",
-                "REG_INVALID_TYPE",
-            ]),
+            'data_type', EnumProperty(
+                allowed=[
+                    "REG_NONE",
+                    "REG_SZ",
+                    "REG_EXPAND_SZ",
+                    "REG_BINARY",
+                    "REG_DWORD",
+                    "REG_DWORD_BIG_ENDIAN",
+                    "REG_LINK",
+                    "REG_MULTI_SZ",
+                    "REG_RESOURCE_LIST",
+                    "REG_FULL_RESOURCE_DESCRIPTION",
+                    "REG_RESOURCE_REQUIREMENTS_LIST",
+                    "REG_QWORD",
+                    "REG_INVALID_TYPE",
+                ],
+            ),
         ),
     ])
 
@@ -724,7 +736,7 @@ class WindowsRegistryKey(_Observable):
     ])
 
 
-class X509V3ExtenstionsType(_STIXBase20):
+class X509V3ExtensionsType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716298>`__.
     """  # noqa
@@ -770,7 +782,7 @@ class X509Certificate(_Observable):
         ('subject_public_key_algorithm', StringProperty()),
         ('subject_public_key_modulus', StringProperty()),
         ('subject_public_key_exponent', IntegerProperty()),
-        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
+        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtensionsType)),
         ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
     ])
 
@@ -790,11 +802,13 @@ def CustomObservable(type='x-custom-observable', properties=None):
 
     """
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [('type', TypeProperty(type, spec_version='2.0'))],
-            properties,
-            [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
-        ]))
+        _properties = list(
+            itertools.chain.from_iterable([
+                [('type', TypeProperty(type, spec_version='2.0'))],
+                properties,
+                [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
+            ]),
+        )
         return _custom_observable_builder(cls, type, _properties, '2.0', _Observable)
     return wrapper
 

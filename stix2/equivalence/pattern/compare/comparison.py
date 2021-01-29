@@ -32,9 +32,12 @@ def generic_constant_cmp(const1, const2):
     Generic comparator for most _Constant instances.  They must have a "value"
     attribute whose value supports the builtin comparison operators.
 
-    :param const1: The first _Constant instance
-    :param const2: The second _Constant instance
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        const1: The first _Constant instance
+        const2: The second _Constant instance
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     return generic_cmp(const1.value, const2.value)
@@ -44,9 +47,12 @@ def bool_cmp(value1, value2):
     """
     Compare two boolean constants.
 
-    :param value1: The first BooleanConstant instance
-    :param value2: The second BooleanConstant instance
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        value1: The first BooleanConstant instance
+        value2: The second BooleanConstant instance
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
 
@@ -72,9 +78,12 @@ def hex_cmp(value1, value2):
     Compare two STIX "hex" values.  This decodes to bytes and compares that.
     It does *not* do a string compare on the hex representations.
 
-    :param value1: The first HexConstant
-    :param value2: The second HexConstant
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        value1: The first HexConstant
+        value2: The second HexConstant
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     bytes1 = bytes.fromhex(value1.value)
@@ -88,9 +97,12 @@ def bin_cmp(value1, value2):
     Compare two STIX "binary" values.  This decodes to bytes and compares that.
     It does *not* do a string compare on the base64 representations.
 
-    :param value1: The first BinaryConstant
-    :param value2: The second BinaryConstant
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        value1: The first BinaryConstant
+        value2: The second BinaryConstant
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     bytes1 = base64.standard_b64decode(value1.value)
@@ -103,9 +115,12 @@ def list_cmp(value1, value2):
     """
     Compare lists order-insensitively.
 
-    :param value1: The first ListConstant
-    :param value2: The second ListConstant
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        value1: The first ListConstant
+        value2: The second ListConstant
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
 
@@ -144,9 +159,12 @@ def object_path_component_cmp(comp1, comp2):
     Ints and strings compare as usual to each other; ints compare less than
     strings.
 
-    :param comp1: An object path component (string or int)
-    :param comp2: An object path component (string or int)
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        comp1: An object path component (string or int)
+        comp2: An object path component (string or int)
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
 
@@ -172,8 +190,11 @@ def object_path_to_raw_values(path):
     properties; "*" index steps become that string; and numeric index steps
     become integers.
 
-    :param path: An ObjectPath instance
-    :return: A generator iterator over the values
+    Args:
+        path: An ObjectPath instance
+
+    Returns:
+        A generator iterator over the values
     """
 
     for comp in path.property_path:
@@ -195,9 +216,12 @@ def object_path_cmp(path1, path2):
     """
     Compare two object paths.
 
-    :param path1: The first ObjectPath instance
-    :param path2: The second ObjectPath instance
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        path1: The first ObjectPath instance
+        path2: The second ObjectPath instance
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     if path1.object_type_name < path2.object_type_name:
@@ -224,9 +248,12 @@ def comparison_operator_cmp(op1, op2):
     """
     Compare two comparison operators.
 
-    :param op1: The first comparison operator (a string)
-    :param op2: The second comparison operator (a string)
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        op1: The first comparison operator (a string)
+        op2: The second comparison operator (a string)
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     op1_idx = _COMPARISON_OP_ORDER.index(op1)
@@ -241,9 +268,12 @@ def constant_cmp(value1, value2):
     """
     Compare two constants.
 
-    :param value1: The first _Constant instance
-    :param value2: The second _Constant instance
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        value1: The first _Constant instance
+        value2: The second _Constant instance
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
 
@@ -284,9 +314,12 @@ def simple_comparison_expression_cmp(expr1, expr2):
     Compare "simple" comparison expressions: those which aren't AND/OR
     combinations, just <path> <op> <value> comparisons.
 
-    :param expr1: first _ComparisonExpression instance
-    :param expr2: second _ComparisonExpression instance
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        expr1: first _ComparisonExpression instance
+        expr2: second _ComparisonExpression instance
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
 
@@ -315,9 +348,12 @@ def comparison_expression_cmp(expr1, expr2):
     expressions' sub-components.  To achieve an order-insensitive comparison,
     the ASTs must be canonically ordered first.
 
-    :param expr1: The first comparison expression
-    :param expr2: The second comparison expression
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        expr1: The first comparison expression
+        expr2: The second comparison expression
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     if isinstance(expr1, _ComparisonExpression) \

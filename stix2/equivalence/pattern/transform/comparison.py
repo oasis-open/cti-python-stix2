@@ -22,13 +22,17 @@ def _dupe_ast(ast):
     """
     Create a duplicate of the given AST.
 
-    Note: the comparison expression "leaves", i.e. simple <path> <op> <value>
-    comparisons are currently not duplicated.  I don't think it's necessary as
-    of this writing; they are never changed.  But revisit this if/when
-    necessary.
+    Note:
+        The comparison expression "leaves", i.e. simple <path> <op> <value>
+        comparisons are currently not duplicated.  I don't think it's necessary
+        as of this writing; they are never changed.  But revisit this if/when
+        necessary.
 
-    :param ast: The AST to duplicate
-    :return: The duplicate AST
+    Args:
+        ast: The AST to duplicate
+
+    Returns:
+        The duplicate AST
     """
     if isinstance(ast, AndBooleanExpression):
         result = AndBooleanExpression([
@@ -108,8 +112,11 @@ class ComparisonExpressionTransformer(Transformer):
         Invoke a transformer callback method based on the given ast root node
         type.
 
-        :param ast: The AST
-        :return: The callback's result
+        Args:
+            ast: The AST
+
+        Returns:
+            The callback's result
         """
 
         if isinstance(ast, AndBooleanExpression):
@@ -137,7 +144,7 @@ class ComparisonExpressionTransformer(Transformer):
 
 
 class OrderDedupeTransformer(
-    ComparisonExpressionTransformer
+    ComparisonExpressionTransformer,
 ):
     """
     Canonically order the children of all nodes in the AST.  Because the
@@ -153,8 +160,11 @@ class OrderDedupeTransformer(
         """
         Sort/dedupe children.  AND and OR can be treated identically.
 
-        :param ast: The comparison expression AST
-        :return: The same AST node, but with sorted children
+        Args:
+            ast: The comparison expression AST
+
+        Returns:
+            The same AST node, but with sorted children
         """
         sorted_children = sorted(
             ast.operands, key=functools.cmp_to_key(comparison_expression_cmp),
@@ -201,8 +211,11 @@ class FlattenTransformer(ComparisonExpressionTransformer):
         little difference is that we can absorb AND children if we're an AND
         ourselves; and OR for OR.
 
-        :param ast: The comparison expression AST
-        :return: The same AST node, but with flattened children
+        Args:
+            ast: The comparison expression AST
+
+        Returns:
+            The same AST node, but with flattened children
         """
 
         changed = False
@@ -234,7 +247,7 @@ class FlattenTransformer(ComparisonExpressionTransformer):
 
 
 class AbsorptionTransformer(
-    ComparisonExpressionTransformer
+    ComparisonExpressionTransformer,
 ):
     """
     Applies boolean "absorption" rules for AST simplification.  E.g.:

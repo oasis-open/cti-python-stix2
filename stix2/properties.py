@@ -9,15 +9,15 @@ import uuid
 
 from six import string_types, text_type
 
-import stix2
-
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
     MutuallyExclusivePropertiesError, STIXError,
 )
-from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
+from .parsing import parse, parse_observable
+from .registry import STIX2_OBJ_MAPS
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
+from .version import DEFAULT_VERSION
 
 ID_REGEX_interoperability = re.compile(r"[0-9a-fA-F]{8}-"
                                        "[0-9a-fA-F]{4}-"
@@ -256,9 +256,11 @@ class ListProperty(Property):
                     valid = self.contained(**item)
 
                 else:
-                    raise ValueError("Can't create a {} out of {}".format(
-                        self.contained._type, str(item),
-                    ))
+                    raise ValueError(
+                        "Can't create a {} out of {}".format(
+                            self.contained._type, str(item),
+                        ),
+                    )
 
                 result.append(valid)
 
@@ -282,7 +284,7 @@ class StringProperty(Property):
 
 class TypeProperty(Property):
 
-    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+    def __init__(self, type, spec_version=DEFAULT_VERSION):
         _validate_type(type, spec_version)
         self.spec_version = spec_version
         super(TypeProperty, self).__init__(fixed=type)
@@ -290,7 +292,7 @@ class TypeProperty(Property):
 
 class IDProperty(Property):
 
-    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+    def __init__(self, type, spec_version=DEFAULT_VERSION):
         self.required_prefix = type + "--"
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
@@ -390,7 +392,7 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -479,7 +481,7 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
@@ -511,14 +513,14 @@ class ReferenceProperty(Property):
         possible_prefix = value[:value.index('--')]
 
         if self.valid_types:
-            ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
+            ref_valid_types = enumerate_types(self.valid_types, self.spec_version)
 
             if possible_prefix in ref_valid_types or self.allow_custom:
                 required_prefix = possible_prefix + '--'
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
         elif self.invalid_types:
-            ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
+            ref_invalid_types = enumerate_types(self.invalid_types, self.spec_version)
 
             if possible_prefix not in ref_invalid_types:
                 required_prefix = possible_prefix + '--'
@@ -613,7 +615,7 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
@@ -648,7 +650,7 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
+    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
         self.allow_custom = allow_custom
         self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
@@ -663,9 +665,7 @@ class ExtensionsProperty(DictionaryProperty):
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
 
-        v = 'v' + self.spec_version.replace('.', '')
-
-        specific_type_map = STIX2_OBJ_MAPS[v]['observable-extensions'].get(self.enclosing_type, {})
+        specific_type_map = STIX2_OBJ_MAPS[self.spec_version]['observable-extensions'].get(self.enclosing_type, {})
         for key, subvalue in dictified.items():
             if key in specific_type_map:
                 cls = specific_type_map[key]
@@ -690,7 +690,7 @@ class ExtensionsProperty(DictionaryProperty):
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, interoperability=False, *args, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, interoperability=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         self.interoperability = interoperability
@@ -699,8 +699,10 @@ class STIXObjectProperty(Property):
     def clean(self, value):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
-        if any(x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
-               for x in get_class_hierarchy_names(value)):
+        if any(
+            x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
+            for x in get_class_hierarchy_names(value)
+        ):
             # A simple "is this a spec version 2.1+ object" test.  For now,
             # limit 2.0 bundles to 2.0 objects.  It's not possible yet to
             # have validation co-constraints among properties, e.g. have

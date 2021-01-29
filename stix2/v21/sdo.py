@@ -122,9 +122,13 @@ class Grouping(_DomainObject):
         ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('name', StringProperty()),
+        ('description', StringProperty()),
+        ('context', StringProperty(required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -132,10 +136,6 @@ class Grouping(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
-        ('name', StringProperty()),
-        ('description', StringProperty()),
-        ('context', StringProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
     ])
 
 
@@ -240,13 +240,6 @@ class Infrastructure(_DomainObject):
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-        ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty)),
-        ('confidence', IntegerProperty()),
-        ('lang', StringProperty()),
-        ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-        ('granular_markings', ListProperty(GranularMarking)),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('infrastructure_types', ListProperty(StringProperty)),
@@ -254,6 +247,13 @@ class Infrastructure(_DomainObject):
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def _check_object_constraints(self):
@@ -478,16 +478,9 @@ class MalwareAnalysis(_DomainObject):
         ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty)),
-        ('confidence', IntegerProperty()),
-        ('lang', StringProperty()),
-        ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-        ('granular_markings', ListProperty(GranularMarking)),
         ('product', StringProperty(required=True)),
         ('version', StringProperty()),
         ('host_vm_ref', ReferenceProperty(valid_types='software', spec_version='2.1')),
@@ -503,7 +496,14 @@ class MalwareAnalysis(_DomainObject):
         ('result_name', StringProperty()),
         ('result', StringProperty()),
         ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="SCO", spec_version='2.1'))),
-        ('sample_ref', ReferenceProperty(valid_types="SCO", spec_version="2.1")),
+        ('sample_ref', ReferenceProperty(valid_types="SCO", spec_version='2.1')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
     ])
 
     def _check_object_constraints(self):
@@ -794,27 +794,29 @@ def CustomObject(type='x-custom-type', properties=None):
 
     """
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [
-                ('type', TypeProperty(type, spec_version='2.1')),
-                ('spec_version', StringProperty(fixed='2.1')),
-                ('id', IDProperty(type, spec_version='2.1')),
-                ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-            ],
-            [x for x in properties if not x[0].startswith('x_')],
-            [
-                ('revoked', BooleanProperty(default=lambda: False)),
-                ('labels', ListProperty(StringProperty)),
-                ('confidence', IntegerProperty()),
-                ('lang', StringProperty()),
-                ('external_references', ListProperty(ExternalReference)),
-                ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-                ('granular_markings', ListProperty(GranularMarking)),
-            ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-        ]))
+        _properties = list(
+            itertools.chain.from_iterable([
+                [
+                    ('type', TypeProperty(type, spec_version='2.1')),
+                    ('spec_version', StringProperty(fixed='2.1')),
+                    ('id', IDProperty(type, spec_version='2.1')),
+                    ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+                    ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+                ],
+                [x for x in properties if not x[0].startswith('x_')],
+                [
+                    ('revoked', BooleanProperty(default=lambda: False)),
+                    ('labels', ListProperty(StringProperty)),
+                    ('confidence', IntegerProperty()),
+                    ('lang', StringProperty()),
+                    ('external_references', ListProperty(ExternalReference)),
+                    ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+                    ('granular_markings', ListProperty(GranularMarking)),
+                ],
+                sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
+            ]),
+        )
         return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 
     return wrapper

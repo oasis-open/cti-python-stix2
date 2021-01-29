@@ -38,8 +38,11 @@ def _dupe_ast(ast):
     observation expressions are currently not duplicated.  I don't think it's
     necessary as of this writing.  But revisit this if/when necessary.
 
-    :param ast: The AST to duplicate
-    :return: The duplicate AST
+    Args:
+        ast: The AST to duplicate
+
+    Returns:
+        The duplicate AST
     """
     if isinstance(ast, AndObservationExpression):
         result = AndObservationExpression([
@@ -149,9 +152,11 @@ class ObservationExpressionTransformer(Transformer):
             changed = True
 
         else:
-            raise TypeError("Not an observation expression: {}: {}".format(
-                type(ast).__name__, str(ast),
-            ))
+            raise TypeError(
+                "Not an observation expression: {}: {}".format(
+                    type(ast).__name__, str(ast),
+                ),
+            )
 
         return result, changed
 
@@ -160,8 +165,11 @@ class ObservationExpressionTransformer(Transformer):
         Invoke a transformer callback method based on the given ast root node
         type.
 
-        :param ast: The AST
-        :return: The callback's result
+        Args:
+            ast: The AST
+
+        Returns:
+            The callback's result
         """
 
         dispatch_name = self._DISPATCH_NAME_MAP.get(type(ast))
@@ -223,7 +231,7 @@ class FlattenTransformer(ObservationExpressionTransformer):
 
 
 class OrderDedupeTransformer(
-    ObservationExpressionTransformer
+    ObservationExpressionTransformer,
 ):
     """
     Canonically order AND/OR expressions, and dedupe ORs.  E.g.:
@@ -266,7 +274,7 @@ class OrderDedupeTransformer(
 
 
 class AbsorptionTransformer(
-    ObservationExpressionTransformer
+    ObservationExpressionTransformer,
 ):
     """
     Applies boolean "absorption" rules for observation expressions, for AST
@@ -292,10 +300,12 @@ class AbsorptionTransformer(
         the right does not "contain" the left.  You would need two A's on the
         right.
 
-        :param exprs_containee: The expressions we want to check for containment
-        :param exprs_container: The expressions acting as the "container"
-        :return: True if the containee is contained in the container; False if
-            not
+        Args:
+            exprs_containee: The expressions we want to check for containment
+            exprs_container: The expressions acting as the "container"
+
+        Returns:
+            True if the containee is contained in the container; False if not
         """
 
         # make our own list we are free to manipulate without affecting the
@@ -336,10 +346,12 @@ class AbsorptionTransformer(
         in the container (rhs), B follows A, so it "contains" the lhs even
         though there is other stuff mixed in.
 
-        :param exprs_containee: The expressions we want to check for containment
-        :param exprs_container: The expressions acting as the "container"
-        :return: True if the containee is contained in the container; False if
-            not
+        Args:
+            exprs_containee: The expressions we want to check for containment
+            exprs_container: The expressions acting as the "container"
+
+        Returns:
+            True if the containee is contained in the container; False if not
         """
 
         ee_iter = iter(exprs_containee)
@@ -469,7 +481,7 @@ class DNFTransformer(ObservationExpressionTransformer):
 
 
 class CanonicalizeComparisonExpressionsTransformer(
-    ObservationExpressionTransformer
+    ObservationExpressionTransformer,
 ):
     """
     Canonicalize all comparison expressions.

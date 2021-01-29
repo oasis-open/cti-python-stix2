@@ -64,9 +64,12 @@ def observation_expression_cmp(expr1, expr2):
     the expressions' sub-components.  To achieve an order-insensitive
     comparison, the ASTs must be canonically ordered first.
 
-    :param expr1: The first observation expression
-    :param expr2: The second observation expression
-    :return: <0, 0, or >0 depending on whether the first arg is less, equal or
+    Args:
+        expr1: The first observation expression
+        expr2: The second observation expression
+
+    Returns:
+        <0, 0, or >0 depending on whether the first arg is less, equal or
         greater than the second
     """
     type1 = type(expr1)
