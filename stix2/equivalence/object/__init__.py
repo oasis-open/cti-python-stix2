@@ -9,7 +9,7 @@ from ..pattern import equivalent_patterns
 logger = logging.getLogger(__name__)
 
 
-def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
+def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
     """This method verifies if two objects of the same type are
     semantically equivalent.
 
@@ -312,7 +312,7 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
     if len(objects1) > 0 and len(objects2) > 0:
         for o1 in objects1:
             for o2 in objects2:
-                result = semantically_equivalent(o1, o2, **weights)
+                result = object_similarity(o1, o2, **weights)
                 if ref1 not in results:
                     results[ref1] = {"matched": ref2, "value": result}
                 elif result > results[ref1]["value"]:
@@ -337,7 +337,7 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
         else:
             o1, o2 = ds1.get(ref1), ds2.get(ref2)
             if o1 and o2:
-                result = semantically_equivalent(o1, o2, **weights) / 100.0
+                result = object_similarity(o1, o2, **weights) / 100.0
 
     logger.debug(
         "--\t\treference_check '%s' '%s'\tresult: '%s'",

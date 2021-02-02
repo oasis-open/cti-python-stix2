@@ -1,15 +1,17 @@
 """Python APIs for STIX 2 Graph-based Semantic Equivalence."""
+import collections
+import itertools
 import logging
 
 from ..object import (
     WEIGHTS, exact_match, list_reference_check, partial_string_based,
-    partial_timestamp_based, reference_check, semantically_equivalent,
+    partial_timestamp_based, reference_check, object_similarity,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
+def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
     """This method verifies if two graphs are semantically equivalent.
     Each DataStore can contain a connected or disconnected graph and the
     final result is weighted over the amount of objects we managed to compare.
@@ -44,49 +46,48 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
         see `the Committee Note <link here>`__.
 
     """
+    results = {}
+    equivalence_score = 0
     weights = GRAPH_WEIGHTS.copy()
 
     if weight_dict:
         weights.update(weight_dict)
 
-    results = {}
     depth = weights["_internal"]["max_depth"]
 
-    graph1 = ds1.query([])
-    graph2 = ds2.query([])
+    graph1 = bucket_per_type(ds1.query([]))
+    graph2 = bucket_per_type(ds2.query([]))
+    pairs = object_pairs(graph1, graph2, weights)
 
-    graph1.sort(key=lambda x: x["type"])
-    graph2.sort(key=lambda x: x["type"])
-
-    if len(graph1) < len(graph2):
+    for object1, object2 in pairs:
+        iprop_score1 = {}
+        iprop_score2 = {}
+        object1_id = object1["id"]
+        object2_id = object2["id"]
+        weights["_internal"]["max_depth"] = depth
         weights["_internal"]["ds1"] = ds1
         weights["_internal"]["ds2"] = ds2
-        g1 = graph1
-        g2 = graph2
-    else:
+        result1 = object_similarity(object1, object2, iprop_score1, **weights)
+
         weights["_internal"]["ds1"] = ds2
         weights["_internal"]["ds2"] = ds1
-        g1 = graph2
-        g2 = graph1
+        result2 = object_similarity(object2, object1, iprop_score2, **weights)
 
-    for object1 in g1:
-        for object2 in g2:
-            if object1["type"] == object2["type"] and object1["type"] in weights:
-                iprop_score = {}
-                result = semantically_equivalent(object1, object2, iprop_score, **weights)
-                objects1_id = object1["id"]
-                weights["_internal"]["max_depth"] = depth
+        if object1_id not in results:
+            results[object1_id] = {"lhs": object1["id"], "rhs": object2["id"], "prop_score": iprop_score1, "value": result1}
+        elif result1 > results[object1_id]["value"]:
+            results[object1_id] = {"lhs": object1["id"], "rhs": object2["id"], "prop_score": iprop_score1, "value": result1}
 
-                if objects1_id not in results:
-                    results[objects1_id] = {"matched": object2["id"], "prop_score": iprop_score, "value": result}
-                elif result > results[objects1_id]["value"]:
-                    results[objects1_id] = {"matched": object2["id"], "prop_score": iprop_score, "value": result}
+        if object2_id not in results:
+            results[object2_id] = {"lhs": object2["id"], "rhs": object1["id"], "prop_score": iprop_score2, "value": result2}
+        elif result1 > results[object2_id]["value"]:
+            results[object2_id] = {"lhs": object2["id"], "rhs": object1["id"], "prop_score": iprop_score2, "value": result2}
 
-    equivalence_score = 0
     matching_score = sum(x["value"] for x in results.values())
-    sum_weights = len(results) * 100.0
+    sum_weights = len(results)
     if sum_weights > 0:
-        equivalence_score = (matching_score / sum_weights) * 100
+        equivalence_score = matching_score / sum_weights
+
     prop_scores["matching_score"] = matching_score
     prop_scores["sum_weights"] = sum_weights
     prop_scores["summary"] = results
@@ -98,6 +99,22 @@ def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
         equivalence_score,
     )
     return equivalence_score
+
+
+def bucket_per_type(g):
+    buckets = collections.defaultdict(list)
+    [buckets[obj["type"]].append(obj) for obj in g]
+    return buckets
+
+
+def object_pairs(g1, g2, w):
+    types_in_common = set(g1.keys()).intersection(g2.keys())
+    testable_types = types_in_common.intersection(w.keys())
+
+    return itertools.chain.from_iterable(
+        itertools.product(g1[stix_type], g2[stix_type])
+        for stix_type in testable_types
+    )
 
 
 # default weights used for the graph semantic equivalence process

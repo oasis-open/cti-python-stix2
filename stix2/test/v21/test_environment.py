@@ -429,7 +429,7 @@ def test_related_to_by_target(ds):
 def test_semantic_equivalence_on_same_attack_pattern1():
     ap1 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
     ap2 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_PATTERN_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ap1, ap2)
+    env = stix2.Environment().object_similarity(ap1, ap2)
     assert round(env) == 100
 
 
@@ -445,14 +445,14 @@ def test_semantic_equivalence_on_same_attack_pattern2():
     )
     ap1 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_KWARGS)
     ap2 = stix2.v21.AttackPattern(id=ATTACK_PATTERN_ID, **ATTACK_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ap1, ap2)
+    env = stix2.Environment().object_similarity(ap1, ap2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_campaign1():
     camp1 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
     camp2 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
-    env = stix2.Environment().semantically_equivalent(camp1, camp2)
+    env = stix2.Environment().object_similarity(camp1, camp2)
     assert round(env) == 100
 
 
@@ -464,14 +464,14 @@ def test_semantic_equivalence_on_same_campaign2():
     )
     camp1 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMP_KWARGS)
     camp2 = stix2.v21.Campaign(id=CAMPAIGN_ID, **CAMP_KWARGS)
-    env = stix2.Environment().semantically_equivalent(camp1, camp2)
+    env = stix2.Environment().object_similarity(camp1, camp2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_identity1():
     iden1 = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
     iden2 = stix2.v21.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
-    env = stix2.Environment().semantically_equivalent(iden1, iden2)
+    env = stix2.Environment().object_similarity(iden1, iden2)
     assert round(env) == 100
 
 
@@ -483,14 +483,14 @@ def test_semantic_equivalence_on_same_identity2():
     )
     iden1 = stix2.v21.Identity(id=IDENTITY_ID, **IDEN_KWARGS)
     iden2 = stix2.v21.Identity(id=IDENTITY_ID, **IDEN_KWARGS)
-    env = stix2.Environment().semantically_equivalent(iden1, iden2)
+    env = stix2.Environment().object_similarity(iden1, iden2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_indicator():
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ind1, ind2)
+    env = stix2.Environment().object_similarity(ind1, ind2)
     assert round(env) == 100
 
 
@@ -498,7 +498,7 @@ def test_semantic_equivalence_on_same_location1():
     location_kwargs = dict(latitude=45, longitude=179)
     loc1 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
     loc2 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
-    env = stix2.Environment().semantically_equivalent(loc1, loc2)
+    env = stix2.Environment().object_similarity(loc1, loc2)
     assert round(env) == 100
 
 
@@ -511,7 +511,7 @@ def test_semantic_equivalence_on_same_location2():
     )
     loc1 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
     loc2 = stix2.v21.Location(id=LOCATION_ID, **location_kwargs)
-    env = stix2.Environment().semantically_equivalent(loc1, loc2)
+    env = stix2.Environment().object_similarity(loc1, loc2)
     assert round(env) == 100
 
 
@@ -519,21 +519,21 @@ def test_semantic_equivalence_location_with_no_latlong():
     loc_kwargs = dict(country="US", administrative_area="US-DC")
     loc1 = stix2.v21.Location(id=LOCATION_ID, **LOCATION_KWARGS)
     loc2 = stix2.v21.Location(id=LOCATION_ID, **loc_kwargs)
-    env = stix2.Environment().semantically_equivalent(loc1, loc2)
+    env = stix2.Environment().object_similarity(loc1, loc2)
     assert round(env) != 100
 
 
 def test_semantic_equivalence_on_same_malware():
     malw1 = stix2.v21.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
     malw2 = stix2.v21.Malware(id=MALWARE_ID, **MALWARE_KWARGS)
-    env = stix2.Environment().semantically_equivalent(malw1, malw2)
+    env = stix2.Environment().object_similarity(malw1, malw2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_threat_actor1():
     ta1 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
     ta2 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_ACTOR_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ta1, ta2)
+    env = stix2.Environment().object_similarity(ta1, ta2)
     assert round(env) == 100
 
 
@@ -545,21 +545,21 @@ def test_semantic_equivalence_on_same_threat_actor2():
     )
     ta1 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_KWARGS)
     ta2 = stix2.v21.ThreatActor(id=THREAT_ACTOR_ID, **THREAT_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ta1, ta2)
+    env = stix2.Environment().object_similarity(ta1, ta2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_tool():
     tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
-    env = stix2.Environment().semantically_equivalent(tool1, tool2)
+    env = stix2.Environment().object_similarity(tool1, tool2)
     assert round(env) == 100
 
 
 def test_semantic_equivalence_on_same_vulnerability1():
     vul1 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
     vul2 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
-    env = stix2.Environment().semantically_equivalent(vul1, vul2)
+    env = stix2.Environment().object_similarity(vul1, vul2)
     assert round(env) == 100
 
 
@@ -584,7 +584,7 @@ def test_semantic_equivalence_on_same_vulnerability2():
     )
     vul1 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULN_KWARGS1)
     vul2 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULN_KWARGS2)
-    env = stix2.Environment().semantically_equivalent(vul1, vul2)
+    env = stix2.Environment().object_similarity(vul1, vul2)
     assert round(env) == 0.0
 
 
@@ -640,7 +640,7 @@ def test_semantic_equivalence_on_unknown_object():
     }
     cust1 = stix2.parse(CUSTOM_KWARGS1, allow_custom=True)
     cust2 = stix2.parse(CUSTOM_KWARGS2, allow_custom=True)
-    env = stix2.Environment().semantically_equivalent(cust1, cust2, **weights)
+    env = stix2.Environment().object_similarity(cust1, cust2, **weights)
     assert round(env) == 0
 
 
@@ -648,7 +648,7 @@ def test_semantic_equivalence_different_type_raises():
     with pytest.raises(ValueError) as excinfo:
         vul1 = stix2.v21.Vulnerability(id=VULNERABILITY_ID, **VULNERABILITY_KWARGS)
         ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
-        stix2.Environment().semantically_equivalent(vul1, ind1)
+        stix2.Environment().object_similarity(vul1, ind1)
 
     assert str(excinfo.value) == "The objects to compare must be of the same type!"
 
@@ -661,7 +661,7 @@ def test_semantic_equivalence_different_spec_version_raises():
         )
         ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
         ind2 = stix2.v20.Indicator(id=INDICATOR_ID, **V20_KWARGS)
-        stix2.Environment().semantically_equivalent(ind1, ind2)
+        stix2.Environment().object_similarity(ind1, ind2)
 
     assert str(excinfo.value) == "The objects to compare must be of the same spec version!"
 
@@ -686,7 +686,7 @@ def test_semantic_equivalence_zero_match():
     }
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **IND_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ind1, ind2, **weights)
+    env = stix2.Environment().object_similarity(ind1, ind2, **weights)
     assert round(env) == 0
 
 
@@ -708,7 +708,7 @@ def test_semantic_equivalence_different_spec_version():
     }
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v20.Indicator(id=INDICATOR_ID, **IND_KWARGS)
-    env = stix2.Environment().semantically_equivalent(ind1, ind2, **weights)
+    env = stix2.Environment().object_similarity(ind1, ind2, **weights)
     assert round(env) == 0
 
 
@@ -800,7 +800,7 @@ def test_semantic_equivalence_exact_match():
 def test_non_existent_config_for_object():
     r1 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
     r2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
-    assert stix2.Environment().semantically_equivalent(r1, r2) == 0.0
+    assert stix2.Environment().object_similarity(r1, r2) == 0.0
 
 
 def custom_semantic_equivalence_method(obj1, obj2, **weights):
@@ -824,7 +824,7 @@ def test_semantic_equivalence_method_provided():
 
     tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
-    env = stix2.Environment().semantically_equivalent(tool1, tool2, **weights)
+    env = stix2.Environment().object_similarity(tool1, tool2, **weights)
     assert round(env) == 96
 
 
@@ -838,7 +838,7 @@ def test_semantic_equivalence_prop_scores():
 
     tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
-    stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores)
+    stix2.Environment().object_similarity(tool1, tool2, prop_scores)
     assert len(prop_scores) == 4
     assert round(prop_scores["matching_score"], 1) == 8.9
     assert round(prop_scores["sum_weights"], 1) == 100.0
@@ -868,7 +868,7 @@ def test_semantic_equivalence_prop_scores_method_provided():
 
     tool1 = stix2.v21.Tool(id=TOOL_ID, **TOOL_KWARGS)
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
-    env = stix2.Environment().semantically_equivalent(tool1, tool2, prop_scores, **weights)
+    env = stix2.Environment().object_similarity(tool1, tool2, prop_scores, **weights)
     assert round(env) == 96
     assert len(prop_scores) == 2
     assert prop_scores["matching_score"] == 96.0
@@ -964,12 +964,19 @@ def test_graph_equivalence_with_filesystem_source(ds):
             "max_depth": 1,
         },
     }
-    prop_scores = {}
+    prop_scores1 = {}
+    prop_scores2 = {}
     fs = stix2.FileSystemSource(FS_PATH)
-    env = stix2.Environment().graphically_equivalent(fs, ds, prop_scores, **weights)
-    assert round(env) == 24
-    assert round(prop_scores["matching_score"]) == 122
-    assert round(prop_scores["sum_weights"]) == 500
+    env = stix2.Environment().graph_similarity(fs, ds, prop_scores1, **weights)
+    assert round(env) == 26
+    assert round(prop_scores1["matching_score"]) == 460
+    assert round(prop_scores1["sum_weights"]) == 18
+
+    env = stix2.Environment().graph_similarity(ds, fs, prop_scores2, **weights)
+    assert round(env) == 47
+    assert round(prop_scores2["matching_score"]) == 852
+    assert round(prop_scores2["sum_weights"]) == 18
+    assert prop_scores1 == prop_scores2
 
 
 def test_graph_equivalence_with_duplicate_graph(ds):
@@ -981,10 +988,10 @@ def test_graph_equivalence_with_duplicate_graph(ds):
         },
     }
     prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds, prop_scores, **weights)
+    env = stix2.Environment().graph_similarity(ds, ds, prop_scores, **weights)
     assert round(env) == 100
     assert round(prop_scores["matching_score"]) == 800
-    assert round(prop_scores["sum_weights"]) == 800
+    assert round(prop_scores["sum_weights"]) == 8
 
 
 def test_graph_equivalence_with_versioning_check_on(ds2, ds):
@@ -996,10 +1003,10 @@ def test_graph_equivalence_with_versioning_check_on(ds2, ds):
         },
     }
     prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
+    env = stix2.Environment().graph_similarity(ds, ds2, prop_scores, **weights)
     assert round(env) == 93
     assert round(prop_scores["matching_score"]) == 745
-    assert round(prop_scores["sum_weights"]) == 800
+    assert round(prop_scores["sum_weights"]) == 8
 
 
 def test_graph_equivalence_with_versioning_check_off(ds2, ds):
@@ -1011,7 +1018,7 @@ def test_graph_equivalence_with_versioning_check_off(ds2, ds):
         },
     }
     prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
+    env = stix2.Environment().graph_similarity(ds, ds2, prop_scores, **weights)
     assert round(env) == 93
     assert round(prop_scores["matching_score"]) == 745
-    assert round(prop_scores["sum_weights"]) == 800
+    assert round(prop_scores["sum_weights"]) == 8

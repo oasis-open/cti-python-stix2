@@ -2,12 +2,12 @@
 import copy
 
 from .datastore import CompositeDataSource, DataStoreMixin
-from .equivalence.graph import graphically_equivalent
+from .equivalence.graph import graph_similarity
 from .equivalence.object import (  # noqa: F401
     WEIGHTS, check_property_present, custom_pattern_based, exact_match,
     list_reference_check, partial_external_reference_based, partial_list_based,
     partial_location_distance, partial_string_based, partial_timestamp_based,
-    reference_check, semantically_equivalent,
+    reference_check, object_similarity,
 )
 from .parsing import parse as _parse
 
@@ -197,7 +197,7 @@ class Environment(DataStoreMixin):
             return None
 
     @staticmethod
-    def semantically_equivalent(obj1, obj2, prop_scores={}, **weight_dict):
+    def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
         """This method verifies if two objects of the same type are
         semantically equivalent.
 
@@ -229,10 +229,10 @@ class Environment(DataStoreMixin):
             see `the Committee Note <link here>`__.
 
         """
-        return semantically_equivalent(obj1, obj2, prop_scores, **weight_dict)
+        return object_similarity(obj1, obj2, prop_scores, **weight_dict)
 
     @staticmethod
-    def graphically_equivalent(ds1, ds2, prop_scores={}, **weight_dict):
+    def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
         """This method verifies if two graphs are semantically equivalent.
         Each DataStore can contain a connected or disconnected graph and the
         final result is weighted over the amount of objects we managed to compare.
@@ -267,4 +267,4 @@ class Environment(DataStoreMixin):
             see `the Committee Note <link here>`__.
 
         """
-        return graphically_equivalent(ds1, ds2, prop_scores, **weight_dict)
+        return graph_similarity(ds1, ds2, prop_scores, **weight_dict)
