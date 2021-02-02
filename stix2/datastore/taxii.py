@@ -35,9 +35,12 @@ class TAXIICollectionStore(DataStoreMixin):
             side(retrieving data) and False for TAXIICollectionSink
             side(pushing data). However, when parameter is supplied, it will
             be applied to both TAXIICollectionSource/Sink.
+        items_per_page (int): How many STIX objects to request per call
+            to TAXII Server. The value can be tuned, but servers may override
+            if their internal limit is surpassed. Used by TAXIICollectionSource
 
     """
-    def __init__(self, collection, allow_custom=None):
+    def __init__(self, collection, allow_custom=None, items_per_page=5000):
         if allow_custom is None:
             allow_custom_source = True
             allow_custom_sink = False
@@ -45,7 +48,7 @@ class TAXIICollectionStore(DataStoreMixin):
             allow_custom_sink = allow_custom_source = allow_custom
 
         super(TAXIICollectionStore, self).__init__(
-            source=TAXIICollectionSource(collection, allow_custom=allow_custom_source),
+            source=TAXIICollectionSource(collection, allow_custom=allow_custom_source, items_per_page=items_per_page),
             sink=TAXIICollectionSink(collection, allow_custom=allow_custom_sink),
         )
 
@@ -147,7 +150,7 @@ class TAXIICollectionSource(DataSource):
         allow_custom (bool): Whether to allow custom STIX content to be
             added to the FileSystemSink. Default: True
         items_per_page (int): How many STIX objects to request per call
-            to TAXII Server. This value is tunable, but servers may override
+            to TAXII Server. The value can be tuned, but servers may override
             if their internal limit is surpassed.
 
     """
@@ -295,12 +298,7 @@ class TAXIICollectionSource(DataSource):
         all_data = []
         try:
             if isinstance(self.collection, tcv21.Collection):
-                envelope = self.collection.get_objects(**taxii_filters_dict)
-                all_data.extend(envelope.get("objects", []))
-
-                # The while loop will not be executed if the response is received in full.
-                while envelope.get("more", False):
-                    envelope = self.collection.get_objects(limit=self.items_per_page, next=envelope.get("next", ""), **taxii_filters_dict)
+                for envelope in tcv21.as_pages(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
                     all_data.extend(envelope.get("objects", []))
             else:
                 for bundle in tcv20.as_pages(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
