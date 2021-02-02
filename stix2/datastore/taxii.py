@@ -297,12 +297,10 @@ class TAXIICollectionSource(DataSource):
         # query TAXII collection
         all_data = []
         try:
-            if isinstance(self.collection, tcv21.Collection):
-                for envelope in tcv21.as_pages(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
-                    all_data.extend(envelope.get("objects", []))
-            else:
-                for bundle in tcv20.as_pages(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
-                    all_data.extend(bundle.get("objects", []))
+            paged_request = tcv21.as_pages if isinstance(self.collection, tcv21.Collection) else tcv20.as_pages
+
+            for resource in paged_request(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
+                all_data.extend(resource.get("objects", []))
 
             # deduplicate data (before filtering as reduces wasted filtering)
             all_data = deduplicate(all_data)
