@@ -225,8 +225,8 @@ def test_obs_absorb_not_equivalent(patt1, patt2):
         ),
         (
             "([a:b=1] OR [a:b=2]) FOLLOWEDBY ([a:b=5] AND [a:b=6])",
-            "([a:b=1] FOLLOWEDBY ([a:b=5] AND [a:b=6])) OR ([a:b=2] FOLLOWEDBY ([a:b=5] AND [a:b=6]))"
-        )
+            "([a:b=1] FOLLOWEDBY ([a:b=5] AND [a:b=6])) OR ([a:b=2] FOLLOWEDBY ([a:b=5] AND [a:b=6]))",
+        ),
     ],
 )
 def test_obs_dnf_equivalent(patt1, patt2):
@@ -249,8 +249,8 @@ def test_obs_dnf_equivalent(patt1, patt2):
         ),
         (
             "[a:b=1] FOLLOWEDBY ([a:b=2] OR [a:b=3])",
-            "([a:b=2] FOLLOWEDBY [a:b=1]) OR ([a:b=1] FOLLOWEDBY [a:b=3])"
-        )
+            "([a:b=2] FOLLOWEDBY [a:b=1]) OR ([a:b=1] FOLLOWEDBY [a:b=3])",
+        ),
     ],
 )
 def test_obs_not_equivalent(patt1, patt2):
