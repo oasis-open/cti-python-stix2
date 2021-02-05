@@ -124,7 +124,7 @@ def _is_versionable_type(data):
             # map to a registered class, and from that get a more complete
             # picture of its properties.
 
-            cls = stix2.registry.class_for_type(data["type"], stix_version)
+            cls = stix2.registry.class_for_type(data.get("type"), stix_version)
             if cls:
                 is_versionable = _VERSIONING_PROPERTIES.issubset(
                     cls._properties,
