@@ -161,6 +161,13 @@ def _setup_workbench():
         new_class = type(obj_type.__name__, (obj_type,), new_class_dict)
         factory_func = functools.partial(_environ.create, new_class)
 
+        # Copy over some class attributes that other code expects to find
+        factory_func._type = obj_type._type
+        factory_func._properties = obj_type._properties
+        if hasattr(obj_type, "_id_contributing_properties"):
+            factory_func._id_contributing_properties = \
+                obj_type._id_contributing_properties
+
         # Add our new "class" to this module's globals and to the library-wide
         # mapping.  This allows parse() to use the wrapped classes.
         globals()[obj_type.__name__] = factory_func
