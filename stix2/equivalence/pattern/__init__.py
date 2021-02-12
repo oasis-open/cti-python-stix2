@@ -14,8 +14,8 @@ from ...version import DEFAULT_VERSION
 from .compare.observation import observation_expression_cmp
 from .transform import ChainTransformer, SettleTransformer
 from .transform.observation import (
-    AbsorptionTransformer, NormalizeComparisonExpressionsTransformer,
-    DNFTransformer, FlattenTransformer, OrderDedupeTransformer,
+    AbsorptionTransformer, DNFTransformer, FlattenTransformer,
+    NormalizeComparisonExpressionsTransformer, OrderDedupeTransformer,
 )
 
 # Lazy-initialize
