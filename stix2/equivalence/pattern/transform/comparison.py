@@ -46,7 +46,7 @@ def _dupe_ast(ast):
 
     elif isinstance(ast, _ComparisonExpression):
         # Change this to create a dupe, if we ever need to change simple
-        # comparison expressions as part of canonicalization.
+        # comparison expressions as part of normalization.
         result = ast
 
     else:
