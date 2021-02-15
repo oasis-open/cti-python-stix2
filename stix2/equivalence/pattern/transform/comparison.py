@@ -46,7 +46,7 @@ def _dupe_ast(ast):
 
     elif isinstance(ast, _ComparisonExpression):
         # Change this to create a dupe, if we ever need to change simple
-        # comparison expressions as part of canonicalization.
+        # comparison expressions as part of normalization.
         result = ast
 
     else:
@@ -147,9 +147,8 @@ class OrderDedupeTransformer(
     ComparisonExpressionTransformer,
 ):
     """
-    Canonically order the children of all nodes in the AST.  Because the
-    deduping algorithm is based on sorted data, this transformation also does
-    deduping.
+    Order the children of all nodes in the AST.  Because the deduping algorithm
+    is based on sorted data, this transformation also does deduping.
 
     E.g.:
         A and A => A

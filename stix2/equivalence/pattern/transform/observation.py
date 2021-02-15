@@ -234,7 +234,7 @@ class OrderDedupeTransformer(
     ObservationExpressionTransformer,
 ):
     """
-    Canonically order AND/OR expressions, and dedupe ORs.  E.g.:
+    Order AND/OR expressions, and dedupe ORs.  E.g.:
 
         A or A => A
         B or A => A or B
@@ -489,11 +489,11 @@ class DNFTransformer(ObservationExpressionTransformer):
         return self.__transform(ast)
 
 
-class CanonicalizeComparisonExpressionsTransformer(
+class NormalizeComparisonExpressionsTransformer(
     ObservationExpressionTransformer,
 ):
     """
-    Canonicalize all comparison expressions.
+    Normalize all comparison expressions.
     """
     def __init__(self):
         comp_flatten = CFlattenTransformer()
@@ -504,13 +504,13 @@ class CanonicalizeComparisonExpressionsTransformer(
 
         comp_special = SpecialValueCanonicalization()
         comp_dnf = CDNFTransformer()
-        self.__comp_canonicalize = ChainTransformer(
+        self.__comp_normalize = ChainTransformer(
             comp_special, settle_simplify, comp_dnf, settle_simplify,
         )
 
     def transform_observation(self, ast):
         comp_expr = ast.operand
-        canon_comp_expr, changed = self.__comp_canonicalize.transform(comp_expr)
-        ast.operand = canon_comp_expr
+        norm_comp_expr, changed = self.__comp_normalize.transform(comp_expr)
+        ast.operand = norm_comp_expr
 
         return ast, changed
