@@ -234,7 +234,7 @@ class OrderDedupeTransformer(
     ObservationExpressionTransformer,
 ):
     """
-    Canonically order AND/OR expressions, and dedupe ORs.  E.g.:
+    Order AND/OR expressions, and dedupe ORs.  E.g.:
 
         A or A => A
         B or A => A or B

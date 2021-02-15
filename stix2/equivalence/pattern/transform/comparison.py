@@ -147,9 +147,8 @@ class OrderDedupeTransformer(
     ComparisonExpressionTransformer,
 ):
     """
-    Canonically order the children of all nodes in the AST.  Because the
-    deduping algorithm is based on sorted data, this transformation also does
-    deduping.
+    Order the children of all nodes in the AST.  Because the deduping algorithm
+    is based on sorted data, this transformation also does deduping.
 
     E.g.:
         A and A => A
