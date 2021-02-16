@@ -398,9 +398,9 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     weighted on the amount of unique objects that could 1) be de-referenced 2) """
     results = {}
 
-    pairs = object_pairs(
-        bucket_per_type(refs1, "id-split"),
-        bucket_per_type(refs2, "id-split"),
+    pairs = _object_pairs(
+        _bucket_per_type(refs1, "id-split"),
+        _bucket_per_type(refs2, "id-split"),
         weights,
     )
 
@@ -433,7 +433,10 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     return result
 
 
-def bucket_per_type(g, mode="type"):
+def _bucket_per_type(g, mode="type"):
+    """Given a list of objects or references, bucket them by type.
+    Depending on the list type: extract from 'type' property or using
+    the 'id'"""
     buckets = collections.defaultdict(list)
     if mode == "type":
         [buckets[obj["type"]].append(obj) for obj in g]
@@ -442,7 +445,10 @@ def bucket_per_type(g, mode="type"):
     return buckets
 
 
-def object_pairs(g1, g2, w):
+def _object_pairs(g1, g2, w):
+    """Returns a generator with the product of the comparable
+    objects for the graph similarity process. It determines
+    objects in common between graphs and objects with weights."""
     types_in_common = set(g1.keys()).intersection(g2.keys())
     testable_types = types_in_common.intersection(w.keys())
 

@@ -2,9 +2,9 @@
 import logging
 
 from ..object import (
-    WEIGHTS, bucket_per_type, exact_match, list_reference_check, object_pairs,
-    object_similarity, partial_string_based, partial_timestamp_based,
-    reference_check,
+    WEIGHTS, _bucket_per_type, _object_pairs, exact_match,
+    list_reference_check, object_similarity, partial_string_based,
+    partial_timestamp_based, reference_check,
 )
 
 logger = logging.getLogger(__name__)
@@ -99,9 +99,11 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
         raise ValueError("weight_dict['_internal']['max_depth'] must be greater than 0")
     depth = weights["_internal"]["max_depth"]
 
-    graph1 = bucket_per_type(ds1.query([]))
-    graph2 = bucket_per_type(ds2.query([]))
-    pairs = object_pairs(graph1, graph2, weights)
+    pairs = _object_pairs(
+        _bucket_per_type(ds1.query([])),
+        _bucket_per_type(ds2.query([])),
+        weights,
+    )
 
     for object1, object2 in pairs:
         iprop_score1 = {}
