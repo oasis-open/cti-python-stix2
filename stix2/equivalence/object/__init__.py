@@ -1,4 +1,6 @@
-"""Python APIs for STIX 2 Object-based Semantic Equivalence."""
+"""Python APIs for STIX 2 Object-based Semantic Equivalence and Similarity."""
+import collections
+import itertools
 import logging
 import time
 
@@ -9,9 +11,52 @@ from ..pattern import equivalent_patterns
 logger = logging.getLogger(__name__)
 
 
+def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
+    """This method returns a true/false value if two objects are semantically equivalent.
+    Internally, it calls the object_similarity function and compares it against the given
+    threshold value.
+
+    Args:
+        obj1: A stix2 object instance
+        obj2: A stix2 object instance
+        prop_scores: A dictionary that can hold individual property scores,
+            weights, contributing score, matching score and sum of weights.
+        threshold: A numerical value between 0 and 100 to determine the minimum
+            score to result in successfully calling both objects equivalent. This
+            value can be tuned.
+        weight_dict: A dictionary that can be used to override settings
+            in the semantic equivalence process
+
+    Returns:
+        bool: True if the result of the object similarity is greater than or equal to
+            the threshold value. False otherwise.
+
+    Warning:
+        Object types need to have property weights defined for the similarity process.
+        Otherwise, those objects will not influence the final score. The WEIGHTS
+        dictionary under `stix2.equivalence.object` can give you an idea on how to add
+        new entries and pass them via the `weight_dict` argument. Similarly, the values
+        or methods can be fine tuned for a particular use case.
+
+    Note:
+        Default weight_dict:
+
+        .. include:: ../../object_default_sem_eq_weights.rst
+
+    Note:
+        This implementation follows the Semantic Equivalence Committee Note.
+        see `the Committee Note <link here>`__.
+
+    """
+    similarity_result = object_similarity(obj1, obj2, prop_scores, **weight_dict)
+    if similarity_result >= threshold:
+        return True
+    return False
+
+
 def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
-    """This method verifies if two objects of the same type are
-    semantically equivalent.
+    """This method returns a measure of similarity depending on how
+    similar the two objects are.
 
     Args:
         obj1: A stix2 object instance
@@ -22,17 +67,17 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
             in the semantic equivalence process
 
     Returns:
-        float: A number between 0.0 and 100.0 as a measurement of equivalence.
+        float: A number between 0.0 and 100.0 as a measurement of similarity.
 
     Warning:
-        Object types need to have property weights defined for the equivalence process.
+        Object types need to have property weights defined for the similarity process.
         Otherwise, those objects will not influence the final score. The WEIGHTS
         dictionary under `stix2.equivalence.object` can give you an idea on how to add
         new entries and pass them via the `weight_dict` argument. Similarly, the values
         or methods can be fine tuned for a particular use case.
 
     Note:
-        Default weights_dict:
+        Default weight_dict:
 
         .. include:: ../../object_default_sem_eq_weights.rst
 
@@ -352,34 +397,31 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     The score influences the objects containing these references. The result is
     weighted on the amount of unique objects that could 1) be de-referenced 2) """
     results = {}
-    if len(refs1) >= len(refs2):
-        l1 = refs1
-        l2 = refs2
-        b1 = ds1
-        b2 = ds2
-    else:
-        l1 = refs2
-        l2 = refs1
-        b1 = ds2
-        b2 = ds1
 
-    l1.sort()
-    l2.sort()
+    pairs = object_pairs(
+        bucket_per_type(refs1, "id-split"),
+        bucket_per_type(refs2, "id-split"),
+        weights
+    )
 
-    for ref1 in l1:
-        for ref2 in l2:
-            type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
-            if type1 == type2:
-                score = reference_check(ref1, ref2, b1, b2, **weights) * 100.0
+    for ref1, ref2 in pairs:
+        type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
+        if type1 == type2:
+            score = reference_check(ref1, ref2, ds1, ds2, **weights)
 
-                if ref1 not in results:
-                    results[ref1] = {"matched": ref2, "value": score}
-                elif score > results[ref1]["value"]:
-                    results[ref1] = {"matched": ref2, "value": score}
+            if ref1 not in results:
+                results[ref1] = {"matched": ref2, "value": score}
+            elif score > results[ref1]["value"]:
+                results[ref1] = {"matched": ref2, "value": score}
+
+            if ref2 not in results:
+                results[ref2] = {"matched": ref1, "value": score}
+            elif score > results[ref2]["value"]:
+                results[ref2] = {"matched": ref1, "value": score}
 
     result = 0.0
     total_sum = sum(x["value"] for x in results.values())
-    max_score = len(results) * 100.0
+    max_score = len(results)
 
     if max_score > 0:
         result = total_sum / max_score
@@ -391,7 +433,26 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     return result
 
 
-# default weights used for the semantic equivalence process
+def bucket_per_type(g, mode="type"):
+    buckets = collections.defaultdict(list)
+    if mode == "type":
+        [buckets[obj["type"]].append(obj) for obj in g]
+    elif mode == "id-split":
+        [buckets[obj.split("--")[0]].append(obj) for obj in g]
+    return buckets
+
+
+def object_pairs(g1, g2, w):
+    types_in_common = set(g1.keys()).intersection(g2.keys())
+    testable_types = types_in_common.intersection(w.keys())
+
+    return itertools.chain.from_iterable(
+        itertools.product(g1[stix_type], g2[stix_type])
+        for stix_type in testable_types
+    )
+
+
+# default weights used for the similarity process
 WEIGHTS = {
     "attack-pattern": {
         "name": (30, partial_string_based),
