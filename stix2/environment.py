@@ -5,9 +5,10 @@ from .datastore import CompositeDataSource, DataStoreMixin
 from .equivalence.graph import graph_equivalence, graph_similarity
 from .equivalence.object import (  # noqa: F401
     WEIGHTS, check_property_present, custom_pattern_based, exact_match,
-    list_reference_check, partial_external_reference_based, partial_list_based,
+    list_reference_check, object_equivalence, object_similarity,
+    partial_external_reference_based, partial_list_based,
     partial_location_distance, partial_string_based, partial_timestamp_based,
-    reference_check, object_equivalence, object_similarity,
+    reference_check,
 )
 from .parsing import parse as _parse
 

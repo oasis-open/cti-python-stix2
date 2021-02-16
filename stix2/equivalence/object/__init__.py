@@ -401,7 +401,7 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     pairs = object_pairs(
         bucket_per_type(refs1, "id-split"),
         bucket_per_type(refs2, "id-split"),
-        weights
+        weights,
     )
 
     for ref1, ref2 in pairs:
