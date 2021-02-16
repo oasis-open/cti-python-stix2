@@ -222,7 +222,7 @@ class Environment(DataStoreMixin):
         Note:
             Default weight_dict:
 
-            .. include:: ../../object_default_sem_eq_weights.rst
+            .. include:: ../object_default_sem_eq_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
