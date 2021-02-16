@@ -2,12 +2,12 @@
 import copy
 
 from .datastore import CompositeDataSource, DataStoreMixin
-from .equivalence.graph import graph_similarity
+from .equivalence.graph import graph_equivalence, graph_similarity
 from .equivalence.object import (  # noqa: F401
     WEIGHTS, check_property_present, custom_pattern_based, exact_match,
     list_reference_check, partial_external_reference_based, partial_list_based,
     partial_location_distance, partial_string_based, partial_timestamp_based,
-    reference_check, object_similarity,
+    reference_check, object_equivalence, object_similarity,
 )
 from .parsing import parse as _parse
 
@@ -198,8 +198,8 @@ class Environment(DataStoreMixin):
 
     @staticmethod
     def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
-        """This method verifies if two objects of the same type are
-        semantically equivalent.
+        """This method returns a measure of similarity depending on how
+        similar the two objects are.
 
         Args:
             obj1: A stix2 object instance
@@ -210,10 +210,50 @@ class Environment(DataStoreMixin):
                 in the semantic equivalence process
 
         Returns:
-            float: A number between 0.0 and 100.0 as a measurement of equivalence.
+            float: A number between 0.0 and 100.0 as a measurement of similarity.
 
         Warning:
-            Object types need to have property weights defined for the equivalence process.
+            Object types need to have property weights defined for the similarity process.
+            Otherwise, those objects will not influence the final score. The WEIGHTS
+            dictionary under `stix2.equivalence.object` can give you an idea on how to add
+            new entries and pass them via the `weight_dict` argument. Similarly, the values
+            or methods can be fine tuned for a particular use case.
+
+        Note:
+            Default weight_dict:
+
+            .. include:: ../../object_default_sem_eq_weights.rst
+
+        Note:
+            This implementation follows the Semantic Equivalence Committee Note.
+            see `the Committee Note <link here>`__.
+
+        """
+        return object_similarity(obj1, obj2, prop_scores, **weight_dict)
+
+    @staticmethod
+    def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
+        """This method returns a true/false value if two objects are semantically equivalent.
+        Internally, it calls the object_similarity function and compares it against the given
+        threshold value.
+
+        Args:
+            obj1: A stix2 object instance
+            obj2: A stix2 object instance
+            prop_scores: A dictionary that can hold individual property scores,
+                weights, contributing score, matching score and sum of weights.
+            threshold: A numerical value between 0 and 100 to determine the minimum
+                score to result in successfully calling both objects equivalent. This
+                value can be tuned.
+            weight_dict: A dictionary that can be used to override settings
+                in the semantic equivalence process
+
+        Returns:
+            bool: True if the result of the object similarity is greater than or equal to
+                the threshold value. False otherwise.
+
+        Warning:
+            Object types need to have property weights defined for the similarity process.
             Otherwise, those objects will not influence the final score. The WEIGHTS
             dictionary under `stix2.equivalence.object` can give you an idea on how to add
             new entries and pass them via the `weight_dict` argument. Similarly, the values
@@ -229,14 +269,14 @@ class Environment(DataStoreMixin):
             see `the Committee Note <link here>`__.
 
         """
-        return object_similarity(obj1, obj2, prop_scores, **weight_dict)
+        return object_equivalence(obj1, obj2, prop_scores, threshold, **weight_dict)
 
     @staticmethod
     def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
-        """This method verifies if two graphs are semantically equivalent.
+        """This method returns a similarity score for two given graphs.
         Each DataStore can contain a connected or disconnected graph and the
         final result is weighted over the amount of objects we managed to compare.
-        This approach builds on top of the object-based semantic equivalence process
+        This approach builds on top of the object-based similarity process
         and each comparison can return a value between 0 and 100.
 
         Args:
@@ -245,13 +285,13 @@ class Environment(DataStoreMixin):
             prop_scores: A dictionary that can hold individual property scores,
                 weights, contributing score, matching score and sum of weights.
             weight_dict: A dictionary that can be used to override settings
-                in the semantic equivalence process
+                in the similarity process
 
         Returns:
-            float: A number between 0.0 and 100.0 as a measurement of equivalence.
+            float: A number between 0.0 and 100.0 as a measurement of similarity.
 
         Warning:
-            Object types need to have property weights defined for the equivalence process.
+            Object types need to have property weights defined for the similarity process.
             Otherwise, those objects will not influence the final score. The WEIGHTS
             dictionary under `stix2.equivalence.graph` can give you an idea on how to add
             new entries and pass them via the `weight_dict` argument. Similarly, the values
@@ -268,3 +308,43 @@ class Environment(DataStoreMixin):
 
         """
         return graph_similarity(ds1, ds2, prop_scores, **weight_dict)
+
+    @staticmethod
+    def graph_equivalence(ds1, ds2, prop_scores={}, threshold=70, **weight_dict):
+        """This method returns a true/false value if two graphs are semantically equivalent.
+        Internally, it calls the graph_similarity function and compares it against the given
+        threshold value.
+
+        Args:
+            ds1: A DataStore object instance representing your graph
+            ds2: A DataStore object instance representing your graph
+            prop_scores: A dictionary that can hold individual property scores,
+                weights, contributing score, matching score and sum of weights.
+            threshold: A numerical value between 0 and 100 to determine the minimum
+                score to result in successfully calling both graphs equivalent. This
+                value can be tuned.
+            weight_dict: A dictionary that can be used to override settings
+                in the similarity process
+
+        Returns:
+            bool: True if the result of the graph similarity is greater than or equal to
+                the threshold value. False otherwise.
+
+        Warning:
+            Object types need to have property weights defined for the similarity process.
+            Otherwise, those objects will not influence the final score. The WEIGHTS
+            dictionary under `stix2.equivalence.graph` can give you an idea on how to add
+            new entries and pass them via the `weight_dict` argument. Similarly, the values
+            or methods can be fine tuned for a particular use case.
+
+        Note:
+            Default weight_dict:
+
+            .. include:: ../graph_default_sem_eq_weights.rst
+
+        Note:
+            This implementation follows the Semantic Equivalence Committee Note.
+            see `the Committee Note <link here>`__.
+
+        """
+        return graph_equivalence(ds1, ds2, prop_scores, threshold, **weight_dict)
