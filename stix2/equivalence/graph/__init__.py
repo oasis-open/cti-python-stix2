@@ -139,7 +139,7 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
     prop_scores["summary"] = results
 
     logger.debug(
-        "DONE\t\tSUM_PAIRS: %.2f\tMATCHING_SCORE: %.2f\t SIMILARITY_SCORE: %.2f",
+        "DONE\t\tLEN_PAIRS: %.2f\tMATCHING_SCORE: %.2f\t SIMILARITY_SCORE: %.2f",
         len_pairs,
         matching_score,
         similarity_score,
