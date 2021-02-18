@@ -234,7 +234,7 @@ class OrderDedupeTransformer(
     ObservationExpressionTransformer,
 ):
     """
-    Canonically order AND/OR expressions, and dedupe ORs.  E.g.:
+    Order AND/OR expressions, and dedupe ORs.  E.g.:
 
         A or A => A
         B or A => A or B
@@ -282,6 +282,7 @@ class AbsorptionTransformer(
 
         A or (A and B) = A
         A or (A followedby B) = A
+        A or (B followedby A) = A
 
     Other variants do not hold for observation expressions.
     """
@@ -435,28 +436,35 @@ class DNFTransformer(ObservationExpressionTransformer):
 
         A and (B or C) => (A and B) or (A and C)
         A followedby (B or C) => (A followedby B) or (A followedby C)
+        (A or B) followedby C => (A followedby C) or (B followedby C)
     """
 
     def __transform(self, ast):
 
-        root_type = type(ast)  # will be AST class for AND or FOLLOWEDBY
-        changed = False
-        or_children = []
-        other_children = []
-        for child in ast.operands:
-            if isinstance(child, OrObservationExpression):
-                or_children.append(child.operands)
-            else:
-                other_children.append(child)
+        # If no OR children, nothing to do
+        if any(
+            isinstance(child, OrObservationExpression)
+            for child in ast.operands
+        ):
+            # When we distribute FOLLOWEDBY over OR, it is important to
+            # preserve the original FOLLOWEDBY order!  We don't need to do that
+            # for AND, but we do it anyway because it doesn't hurt, and we can
+            # use the same code for both.
+            iterables = []
+            for child in ast.operands:
+                if isinstance(child, OrObservationExpression):
+                    iterables.append(child.operands)
+                else:
+                    iterables.append((child,))
 
-        if or_children:
+            root_type = type(ast)  # will be AST class for AND or FOLLOWEDBY
             distributed_children = [
                 root_type([
                     _dupe_ast(sub_ast) for sub_ast in itertools.chain(
-                        other_children, prod_seq,
+                        prod_seq,
                     )
                 ])
-                for prod_seq in itertools.product(*or_children)
+                for prod_seq in itertools.product(*iterables)
             ]
 
             # Need to recursively continue to distribute AND/FOLLOWEDBY over OR
@@ -470,6 +478,7 @@ class DNFTransformer(ObservationExpressionTransformer):
 
         else:
             result = ast
+            changed = False
 
         return result, changed
 
@@ -480,11 +489,11 @@ class DNFTransformer(ObservationExpressionTransformer):
         return self.__transform(ast)
 
 
-class CanonicalizeComparisonExpressionsTransformer(
+class NormalizeComparisonExpressionsTransformer(
     ObservationExpressionTransformer,
 ):
     """
-    Canonicalize all comparison expressions.
+    Normalize all comparison expressions.
     """
     def __init__(self):
         comp_flatten = CFlattenTransformer()
@@ -495,13 +504,13 @@ class CanonicalizeComparisonExpressionsTransformer(
 
         comp_special = SpecialValueCanonicalization()
         comp_dnf = CDNFTransformer()
-        self.__comp_canonicalize = ChainTransformer(
+        self.__comp_normalize = ChainTransformer(
             comp_special, settle_simplify, comp_dnf, settle_simplify,
         )
 
     def transform_observation(self, ast):
         comp_expr = ast.operand
-        canon_comp_expr, changed = self.__comp_canonicalize.transform(comp_expr)
-        ast.operand = canon_comp_expr
+        norm_comp_expr, changed = self.__comp_normalize.transform(comp_expr)
+        ast.operand = norm_comp_expr
 
         return ast, changed

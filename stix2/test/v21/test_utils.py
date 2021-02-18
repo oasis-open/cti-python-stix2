@@ -241,3 +241,153 @@ def test_find_property_index(object, tuple_to_find, expected_index):
 )
 def test_iterate_over_values(dict_value, tuple_to_find, expected_index):
     assert stix2.serialization._find_property_in_seq(dict_value.values(), *tuple_to_find) == expected_index
+
+
+@pytest.mark.parametrize(
+    "type_", [
+        "attack-pattern",
+        "campaign",
+        "course-of-action",
+        "identity",
+        "indicator",
+        "intrusion-set",
+        "malware",
+        "observed-data",
+        "report",
+        "threat-actor",
+        "tool",
+        "vulnerability",
+
+        # New in 2.1
+        "grouping",
+        "infrastructure",
+        "location",
+        "malware-analysis",
+        "note",
+        "opinion",
+    ],
+)
+def test_is_sdo_dict(type_):
+    d = {
+        "type": type_,
+        "spec_version": "2.1",
+    }
+    assert stix2.utils.is_sdo(d, "2.1")
+
+
+@pytest.mark.parametrize(
+    "dict_", [
+        {"type": "software", "spec_version": "2.1"},
+        {"type": "software"},
+        {"type": "identity"},
+        {"type": "marking-definition", "spec_version": "2.1"},
+        {"type": "marking-definition"},
+        {"type": "bundle", "spec_version": "2.1"},
+        {"type": "bundle"},
+        {"type": "language-content", "spec_version": "2.1"},
+        {"type": "language-content"},
+        {"type": "relationship", "spec_version": "2.1"},
+        {"type": "relationship"},
+        {"type": "foo", "spec_version": "2.1"},
+    ],
+)
+def test_is_not_sdo_dict(dict_):
+    assert not stix2.utils.is_sdo(dict_, "2.1")
+
+
+def test_is_sco_dict():
+    d = {
+        "type": "file",
+        "spec_version": "2.1",
+    }
+
+    assert stix2.utils.is_sco(d, "2.1")
+
+
+@pytest.mark.parametrize(
+    "dict_", [
+        {"type": "identity"},
+        {"type": "identity", "spec_version": "2.1"},
+        {"type": "software"},
+        {"type": "marking-definition", "spec_version": "2.1"},
+        {"type": "marking-definition"},
+        {"type": "bundle", "spec_version": "2.1"},
+        {"type": "bundle"},
+        {"type": "language-content", "spec_version": "2.1"},
+        {"type": "language-content"},
+        {"type": "relationship", "spec_version": "2.1"},
+        {"type": "relationship"},
+        {"type": "foo", "spec_version": "2.1"},
+    ],
+)
+def test_is_not_sco_dict(dict_):
+    assert not stix2.utils.is_sco(dict_, "2.1")
+
+
+@pytest.mark.parametrize(
+    "dict_", [
+        {"type": "relationship", "spec_version": "2.1"},
+        {"type": "sighting", "spec_version": "2.1"},
+    ],
+)
+def test_is_sro_dict(dict_):
+    assert stix2.utils.is_sro(dict_, "2.1")
+
+
+@pytest.mark.parametrize(
+    "dict_", [
+        {"type": "identity", "spec_version": "2.1"},
+        {"type": "identity"},
+        {"type": "software", "spec_version": "2.1"},
+        {"type": "software"},
+        {"type": "marking-definition", "spec_version": "2.1"},
+        {"type": "marking-definition"},
+        {"type": "bundle", "spec_version": "2.1"},
+        {"type": "bundle"},
+        {"type": "language-content", "spec_version": "2.1"},
+        {"type": "language-content"},
+        {"type": "relationship"},
+        {"type": "sighting"},
+        {"type": "foo", "spec_version": "2.1"},
+    ],
+)
+def test_is_not_sro_dict(dict_):
+    assert not stix2.utils.is_sro(dict_, "2.1")
+
+
+@pytest.mark.parametrize(
+    "dict_", [
+        {"type": "identity", "spec_version": "2.1"},
+        {"type": "software", "spec_version": "2.1"},
+        {"type": "marking-definition", "spec_version": "2.1"},
+        {"type": "language-content", "spec_version": "2.1"},
+        {
+            "type": "bundle",
+            "id": "bundle--8f431680-6278-4767-ba43-5edb682d7086",
+            "objects": [
+                {"type": "identity", "spec_version": "2.1"},
+                {"type": "software", "spec_version": "2.1"},
+                {"type": "marking-definition", "spec_version": "2.1"},
+                {"type": "language-content", "spec_version": "2.1"},
+            ],
+        },
+    ],
+)
+def test_is_object_dict(dict_):
+    assert stix2.utils.is_object(dict_, "2.1")
+
+
+@pytest.mark.parametrize(
+    "dict_", [
+        {"type": "identity"},
+        {"type": "software"},
+        {"type": "marking-definition"},
+        {"type": "bundle"},
+        {"type": "language-content"},
+        {"type": "relationship"},
+        {"type": "sighting"},
+        {"type": "foo"},
+    ],
+)
+def test_is_not_object_dict(dict_):
+    assert not stix2.utils.is_object(dict_, "2.1")

@@ -2,8 +2,7 @@ from collections import OrderedDict
 
 import pytest
 
-import stix2
-from stix2 import exceptions, parsing
+from stix2 import DEFAULT_VERSION, exceptions, parsing, registration, registry
 
 BUNDLE = {
     "type": "bundle",
@@ -64,7 +63,7 @@ def test_parse_observable_with_version():
     assert v in str(obs_obj.__class__)
 
 
-@pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
+@pytest.mark.xfail(reason="The default version is not 2.1", condition=DEFAULT_VERSION != "2.1")
 def test_parse_observable_with_no_version():
     observable = {"type": "file", "name": "foo.exe", "spec_version": "2.1"}
     obs_obj = parsing.parse_observable(observable)
@@ -78,22 +77,20 @@ def test_register_marking_with_version():
         _type = 'x-new-marking1'
         _properties = OrderedDict()
 
-    parsing._register_marking(NewMarking1, version='2.1')
-    v = 'v21'
+    registration._register_marking(NewMarking1, version='2.1')
 
-    assert NewMarking1._type in parsing.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(parsing.STIX2_OBJ_MAPS[v]['markings'][NewMarking1._type])
+    assert NewMarking1._type in registry.STIX2_OBJ_MAPS['2.1']['markings']
+    assert 'v21' in str(registry.STIX2_OBJ_MAPS['2.1']['markings'][NewMarking1._type])
 
 
-@pytest.mark.xfail(reason="The default version is not 2.1", condition=stix2.DEFAULT_VERSION != "2.1")
+@pytest.mark.xfail(reason="The default version is not 2.1", condition=DEFAULT_VERSION != "2.1")
 def test_register_marking_with_no_version():
     # Uses default version (2.1 in this case)
     class NewMarking2:
         _type = 'x-new-marking2'
         _properties = OrderedDict()
 
-    parsing._register_marking(NewMarking2)
-    v = 'v21'
+    registration._register_marking(NewMarking2)
 
-    assert NewMarking2._type in parsing.STIX2_OBJ_MAPS[v]['markings']
-    assert v in str(parsing.STIX2_OBJ_MAPS[v]['markings'][NewMarking2._type])
+    assert NewMarking2._type in registry.STIX2_OBJ_MAPS['2.1']['markings']
+    assert 'v21' in str(registry.STIX2_OBJ_MAPS['2.1']['markings'][NewMarking2._type])

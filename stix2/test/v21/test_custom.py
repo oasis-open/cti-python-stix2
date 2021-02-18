@@ -4,6 +4,8 @@ import pytest
 
 import stix2
 import stix2.base
+import stix2.registration
+import stix2.registry
 import stix2.v21
 
 from ...exceptions import DuplicateRegistrationError, InvalidValueError
@@ -1157,7 +1159,7 @@ def test_register_custom_object():
         _type = 'awesome-object'
 
     with pytest.raises(ValueError) as excinfo:
-        stix2.parsing._register_object(CustomObject2, version="2.1")
+        stix2.registration._register_object(CustomObject2, version="2.1")
     assert '@CustomObject decorator' in str(excinfo)
 
 
@@ -1221,9 +1223,8 @@ def test_register_custom_object_with_version():
     }
 
     cust_obj_1 = stix2.parsing.dict_to_stix2(custom_obj_1, version='2.1')
-    v = 'v21'
 
-    assert cust_obj_1.type in stix2.parsing.STIX2_OBJ_MAPS[v]['objects']
+    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS['2.1']['objects']
     assert cust_obj_1.spec_version == "2.1"
 
 
@@ -1251,9 +1252,8 @@ class NewObservable3(object):
 
 def test_register_observable():
     custom_obs = NewObservable3(property1="Test Observable")
-    v = 'v21'
 
-    assert custom_obs.type in stix2.parsing.STIX2_OBJ_MAPS[v]['observables']
+    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS['2.1']['observables']
 
 
 def test_register_duplicate_observable():
@@ -1279,10 +1279,9 @@ def test_register_observable_custom_extension():
         pass
 
     example = NewExtension2(property1="Hi there")
-    v = 'v21'
 
-    assert 'domain-name' in stix2.parsing.STIX2_OBJ_MAPS[v]['observables']
-    assert example._type in stix2.parsing.STIX2_OBJ_MAPS[v]['extensions']
+    assert 'domain-name' in stix2.registry.STIX2_OBJ_MAPS['2.1']['observables']
+    assert example._type in stix2.registry.STIX2_OBJ_MAPS['2.1']['extensions']
 
 
 def test_register_duplicate_observable_extension():

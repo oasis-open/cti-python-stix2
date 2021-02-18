@@ -62,7 +62,7 @@ def observation_expression_cmp(expr1, expr2):
     """
     Compare two observation expression ASTs.  This is sensitive to the order of
     the expressions' sub-components.  To achieve an order-insensitive
-    comparison, the ASTs must be canonically ordered first.
+    comparison, the sub-component ASTs must be ordered first.
 
     Args:
         expr1: The first observation expression

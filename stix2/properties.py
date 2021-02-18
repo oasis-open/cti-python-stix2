@@ -9,14 +9,13 @@ import uuid
 
 from six import string_types, text_type
 
-import stix2
-
+from . import registry, version
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
     MutuallyExclusivePropertiesError, STIXError,
 )
-from .parsing import STIX2_OBJ_MAPS, parse, parse_observable
+from .parsing import parse, parse_observable
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
 try:
@@ -275,7 +274,7 @@ class StringProperty(Property):
 
 class TypeProperty(Property):
 
-    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+    def __init__(self, type, spec_version=version.DEFAULT_VERSION):
         _validate_type(type, spec_version)
         self.spec_version = spec_version
         super(TypeProperty, self).__init__(fixed=type)
@@ -283,7 +282,7 @@ class TypeProperty(Property):
 
 class IDProperty(Property):
 
-    def __init__(self, type, spec_version=stix2.DEFAULT_VERSION):
+    def __init__(self, type, spec_version=version.DEFAULT_VERSION):
         self.required_prefix = type + "--"
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
@@ -382,7 +381,7 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -471,7 +470,7 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, valid_types=None, invalid_types=None, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=version.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
@@ -503,14 +502,14 @@ class ReferenceProperty(Property):
         possible_prefix = value[:value.index('--')]
 
         if self.valid_types:
-            ref_valid_types = enumerate_types(self.valid_types, 'v' + self.spec_version.replace(".", ""))
+            ref_valid_types = enumerate_types(self.valid_types, self.spec_version)
 
             if possible_prefix in ref_valid_types:
                 required_prefix = possible_prefix
             else:
                 raise ValueError("The type-specifying prefix '%s' for this property is not valid" % (possible_prefix))
         elif self.invalid_types:
-            ref_invalid_types = enumerate_types(self.invalid_types, 'v' + self.spec_version.replace(".", ""))
+            ref_invalid_types = enumerate_types(self.invalid_types, self.spec_version)
 
             if possible_prefix not in ref_invalid_types:
                 required_prefix = possible_prefix
@@ -536,10 +535,10 @@ def enumerate_types(types, spec_version):
 
     if "SDO" in types:
         return_types.remove("SDO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
+        return_types += registry.STIX2_OBJ_MAPS[spec_version]['objects'].keys()
     if "SCO" in types:
         return_types.remove("SCO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
+        return_types += registry.STIX2_OBJ_MAPS[spec_version]['observables'].keys()
     if "SRO" in types:
         return_types.remove("SRO")
         return_types += ['relationship', 'sighting']
@@ -605,7 +604,7 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
@@ -640,7 +639,7 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, required=False):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, allow_custom=False, required=False):
         self.allow_custom = allow_custom
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
@@ -654,9 +653,7 @@ class ExtensionsProperty(DictionaryProperty):
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
 
-        v = 'v' + self.spec_version.replace('.', '')
-
-        extension_type_map = STIX2_OBJ_MAPS[v].get('extensions', {})
+        extension_type_map = registry.STIX2_OBJ_MAPS[self.spec_version].get('extensions', {})
         for key, subvalue in dictified.items():
             if key in extension_type_map:
                 cls = extension_type_map[key]
@@ -684,7 +681,7 @@ class ExtensionsProperty(DictionaryProperty):
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version=stix2.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)

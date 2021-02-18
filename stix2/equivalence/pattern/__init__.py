@@ -9,26 +9,22 @@
 |
 """
 
-import stix2
-from stix2.equivalence.pattern.compare.observation import (
-    observation_expression_cmp,
+from ... import pattern_visitor
+from ...version import DEFAULT_VERSION
+from .compare.observation import observation_expression_cmp
+from .transform import ChainTransformer, SettleTransformer
+from .transform.observation import (
+    AbsorptionTransformer, DNFTransformer, FlattenTransformer,
+    NormalizeComparisonExpressionsTransformer, OrderDedupeTransformer,
 )
-from stix2.equivalence.pattern.transform import (
-    ChainTransformer, SettleTransformer,
-)
-from stix2.equivalence.pattern.transform.observation import (
-    AbsorptionTransformer, CanonicalizeComparisonExpressionsTransformer,
-    DNFTransformer, FlattenTransformer, OrderDedupeTransformer,
-)
-import stix2.pattern_visitor
 
 # Lazy-initialize
-_pattern_canonicalizer = None
+_pattern_normalizer = None
 
 
-def _get_pattern_canonicalizer():
+def _get_pattern_normalizer():
     """
-    Get a canonicalization transformer for STIX patterns.
+    Get a normalization transformer for STIX patterns.
 
     Returns:
         The transformer
@@ -37,11 +33,11 @@ def _get_pattern_canonicalizer():
     # The transformers are either stateless or contain no state which changes
     # with each use.  So we can setup the transformers once and keep reusing
     # them.
-    global _pattern_canonicalizer
+    global _pattern_normalizer
 
-    if not _pattern_canonicalizer:
-        canonicalize_comp_expr = \
-            CanonicalizeComparisonExpressionsTransformer()
+    if not _pattern_normalizer:
+        normalize_comp_expr = \
+            NormalizeComparisonExpressionsTransformer()
 
         obs_expr_flatten = FlattenTransformer()
         obs_expr_order = OrderDedupeTransformer()
@@ -53,15 +49,15 @@ def _get_pattern_canonicalizer():
 
         obs_dnf = DNFTransformer()
 
-        _pattern_canonicalizer = ChainTransformer(
-            canonicalize_comp_expr,
+        _pattern_normalizer = ChainTransformer(
+            normalize_comp_expr,
             obs_settle_simplify, obs_dnf, obs_settle_simplify,
         )
 
-    return _pattern_canonicalizer
+    return _pattern_normalizer
 
 
-def equivalent_patterns(pattern1, pattern2, stix_version=stix2.DEFAULT_VERSION):
+def equivalent_patterns(pattern1, pattern2, stix_version=DEFAULT_VERSION):
     """
     Determine whether two STIX patterns are semantically equivalent.
 
@@ -74,29 +70,29 @@ def equivalent_patterns(pattern1, pattern2, stix_version=stix2.DEFAULT_VERSION):
     Returns:
         True if the patterns are semantically equivalent; False if not
     """
-    patt_ast1 = stix2.pattern_visitor.create_pattern_object(
+    patt_ast1 = pattern_visitor.create_pattern_object(
         pattern1, version=stix_version,
     )
-    patt_ast2 = stix2.pattern_visitor.create_pattern_object(
+    patt_ast2 = pattern_visitor.create_pattern_object(
         pattern2, version=stix_version,
     )
 
-    pattern_canonicalizer = _get_pattern_canonicalizer()
-    canon_patt1, _ = pattern_canonicalizer.transform(patt_ast1)
-    canon_patt2, _ = pattern_canonicalizer.transform(patt_ast2)
+    pattern_normalizer = _get_pattern_normalizer()
+    norm_patt1, _ = pattern_normalizer.transform(patt_ast1)
+    norm_patt2, _ = pattern_normalizer.transform(patt_ast2)
 
-    result = observation_expression_cmp(canon_patt1, canon_patt2)
+    result = observation_expression_cmp(norm_patt1, norm_patt2)
 
     return result == 0
 
 
 def find_equivalent_patterns(
-    search_pattern, patterns, stix_version=stix2.DEFAULT_VERSION,
+    search_pattern, patterns, stix_version=DEFAULT_VERSION,
 ):
     """
     Find patterns from a sequence which are equivalent to a given pattern.
     This is more efficient than using equivalent_patterns() in a loop, because
-    it doesn't re-canonicalize the search pattern over and over.  This works
+    it doesn't re-normalize the search pattern over and over.  This works
     on an input iterable and is implemented as a generator of matches.  So you
     can "stream" patterns in and matching patterns will be streamed out.
 
@@ -109,23 +105,23 @@ def find_equivalent_patterns(
     Returns:
         A generator iterator producing the semantically equivalent patterns
     """
-    search_pattern_ast = stix2.pattern_visitor.create_pattern_object(
+    search_pattern_ast = pattern_visitor.create_pattern_object(
         search_pattern, version=stix_version,
     )
 
-    pattern_canonicalizer = _get_pattern_canonicalizer()
-    canon_search_pattern_ast, _ = pattern_canonicalizer.transform(
+    pattern_normalizer = _get_pattern_normalizer()
+    norm_search_pattern_ast, _ = pattern_normalizer.transform(
         search_pattern_ast,
     )
 
     for pattern in patterns:
-        pattern_ast = stix2.pattern_visitor.create_pattern_object(
+        pattern_ast = pattern_visitor.create_pattern_object(
             pattern, version=stix_version,
         )
-        canon_pattern_ast, _ = pattern_canonicalizer.transform(pattern_ast)
+        norm_pattern_ast, _ = pattern_normalizer.transform(pattern_ast)
 
         result = observation_expression_cmp(
-            canon_search_pattern_ast, canon_pattern_ast,
+            norm_search_pattern_ast, norm_pattern_ast,
         )
 
         if result == 0:

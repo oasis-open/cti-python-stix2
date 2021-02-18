@@ -5,13 +5,9 @@ import importlib
 import pkgutil
 import re
 
-import stix2
-
-from .base import _DomainObject
-from .exceptions import DuplicateRegistrationError, ParseError
-from .utils import PREFIX_21_REGEX, _get_dict, get_class_hierarchy_names
-
-STIX2_OBJ_MAPS = {}
+from . import registry
+from .exceptions import ParseError
+from .utils import _get_dict, detect_spec_version
 
 
 def parse(data, allow_custom=False, version=None):
@@ -49,53 +45,6 @@ def parse(data, allow_custom=False, version=None):
     return obj
 
 
-def _detect_spec_version(stix_dict):
-    """
-    Given a dict representing a STIX object, try to detect what spec version
-    it is likely to comply with.
-
-    :param stix_dict: A dict with some STIX content.  Must at least have a
-        "type" property.
-    :return: A string in "vXX" format, where "XX" indicates the spec version,
-        e.g. "v20", "v21", etc.
-    """
-
-    obj_type = stix_dict["type"]
-
-    if 'spec_version' in stix_dict:
-        # For STIX 2.0, applies to bundles only.
-        # For STIX 2.1+, applies to SCOs, SDOs, SROs, and markings only.
-        v = 'v' + stix_dict['spec_version'].replace('.', '')
-    elif "id" not in stix_dict:
-        # Only 2.0 SCOs don't have ID properties
-        v = "v20"
-    elif obj_type == 'bundle':
-        # Bundle without a spec_version property: must be 2.1.  But to
-        # future-proof, use max version over all contained SCOs, with 2.1
-        # minimum.
-        v = max(
-            "v21",
-            max(
-                _detect_spec_version(obj) for obj in stix_dict["objects"]
-            ),
-        )
-    elif obj_type in STIX2_OBJ_MAPS["v21"]["observables"]:
-        # Non-bundle object with an ID and without spec_version.  Could be a
-        # 2.1 SCO or 2.0 SDO/SRO/marking.  Check for 2.1 SCO...
-        v = "v21"
-    else:
-        # Not a 2.1 SCO; must be a 2.0 object.
-        v = "v20"
-
-    return v
-
-
-def _get_extension_class(extension_uuid, version):
-    """Retrieve a registered class Extension"""
-    v = 'v' + version.replace('.', '')
-    return STIX2_OBJ_MAPS[v]['extensions'].get(extension_uuid)
-
-
 def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     """convert dictionary to full python-stix2 object
 
@@ -128,17 +77,14 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
     if 'type' not in stix_dict:
         raise ParseError("Can't parse object with no 'type' property: %s" % str(stix_dict))
 
-    if version:
-        # If the version argument was passed, override other approaches.
-        v = 'v' + version.replace('.', '')
-    else:
-        v = _detect_spec_version(stix_dict)
+    if not version:
+        version = detect_spec_version(stix_dict)
 
-    OBJ_MAP = dict(STIX2_OBJ_MAPS[v]['objects'], **STIX2_OBJ_MAPS[v]['observables'])
+    obj_type = stix_dict["type"]
+    obj_class = registry.class_for_type(obj_type, version, "objects") \
+        or registry.class_for_type(obj_type, version, "observables")
 
-    try:
-        obj_class = OBJ_MAP[stix_dict['type']]
-    except KeyError:
+    if not obj_class:
         if allow_custom:
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX object, returned as is
@@ -183,16 +129,12 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
 
     obj['_valid_refs'] = _valid_refs or []
 
-    if version:
-        # If the version argument was passed, override other approaches.
-        v = 'v' + version.replace('.', '')
-    else:
-        v = _detect_spec_version(obj)
+    if not version:
+        version = detect_spec_version(obj)
 
-    try:
-        OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
-        obj_class = OBJ_MAP_OBSERVABLE[obj['type']]
-    except KeyError:
+    obj_type = obj["type"]
+    obj_class = registry.class_for_type(obj_type, version, "observables")
+    if not obj_class:
         if allow_custom:
             # flag allows for unknown custom objects too, but will not
             # be parsed into STIX observable object, just returned as is
@@ -203,199 +145,3 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
         )
 
     return obj_class(allow_custom=allow_custom, **obj)
-
-
-def _register_object(new_type, version=stix2.DEFAULT_VERSION):
-    """Register a custom STIX Object type.
-
-    Args:
-        new_type (class): A class to register in the Object map.
-        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-            None, use latest version.
-
-    Raises:
-        ValueError: If the class being registered wasn't created with the
-            @CustomObject decorator.
-        DuplicateRegistrationError: If the class has already been registered.
-
-    """
-
-    if not issubclass(new_type, _DomainObject):
-        raise ValueError(
-            "'%s' must be created with the @CustomObject decorator." %
-            new_type.__name__,
-        )
-
-    properties = new_type._properties
-
-    if version == "2.1":
-        for prop_name, prop in properties.items():
-            if not re.match(PREFIX_21_REGEX, prop_name):
-                raise ValueError("Property name '%s' must begin with an alpha character" % prop_name)
-
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP = STIX2_OBJ_MAPS[v]['objects']
-    if new_type._type in OBJ_MAP.keys():
-        raise DuplicateRegistrationError("STIX Object", new_type._type)
-    OBJ_MAP[new_type._type] = new_type
-
-
-def _register_marking(new_marking, version=stix2.DEFAULT_VERSION):
-    """Register a custom STIX Marking Definition type.
-
-    Args:
-        new_marking (class): A class to register in the Marking map.
-        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-            None, use latest version.
-
-    """
-
-    mark_type = new_marking._type
-    properties = new_marking._properties
-
-    stix2.properties._validate_type(mark_type, version)
-
-    if version == "2.1":
-        for prop_name, prop_value in properties.items():
-            if not re.match(PREFIX_21_REGEX, prop_name):
-                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
-
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP_MARKING = STIX2_OBJ_MAPS[v]['markings']
-    if mark_type in OBJ_MAP_MARKING.keys():
-        raise DuplicateRegistrationError("STIX Marking", mark_type)
-    OBJ_MAP_MARKING[mark_type] = new_marking
-
-
-def _register_observable(new_observable, version=stix2.DEFAULT_VERSION):
-    """Register a custom STIX Cyber Observable type.
-
-    Args:
-        new_observable (class): A class to register in the Observables map.
-        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1"). If
-            None, use latest version.
-
-    """
-    properties = new_observable._properties
-
-    if version == "2.0":
-        # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
-        for prop_name, prop in properties.items():
-            if prop_name.endswith('_ref') and ('ObjectReferenceProperty' not in get_class_hierarchy_names(prop)):
-                raise ValueError(
-                    "'%s' is named like an object reference property but "
-                    "is not an ObjectReferenceProperty." % prop_name,
-                )
-            elif (
-                prop_name.endswith('_refs') and (
-                    'ListProperty' not in get_class_hierarchy_names(prop) or
-                    'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained)
-                )
-            ):
-                raise ValueError(
-                    "'%s' is named like an object reference list property but "
-                    "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
-                )
-    else:
-        # If using STIX2.1 (or newer...), check properties ending in "_ref/s" are ReferenceProperties
-        for prop_name, prop in properties.items():
-            if not re.match(PREFIX_21_REGEX, prop_name):
-                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
-            elif prop_name.endswith('_ref') and ('ReferenceProperty' not in get_class_hierarchy_names(prop)):
-                raise ValueError(
-                    "'%s' is named like a reference property but "
-                    "is not a ReferenceProperty." % prop_name,
-                )
-            elif (
-                prop_name.endswith('_refs') and (
-                    'ListProperty' not in get_class_hierarchy_names(prop) or
-                    'ReferenceProperty' not in get_class_hierarchy_names(prop.contained)
-                )
-            ):
-                raise ValueError(
-                    "'%s' is named like a reference list property but "
-                    "is not a ListProperty containing ReferenceProperty." % prop_name,
-                )
-
-    if version:
-        v = 'v' + version.replace('.', '')
-    else:
-        # Use default version (latest) if no version was provided.
-        v = 'v' + stix2.DEFAULT_VERSION.replace('.', '')
-
-    OBJ_MAP_OBSERVABLE = STIX2_OBJ_MAPS[v]['observables']
-    if new_observable._type in OBJ_MAP_OBSERVABLE.keys():
-        raise DuplicateRegistrationError("Cyber Observable", new_observable._type)
-    OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
-
-
-def _register_extension(
-    new_extension, version=stix2.DEFAULT_VERSION,
-):
-    """Register a custom extension to any STIX Object type.
-
-    Args:
-        new_extension (class): A class to register in the Extensions map.
-        version (str): Which STIX2 version to use. (e.g. "2.0", "2.1").
-            Defaults to the latest supported version.
-
-    """
-    ext_type = new_extension._type
-    properties = new_extension._properties
-
-    stix2.properties._validate_type(ext_type, version)
-
-    if not new_extension._properties:
-        raise ValueError(
-            "Invalid extension: must define at least one property: " +
-            ext_type,
-        )
-
-    if version == "2.1":
-        if not (ext_type.endswith('-ext') or ext_type.startswith('extension-definition--')):
-            raise ValueError(
-                "Invalid extension type name '%s': must end with '-ext' or start with 'extension-definition--<UUID>'." %
-                ext_type,
-            )
-
-        for prop_name in properties.keys():
-            if not re.match(PREFIX_21_REGEX, prop_name):
-                raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
-
-    v = 'v' + version.replace('.', '')
-    EXT_MAP = STIX2_OBJ_MAPS[v]['extensions']
-
-    if ext_type in EXT_MAP:
-        raise DuplicateRegistrationError("Extension", ext_type)
-    EXT_MAP[ext_type] = new_extension
-
-
-def _collect_stix2_mappings():
-    """Navigate the package once and retrieve all object mapping dicts for each
-    v2X package. Includes OBJ_MAP, OBJ_MAP_OBSERVABLE, EXT_MAP."""
-    if not STIX2_OBJ_MAPS:
-        top_level_module = importlib.import_module('stix2')
-        path = top_level_module.__path__
-        prefix = str(top_level_module.__name__) + '.'
-
-        for module_loader, name, is_pkg in pkgutil.walk_packages(path=path, prefix=prefix):
-            ver = name.split('.')[1]
-            if re.match(r'^stix2\.v2[0-9]$', name) and is_pkg:
-                mod = importlib.import_module(name, str(top_level_module.__name__))
-                STIX2_OBJ_MAPS[ver] = {}
-                STIX2_OBJ_MAPS[ver]['objects'] = mod.OBJ_MAP
-                STIX2_OBJ_MAPS[ver]['observables'] = mod.OBJ_MAP_OBSERVABLE
-                STIX2_OBJ_MAPS[ver]['extensions'] = mod.EXT_MAP
-            elif re.match(r'^stix2\.v2[0-9]\.common$', name) and is_pkg is False:
-                mod = importlib.import_module(name, str(top_level_module.__name__))
-                STIX2_OBJ_MAPS[ver]['markings'] = mod.OBJ_MAP_MARKING
