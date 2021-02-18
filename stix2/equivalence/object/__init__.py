@@ -434,27 +434,29 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     return result
 
 
-def _bucket_per_type(g, mode="type"):
+def _bucket_per_type(graph, mode="type"):
     """Given a list of objects or references, bucket them by type.
     Depending on the list type: extract from 'type' property or using
-    the 'id'"""
+    the 'id'.
+    """
     buckets = collections.defaultdict(list)
     if mode == "type":
-        [buckets[obj["type"]].append(obj) for obj in g]
+        [buckets[obj["type"]].append(obj) for obj in graph]
     elif mode == "id-split":
-        [buckets[obj.split("--")[0]].append(obj) for obj in g]
+        [buckets[obj.split("--")[0]].append(obj) for obj in graph]
     return buckets
 
 
-def _object_pairs(g1, g2, w):
+def _object_pairs(graph1, graph2, weights):
     """Returns a generator with the product of the comparable
     objects for the graph similarity process. It determines
-    objects in common between graphs and objects with weights."""
-    types_in_common = set(g1.keys()).intersection(g2.keys())
-    testable_types = types_in_common.intersection(w.keys())
+    objects in common between graphs and objects with weights.
+    """
+    types_in_common = set(graph1.keys()).intersection(graph2.keys())
+    testable_types = types_in_common.intersection(weights.keys())
 
     return itertools.chain.from_iterable(
-        itertools.product(g1[stix_type], g2[stix_type])
+        itertools.product(graph1[stix_type], graph2[stix_type])
         for stix_type in testable_types
     )
 
