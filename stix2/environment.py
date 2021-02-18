@@ -199,8 +199,7 @@ class Environment(DataStoreMixin):
 
     @staticmethod
     def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
-        """This method returns a measure of similarity depending on how
-        similar the two objects are.
+        """This method returns a measure of how similar the two objects are.
 
         Args:
             obj1: A stix2 object instance
