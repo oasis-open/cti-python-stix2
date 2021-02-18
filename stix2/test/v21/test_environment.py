@@ -723,10 +723,11 @@ def test_object_similarity_different_spec_version_raises():
 
 def test_object_similarity_zero_match():
     IND_KWARGS = dict(
-        indicator_types=["APTX"],
+        indicator_types=["malicious-activity", "bar"],
         pattern="[ipv4-addr:value = '192.168.1.1']",
         pattern_type="stix",
         valid_from="2019-01-01T12:34:56Z",
+        labels=["APTX", "foo"],
     )
     weights = {
         "indicator": {
@@ -742,7 +743,9 @@ def test_object_similarity_zero_match():
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v21.Indicator(id=INDICATOR_ID, **IND_KWARGS)
     env = stix2.Environment().object_similarity(ind1, ind2, **weights)
-    assert round(env) == 0
+    assert round(env) == 8
+    env = stix2.Environment().object_similarity(ind2, ind1, **weights)
+    assert round(env) == 8
 
 
 def test_object_similarity_different_spec_version():
@@ -764,6 +767,9 @@ def test_object_similarity_different_spec_version():
     ind1 = stix2.v21.Indicator(id=INDICATOR_ID, **INDICATOR_KWARGS)
     ind2 = stix2.v20.Indicator(id=INDICATOR_ID, **IND_KWARGS)
     env = stix2.Environment().object_similarity(ind1, ind2, **weights)
+    assert round(env) == 0
+
+    env = stix2.Environment().object_similarity(ind2, ind1, **weights)
     assert round(env) == 0
 
 
@@ -1066,6 +1072,116 @@ def test_graph_similarity_with_filesystem_source(ds, fs):
     prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
     prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
     assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_depth_limiting():
+    g1 = [
+        {
+            "type": "foo",
+            "id": "foo--07f9dd2a-1cce-45bb-8cbe-dba3f007aafd",
+            "spec_version": "2.1",
+            "created": "1986-02-08T00:20:17Z",
+            "modified": "1989-12-11T06:54:29Z",
+            "some1_ref": "foo--700a8a3c-9936-412f-b4eb-ede466476180",
+            "some2_ref": "foo--f4a999a3-df94-499d-9cac-6c02e21775ee",
+        },
+        {
+            "type": "foo",
+            "id": "foo--700a8a3c-9936-412f-b4eb-ede466476180",
+            "spec_version": "2.1",
+            "created": "1989-01-06T10:31:54Z",
+            "modified": "1995-06-18T10:25:01Z",
+            "some1_ref": "foo--705afd45-eb56-43fc-a214-313d63d199a3",
+        },
+        {
+            "type": "foo",
+            "id": "foo--705afd45-eb56-43fc-a214-313d63d199a3",
+            "spec_version": "2.1",
+            "created": "1977-11-06T21:19:29Z",
+            "modified": "1997-12-02T20:33:34Z",
+        },
+        {
+            "type": "foo",
+            "id": "foo--f4a999a3-df94-499d-9cac-6c02e21775ee",
+            "spec_version": "2.1",
+            "created": "1991-09-17T00:40:52Z",
+            "modified": "1992-12-06T11:02:47Z",
+            "name": "alice",
+        },
+    ]
+
+    g2 = [
+        {
+            "type": "foo",
+            "id": "foo--71570479-3e6e-48d2-81fb-897454dec55d",
+            "spec_version": "2.1",
+            "created": "1975-12-22T05:20:38Z",
+            "modified": "1980-11-11T01:09:03Z",
+            "some1_ref": "foo--4aeda39b-31fa-4ffb-a847-d8edc175a579",
+            "some2_ref": "foo--941e48d6-3100-4419-9e8c-cf1eb59e71b2",
+        },
+        {
+            "type": "foo",
+            "id": "foo--4aeda39b-31fa-4ffb-a847-d8edc175a579",
+            "spec_version": "2.1",
+            "created": "1976-01-05T08:32:03Z",
+            "modified": "1980-11-09T05:41:02Z",
+            "some1_ref": "foo--689252c3-5d20-43ff-bbf7-c8e45d713768",
+        },
+        {
+            "type": "foo",
+            "id": "foo--689252c3-5d20-43ff-bbf7-c8e45d713768",
+            "spec_version": "2.1",
+            "created": "1974-09-11T18:56:30Z",
+            "modified": "1976-10-31T11:59:43Z",
+        },
+        {
+            "type": "foo",
+            "id": "foo--941e48d6-3100-4419-9e8c-cf1eb59e71b2",
+            "spec_version": "2.1",
+            "created": "1985-01-03T01:07:03Z",
+            "modified": "1992-07-20T21:32:31Z",
+            "name": "alice",
+        }
+    ]
+
+    mem_store1 = stix2.MemorySource(g1)
+    mem_store2 = stix2.MemorySource(g2)
+
+    custom_weights = {
+        "foo": {
+            "some1_ref": (33, stix2.equivalence.object.reference_check),
+            "some2_ref": (33, stix2.equivalence.object.reference_check),
+            "name": (34, stix2.equivalence.object.partial_string_based),
+        },
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    }
+    prop_scores1 = {}
+    env1 = stix2.equivalence.graph.graph_similarity(mem_store1, mem_store2, prop_scores1, **custom_weights)
+
+    assert round(env1) == 38
+    assert round(prop_scores1["matching_score"]) == 300
+    assert round(prop_scores1["len_pairs"]) == 8
+    # from 'alice' check in de-reference
+    assert prop_scores1['summary']['foo--71570479-3e6e-48d2-81fb-897454dec55d']['prop_score']['some2_ref']['weight'] == 33
+    assert prop_scores1['summary']['foo--07f9dd2a-1cce-45bb-8cbe-dba3f007aafd']['prop_score']['some2_ref']['weight'] == 33
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.equivalence.graph.graph_similarity(
+        mem_store2, mem_store1, prop_scores2, **custom_weights
+    )
+
+    assert round(env2) == 38
+    assert round(prop_scores2["matching_score"]) == 300
+    assert round(prop_scores2["len_pairs"]) == 8
+    # from 'alice' check in de-reference
+    assert prop_scores2['summary']['foo--71570479-3e6e-48d2-81fb-897454dec55d']['prop_score']['some2_ref']['weight'] == 33
+    assert prop_scores2['summary']['foo--07f9dd2a-1cce-45bb-8cbe-dba3f007aafd']['prop_score']['some2_ref']['weight'] == 33
 
 
 def test_graph_similarity_with_duplicate_graph(ds):

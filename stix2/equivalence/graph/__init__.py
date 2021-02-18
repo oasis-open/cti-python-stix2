@@ -105,31 +105,26 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
         weights,
     )
 
+    weights["_internal"]["ds1"] = ds1
+    weights["_internal"]["ds2"] = ds2
+
     for object1, object2 in pairs:
-        iprop_score1 = {}
-        iprop_score2 = {}
+        iprop_score = {}
         object1_id = object1["id"]
         object2_id = object2["id"]
 
+        result = object_similarity(object1, object2, iprop_score, **weights)
         weights["_internal"]["max_depth"] = depth
-        weights["_internal"]["ds1"] = ds1
-        weights["_internal"]["ds2"] = ds2
-        result1 = object_similarity(object1, object2, iprop_score1, **weights)
-
-        weights["_internal"]["max_depth"] = depth
-        weights["_internal"]["ds1"] = ds2
-        weights["_internal"]["ds2"] = ds1
-        result2 = object_similarity(object2, object1, iprop_score2, **weights)
 
         if object1_id not in results:
-            results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score1, "value": result1}
-        elif result1 > results[object1_id]["value"]:
-            results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score1, "value": result1}
+            results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score, "value": result}
+        elif result > results[object1_id]["value"]:
+            results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score, "value": result}
 
         if object2_id not in results:
-            results[object2_id] = {"lhs": object2_id, "rhs": object1_id, "prop_score": iprop_score2, "value": result2}
-        elif result2 > results[object2_id]["value"]:
-            results[object2_id] = {"lhs": object2_id, "rhs": object1_id, "prop_score": iprop_score2, "value": result2}
+            results[object2_id] = {"lhs": object2_id, "rhs": object1_id, "prop_score": iprop_score, "value": result}
+        elif result > results[object2_id]["value"]:
+            results[object2_id] = {"lhs": object2_id, "rhs": object1_id, "prop_score": iprop_score, "value": result}
 
     matching_score = sum(x["value"] for x in results.values())
     len_pairs = len(results)

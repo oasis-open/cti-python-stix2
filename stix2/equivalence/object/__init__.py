@@ -125,12 +125,13 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
                         contributing_score = w * comp_funct(obj1["latitude"], obj1["longitude"], obj2["latitude"], obj2["longitude"], threshold)
                     elif comp_funct == reference_check or comp_funct == list_reference_check:
                         max_depth = weights["_internal"]["max_depth"]
-                        if max_depth < 0:
-                            continue  # prevent excessive recursion
+                        if max_depth > 0:
+                            weights["_internal"]["max_depth"] = max_depth - 1
+                            ds1, ds2 = weights["_internal"]["ds1"], weights["_internal"]["ds2"]
+                            contributing_score = w * comp_funct(obj1[prop], obj2[prop], ds1, ds2, **weights)
+                            weights["_internal"]["max_depth"] = max_depth + 1
                         else:
-                            weights["_internal"]["max_depth"] -= 1
-                        ds1, ds2 = weights["_internal"]["ds1"], weights["_internal"]["ds2"]
-                        contributing_score = w * comp_funct(obj1[prop], obj2[prop], ds1, ds2, **weights)
+                            continue  # prevent excessive recursion
                     else:
                         contributing_score = w * comp_funct(obj1[prop], obj2[prop])
 
@@ -376,7 +377,7 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
     type1, type2 = ref1.split("--")[0], ref2.split("--")[0]
     result = 0.0
 
-    if type1 == type2:
+    if type1 == type2 and type1 in weights:
         if weights["_internal"]["versioning_checks"]:
             result = _versioned_checks(ref1, ref2, ds1, ds2, **weights) / 100.0
         else:
