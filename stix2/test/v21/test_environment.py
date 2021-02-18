@@ -670,17 +670,17 @@ def test_object_similarity_on_unknown_object():
     def _x_foobar_checks(obj1, obj2, **weights):
         matching_score = 0.0
         sum_weights = 0.0
-        if stix2.environment.check_property_present("external_references", obj1, obj2):
+        if stix2.equivalence.object.check_property_present("external_references", obj1, obj2):
             w = weights["external_references"]
             sum_weights += w
-            matching_score += w * stix2.environment.partial_external_reference_based(
+            matching_score += w * stix2.equivalence.object.partial_external_reference_based(
                 obj1["external_references"],
                 obj2["external_references"],
             )
-        if stix2.environment.check_property_present("name", obj1, obj2):
+        if stix2.equivalence.object.check_property_present("name", obj1, obj2):
             w = weights["name"]
             sum_weights += w
-            matching_score += w * stix2.environment.partial_string_based(obj1["name"], obj2["name"])
+            matching_score += w * stix2.equivalence.object.partial_string_based(obj1["name"], obj2["name"])
         return matching_score, sum_weights
 
     weights = {
@@ -731,9 +731,9 @@ def test_object_similarity_zero_match():
     )
     weights = {
         "indicator": {
-            "indicator_types": (15, stix2.environment.partial_list_based),
-            "pattern": (80, stix2.environment.custom_pattern_based),
-            "valid_from": (5, stix2.environment.partial_timestamp_based),
+            "indicator_types": (15, stix2.equivalence.object.partial_list_based),
+            "pattern": (80, stix2.equivalence.object.custom_pattern_based),
+            "valid_from": (5, stix2.equivalence.object.partial_timestamp_based),
             "tdelta": 1,  # One day interval
         },
         "_internal": {
@@ -755,9 +755,9 @@ def test_object_similarity_different_spec_version():
     )
     weights = {
         "indicator": {
-            "indicator_types": (15, stix2.environment.partial_list_based),
-            "pattern": (80, stix2.environment.custom_pattern_based),
-            "valid_from": (5, stix2.environment.partial_timestamp_based),
+            "indicator_types": (15, stix2.equivalence.object.partial_list_based),
+            "pattern": (80, stix2.equivalence.object.custom_pattern_based),
+            "valid_from": (5, stix2.equivalence.object.partial_timestamp_based),
             "tdelta": 1,  # One day interval
         },
         "_internal": {
@@ -842,20 +842,20 @@ def test_object_similarity_different_spec_version():
     ],
 )
 def test_object_similarity_external_references(refs1, refs2, ret_val):
-    value = stix2.environment.partial_external_reference_based(refs1, refs2)
+    value = stix2.equivalence.object.partial_external_reference_based(refs1, refs2)
     assert value == ret_val
 
 
 def test_object_similarity_timestamp():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
-    assert stix2.environment.partial_timestamp_based(t1, t2, 1) == 0.5
+    assert stix2.equivalence.object.partial_timestamp_based(t1, t2, 1) == 0.5
 
 
 def test_object_similarity_exact_match():
     t1 = "2018-10-17T00:14:20.652Z"
     t2 = "2018-10-17T12:14:20.652Z"
-    assert stix2.environment.exact_match(t1, t2) == 0.0
+    assert stix2.equivalence.object.exact_match(t1, t2) == 0.0
 
 
 def test_non_existent_config_for_object():
@@ -877,8 +877,8 @@ def test_object_similarity_method_provided():
 
     weights = {
         "tool": {
-            "tool_types": (20, stix2.environment.partial_list_based),
-            "name": (80, stix2.environment.partial_string_based),
+            "tool_types": (20, stix2.equivalence.object.partial_list_based),
+            "name": (80, stix2.equivalence.object.partial_string_based),
             "method": custom_semantic_equivalence_method,
         },
     }
