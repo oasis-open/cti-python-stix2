@@ -20,11 +20,7 @@
 # JCS compatible JSON serializer for Python 3.x #
 #################################################
 
-# This file has been modified to be compatible with Python 2.x as well
-
 import re
-
-import six
 
 from stix2.canonicalization.NumberToJson import convert2Es6Format
 
@@ -55,9 +51,9 @@ ESCAPE_DCT = {
 }
 for i in range(0x20):
     ESCAPE_DCT.setdefault(chr(i), '\\u{0:04x}'.format(i))
+    #ESCAPE_DCT.setdefault(chr(i), '\\u%04x' % (i,))
 
 INFINITY = float('inf')
-
 
 def py_encode_basestring(s):
     """Return a JSON representation of a Python string
@@ -69,7 +65,6 @@ def py_encode_basestring(s):
 
 
 encode_basestring = (c_encode_basestring or py_encode_basestring)
-
 
 def py_encode_basestring_ascii(s):
     """Return an ASCII-only JSON representation of a Python string
@@ -83,6 +78,7 @@ def py_encode_basestring_ascii(s):
             n = ord(s)
             if n < 0x10000:
                 return '\\u{0:04x}'.format(n)
+                #return '\\u%04x' % (n,)
             else:
                 # surrogate pair
                 n -= 0x10000
@@ -95,7 +91,6 @@ def py_encode_basestring_ascii(s):
 encode_basestring_ascii = (
     c_encode_basestring_ascii or py_encode_basestring_ascii
 )
-
 
 class JSONEncoder(object):
     """Extensible JSON <http://json.org> encoder for Python data structures.
@@ -128,11 +123,10 @@ class JSONEncoder(object):
     """
     item_separator = ', '
     key_separator = ': '
-
     def __init__(
-        self, skipkeys=False, ensure_ascii=False,
+        self, *, skipkeys=False, ensure_ascii=False,
         check_circular=True, allow_nan=True, sort_keys=True,
-        indent=None, separators=(',', ':'), default=None,
+        indent=None, separators=(',', ':'), default=None
     ):
         """Constructor for JSONEncoder, with sensible defaults.
 
@@ -277,6 +271,7 @@ class JSONEncoder(object):
 
             return text
 
+
         if (
             _one_shot and c_make_encoder is not None
             and self.indent is None
@@ -294,11 +289,10 @@ class JSONEncoder(object):
             )
         return _iterencode(o, 0)
 
-
 def _make_iterencode(
     markers, _default, _encoder, _indent, _floatstr,
         _key_separator, _item_separator, _sort_keys, _skipkeys, _one_shot,
-        # HACK: hand-optimized bytecode; turn globals into locals
+        ## HACK: hand-optimized bytecode; turn globals into locals
         ValueError=ValueError,
         dict=dict,
         float=float,
@@ -362,10 +356,7 @@ def _make_iterencode(
                     chunks = _iterencode_dict(value, _current_indent_level)
                 else:
                     chunks = _iterencode(value, _current_indent_level)
-                # Below line commented-out for python2 compatibility
-                # yield from chunks
-                for chunk in chunks:
-                    yield chunk
+                yield from chunks
         if newline_indent is not None:
             _current_indent_level -= 1
             yield '\n' + _indent * _current_indent_level
@@ -397,8 +388,7 @@ def _make_iterencode(
         else:
             items = dct.items()
         for key, value in items:
-            # Replaced isinstance(key, str) with below to enable simultaneous python 2 & 3 compatibility
-            if isinstance(key, six.string_types) or isinstance(key, six.binary_type):
+            if isinstance(key, str):
                 pass
             # JavaScript is weakly typed for these, so it makes sense to
             # also allow them.  Many encoders seem to do something like this.
@@ -445,10 +435,7 @@ def _make_iterencode(
                     chunks = _iterencode_dict(value, _current_indent_level)
                 else:
                     chunks = _iterencode(value, _current_indent_level)
-                # Below line commented-out for python2 compatibility
-                # yield from chunks
-                for chunk in chunks:
-                    yield chunk
+                yield from chunks
         if newline_indent is not None:
             _current_indent_level -= 1
             yield '\n' + _indent * _current_indent_level
@@ -457,8 +444,7 @@ def _make_iterencode(
             del markers[markerid]
 
     def _iterencode(o, _current_indent_level):
-        # Replaced isinstance(o, str) with below to enable simultaneous python 2 & 3 compatibility
-        if isinstance(o, six.string_types) or isinstance(o, six.binary_type):
+        if isinstance(o, str):
             yield _encoder(o)
         elif o is None:
             yield 'null'
@@ -473,15 +459,9 @@ def _make_iterencode(
             # see comment for int/float in _make_iterencode
             yield convert2Es6Format(o)
         elif isinstance(o, (list, tuple)):
-            # Below line commented-out for python2 compatibility
-            # yield from _iterencode_list(o, _current_indent_level)
-            for thing in _iterencode_list(o, _current_indent_level):
-                yield thing
+            yield from _iterencode_list(o, _current_indent_level)
         elif isinstance(o, dict):
-            # Below line commented-out for python2 compatibility
-            # yield from _iterencode_dict(o, _current_indent_level)
-            for thing in _iterencode_dict(o, _current_indent_level):
-                yield thing
+            yield from _iterencode_dict(o, _current_indent_level)
         else:
             if markers is not None:
                 markerid = id(o)
@@ -489,23 +469,18 @@ def _make_iterencode(
                     raise ValueError("Circular reference detected")
                 markers[markerid] = o
             o = _default(o)
-            # Below line commented-out for python2 compatibility
-            # yield from _iterencode(o, _current_indent_level)
-            for thing in _iterencode(o, _current_indent_level):
-                yield thing
+            yield from _iterencode(o, _current_indent_level)
             if markers is not None:
                 del markers[markerid]
     return _iterencode
 
-
-def canonicalize(obj, utf8=True):
+def canonicalize(obj,utf8=True):
     textVal = JSONEncoder(sort_keys=True).encode(obj)
     if utf8:
         return textVal.encode()
     return textVal
 
-
-def serialize(obj, utf8=True):
+def serialize(obj,utf8=True):
     textVal = JSONEncoder(sort_keys=False).encode(obj)
     if utf8:
         return textVal.encode()
