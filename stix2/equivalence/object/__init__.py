@@ -25,7 +25,7 @@ def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
             score to result in successfully calling both objects equivalent. This
             value can be tuned.
         weight_dict: A dictionary that can be used to override settings
-            in the semantic equivalence process
+            in the similarity process
 
     Returns:
         bool: True if the result of the object similarity is greater than or equal to
