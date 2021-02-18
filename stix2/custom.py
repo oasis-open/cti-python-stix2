@@ -1,7 +1,5 @@
 from collections import OrderedDict
 
-import six
-
 from .base import _cls_init
 from .registration import (
     _register_marking, _register_object, _register_observable,
@@ -13,14 +11,11 @@ def _get_properties_dict(properties):
     try:
         return OrderedDict(properties)
     except TypeError as e:
-        six.raise_from(
-            ValueError(
-                "properties must be dict-like, e.g. a list "
-                "containing tuples.  For example, "
-                "[('property1', IntegerProperty())]",
-            ),
-            e,
-        )
+        raise ValueError(
+            "properties must be dict-like, e.g. a list "
+            "containing tuples.  For example, "
+            "[('property1', IntegerProperty())]",
+        ) from e
 
 
 def _custom_object_builder(cls, type, properties, version, base_class):

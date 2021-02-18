@@ -5,7 +5,6 @@ import re
 import uuid
 
 import simplejson as json
-import six
 
 import stix2
 from stix2.canonicalization.Canonicalize import canonicalize
@@ -70,12 +69,9 @@ class _STIXBase(Mapping):
                 # InvalidValueError... so let those propagate.
                 raise
             except Exception as exc:
-                six.raise_from(
-                    InvalidValueError(
-                        self.__class__, prop_name, reason=str(exc),
-                    ),
-                    exc,
-                )
+                raise InvalidValueError(
+                    self.__class__, prop_name, reason=str(exc),
+                ) from exc
 
     # interproperty constraint methods
 
@@ -369,19 +365,8 @@ class _Observable(_STIXBase):
         if json_serializable_object:
 
             data = canonicalize(json_serializable_object, utf8=False)
-
-            # The situation is complicated w.r.t. python 2/3 behavior, so
-            # I'd rather not rely on particular exceptions being raised to
-            # determine what to do.  Better to just check the python version
-            # directly.
-            if six.PY3:
-                uuid_ = uuid.uuid5(SCO_DET_ID_NAMESPACE, data)
-            else:
-                uuid_ = uuid.uuid5(
-                    SCO_DET_ID_NAMESPACE, data.encode("utf-8"),
-                )
-
-            id_ = "{}--{}".format(self._type, six.text_type(uuid_))
+            uuid_ = uuid.uuid5(SCO_DET_ID_NAMESPACE, data)
+            id_ = "{}--{}".format(self._type, str(uuid_))
 
         return id_
 
@@ -447,7 +432,7 @@ def _make_json_serializable(value):
             for v in value
         ]
 
-    elif not isinstance(value, (int, float, six.string_types, bool)):
+    elif not isinstance(value, (int, float, str, bool)):
         # If a "simple" value which is not already JSON-serializable,
         # JSON-serialize to a string and use that as our JSON-serializable
         # value.  This applies to our datetime objects currently (timestamp

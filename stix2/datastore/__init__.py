@@ -15,8 +15,6 @@ Python STIX2 DataStore API.
 from abc import ABCMeta, abstractmethod
 import uuid
 
-from six import with_metaclass
-
 from stix2.datastore.filters import Filter, FilterSet
 from stix2.utils import deduplicate
 
@@ -219,7 +217,7 @@ class DataStoreMixin(object):
             raise AttributeError(msg % self.__class__.__name__)
 
 
-class DataSink(with_metaclass(ABCMeta)):
+class DataSink(metaclass=ABCMeta):
     """An implementer will create a concrete subclass from
     this class for the specific DataSink.
 
@@ -245,7 +243,7 @@ class DataSink(with_metaclass(ABCMeta)):
         """
 
 
-class DataSource(with_metaclass(ABCMeta)):
+class DataSource(metaclass=ABCMeta):
     """An implementer will create a concrete subclass from
     this class for the specific DataSource.
 
