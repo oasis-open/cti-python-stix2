@@ -1142,7 +1142,7 @@ def test_depth_limiting():
             "created": "1985-01-03T01:07:03Z",
             "modified": "1992-07-20T21:32:31Z",
             "name": "alice",
-        }
+        },
     ]
 
     mem_store1 = stix2.MemorySource(g1)
