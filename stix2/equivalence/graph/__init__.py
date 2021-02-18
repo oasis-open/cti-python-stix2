@@ -97,7 +97,6 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
 
     if weights["_internal"]["max_depth"] <= 0:
         raise ValueError("weight_dict['_internal']['max_depth'] must be greater than 0")
-    depth = weights["_internal"]["max_depth"]
 
     pairs = _object_pairs(
         _bucket_per_type(ds1.query([])),
@@ -108,13 +107,13 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
     weights["_internal"]["ds1"] = ds1
     weights["_internal"]["ds2"] = ds2
 
+    logger.debug("Starting graph similarity process between DataStores: '%s' and '%s'", ds1.id, ds2.id)
     for object1, object2 in pairs:
         iprop_score = {}
         object1_id = object1["id"]
         object2_id = object2["id"]
 
         result = object_similarity(object1, object2, iprop_score, **weights)
-        weights["_internal"]["max_depth"] = depth
 
         if object1_id not in results:
             results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score, "value": result}
