@@ -246,7 +246,7 @@ class Environment(DataStoreMixin):
                 score to result in successfully calling both objects equivalent. This
                 value can be tuned.
             weight_dict: A dictionary that can be used to override settings
-                in the semantic equivalence process
+                in the similarity process
 
         Returns:
             bool: True if the result of the object similarity is greater than or equal to
