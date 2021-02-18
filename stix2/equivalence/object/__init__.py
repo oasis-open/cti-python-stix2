@@ -64,7 +64,7 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
         prop_scores: A dictionary that can hold individual property scores,
             weights, contributing score, matching score and sum of weights.
         weight_dict: A dictionary that can be used to override settings
-            in the semantic equivalence process
+            in the similarity process
 
     Returns:
         float: A number between 0.0 and 100.0 as a measurement of similarity.
