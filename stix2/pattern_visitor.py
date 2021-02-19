@@ -3,7 +3,6 @@
 import importlib
 import inspect
 
-from six import text_type
 from stix2patterns.exceptions import ParseException
 from stix2patterns.grammars.STIXPatternParser import TerminalNode
 from stix2patterns.v20.grammars.STIXPatternParser import \
@@ -263,7 +262,7 @@ class STIXPatternVisitorForSTIX2():
                 property_path.append(
                     self.instantiate(
                         "ListObjectPathComponent",
-                        current.property_name if isinstance(current, BasicObjectPathComponent) else text_type(current),
+                        current.property_name if isinstance(current, BasicObjectPathComponent) else str(current),
                         next.value,
                     ),
                 )
@@ -286,7 +285,7 @@ class STIXPatternVisitorForSTIX2():
         if isinstance(first_component, TerminalNode):
             step = first_component.getText()
         else:
-            step = text_type(first_component)
+            step = str(first_component)
         # if step.endswith("_ref"):
         #     return stix2.ReferenceObjectPathComponent(step)
         # else:

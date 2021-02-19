@@ -21,6 +21,8 @@ Install with `pip <https://pip.pypa.io/en/stable/>`__:
 
   $ pip install stix2
 
+Note: The library requires Python 3.6+.
+
 Usage
 -----
 

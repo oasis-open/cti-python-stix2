@@ -23,3 +23,4 @@ repos:
         args: ["-c", "--diff"]
     -   id: isort
         name: Sort python imports (fixes files)
+exclude: ^stix2/canonicalization/

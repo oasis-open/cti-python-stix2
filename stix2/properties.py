@@ -7,8 +7,6 @@ import inspect
 import re
 import uuid
 
-from six import string_types, text_type
-
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
@@ -227,7 +225,7 @@ class ListProperty(Property):
         except TypeError:
             raise ValueError("must be an iterable.")
 
-        if isinstance(value, (_STIXBase, string_types)):
+        if isinstance(value, (_STIXBase, str)):
             value = [value]
 
         if isinstance(self.contained, Property):
@@ -268,8 +266,8 @@ class StringProperty(Property):
         super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        if not isinstance(value, string_types):
-            return text_type(value)
+        if not isinstance(value, str):
+            return str(value)
         return value
 
 
