@@ -4,7 +4,6 @@ import os
 import re
 import sys
 
-from six import class_types
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
@@ -107,7 +106,7 @@ class STIXPropertyDocumenter(ClassDocumenter):
 
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
-        return isinstance(member, class_types) and \
+        return isinstance(member, type) and \
                issubclass(member, _STIXBase) and \
                hasattr(member, '_properties')
 
