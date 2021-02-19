@@ -1,4 +1,4 @@
-"""Python APIs for STIX 2 Semantic Equivalence.
+"""Python APIs for STIX 2 Semantic Equivalence and Similarity.
 
 .. autosummary::
    :toctree: equivalence
