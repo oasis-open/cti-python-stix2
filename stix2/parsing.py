@@ -1,9 +1,6 @@
 """STIX2 Core parsing methods."""
 
 import copy
-import importlib
-import pkgutil
-import re
 
 from . import registry
 from .exceptions import ParseError

@@ -4,8 +4,8 @@ import six
 
 from .base import _cls_init
 from .registration import (
-    _register_marking, _register_object, _register_observable,
-    _register_observable_extension,
+    _get_extension_class, _register_extension, _register_marking,
+    _register_object, _register_observable,
 )
 
 

@@ -37,7 +37,7 @@ def _collect_stix2_mappings():
                 STIX2_OBJ_MAPS[ver] = {}
                 STIX2_OBJ_MAPS[ver]['objects'] = mod.OBJ_MAP
                 STIX2_OBJ_MAPS[ver]['observables'] = mod.OBJ_MAP_OBSERVABLE
-                STIX2_OBJ_MAPS[ver]['observable-extensions'] = mod.EXT_MAP
+                STIX2_OBJ_MAPS[ver]['extensions'] = mod.EXT_MAP
             elif re.match(r'^stix2\.v2[0-9]\.common$', name) and is_pkg is False:
                 ver = _stix_vid_to_version(stix_vid)
                 mod = importlib.import_module(name, str(top_level_module.__name__))
