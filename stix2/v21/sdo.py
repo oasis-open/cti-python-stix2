@@ -2,9 +2,9 @@
 
 from collections import OrderedDict
 import itertools
+from urllib.parse import quote_plus
 import warnings
 
-from six.moves.urllib.parse import quote_plus
 from stix2patterns.validator import run_validator
 
 from . import observables

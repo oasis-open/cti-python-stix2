@@ -7,8 +7,6 @@ import inspect
 import re
 import uuid
 
-from six import string_types, text_type
-
 from . import registry, version
 from .base import _STIXBase
 from .exceptions import (
@@ -170,7 +168,7 @@ class Property(object):
 
         if required and default:
             raise STIXError(
-                "Cant't use 'required' and 'default' together. 'required'"
+                "Can't use 'required' and 'default' together. 'required'"
                 "really means 'the user must provide this.'",
             )
 
@@ -226,7 +224,7 @@ class ListProperty(Property):
         except TypeError:
             raise ValueError("must be an iterable.")
 
-        if isinstance(value, (_STIXBase, string_types)):
+        if isinstance(value, (_STIXBase, str)):
             value = [value]
 
         if isinstance(self.contained, Property):
@@ -267,8 +265,8 @@ class StringProperty(Property):
         super(StringProperty, self).__init__(**kwargs)
 
     def clean(self, value):
-        if not isinstance(value, string_types):
-            return text_type(value)
+        if not isinstance(value, str):
+            return str(value)
         return value
 
 
@@ -621,7 +619,7 @@ class ObservableProperty(Property):
         if dictified == {}:
             raise ValueError("The observable property must contain a non-empty dictionary")
 
-        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
+        valid_refs = {k: v['type'] for (k, v) in dictified.items()}
 
         for key, obj in dictified.items():
             parsed_obj = parse_observable(
@@ -689,8 +687,9 @@ class STIXObjectProperty(Property):
     def clean(self, value):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
+        stix2_classes = {'_DomainObject', '_RelationshipObject', 'MarkingDefinition'}
         if any(
-            x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
+            x in stix2_classes
             for x in get_class_hierarchy_names(value)
         ):
             # A simple "is this a spec version 2.1+ object" test.  For now,

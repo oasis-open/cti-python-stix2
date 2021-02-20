@@ -7,7 +7,6 @@ import json
 import re
 
 import pytz
-import six
 
 import stix2.registry as mappings
 import stix2.version
@@ -70,7 +69,7 @@ def _to_enum(value, enum_type, enum_default=None):
     if not isinstance(value, enum_type):
         if value is None and enum_default is not None:
             value = enum_default
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             value = enum_type[value.upper()]
         else:
             raise TypeError(

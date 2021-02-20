@@ -3,7 +3,6 @@ import datetime
 import uuid
 
 import pytest
-import six
 
 import stix2.base
 import stix2.canonicalization.Canonicalize
@@ -31,12 +30,7 @@ def _make_uuid5(name):
     """
     Make a STIX 2.1+ compliant UUIDv5 from a "name".
     """
-    if six.PY3:
-        uuid_ = uuid.uuid5(SCO_DET_ID_NAMESPACE, name)
-    else:
-        uuid_ = uuid.uuid5(
-            SCO_DET_ID_NAMESPACE, name.encode("utf-8"),
-        )
+    uuid_ = uuid.uuid5(SCO_DET_ID_NAMESPACE, name)
 
     return uuid_
 

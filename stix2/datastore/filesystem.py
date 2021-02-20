@@ -6,8 +6,6 @@ import os
 import re
 import stat
 
-import six
-
 from stix2 import v20, v21
 from stix2.base import _STIXBase
 from stix2.datastore import (
@@ -116,7 +114,7 @@ def _update_allow(allow_set, value):
 
     """
     adding_seq = hasattr(value, "__iter__") and \
-        not isinstance(value, six.string_types)
+        not isinstance(value, str)
 
     if allow_set is None:
         allow_set = set()

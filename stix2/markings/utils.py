@@ -2,8 +2,6 @@
 
 import collections
 
-import six
-
 from stix2 import exceptions, utils
 
 
@@ -129,7 +127,7 @@ def compress_markings(granular_markings):
             {'marking_ref': item, 'selectors': sorted(selectors)}
             if utils.is_marking(item) else
             {'lang': item, 'selectors': sorted(selectors)}
-            for item, selectors in six.iteritems(map_)
+            for item, selectors in map_.items()
         ]
 
     return compressed
@@ -230,7 +228,7 @@ def iterpath(obj, path=None):
     if path is None:
         path = []
 
-    for varname, varobj in iter(sorted(six.iteritems(obj))):
+    for varname, varobj in iter(sorted(obj.items())):
         path.append(varname)
         yield (path, varobj)
 
