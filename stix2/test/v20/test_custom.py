@@ -445,8 +445,8 @@ def test_custom_observable_object_1():
                 contains_refs=['file--e277603e-1060-5ad4-9937-c26c97f1ca68'],
                 version='2.0',
                 comment='for real',
-            )
-        }
+            ),
+        },
     )
     assert no.property1 == 'something'
     assert no.extensions['archive-ext'].comment == 'for real'
