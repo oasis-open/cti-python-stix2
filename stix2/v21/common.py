@@ -207,7 +207,7 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
     ])
 
     def __init__(self, **kwargs):
-        if set(('definition_type', 'definition')).issubset(kwargs.keys()):
+        if {'definition_type', 'definition'}.issubset(kwargs.keys()):
             # Create correct marking type object
             try:
                 marking_type = OBJ_MAP_MARKING[kwargs['definition_type']]
