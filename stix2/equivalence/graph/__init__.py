@@ -53,7 +53,8 @@ def graph_equivalence(ds1, ds2, prop_scores={}, threshold=70, **weight_dict):
     return False
 
 
-def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
+def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
+                     versioning_checks=False, max_depth=1, **weight_dict):
     """This method returns a similarity score for two given graphs.
     Each DataStore can contain a connected or disconnected graph and the
     final result is weighted over the amount of objects we managed to compare.
@@ -65,6 +66,9 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
         ds2: A DataStore object instance representing your graph
         prop_scores: A dictionary that can hold individual property scores,
             weights, contributing score, matching score and sum of weights.
+        ignore_spec_version: As
+        versioning_checks: As
+        max_depth: As
         weight_dict: A dictionary that can be used to override settings
             in the similarity process
 
@@ -90,13 +94,21 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
     """
     results = {}
     similarity_score = 0
-    weights = GRAPH_WEIGHTS.copy()
+    weights = WEIGHTS.copy()
 
     if weight_dict:
         weights.update(weight_dict)
 
+    weights["_internal"] = {
+        "ignore_spec_version": ignore_spec_version,
+        "versioning_checks": versioning_checks,
+        "ds1": ds1,
+        "ds2": ds2,
+        "max_depth": max_depth,
+    }
+
     if weights["_internal"]["max_depth"] <= 0:
-        raise ValueError("weight_dict['_internal']['max_depth'] must be greater than 0")
+        raise ValueError("'max_depth' must be greater than 0")
 
     pairs = _object_pairs(
         _bucket_per_type(ds1.query([])),
@@ -104,16 +116,15 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
         weights,
     )
 
-    weights["_internal"]["ds1"] = ds1
-    weights["_internal"]["ds2"] = ds2
-
     logger.debug("Starting graph similarity process between DataStores: '%s' and '%s'", ds1.id, ds2.id)
     for object1, object2 in pairs:
         iprop_score = {}
         object1_id = object1["id"]
         object2_id = object2["id"]
 
-        result = object_similarity(object1, object2, iprop_score, **weights)
+        result = object_similarity(object1, object2, iprop_score, ds1, ds2,
+                                   ignore_spec_version, versioning_checks,
+                                   max_depth, **weights)
 
         if object1_id not in results:
             results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score, "value": result}
@@ -141,40 +152,3 @@ def graph_similarity(ds1, ds2, prop_scores={}, **weight_dict):
         similarity_score,
     )
     return similarity_score
-
-
-# default weights used for the graph similarity process
-GRAPH_WEIGHTS = WEIGHTS.copy()
-GRAPH_WEIGHTS.update({
-    "grouping": {
-        "name": (20, partial_string_based),
-        "context": (20, partial_string_based),
-        "object_refs": (60, list_reference_check),
-    },
-    "relationship": {
-        "relationship_type": (20, exact_match),
-        "source_ref": (40, reference_check),
-        "target_ref": (40, reference_check),
-    },
-    "report": {
-        "name": (30, partial_string_based),
-        "published": (10, partial_timestamp_based),
-        "object_refs": (60, list_reference_check),
-        "tdelta": 1,  # One day interval
-    },
-    "sighting": {
-        "first_seen": (5, partial_timestamp_based),
-        "last_seen": (5, partial_timestamp_based),
-        "sighting_of_ref": (40, reference_check),
-        "observed_data_refs": (20, list_reference_check),
-        "where_sighted_refs": (20, list_reference_check),
-        "summary": (10, exact_match),
-    },
-    "_internal": {
-        "ignore_spec_version": False,
-        "versioning_checks": False,
-        "ds1": None,
-        "ds2": None,
-        "max_depth": 1,
-    },
-})  # :autodoc-skip:

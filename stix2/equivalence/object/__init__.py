@@ -4,7 +4,7 @@ import itertools
 import logging
 import time
 
-from ...datastore import Filter
+from ...datastore import Filter, DataStoreMixin, DataSink, DataSource
 from ...utils import STIXdatetime, parse_into_datetime
 from ..pattern import equivalent_patterns
 
@@ -54,7 +54,9 @@ def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
     return False
 
 
-def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
+def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
+                      ignore_spec_version=False, versioning_checks=False,
+                      max_depth=1, **weight_dict):
     """This method returns a measure of similarity depending on how
     similar the two objects are.
 
@@ -63,6 +65,11 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
         obj2: A stix2 object instance
         prop_scores: A dictionary that can hold individual property scores,
             weights, contributing score, matching score and sum of weights.
+        ds1: As
+        ds2: As
+        ignore_spec_version: As
+        versioning_checks: As
+        max_depth: As
         weight_dict: A dictionary that can be used to override settings
             in the similarity process
 
@@ -91,6 +98,14 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
     if weight_dict:
         weights.update(weight_dict)
 
+    weights["_internal"] = {
+        "ignore_spec_version": ignore_spec_version,
+        "versioning_checks": versioning_checks,
+        "ds1": ds1,
+        "ds2": ds2,
+        "max_depth": max_depth,
+    }
+
     type1, type2 = obj1["type"], obj2["type"]
     ignore_spec_version = weights["_internal"]["ignore_spec_version"]
 
@@ -117,6 +132,7 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
                 if check_property_present(prop, obj1, obj2):
                     w = weights[type1][prop][0]
                     comp_funct = weights[type1][prop][1]
+                    prop_scores[prop] = {}
 
                     if comp_funct == partial_timestamp_based:
                         contributing_score = w * comp_funct(obj1[prop], obj2[prop], weights[type1]["tdelta"])
@@ -124,24 +140,30 @@ def object_similarity(obj1, obj2, prop_scores={}, **weight_dict):
                         threshold = weights[type1]["threshold"]
                         contributing_score = w * comp_funct(obj1["latitude"], obj1["longitude"], obj2["latitude"], obj2["longitude"], threshold)
                     elif comp_funct == reference_check or comp_funct == list_reference_check:
-                        max_depth = weights["_internal"]["max_depth"]
-                        if max_depth > 0:
-                            weights["_internal"]["max_depth"] = max_depth - 1
+                        max_depth_i = weights["_internal"]["max_depth"]
+                        if max_depth_i > 0:
+                            weights["_internal"]["max_depth"] = max_depth_i - 1
                             ds1, ds2 = weights["_internal"]["ds1"], weights["_internal"]["ds2"]
-                            contributing_score = w * comp_funct(obj1[prop], obj2[prop], ds1, ds2, **weights)
+                            if _datastore_check(ds1, ds2):
+                                contributing_score = w * comp_funct(obj1[prop], obj2[prop], ds1, ds2, **weights)
+                            elif comp_funct == reference_check:
+                                comp_funct = exact_match
+                                contributing_score = w * comp_funct(obj1[prop], obj2[prop])
+                            elif comp_funct == list_reference_check:
+                                comp_funct = partial_list_based
+                                contributing_score = w * comp_funct(obj1[prop], obj2[prop])
+                            prop_scores[prop]["method"] = comp_funct.__name__
                         else:
                             continue  # prevent excessive recursion
-                        weights["_internal"]["max_depth"] = max_depth
+                        weights["_internal"]["max_depth"] = max_depth_i
                     else:
                         contributing_score = w * comp_funct(obj1[prop], obj2[prop])
 
                     sum_weights += w
                     matching_score += contributing_score
 
-                    prop_scores[prop] = {
-                        "weight": w,
-                        "contributing_score": contributing_score,
-                    }
+                    prop_scores[prop]["weight"] = w
+                    prop_scores[prop]["contributing_score"] = contributing_score
                     logger.debug("'%s' check -- weight: %s, contributing score: %s", prop, w, contributing_score)
 
             prop_scores["matching_score"] = matching_score
@@ -196,7 +218,9 @@ def partial_timestamp_based(t1, t2, tdelta):
 
 
 def partial_list_based(l1, l2):
-    """Performs a partial list matching via finding the intersection between common values.
+    """Performs a partial list matching via finding the intersection between
+    common values. Repeated values are counted only once. This method can be
+    used for *_refs equality checks when de-reference is not possible.
 
     Args:
         l1: A list of values.
@@ -213,7 +237,8 @@ def partial_list_based(l1, l2):
 
 
 def exact_match(val1, val2):
-    """Performs an exact value match based on two values
+    """Performs an exact value match based on two values. This method can be
+    used for *_ref equality check when de-reference is not possible.
 
     Args:
         val1: A value suitable for an equality test.
@@ -275,15 +300,8 @@ def partial_external_reference_based(refs1, refs2):
     allowed = {"veris", "cve", "capec", "mitre-attack"}
     matches = 0
 
-    if len(refs1) >= len(refs2):
-        l1 = refs1
-        l2 = refs2
-    else:
-        l1 = refs2
-        l2 = refs1
-
-    for ext_ref1 in l1:
-        for ext_ref2 in l2:
+    for ext_ref1 in refs1:
+        for ext_ref2 in refs2:
             sn_match = False
             ei_match = False
             url_match = False
@@ -352,17 +370,21 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
     """Checks multiple object versions if present in graph.
     Maximizes for the similarity score of a particular version."""
     results = {}
-    objects1 = ds1.query([Filter("id", "=", ref1)])
-    objects2 = ds2.query([Filter("id", "=", ref2)])
 
     pairs = _object_pairs(
-        _bucket_per_type(objects1),
-        _bucket_per_type(objects2),
+        _bucket_per_type(ds1.query([Filter("id", "=", ref1)])),
+        _bucket_per_type(ds2.query([Filter("id", "=", ref2)])),
         weights,
     )
+    ignore_spec_version = weights["_internal"]["ignore_spec_version"]
+    versioning_checks = weights["_internal"]["versioning_checks"]
+    max_depth = weights["_internal"]["max_depth"]
 
     for object1, object2 in pairs:
-        result = object_similarity(object1, object2, **weights)
+        result = object_similarity(object1, object2, ds1=ds1, ds2=ds2,
+                                   ignore_spec_version=ignore_spec_version,
+                                   versioning_checks=versioning_checks,
+                                   max_depth=max_depth, **weights)
         if ref1 not in results:
             results[ref1] = {"matched": ref2, "value": result}
         elif result > results[ref1]["value"]:
@@ -383,12 +405,18 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
     result = 0.0
 
     if type1 == type2 and type1 in weights:
-        if weights["_internal"]["versioning_checks"]:
+        ignore_spec_version = weights["_internal"]["ignore_spec_version"]
+        versioning_checks = weights["_internal"]["versioning_checks"]
+        max_depth = weights["_internal"]["max_depth"]
+        if versioning_checks:
             result = _versioned_checks(ref1, ref2, ds1, ds2, **weights) / 100.0
         else:
             o1, o2 = ds1.get(ref1), ds2.get(ref2)
             if o1 and o2:
-                result = object_similarity(o1, o2, **weights) / 100.0
+                result = object_similarity(o1, o2, ds1=ds1, ds2=ds2,
+                                           ignore_spec_version=ignore_spec_version,
+                                           versioning_checks=versioning_checks,
+                                           max_depth=max_depth, **weights) / 100.0
 
     logger.debug(
         "--\t\treference_check '%s' '%s'\tresult: '%s'",
@@ -439,6 +467,13 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
     return result
 
 
+def _datastore_check(ds1, ds2):
+    if (issubclass(ds1.__class__, (DataStoreMixin, DataSink, DataSource)) or
+            issubclass(ds2.__class__, (DataStoreMixin, DataSink, DataSource))):
+        return True
+    return False
+
+
 def _bucket_per_type(graph, mode="type"):
     """Given a list of objects or references, bucket them by type.
     Depending on the list type: extract from 'type' property or using
@@ -480,10 +515,19 @@ WEIGHTS = {
         "name": (60, partial_string_based),
         "external_references": (40, partial_external_reference_based),
     },
+    "grouping": {
+        "name": (20, partial_string_based),
+        "context": (20, partial_string_based),
+        "object_refs": (60, list_reference_check),
+    },
     "identity": {
         "name": (60, partial_string_based),
         "identity_class": (20, exact_match),
         "sectors": (20, partial_list_based),
+    },
+    "incident": {
+        "name": (60, partial_string_based),
+        "external_references": (40, partial_external_reference_based),
     },
     "indicator": {
         "indicator_types": (15, partial_list_based),
@@ -511,6 +555,25 @@ WEIGHTS = {
         "definition": (60, exact_match),
         "definition_type": (20, exact_match),
     },
+    "relationship": {
+        "relationship_type": (20, exact_match),
+        "source_ref": (40, reference_check),
+        "target_ref": (40, reference_check),
+    },
+    "report": {
+        "name": (30, partial_string_based),
+        "published": (10, partial_timestamp_based),
+        "object_refs": (60, list_reference_check),
+        "tdelta": 1,  # One day interval
+    },
+    "sighting": {
+        "first_seen": (5, partial_timestamp_based),
+        "last_seen": (5, partial_timestamp_based),
+        "sighting_of_ref": (40, reference_check),
+        "observed_data_refs": (20, list_reference_check),
+        "where_sighted_refs": (20, list_reference_check),
+        "summary": (10, exact_match),
+    },
     "threat-actor": {
         "name": (60, partial_string_based),
         "threat_actor_types": (20, partial_list_based),
@@ -523,8 +586,5 @@ WEIGHTS = {
     "vulnerability": {
         "name": (30, partial_string_based),
         "external_references": (70, partial_external_reference_based),
-    },
-    "_internal": {
-        "ignore_spec_version": False,
-    },
+    }
 }  # :autodoc-skip:
