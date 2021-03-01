@@ -860,7 +860,7 @@ def test_non_existent_config_for_object():
     r2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
     prop_scores = {}
     assert stix2.Environment().object_similarity(r1, r2, prop_scores) == 100.0
-    assert prop_scores["object_refs"]["method"] == "partial_list_based"
+    assert prop_scores["object_refs"]["check_type"] == "partial_list_based"
 
 
 def custom_semantic_equivalence_method(obj1, obj2, **weights):
