@@ -7,7 +7,6 @@ import sys
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
-from stix2.equivalence.graph import GRAPH_WEIGHTS
 from stix2.equivalence.object import WEIGHTS
 from stix2.version import __version__
 

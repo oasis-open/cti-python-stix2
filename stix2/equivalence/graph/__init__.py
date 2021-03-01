@@ -2,9 +2,7 @@
 import logging
 
 from ..object import (
-    WEIGHTS, _bucket_per_type, _object_pairs, exact_match,
-    list_reference_check, object_similarity, partial_string_based,
-    partial_timestamp_based, reference_check,
+    WEIGHTS, _bucket_per_type, _object_pairs, object_similarity,
 )
 
 logger = logging.getLogger(__name__)

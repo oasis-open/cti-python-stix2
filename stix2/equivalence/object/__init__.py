@@ -412,8 +412,8 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
                 object1, object2, ds1=ds1, ds2=ds2,
                 ignore_spec_version=ignore_spec_version,
                 versioning_checks=versioning_checks,
-                max_depth=max_depth, **weights
-            )
+                max_depth=max_depth, **weights,
+        )
         if ref1 not in results:
             results[ref1] = {"matched": ref2, "value": result}
         elif result > results[ref1]["value"]:
@@ -446,7 +446,7 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
                     o1, o2, ds1=ds1, ds2=ds2,
                     ignore_spec_version=ignore_spec_version,
                     versioning_checks=versioning_checks,
-                    max_depth=max_depth, **weights
+                    max_depth=max_depth, **weights,
                 ) / 100.0
 
     logger.debug(
