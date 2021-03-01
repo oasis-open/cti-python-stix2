@@ -4,14 +4,18 @@ import itertools
 import logging
 import time
 
-from ...datastore import Filter, DataStoreMixin, DataSink, DataSource
+from ...datastore import DataSink, DataSource, DataStoreMixin, Filter
 from ...utils import STIXdatetime, parse_into_datetime
 from ..pattern import equivalent_patterns
 
 logger = logging.getLogger(__name__)
 
 
-def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
+def object_equivalence(
+    obj1, obj2, prop_scores={}, threshold=70, ds1=None,
+    ds2=None, ignore_spec_version=False,
+    versioning_checks=False, max_depth=1, **weight_dict
+):
     """This method returns a true/false value if two objects are semantically equivalent.
     Internally, it calls the object_similarity function and compares it against the given
     threshold value.
@@ -24,8 +28,19 @@ def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
         threshold: A numerical value between 0 and 100 to determine the minimum
             score to result in successfully calling both objects equivalent. This
             value can be tuned.
-        weight_dict: A dictionary that can be used to override settings
-            in the similarity process
+        ds1: A DataStore object instance representing your graph
+        ds2: A DataStore object instance representing your graph
+        ignore_spec_version: A boolean indicating whether to test object types
+            that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+            If set to True this check will be skipped.
+        versioning_checks: A boolean indicating whether to test multiple revisions
+            of the same object (when present) to maximize similarity against a
+            particular version. If set to True the algorithm will perform this step.
+        max_depth: A positive integer indicating the maximum recursion depth the
+            algorithm can reach when de-referencing objects and performing the
+            object_similarity algorithm.
+        weight_dict: A dictionary that can be used to override what checks are done
+            to objects in the similarity process.
 
     Returns:
         bool: True if the result of the object similarity is greater than or equal to
@@ -41,22 +56,27 @@ def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, **weight_dict):
     Note:
         Default weight_dict:
 
-        .. include:: ../../object_default_sem_eq_weights.rst
+        .. include:: ../../similarity_weights.rst
 
     Note:
         This implementation follows the Semantic Equivalence Committee Note.
         see `the Committee Note <link here>`__.
 
     """
-    similarity_result = object_similarity(obj1, obj2, prop_scores, **weight_dict)
+    similarity_result = object_similarity(
+        obj1, obj2, prop_scores, ds1, ds2, ignore_spec_version,
+        versioning_checks, max_depth, **weight_dict
+    )
     if similarity_result >= threshold:
         return True
     return False
 
 
-def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
-                      ignore_spec_version=False, versioning_checks=False,
-                      max_depth=1, **weight_dict):
+def object_similarity(
+    obj1, obj2, prop_scores={}, ds1=None, ds2=None,
+    ignore_spec_version=False, versioning_checks=False,
+    max_depth=1, **weight_dict
+):
     """This method returns a measure of similarity depending on how
     similar the two objects are.
 
@@ -65,13 +85,19 @@ def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
         obj2: A stix2 object instance
         prop_scores: A dictionary that can hold individual property scores,
             weights, contributing score, matching score and sum of weights.
-        ds1: As
-        ds2: As
-        ignore_spec_version: As
-        versioning_checks: As
-        max_depth: As
-        weight_dict: A dictionary that can be used to override settings
-            in the similarity process
+        ds1: A DataStore object instance representing your graph
+        ds2: A DataStore object instance representing your graph
+        ignore_spec_version: A boolean indicating whether to test object types
+            that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+            If set to True this check will be skipped.
+        versioning_checks: A boolean indicating whether to test multiple revisions
+            of the same object (when present) to maximize similarity against a
+            particular version. If set to True the algorithm will perform this step.
+        max_depth: A positive integer indicating the maximum recursion depth the
+            algorithm can reach when de-referencing objects and performing the
+            object_similarity algorithm.
+        weight_dict: A dictionary that can be used to override what checks are done
+            to objects in the similarity process.
 
     Returns:
         float: A number between 0.0 and 100.0 as a measurement of similarity.
@@ -86,7 +112,7 @@ def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
     Note:
         Default weight_dict:
 
-        .. include:: ../../object_default_sem_eq_weights.rst
+        .. include:: ../../similarity_weights.rst
 
     Note:
         This implementation follows the Semantic Equivalence Committee Note.
@@ -107,7 +133,6 @@ def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
     }
 
     type1, type2 = obj1["type"], obj2["type"]
-    ignore_spec_version = weights["_internal"]["ignore_spec_version"]
 
     if type1 != type2:
         raise ValueError('The objects to compare must be of the same type!')
@@ -140,9 +165,8 @@ def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
                         threshold = weights[type1]["threshold"]
                         contributing_score = w * comp_funct(obj1["latitude"], obj1["longitude"], obj2["latitude"], obj2["longitude"], threshold)
                     elif comp_funct == reference_check or comp_funct == list_reference_check:
-                        max_depth_i = weights["_internal"]["max_depth"]
-                        if max_depth_i > 0:
-                            weights["_internal"]["max_depth"] = max_depth_i - 1
+                        if max_depth > 0:
+                            weights["_internal"]["max_depth"] = max_depth - 1
                             ds1, ds2 = weights["_internal"]["ds1"], weights["_internal"]["ds2"]
                             if _datastore_check(ds1, ds2):
                                 contributing_score = w * comp_funct(obj1[prop], obj2[prop], ds1, ds2, **weights)
@@ -155,7 +179,7 @@ def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
                             prop_scores[prop]["method"] = comp_funct.__name__
                         else:
                             continue  # prevent excessive recursion
-                        weights["_internal"]["max_depth"] = max_depth_i
+                        weights["_internal"]["max_depth"] = max_depth
                     else:
                         contributing_score = w * comp_funct(obj1[prop], obj2[prop])
 
@@ -187,7 +211,7 @@ def object_similarity(obj1, obj2, prop_scores={}, ds1=None, ds2=None,
 def check_property_present(prop, obj1, obj2):
     """Helper method checks if a property is present on both objects."""
     if prop == "longitude_latitude":
-        if all(x in obj1 and x in obj2 for x in ['latitude', 'longitude']):
+        if all(x in obj1 and x in obj2 for x in ('latitude', 'longitude')):
             return True
     elif prop in obj1 and prop in obj2:
         return True
@@ -286,12 +310,12 @@ def custom_pattern_based(pattern1, pattern2):
     return equivalent_patterns(pattern1, pattern2)
 
 
-def partial_external_reference_based(refs1, refs2):
+def partial_external_reference_based(ext_refs1, ext_refs2):
     """Performs a matching on External References.
 
     Args:
-        refs1: A list of external references.
-        refs2: A list of external references.
+        ext_refs1: A list of external references.
+        ext_refs2: A list of external references.
 
     Returns:
         float: Number between 0.0 and 1.0 depending on matches.
@@ -300,44 +324,47 @@ def partial_external_reference_based(refs1, refs2):
     allowed = {"veris", "cve", "capec", "mitre-attack"}
     matches = 0
 
-    for ext_ref1 in refs1:
-        for ext_ref2 in refs2:
-            sn_match = False
-            ei_match = False
-            url_match = False
-            source_name = None
+    ref_pairs = itertools.chain(
+        itertools.product(ext_refs1, ext_refs2),
+    )
 
-            if check_property_present("source_name", ext_ref1, ext_ref2):
-                if ext_ref1["source_name"] == ext_ref2["source_name"]:
-                    source_name = ext_ref1["source_name"]
-                    sn_match = True
-            if check_property_present("external_id", ext_ref1, ext_ref2):
-                if ext_ref1["external_id"] == ext_ref2["external_id"]:
-                    ei_match = True
-            if check_property_present("url", ext_ref1, ext_ref2):
-                if ext_ref1["url"] == ext_ref2["url"]:
-                    url_match = True
+    for ext_ref1, ext_ref2 in ref_pairs:
+        sn_match = False
+        ei_match = False
+        url_match = False
+        source_name = None
 
-            # Special case: if source_name is a STIX defined name and either
-            # external_id or url match then its a perfect match and other entries
-            # can be ignored.
-            if sn_match and (ei_match or url_match) and source_name in allowed:
-                result = 1.0
-                logger.debug(
-                    "--\t\tpartial_external_reference_based '%s' '%s'\tresult: '%s'",
-                    refs1, refs2, result,
-                )
-                return result
+        if check_property_present("source_name", ext_ref1, ext_ref2):
+            if ext_ref1["source_name"] == ext_ref2["source_name"]:
+                source_name = ext_ref1["source_name"]
+                sn_match = True
+        if check_property_present("external_id", ext_ref1, ext_ref2):
+            if ext_ref1["external_id"] == ext_ref2["external_id"]:
+                ei_match = True
+        if check_property_present("url", ext_ref1, ext_ref2):
+            if ext_ref1["url"] == ext_ref2["url"]:
+                url_match = True
 
-            # Regular check. If the source_name (not STIX-defined) or external_id or
-            # url matches then we consider the entry a match.
-            if (sn_match or ei_match or url_match) and source_name not in allowed:
-                matches += 1
+        # Special case: if source_name is a STIX defined name and either
+        # external_id or url match then its a perfect match and other entries
+        # can be ignored.
+        if sn_match and (ei_match or url_match) and source_name in allowed:
+            result = 1.0
+            logger.debug(
+                "--\t\tpartial_external_reference_based '%s' '%s'\tresult: '%s'",
+                ext_refs1, ext_refs2, result,
+            )
+            return result
 
-    result = matches / max(len(refs1), len(refs2))
+        # Regular check. If the source_name (not STIX-defined) or external_id or
+        # url matches then we consider the entry a match.
+        if (sn_match or ei_match or url_match) and source_name not in allowed:
+            matches += 1
+
+    result = matches / max(len(ext_refs1), len(ext_refs2))
     logger.debug(
         "--\t\tpartial_external_reference_based '%s' '%s'\tresult: '%s'",
-        refs1, refs2, result,
+        ext_refs1, ext_refs2, result,
     )
     return result
 
@@ -381,10 +408,11 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
     max_depth = weights["_internal"]["max_depth"]
 
     for object1, object2 in pairs:
-        result = object_similarity(object1, object2, ds1=ds1, ds2=ds2,
-                                   ignore_spec_version=ignore_spec_version,
-                                   versioning_checks=versioning_checks,
-                                   max_depth=max_depth, **weights)
+        result = object_similarity(
+            object1, object2, ds1, ds2,
+            ignore_spec_version, versioning_checks,
+            max_depth, **weights
+        )
         if ref1 not in results:
             results[ref1] = {"matched": ref2, "value": result}
         elif result > results[ref1]["value"]:
@@ -413,10 +441,11 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
         else:
             o1, o2 = ds1.get(ref1), ds2.get(ref2)
             if o1 and o2:
-                result = object_similarity(o1, o2, ds1=ds1, ds2=ds2,
-                                           ignore_spec_version=ignore_spec_version,
-                                           versioning_checks=versioning_checks,
-                                           max_depth=max_depth, **weights) / 100.0
+                result = object_similarity(
+                    o1, o2, ds1, ds2,
+                    ignore_spec_version, versioning_checks,
+                    max_depth, **weights
+                ) / 100.0
 
     logger.debug(
         "--\t\treference_check '%s' '%s'\tresult: '%s'",
@@ -468,8 +497,10 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
 
 
 def _datastore_check(ds1, ds2):
-    if (issubclass(ds1.__class__, (DataStoreMixin, DataSink, DataSource)) or
-            issubclass(ds2.__class__, (DataStoreMixin, DataSink, DataSource))):
+    if (
+        issubclass(ds1.__class__, (DataStoreMixin, DataSink, DataSource)) or
+        issubclass(ds2.__class__, (DataStoreMixin, DataSink, DataSource))
+    ):
         return True
     return False
 
@@ -586,5 +617,5 @@ WEIGHTS = {
     "vulnerability": {
         "name": (30, partial_string_based),
         "external_references": (70, partial_external_reference_based),
-    }
+    },
 }  # :autodoc-skip:

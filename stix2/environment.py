@@ -189,8 +189,11 @@ class Environment(DataStoreMixin):
             return None
 
     @staticmethod
-    def object_similarity(obj1, obj2, prop_scores={}, ignore_spec_version=False,
-                     versioning_checks=False, max_depth=1, **weight_dict):
+    def object_similarity(
+        obj1, obj2, prop_scores={}, ds1=None, ds2=None,
+        ignore_spec_version=False, versioning_checks=False,
+        max_depth=1, **weight_dict
+    ):
         """This method returns a measure of how similar the two objects are.
 
         Args:
@@ -198,8 +201,19 @@ class Environment(DataStoreMixin):
             obj2: A stix2 object instance
             prop_scores: A dictionary that can hold individual property scores,
                 weights, contributing score, matching score and sum of weights.
-            weight_dict: A dictionary that can be used to override settings
-                in the similarity process
+            ds1: A DataStore object instance representing your graph
+            ds2: A DataStore object instance representing your graph
+            ignore_spec_version: A boolean indicating whether to test object types
+                that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+                If set to True this check will be skipped.
+            versioning_checks: A boolean indicating whether to test multiple revisions
+                of the same object (when present) to maximize similarity against a
+                particular version. If set to True the algorithm will perform this step.
+            max_depth: A positive integer indicating the maximum recursion depth the
+                algorithm can reach when de-referencing objects and performing the
+                object_similarity algorithm.
+            weight_dict: A dictionary that can be used to override what checks are done
+                to objects in the similarity process.
 
         Returns:
             float: A number between 0.0 and 100.0 as a measurement of similarity.
@@ -221,12 +235,17 @@ class Environment(DataStoreMixin):
             see `the Committee Note <link here>`__.
 
         """
-        return object_similarity(obj1, obj2, prop_scores, ignore_spec_version,
-                                versioning_checks, max_depth, **weight_dict)
+        return object_similarity(
+            obj1, obj2, prop_scores, ds1, ds2, ignore_spec_version,
+            versioning_checks, max_depth, **weight_dict
+        )
 
     @staticmethod
-    def object_equivalence(obj1, obj2, prop_scores={}, threshold=70, ignore_spec_version=False,
-                     versioning_checks=False, max_depth=1, **weight_dict):
+    def object_equivalence(
+        obj1, obj2, prop_scores={}, threshold=70, ds1=None, ds2=None,
+        ignore_spec_version=False, versioning_checks=False,
+        max_depth=1, **weight_dict
+    ):
         """This method returns a true/false value if two objects are semantically equivalent.
         Internally, it calls the object_similarity function and compares it against the given
         threshold value.
@@ -239,8 +258,19 @@ class Environment(DataStoreMixin):
             threshold: A numerical value between 0 and 100 to determine the minimum
                 score to result in successfully calling both objects equivalent. This
                 value can be tuned.
-            weight_dict: A dictionary that can be used to override settings
-                in the similarity process
+            ds1: A DataStore object instance representing your graph
+            ds2: A DataStore object instance representing your graph
+            ignore_spec_version: A boolean indicating whether to test object types
+                that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+                If set to True this check will be skipped.
+            versioning_checks: A boolean indicating whether to test multiple revisions
+                of the same object (when present) to maximize similarity against a
+                particular version. If set to True the algorithm will perform this step.
+            max_depth: A positive integer indicating the maximum recursion depth the
+                algorithm can reach when de-referencing objects and performing the
+                object_similarity algorithm.
+            weight_dict: A dictionary that can be used to override what checks are done
+                to objects in the similarity process.
 
         Returns:
             bool: True if the result of the object similarity is greater than or equal to
@@ -263,11 +293,16 @@ class Environment(DataStoreMixin):
             see `the Committee Note <link here>`__.
 
         """
-        return object_equivalence(obj1, obj2, prop_scores, threshold, **weight_dict)
+        return object_equivalence(
+            obj1, obj2, prop_scores, threshold, ds1, ds2,
+            ignore_spec_version, versioning_checks, max_depth, **weight_dict
+        )
 
     @staticmethod
-    def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
-                     versioning_checks=False, max_depth=1, **weight_dict):
+    def graph_similarity(
+        ds1, ds2, prop_scores={}, ignore_spec_version=False,
+        versioning_checks=False, max_depth=1, **weight_dict
+    ):
         """This method returns a similarity score for two given graphs.
         Each DataStore can contain a connected or disconnected graph and the
         final result is weighted over the amount of objects we managed to compare.
@@ -279,8 +314,17 @@ class Environment(DataStoreMixin):
             ds2: A DataStore object instance representing your graph
             prop_scores: A dictionary that can hold individual property scores,
                 weights, contributing score, matching score and sum of weights.
-            weight_dict: A dictionary that can be used to override settings
-                in the similarity process
+            ignore_spec_version: A boolean indicating whether to test object types
+                that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+                If set to True this check will be skipped.
+            versioning_checks: A boolean indicating whether to test multiple revisions
+                of the same object (when present) to maximize similarity against a
+                particular version. If set to True the algorithm will perform this step.
+            max_depth: A positive integer indicating the maximum recursion depth the
+                algorithm can reach when de-referencing objects and performing the
+                object_similarity algorithm.
+            weight_dict: A dictionary that can be used to override what checks are done
+                to objects in the similarity process.
 
         Returns:
             float: A number between 0.0 and 100.0 as a measurement of similarity.
@@ -295,19 +339,24 @@ class Environment(DataStoreMixin):
         Note:
             Default weight_dict:
 
-            .. include:: ../graph_default_sem_eq_weights.rst
+            .. include:: ../similarity_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
             see `the Committee Note <link here>`__.
 
         """
-        return graph_similarity(ds1, ds2, prop_scores, ignore_spec_version,
-                                versioning_checks, max_depth, **weight_dict)
+        return graph_similarity(
+            ds1, ds2, prop_scores, ignore_spec_version,
+            versioning_checks, max_depth, **weight_dict
+        )
 
     @staticmethod
-    def graph_equivalence(ds1, ds2, prop_scores={}, threshold=70, ignore_spec_version=False,
-                     versioning_checks=False, max_depth=1, **weight_dict):
+    def graph_equivalence(
+        ds1, ds2, prop_scores={}, threshold=70,
+        ignore_spec_version=False, versioning_checks=False,
+        max_depth=1, **weight_dict
+    ):
         """This method returns a true/false value if two graphs are semantically equivalent.
         Internally, it calls the graph_similarity function and compares it against the given
         threshold value.
@@ -320,8 +369,17 @@ class Environment(DataStoreMixin):
             threshold: A numerical value between 0 and 100 to determine the minimum
                 score to result in successfully calling both graphs equivalent. This
                 value can be tuned.
-            weight_dict: A dictionary that can be used to override settings
-                in the similarity process
+            ignore_spec_version: A boolean indicating whether to test object types
+                that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+                If set to True this check will be skipped.
+            versioning_checks: A boolean indicating whether to test multiple revisions
+                of the same object (when present) to maximize similarity against a
+                particular version. If set to True the algorithm will perform this step.
+            max_depth: A positive integer indicating the maximum recursion depth the
+                algorithm can reach when de-referencing objects and performing the
+                object_similarity algorithm.
+            weight_dict: A dictionary that can be used to override what checks are done
+                to objects in the similarity process.
 
         Returns:
             bool: True if the result of the graph similarity is greater than or equal to
@@ -337,11 +395,14 @@ class Environment(DataStoreMixin):
         Note:
             Default weight_dict:
 
-            .. include:: ../graph_default_sem_eq_weights.rst
+            .. include:: ../similarity_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
             see `the Committee Note <link here>`__.
 
         """
-        return graph_equivalence(ds1, ds2, prop_scores, threshold, **weight_dict)
+        return graph_equivalence(
+            ds1, ds2, prop_scores, threshold, ignore_spec_version,
+            versioning_checks, max_depth, **weight_dict
+        )

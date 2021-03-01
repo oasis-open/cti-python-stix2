@@ -10,7 +10,11 @@ from ..object import (
 logger = logging.getLogger(__name__)
 
 
-def graph_equivalence(ds1, ds2, prop_scores={}, threshold=70, **weight_dict):
+def graph_equivalence(
+    ds1, ds2, prop_scores={}, threshold=70,
+    ignore_spec_version=False, versioning_checks=False,
+    max_depth=1, **weight_dict
+):
     """This method returns a true/false value if two graphs are semantically equivalent.
     Internally, it calls the graph_similarity function and compares it against the given
     threshold value.
@@ -23,8 +27,17 @@ def graph_equivalence(ds1, ds2, prop_scores={}, threshold=70, **weight_dict):
         threshold: A numerical value between 0 and 100 to determine the minimum
             score to result in successfully calling both graphs equivalent. This
             value can be tuned.
-        weight_dict: A dictionary that can be used to override settings
-            in the similarity process
+        ignore_spec_version: A boolean indicating whether to test object types
+            that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+            If set to True this check will be skipped.
+        versioning_checks: A boolean indicating whether to test multiple revisions
+            of the same object (when present) to maximize similarity against a
+            particular version. If set to True the algorithm will perform this step.
+        max_depth: A positive integer indicating the maximum recursion depth the
+            algorithm can reach when de-referencing objects and performing the
+            object_similarity algorithm.
+        weight_dict: A dictionary that can be used to override what checks are done
+            to objects in the similarity process.
 
     Returns:
         bool: True if the result of the graph similarity is greater than or equal to
@@ -40,21 +53,26 @@ def graph_equivalence(ds1, ds2, prop_scores={}, threshold=70, **weight_dict):
     Note:
         Default weight_dict:
 
-        .. include:: ../../graph_default_sem_eq_weights.rst
+        .. include:: ../../similarity_weights.rst
 
     Note:
         This implementation follows the Semantic Equivalence Committee Note.
         see `the Committee Note <link here>`__.
 
     """
-    similarity_result = graph_similarity(ds1, ds2, prop_scores, **weight_dict)
+    similarity_result = graph_similarity(
+        ds1, ds2, prop_scores, ignore_spec_version,
+        versioning_checks, max_depth, **weight_dict
+    )
     if similarity_result >= threshold:
         return True
     return False
 
 
-def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
-                     versioning_checks=False, max_depth=1, **weight_dict):
+def graph_similarity(
+    ds1, ds2, prop_scores={}, ignore_spec_version=False,
+    versioning_checks=False, max_depth=1, **weight_dict
+):
     """This method returns a similarity score for two given graphs.
     Each DataStore can contain a connected or disconnected graph and the
     final result is weighted over the amount of objects we managed to compare.
@@ -66,11 +84,17 @@ def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
         ds2: A DataStore object instance representing your graph
         prop_scores: A dictionary that can hold individual property scores,
             weights, contributing score, matching score and sum of weights.
-        ignore_spec_version: As
-        versioning_checks: As
-        max_depth: As
-        weight_dict: A dictionary that can be used to override settings
-            in the similarity process
+        ignore_spec_version: A boolean indicating whether to test object types
+            that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
+            If set to True this check will be skipped.
+        versioning_checks: A boolean indicating whether to test multiple revisions
+            of the same object (when present) to maximize similarity against a
+            particular version. If set to True the algorithm will perform this step.
+        max_depth: A positive integer indicating the maximum recursion depth the
+            algorithm can reach when de-referencing objects and performing the
+            object_similarity algorithm.
+        weight_dict: A dictionary that can be used to override what checks are done
+            to objects in the similarity process.
 
     Returns:
         float: A number between 0.0 and 100.0 as a measurement of similarity.
@@ -85,7 +109,7 @@ def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
     Note:
         Default weight_dict:
 
-        .. include:: ../../graph_default_sem_eq_weights.rst
+        .. include:: ../../similarity_weights.rst
 
     Note:
         This implementation follows the Semantic Equivalence Committee Note.
@@ -107,7 +131,7 @@ def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
         "max_depth": max_depth,
     }
 
-    if weights["_internal"]["max_depth"] <= 0:
+    if max_depth <= 0:
         raise ValueError("'max_depth' must be greater than 0")
 
     pairs = _object_pairs(
@@ -122,9 +146,11 @@ def graph_similarity(ds1, ds2, prop_scores={}, ignore_spec_version=False,
         object1_id = object1["id"]
         object2_id = object2["id"]
 
-        result = object_similarity(object1, object2, iprop_score, ds1, ds2,
-                                   ignore_spec_version, versioning_checks,
-                                   max_depth, **weights)
+        result = object_similarity(
+            object1, object2, iprop_score, ds1, ds2,
+            ignore_spec_version, versioning_checks,
+            max_depth, **weights
+        )
 
         if object1_id not in results:
             results[object1_id] = {"lhs": object1_id, "rhs": object2_id, "prop_score": iprop_score, "value": result}
