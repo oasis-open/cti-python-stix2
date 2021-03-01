@@ -176,7 +176,7 @@ def object_similarity(
                             elif comp_funct == list_reference_check:
                                 comp_funct = partial_list_based
                                 contributing_score = w * comp_funct(obj1[prop], obj2[prop])
-                            prop_scores[prop]["method"] = comp_funct.__name__
+                            prop_scores[prop]["check_type"] = comp_funct.__name__
                         else:
                             continue  # prevent excessive recursion
                         weights["_internal"]["max_depth"] = max_depth
@@ -409,10 +409,11 @@ def _versioned_checks(ref1, ref2, ds1, ds2, **weights):
 
     for object1, object2 in pairs:
         result = object_similarity(
-            object1, object2, ds1, ds2,
-            ignore_spec_version, versioning_checks,
-            max_depth, **weights
-        )
+                object1, object2, ds1=ds1, ds2=ds2,
+                ignore_spec_version=ignore_spec_version,
+                versioning_checks=versioning_checks,
+                max_depth=max_depth, **weights
+            )
         if ref1 not in results:
             results[ref1] = {"matched": ref2, "value": result}
         elif result > results[ref1]["value"]:
@@ -442,9 +443,10 @@ def reference_check(ref1, ref2, ds1, ds2, **weights):
             o1, o2 = ds1.get(ref1), ds2.get(ref2)
             if o1 and o2:
                 result = object_similarity(
-                    o1, o2, ds1, ds2,
-                    ignore_spec_version, versioning_checks,
-                    max_depth, **weights
+                    o1, o2, ds1=ds1, ds2=ds2,
+                    ignore_spec_version=ignore_spec_version,
+                    versioning_checks=versioning_checks,
+                    max_depth=max_depth, **weights
                 ) / 100.0
 
     logger.debug(
