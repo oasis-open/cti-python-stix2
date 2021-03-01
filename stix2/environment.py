@@ -228,7 +228,7 @@ class Environment(DataStoreMixin):
         Note:
             Default weight_dict:
 
-            .. include:: ../object_default_sem_eq_weights.rst
+            .. include:: ../similarity_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
@@ -286,7 +286,7 @@ class Environment(DataStoreMixin):
         Note:
             Default weight_dict:
 
-            .. include:: ../object_default_sem_eq_weights.rst
+            .. include:: ../similarity_weights.rst
 
         Note:
             This implementation follows the Semantic Equivalence Committee Note.
