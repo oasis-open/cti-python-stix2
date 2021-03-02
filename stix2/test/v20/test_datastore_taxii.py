@@ -53,6 +53,8 @@ class MockTAXIICollectionEndpoint(Collection):
         )[0]
         if objs:
             resp = Response()
+            resp.status_code = 200
+            resp.headers["Content-Range"] = f"items 0-{len(objs)}/{len(objs)}"
             resp.encoding = "utf-8"
             resp._content = six.ensure_binary(stix2.v20.Bundle(objects=objs).serialize(ensure_ascii=False))
             return resp
