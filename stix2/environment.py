@@ -258,8 +258,8 @@ class Environment(DataStoreMixin):
             threshold: A numerical value between 0 and 100 to determine the minimum
                 score to result in successfully calling both objects equivalent. This
                 value can be tuned.
-            ds1: A DataStore object instance representing your graph
-            ds2: A DataStore object instance representing your graph
+            ds1 (optional): A DataStore object instance from which to pull related objects
+            ds2 (optional): A DataStore object instance from which to pull related objects
             ignore_spec_version: A boolean indicating whether to test object types
                 that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
                 If set to True this check will be skipped.
