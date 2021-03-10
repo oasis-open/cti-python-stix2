@@ -4,7 +4,7 @@ import itertools
 import logging
 import time
 
-from ...datastore import DataSink, DataSource, DataStoreMixin, Filter
+from ...datastore import DataSource, DataStoreMixin, Filter
 from ...utils import STIXdatetime, parse_into_datetime
 from ..pattern import equivalent_patterns
 
@@ -28,8 +28,8 @@ def object_equivalence(
         threshold: A numerical value between 0 and 100 to determine the minimum
             score to result in successfully calling both objects equivalent. This
             value can be tuned.
-        ds1: A DataStore object instance representing your graph
-        ds2: A DataStore object instance representing your graph
+        ds1 (optional): A DataStore object instance from which to pull related objects
+        ds2 (optional): A DataStore object instance from which to pull related objects
         ignore_spec_version: A boolean indicating whether to test object types
             that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
             If set to True this check will be skipped.
@@ -85,8 +85,8 @@ def object_similarity(
         obj2: A stix2 object instance
         prop_scores: A dictionary that can hold individual property scores,
             weights, contributing score, matching score and sum of weights.
-        ds1: A DataStore object instance representing your graph
-        ds2: A DataStore object instance representing your graph
+        ds1 (optional): A DataStore object instance from which to pull related objects
+        ds2 (optional): A DataStore object instance from which to pull related objects
         ignore_spec_version: A boolean indicating whether to test object types
             that belong to different spec versions (STIX 2.0 and STIX 2.1 for example).
             If set to True this check will be skipped.
@@ -500,8 +500,8 @@ def list_reference_check(refs1, refs2, ds1, ds2, **weights):
 
 def _datastore_check(ds1, ds2):
     if (
-        issubclass(ds1.__class__, (DataStoreMixin, DataSink, DataSource)) or
-        issubclass(ds2.__class__, (DataStoreMixin, DataSink, DataSource))
+        issubclass(ds1.__class__, (DataStoreMixin, DataSource)) or
+        issubclass(ds2.__class__, (DataStoreMixin, DataSource))
     ):
         return True
     return False

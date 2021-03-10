@@ -855,7 +855,7 @@ def test_object_similarity_exact_match():
     assert stix2.equivalence.object.exact_match(t1, t2) == 0.0
 
 
-def test_non_existent_config_for_object():
+def test_no_datastore_fallsback_list_based_check_for_refs_check():
     r1 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
     r2 = stix2.v21.Report(id=REPORT_ID, **REPORT_KWARGS)
     prop_scores = {}
