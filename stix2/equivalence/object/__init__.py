@@ -559,8 +559,8 @@ WEIGHTS = {
         "sectors": (20, partial_list_based),
     },
     "incident": {
-        "name": (60, partial_string_based),
-        "external_references": (40, partial_external_reference_based),
+        "name": (30, partial_string_based),
+        "external_references": (70, partial_external_reference_based),
     },
     "indicator": {
         "indicator_types": (15, partial_list_based),
