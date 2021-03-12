@@ -3,7 +3,6 @@ import json
 from medallion.filters.basic_filter import BasicFilter
 import pytest
 from requests.models import Response
-import six
 from taxii2client.common import _filter_kwargs_to_query_params
 from taxii2client.v21 import Collection
 
@@ -27,7 +26,7 @@ class MockTAXIICollectionEndpoint(Collection):
 
     def add_objects(self, bundle):
         self._verify_can_write()
-        if isinstance(bundle, six.string_types):
+        if isinstance(bundle, str):
             bundle = json.loads(bundle)
         for obj in bundle.get("objects", []):
             self.objects.append(obj)

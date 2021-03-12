@@ -3,7 +3,6 @@ import json
 from medallion.filters.basic_filter import BasicFilter
 import pytest
 from requests.models import Response
-import six
 from taxii2client.common import _filter_kwargs_to_query_params
 from taxii2client.v20 import MEDIA_TYPE_STIX_V20, Collection
 
@@ -27,7 +26,7 @@ class MockTAXIICollectionEndpoint(Collection):
 
     def add_objects(self, bundle):
         self._verify_can_write()
-        if isinstance(bundle, six.string_types):
+        if isinstance(bundle, str):
             bundle = json.loads(bundle)
         for object in bundle.get("objects", []):
             self.objects.append(object)
@@ -56,7 +55,7 @@ class MockTAXIICollectionEndpoint(Collection):
             resp.status_code = 200
             resp.headers["Content-Range"] = f"items 0-{len(objs)}/{len(objs)}"
             resp.encoding = "utf-8"
-            resp._content = six.ensure_binary(stix2.v20.Bundle(objects=objs).serialize(ensure_ascii=False))
+            resp._content = bytes(stix2.v20.Bundle(objects=objs).serialize(ensure_ascii=False), resp.encoding)
             return resp
         else:
             resp = Response()
