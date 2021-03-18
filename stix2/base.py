@@ -263,7 +263,7 @@ class _STIXBase(Mapping):
 
     def fp_serialize(self, *args, **kwargs):
         """
-        Serialize a STIX object to a file-like supporting object.
+        Serialize a STIX object to ``fp`` (a text stream file-like supporting object).
 
         Examples:
             >>> import stix2

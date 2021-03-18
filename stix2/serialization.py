@@ -87,11 +87,11 @@ def serialize(obj, pretty=False, include_optional_defaults=False, **kwargs):
 
 def fp_serialize(obj, fp, pretty=False, include_optional_defaults=False, **kwargs):
     """
-    Serialize a STIX object as a stream to file-like supporting object.
+    Serialize a STIX object to ``fp`` (a text stream file-like supporting object).
 
     Args:
         obj: The STIX object to be serialized.
-        fp: A ``.write()``-supporting file-like object.
+        fp: A text stream file-like object supporting ``.write()``.
         pretty (bool): If True, output properties following the STIX specs
             formatting. This includes indentation. Refer to notes for more
             details. (Default: ``False``)
