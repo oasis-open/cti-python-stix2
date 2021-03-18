@@ -2,6 +2,7 @@
 
 import copy
 import datetime as dt
+import io
 
 import simplejson as json
 
@@ -73,16 +74,9 @@ def serialize(obj, pretty=False, include_optional_defaults=False, **kwargs):
         When ``pretty=True`` the following key-value pairs will be added or
         overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
     """
-    if pretty:
-        def sort_by(element):
-            return find_property_index(obj, *element)
-
-        kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
-
-    if include_optional_defaults:
-        return json.dumps(obj, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
-    else:
-        return json.dumps(obj, cls=STIXJSONEncoder, **kwargs)
+    with io.StringIO() as fp:
+        fp_serialize(obj, fp, pretty, include_optional_defaults, **kwargs)
+        return fp.getvalue()
 
 
 def fp_serialize(obj, fp, pretty=False, include_optional_defaults=False, **kwargs):
