@@ -2,6 +2,7 @@
 
 import copy
 import datetime as dt
+import io
 
 import simplejson as json
 
@@ -73,6 +74,37 @@ def serialize(obj, pretty=False, include_optional_defaults=False, **kwargs):
         When ``pretty=True`` the following key-value pairs will be added or
         overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
     """
+    with io.StringIO() as fp:
+        fp_serialize(obj, fp, pretty, include_optional_defaults, **kwargs)
+        return fp.getvalue()
+
+
+def fp_serialize(obj, fp, pretty=False, include_optional_defaults=False, **kwargs):
+    """
+    Serialize a STIX object to ``fp`` (a text stream file-like supporting object).
+
+    Args:
+        obj: The STIX object to be serialized.
+        fp: A text stream file-like object supporting ``.write()``.
+        pretty (bool): If True, output properties following the STIX specs
+            formatting. This includes indentation. Refer to notes for more
+            details. (Default: ``False``)
+        include_optional_defaults (bool): Determines whether to include
+            optional properties set to the default value defined in the spec.
+        **kwargs: The arguments for a json.dumps() call.
+
+    Returns:
+        None
+
+    Note:
+        The argument ``pretty=True`` will output the STIX object following
+        spec order. Using this argument greatly impacts object serialization
+        performance. If your use case is centered across machine-to-machine
+        operation it is recommended to set ``pretty=False``.
+
+        When ``pretty=True`` the following key-value pairs will be added or
+        overridden: indent=4, separators=(",", ": "), item_sort_key=sort_by.
+    """
     if pretty:
         def sort_by(element):
             return find_property_index(obj, *element)
@@ -80,9 +112,9 @@ def serialize(obj, pretty=False, include_optional_defaults=False, **kwargs):
         kwargs.update({'indent': 4, 'separators': (',', ': '), 'item_sort_key': sort_by})
 
     if include_optional_defaults:
-        return json.dumps(obj, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
+        json.dump(obj, fp, cls=STIXJSONIncludeOptionalDefaultsEncoder, **kwargs)
     else:
-        return json.dumps(obj, cls=STIXJSONEncoder, **kwargs)
+        json.dump(obj, fp, cls=STIXJSONEncoder, **kwargs)
 
 
 def _find(seq, val):

@@ -1,3 +1,4 @@
+import io
 import json
 
 import pytest
@@ -111,6 +112,27 @@ def test_bundle_id_must_start_with_bundle():
     assert excinfo.value.prop_name == "id"
     assert excinfo.value.reason == "must start with 'bundle--'."
     assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
+
+
+def test_create_bundle_fp_serialize_pretty(indicator, malware, relationship):
+    bundle = stix2.v20.Bundle(objects=[indicator, malware, relationship])
+    buffer = io.StringIO()
+
+    bundle.fp_serialize(buffer, pretty=True)
+
+    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
+    assert buffer.getvalue() == EXPECTED_BUNDLE
+
+
+def test_create_bundle_fp_serialize_nonpretty(indicator, malware, relationship):
+    bundle = stix2.v20.Bundle(objects=[indicator, malware, relationship])
+    buffer = io.StringIO()
+
+    bundle.fp_serialize(buffer, sort_keys=True)
+
+    assert bundle.serialize(sort_keys=True) == json.dumps(json.loads(EXPECTED_BUNDLE), sort_keys=True)
+    assert buffer.getvalue() == json.dumps(json.loads(EXPECTED_BUNDLE), sort_keys=True)
 
 
 def test_create_bundle1(indicator, malware, relationship):
