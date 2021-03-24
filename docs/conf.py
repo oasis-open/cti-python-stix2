@@ -4,11 +4,9 @@ import os
 import re
 import sys
 
-from six import class_types
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
-from stix2.equivalence.graph import GRAPH_WEIGHTS
 from stix2.equivalence.object import WEIGHTS
 from stix2.version import __version__
 
@@ -67,15 +65,8 @@ object_default_sem_eq_weights = json.dumps(WEIGHTS, indent=4, default=lambda o: 
 object_default_sem_eq_weights = object_default_sem_eq_weights.replace('\n', '\n    ')
 object_default_sem_eq_weights = object_default_sem_eq_weights.replace('               "', '               ')
 object_default_sem_eq_weights = object_default_sem_eq_weights.replace('"\n', '\n')
-with open('object_default_sem_eq_weights.rst', 'w') as f:
+with open('similarity_weights.rst', 'w') as f:
     f.write(".. code-block:: python\n\n   {}\n\n".format(object_default_sem_eq_weights))
-
-graph_default_sem_eq_weights = json.dumps(GRAPH_WEIGHTS, indent=4, default=lambda o: o.__name__)
-graph_default_sem_eq_weights = graph_default_sem_eq_weights.replace('\n', '\n    ')
-graph_default_sem_eq_weights = graph_default_sem_eq_weights.replace('               "', '               ')
-graph_default_sem_eq_weights = graph_default_sem_eq_weights.replace('"\n', '\n')
-with open('graph_default_sem_eq_weights.rst', 'w') as f:
-    f.write(".. code-block:: python\n\n   {}\n\n".format(graph_default_sem_eq_weights))
 
 
 def get_property_type(prop):
@@ -107,7 +98,7 @@ class STIXPropertyDocumenter(ClassDocumenter):
 
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
-        return isinstance(member, class_types) and \
+        return isinstance(member, type) and \
                issubclass(member, _STIXBase) and \
                hasattr(member, '_properties')
 

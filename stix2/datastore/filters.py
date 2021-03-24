@@ -3,8 +3,6 @@
 import collections
 from datetime import datetime
 
-import six
-
 import stix2.utils
 
 """Supported filter operations"""
@@ -12,8 +10,7 @@ FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
 
 """Supported filter value types"""
 FILTER_VALUE_TYPES = (
-    bool, dict, float, int, list, tuple, six.string_types,
-    datetime,
+    bool, dict, float, int, list, tuple, str, datetime,
 )
 
 
@@ -84,7 +81,7 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
         # If filtering on a timestamp property and the filter value is a string,
         # try to convert the filter value to a datetime instance.
         if isinstance(stix_obj_property, datetime) and \
-                isinstance(self.value, six.string_types):
+                isinstance(self.value, str):
             filter_value = stix2.utils.parse_into_datetime(self.value)
         else:
             filter_value = self.value

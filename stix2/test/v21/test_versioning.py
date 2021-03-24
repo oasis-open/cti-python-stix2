@@ -4,6 +4,7 @@ import pytest
 
 import stix2
 import stix2.exceptions
+import stix2.properties
 import stix2.utils
 import stix2.v21
 import stix2.versioning
@@ -179,6 +180,62 @@ def test_versioning_error_dict_bad_modified_value():
         "but have the same id and modified timestamp do not have defined consumer behavior."
 
 
+def test_versioning_dict_unregistered_no_modified():
+    d = {
+        "type": "not-registered",
+        "id": "not-registered--4da54535-47b7-468c-88fa-d13b04033c4b",
+        "spec_version": "2.1",
+        "created": "1995-04-07T15:37:48.178Z",
+    }
+
+    new_d = stix2.versioning.new_version(d)
+    assert "modified" in new_d
+    assert new_d["modified"] > stix2.utils.parse_into_datetime(d["created"])
+
+    new_d = stix2.versioning.new_version(d, modified="1996-11-20T01:19:29.134Z")
+    assert new_d["modified"] == "1996-11-20T01:19:29.134Z"
+
+
+def test_versioning_dict_unregistered_unversionable():
+    d = {
+        "type": "not-registered",
+        "id": "not-registered--4da54535-47b7-468c-88fa-d13b04033c4b",
+        "spec_version": "2.1",
+        "modified": "1995-04-07T15:37:48.178Z",
+    }
+
+    with pytest.raises(stix2.exceptions.ObjectNotVersionableError):
+        stix2.versioning.new_version(d)
+
+    with pytest.raises(stix2.exceptions.ObjectNotVersionableError):
+        # should fail even if we provide a "created" kwarg.
+        stix2.versioning.new_version(d, created="1985-06-29T06:09:51.157Z")
+
+
+def test_versioning_custom_object():
+    @stix2.v21.CustomObject(
+        "x-versionable-all-optional-21", [
+            ("created", stix2.properties.TimestampProperty()),
+            ("modified", stix2.properties.TimestampProperty()),
+            ("revoked", stix2.properties.BooleanProperty()),
+        ],
+    )
+    class CustomSDO:
+        pass
+
+    obj = CustomSDO(created="1990-12-18T17:56:11.346234Z")
+    new_obj = stix2.versioning.new_version(obj)
+
+    assert "modified" in new_obj
+    assert new_obj["modified"] > new_obj["created"]
+
+    obj = CustomSDO()
+    with pytest.raises(stix2.exceptions.ObjectNotVersionableError):
+        # fails due to insufficient properties on the object, even though its
+        # type supports versioning.
+        stix2.versioning.new_version(obj)
+
+
 def test_versioning_error_dict_no_modified_value():
     campaign_v1 = {
         'type': 'campaign',
@@ -193,10 +250,10 @@ def test_versioning_error_dict_no_modified_value():
 
 def test_making_new_version_invalid_cls():
     campaign_v1 = "This is a campaign."
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError) as excinfo:
         stix2.versioning.new_version(campaign_v1, name="fred")
 
-    assert 'cannot create new version of object of this type' in str(excinfo.value)
+    assert excinfo.value.object is campaign_v1
 
 
 def test_revoke_dict():
@@ -216,7 +273,7 @@ def test_revoke_dict():
 
 def test_revoke_unversionable():
     sco = stix2.v21.File(name="data.txt")
-    with pytest.raises(ValueError):
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
         sco.revoke()
 
 
@@ -318,7 +375,7 @@ def test_version_unversionable_dict():
         "name": "data.txt",
     }
 
-    with pytest.raises(ValueError):
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
         stix2.versioning.new_version(f)
 
 
@@ -344,6 +401,23 @@ def test_version_sco_with_custom():
 
     revoked_obj = stix2.versioning.revoke(new_file_sco_obj)
     assert revoked_obj.revoked
+
+    # Same thing with a dict
+    d = {
+        "type": "file",
+        "id": "file--d287f10a-98b4-4a47-8fa0-64b12695ea58",
+        "spec_version": "2.1",
+        "name": "data.txt",
+        "created": "1973-11-23T02:31:37Z",
+        "modified": "1991-05-13T19:24:57Z",
+        "revoked": False,
+    }
+
+    new_d = stix2.versioning.new_version(d, size=1234)
+    assert new_d["size"] == 1234
+
+    revoked_d = stix2.versioning.revoke(new_d)
+    assert revoked_d["revoked"]
 
 
 def test_version_sco_id_contributing_properties():
@@ -376,6 +450,33 @@ def test_version_sco_id_contributing_properties_dict():
         stix2.versioning.new_version(file_sco_dict, name="foo.dat")
 
     assert e.value.unchangable_properties == {"name"}
+
+
+def test_version_marking():
+    m = stix2.v21.MarkingDefinition(
+        name="a name",
+        created="1982-11-29T12:20:13.723Z",
+        definition_type="statement",
+        definition={"statement": "Copyright (c) 2000-2020 Acme Corp"},
+    )
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+    m = {
+        "type": "marking-definition",
+        "id": "marking-definition--2a9f3f6e-5cbd-423b-a40d-02aefd29e612",
+        "spec_version": "2.1",
+        "name": "a name",
+        "created": "1982-11-29T12:20:13.723Z",
+        "definition_type": "statement",
+        "definition": {
+            "statement": "Copyright (c) 2000-2020 Acme Corp",
+        },
+    }
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
 
 
 def test_version_disable_custom():

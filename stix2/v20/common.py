@@ -3,8 +3,6 @@
 from collections import OrderedDict
 import copy
 
-import six
-
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
@@ -21,7 +19,7 @@ def _should_set_millisecond(cr, marking_type):
     if marking_type == TLPMarking:
         return True
     # otherwise,  precision is kept from how it was given
-    if isinstance(cr, six.string_types):
+    if isinstance(cr, str):
         if '.' in cr:
             return True
         else:

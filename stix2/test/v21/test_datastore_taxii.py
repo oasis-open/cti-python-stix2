@@ -3,7 +3,6 @@ import json
 from medallion.filters.basic_filter import BasicFilter
 import pytest
 from requests.models import Response
-import six
 from taxii2client.common import _filter_kwargs_to_query_params
 from taxii2client.v21 import Collection
 
@@ -27,16 +26,16 @@ class MockTAXIICollectionEndpoint(Collection):
 
     def add_objects(self, bundle):
         self._verify_can_write()
-        if isinstance(bundle, six.string_types):
+        if isinstance(bundle, str):
             bundle = json.loads(bundle)
-        for object in bundle.get("objects", []):
-            self.objects.append(object)
+        for obj in bundle.get("objects", []):
+            self.objects.append(obj)
             self.manifests.append(
                 {
                     "date_added": get_timestamp(),
-                    "id": object["id"],
+                    "id": obj["id"],
                     "media_type": "application/stix+json;version=2.1",
-                    "version": object.get("modified", object.get("created", get_timestamp())),
+                    "version": obj.get("modified", obj.get("created", get_timestamp())),
                 },
             )
 
@@ -52,7 +51,10 @@ class MockTAXIICollectionEndpoint(Collection):
             100,
         )[0]
         if objs:
-            return stix2.v21.Bundle(objects=objs)
+            return {
+                "objects": objs,
+                "more": False,
+            }
         else:
             resp = Response()
             resp.status_code = 404
@@ -76,7 +78,10 @@ class MockTAXIICollectionEndpoint(Collection):
         else:
             filtered_objects = []
         if filtered_objects:
-            return stix2.v21.Bundle(objects=filtered_objects)
+            return {
+                "objects": filtered_objects,
+                "more": False,
+            }
         else:
             resp = Response()
             resp.status_code = 404

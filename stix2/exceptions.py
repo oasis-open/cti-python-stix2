@@ -175,7 +175,14 @@ class ImmutableError(STIXError):
         return msg.format(self)
 
 
-class UnmodifiablePropertyError(STIXError):
+class VersioningError(STIXError):
+    """
+    Base class for object versioning errors.
+    """
+    pass
+
+
+class UnmodifiablePropertyError(VersioningError):
     """Attempted to modify an unmodifiable property of object when creating a new version."""
 
     def __init__(self, unchangable_properties):
@@ -185,6 +192,40 @@ class UnmodifiablePropertyError(STIXError):
     def __str__(self):
         msg = "These properties cannot be changed when making a new version: {0}."
         return msg.format(", ".join(self.unchangable_properties))
+
+
+class TypeNotVersionableError(VersioningError):
+    """
+    An object couldn't be versioned because it lacked the versioning properties
+    and its type does not support them.
+    """
+    def __init__(self, obj):
+        if isinstance(obj, dict):
+            type_name = obj.get("type")
+        else:
+            # try standard attribute of _STIXBase subclasses/instances
+            type_name = getattr(obj, "_type", None)
+
+        self.object = obj
+
+        msg = "Object type{}is not versionable.  Try a dictionary or " \
+              "instance of an SDO or SRO class.".format(
+                  " '{}' ".format(type_name) if type_name else " ",
+              )
+        super().__init__(msg)
+
+
+class ObjectNotVersionableError(VersioningError):
+    """
+    An object's type supports versioning, but the object couldn't be versioned
+    because it lacked sufficient versioning properties.
+    """
+    def __init__(self, obj):
+        self.object = obj
+
+        msg = "Creating a new object version requires at least the 'created'" \
+              " property: " + str(obj)
+        super().__init__(msg)
 
 
 class RevokeError(STIXError):

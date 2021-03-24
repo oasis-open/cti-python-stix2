@@ -6,8 +6,6 @@ import os
 import re
 import stat
 
-import six
-
 from stix2 import v20, v21
 from stix2.base import _STIXBase
 from stix2.datastore import (
@@ -15,7 +13,7 @@ from stix2.datastore import (
 )
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
 from stix2.parsing import parse
-from stix2.serialization import serialize
+from stix2.serialization import fp_serialize
 from stix2.utils import format_datetime, get_type_from_id, parse_into_datetime
 
 
@@ -116,7 +114,7 @@ def _update_allow(allow_set, value):
 
     """
     adding_seq = hasattr(value, "__iter__") and \
-        not isinstance(value, six.string_types)
+        not isinstance(value, str)
 
     if allow_set is None:
         allow_set = set()
@@ -586,9 +584,8 @@ class FileSystemSink(DataSink):
         if os.path.isfile(file_path):
             raise DataSourceError("Attempted to overwrite file (!) at: {}".format(file_path))
 
-        with io.open(file_path, 'w', encoding=encoding) as f:
-            stix_obj = serialize(stix_obj, pretty=True, encoding=encoding, ensure_ascii=False)
-            f.write(stix_obj)
+        with io.open(file_path, mode='w', encoding=encoding) as f:
+            fp_serialize(stix_obj, f, pretty=True, encoding=encoding, ensure_ascii=False)
 
     def add(self, stix_data=None, version=None):
         """Add STIX objects to file directory.

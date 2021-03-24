@@ -1,5 +1,5 @@
 """
-Some simple comparison expression canonicalization functions.
+Some simple comparison expression normalization functions.
 """
 import socket
 

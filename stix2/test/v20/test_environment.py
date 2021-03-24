@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -65,6 +66,11 @@ def ds2():
     )
     stix_objs.append(reprt)
     yield stix2.MemoryStore(stix_objs)
+
+
+@pytest.fixture
+def fs():
+    yield stix2.FileSystemSource(FS_PATH)
 
 
 def test_object_factory_created_by_ref_str():
@@ -418,7 +424,7 @@ def test_related_to_by_target(ds):
 
 
 def test_versioned_checks(ds, ds2):
-    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": True,
@@ -431,7 +437,7 @@ def test_versioned_checks(ds, ds2):
 
 
 def test_semantic_check_with_versioning(ds, ds2):
-    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": False,
@@ -461,13 +467,11 @@ def test_semantic_check_with_versioning(ds, ds2):
 
 
 def test_list_semantic_check(ds, ds2):
-    weights = stix2.equivalence.graph.GRAPH_WEIGHTS.copy()
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
     weights.update({
         "_internal": {
             "ignore_spec_version": False,
             "versioning_checks": False,
-            "ds1": ds,
-            "ds2": ds2,
             "max_depth": 1,
         },
     })
@@ -497,62 +501,149 @@ def test_list_semantic_check(ds, ds2):
     assert round(score) == 1
 
 
-def test_graph_equivalence_with_filesystem_source(ds):
-    weights = {
-        "_internal": {
-            "ignore_spec_version": True,
-            "versioning_checks": False,
-            "max_depth": 1,
-        },
-    }
+def test_graph_similarity_raises_value_error(ds):
+    with pytest.raises(ValueError):
+        prop_scores1 = {}
+        stix2.Environment().graph_similarity(ds, ds2, prop_scores1, max_depth=-1)
+
+
+def test_graph_similarity_with_filesystem_source(ds, fs):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_similarity(fs, ds, prop_scores1, ignore_spec_version=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_similarity(ds, fs, prop_scores2, ignore_spec_version=True)
+
+    assert round(env1) == 25
+    assert round(prop_scores1["matching_score"]) == 451
+    assert round(prop_scores1["len_pairs"]) == 18
+
+    assert round(env2) == 25
+    assert round(prop_scores2["matching_score"]) == 451
+    assert round(prop_scores2["len_pairs"]) == 18
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_similarity_with_duplicate_graph(ds):
     prop_scores = {}
-    fs = stix2.FileSystemSource(FS_PATH)
-    env = stix2.Environment().graphically_equivalent(fs, ds, prop_scores, **weights)
-    assert round(env) == 28
-    assert round(prop_scores["matching_score"]) == 139
-    assert round(prop_scores["sum_weights"]) == 500
+    env = stix2.Environment().graph_similarity(ds, ds, prop_scores)
+    assert round(env) == 100
+    assert round(prop_scores["matching_score"]) == 800
+    assert round(prop_scores["len_pairs"]) == 8
+
+
+def test_graph_similarity_with_versioning_check_on(ds2, ds):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_similarity(ds, ds2, prop_scores1, versioning_checks=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_similarity(ds2, ds, prop_scores2, versioning_checks=True)
+
+    assert round(env1) == 88
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert round(env2) == 88
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_similarity_with_versioning_check_off(ds2, ds):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_similarity(ds, ds2, prop_scores1)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_similarity(ds2, ds, prop_scores2)
+
+    assert round(env1) == 88
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert round(env2) == 88
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_equivalence_with_filesystem_source(ds, fs):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_equivalence(fs, ds, prop_scores1, ignore_spec_version=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_equivalence(ds, fs, prop_scores2, ignore_spec_version=True)
+
+    assert env1 is False
+    assert round(prop_scores1["matching_score"]) == 451
+    assert round(prop_scores1["len_pairs"]) == 18
+
+    assert env2 is False
+    assert round(prop_scores2["matching_score"]) == 451
+    assert round(prop_scores2["len_pairs"]) == 18
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
 
 
 def test_graph_equivalence_with_duplicate_graph(ds):
-    weights = {
-        "_internal": {
-            "ignore_spec_version": False,
-            "versioning_checks": False,
-            "max_depth": 1,
-        },
-    }
     prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds, prop_scores, **weights)
-    assert round(env) == 100
+    env = stix2.Environment().graph_equivalence(ds, ds, prop_scores)
+    assert env is True
     assert round(prop_scores["matching_score"]) == 800
-    assert round(prop_scores["sum_weights"]) == 800
+    assert round(prop_scores["len_pairs"]) == 8
 
 
 def test_graph_equivalence_with_versioning_check_on(ds2, ds):
-    weights = {
-        "_internal": {
-            "ignore_spec_version": False,
-            "versioning_checks": True,
-            "max_depth": 1,
-        },
-    }
-    prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
-    assert round(env) == 93
-    assert round(prop_scores["matching_score"]) == 745
-    assert round(prop_scores["sum_weights"]) == 800
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_equivalence(ds, ds2, prop_scores1, versioning_checks=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_equivalence(ds2, ds, prop_scores2, versioning_checks=True)
+
+    assert env1 is True
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert env2 is True
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
 
 
 def test_graph_equivalence_with_versioning_check_off(ds2, ds):
-    weights = {
-        "_internal": {
-            "ignore_spec_version": False,
-            "versioning_checks": False,
-            "max_depth": 1,
-        },
-    }
-    prop_scores = {}
-    env = stix2.Environment().graphically_equivalent(ds, ds2, prop_scores, **weights)
-    assert round(env) == 93
-    assert round(prop_scores["matching_score"]) == 745
-    assert round(prop_scores["sum_weights"]) == 800
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_equivalence(ds, ds2, prop_scores1)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_equivalence(ds2, ds, prop_scores2)
+
+    assert env1 is True
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert env2 is True
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
