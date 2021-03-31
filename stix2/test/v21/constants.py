@@ -27,6 +27,12 @@ TOOL_ID = "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 VULNERABILITY_ID = "vulnerability--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 
+EXTENSION_DEFINITION_IDS = [
+    "extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff",  # new-sdo
+    "extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e",  # property-extension
+    "extension-definition--71736db5-10db-43d3-b0e3-65cf81601fe1",  # top-level-property-extension
+    "extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff",  # new-sdo, new-sco, property-extension
+]
 MARKING_IDS = [
     "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "marking-definition--443eb5c3-a76c-4a0a-8caa-e93998e7bc09",
