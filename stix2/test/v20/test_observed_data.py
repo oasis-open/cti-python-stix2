@@ -47,7 +47,7 @@ def test_observed_data_example():
         },
     )
 
-    assert str(observed_data) == EXPECTED
+    assert observed_data.serialize(pretty=True) == EXPECTED
 
 
 EXPECTED_WITH_REF = """{
@@ -97,7 +97,7 @@ def test_observed_data_example_with_refs():
         },
     )
 
-    assert str(observed_data) == EXPECTED_WITH_REF
+    assert observed_data.serialize(pretty=True) == EXPECTED_WITH_REF
 
 
 def test_observed_data_example_with_bad_refs():

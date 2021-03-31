@@ -27,7 +27,7 @@ def test_incident_example():
         description="Intrusion into enterprise network",
     )
 
-    assert str(incident) == EXPECTED
+    assert incident.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(

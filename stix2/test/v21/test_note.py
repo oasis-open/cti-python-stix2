@@ -73,7 +73,7 @@ def test_note_with_required_properties():
         ],
     )
 
-    assert str(note) == EXPECTED_NOTE
+    assert note.serialize(pretty=True) == EXPECTED_NOTE
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(note))
     assert rep == EXPECTED_OPINION_REPR
 

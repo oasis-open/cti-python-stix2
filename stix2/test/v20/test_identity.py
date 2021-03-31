@@ -26,7 +26,7 @@ def test_identity_example():
         identity_class="individual",
     )
 
-    assert str(identity) == EXPECTED
+    assert identity.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(

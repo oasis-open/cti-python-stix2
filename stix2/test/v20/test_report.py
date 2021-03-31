@@ -47,7 +47,7 @@ def test_report_example():
         ],
     )
 
-    assert str(report) == EXPECTED
+    assert report.serialize(pretty=True) == EXPECTED
 
 
 def test_report_example_objects_in_object_refs():
@@ -67,7 +67,7 @@ def test_report_example_objects_in_object_refs():
         ],
     )
 
-    assert str(report) == EXPECTED
+    assert report.serialize(pretty=True) == EXPECTED
 
 
 def test_report_example_objects_in_object_refs_with_bad_id():

@@ -45,7 +45,7 @@ def test_tool_example():
         tool_types=["remote-access"],
     )
 
-    assert str(tool) == EXPECTED
+    assert tool.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(

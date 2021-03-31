@@ -26,7 +26,7 @@ def test_external_reference_veris():
         url="https://github.com/vz-risk/VCDB/blob/master/data/json/0001AA7F-C601-424A-B2B8-BE6C9F5164E7.json",
     )
 
-    assert str(ref) == VERIS
+    assert ref.serialize(pretty=True) == VERIS
 
 
 CAPEC = """{
@@ -41,7 +41,7 @@ def test_external_reference_capec():
         external_id="CAPEC-550",
     )
 
-    assert str(ref) == CAPEC
+    assert ref.serialize(pretty=True) == CAPEC
     assert re.match("ExternalReference\\(source_name=u?'capec', external_id=u?'CAPEC-550'\\)", repr(ref))
 
 
@@ -59,7 +59,7 @@ def test_external_reference_capec_url():
         url="http://capec.mitre.org/data/definitions/550.html",
     )
 
-    assert str(ref) == CAPEC_URL
+    assert ref.serialize(pretty=True) == CAPEC_URL
 
 
 THREAT_REPORT = """{
@@ -76,7 +76,7 @@ def test_external_reference_threat_report():
         url="http://www.example.com/threat-report.pdf",
     )
 
-    assert str(ref) == THREAT_REPORT
+    assert ref.serialize(pretty=True) == THREAT_REPORT
 
 
 BUGZILLA = """{
@@ -93,7 +93,7 @@ def test_external_reference_bugzilla():
         url="https://www.example.com/bugs/1370",
     )
 
-    assert str(ref) == BUGZILLA
+    assert ref.serialize(pretty=True) == BUGZILLA
 
 
 OFFLINE = """{
@@ -108,7 +108,7 @@ def test_external_reference_offline():
         description="Threat report",
     )
 
-    assert str(ref) == OFFLINE
+    assert ref.serialize(pretty=True) == OFFLINE
     assert re.match("ExternalReference\\(source_name=u?'ACME Threat Intel', description=u?'Threat report'\\)", repr(ref))
     # Yikes! This works
     assert eval("stix2." + repr(ref)) == ref

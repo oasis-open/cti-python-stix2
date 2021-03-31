@@ -778,7 +778,7 @@ def test_custom_extension_with_list_and_dict_properties_observable_type(data):
         pass
 
     example = SomeCustomExtension(keys=[{'test123': 123, 'test345': 'aaaa'}])
-    assert data == str(example)
+    assert data == example.serialize(pretty=True)
 
 
 def test_custom_extension_invalid_type_name():
@@ -992,7 +992,7 @@ def test_custom_object_nested_dictionary(data):
         dictionary={'key': {'key_b': 'value', 'key_a': 'value'}},
     )
 
-    assert data == str(example)
+    assert data == example.serialize(pretty=True)
 
 
 @stix2.v20.CustomObject(
