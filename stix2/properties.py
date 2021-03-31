@@ -17,7 +17,6 @@ from .exceptions import (
 from .parsing import parse, parse_observable
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
-
 TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
 TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
 ERROR_INVALID_ID = (

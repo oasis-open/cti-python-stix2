@@ -22,7 +22,6 @@ from .utils import NOW, PREFIX_21_REGEX, get_timestamp
 from .versioning import new_version as _new_version
 from .versioning import revoke as _revoke
 
-
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
 
@@ -75,7 +74,7 @@ class _STIXBase(collections.abc.Mapping):
 
     def _check_at_least_one_property(self, list_of_properties=None):
         if not list_of_properties:
-            list_of_properties = sorted(list(self.__class__._properties.keys()))
+            list_of_properties = sorted(self.__class__._properties.keys())
             if isinstance(self, _Observable):
                 props_to_remove = {"type", "id", "defanged", "spec_version"}
             else:
