@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+import collections.abc
 import copy
 import inspect
 import re
@@ -16,10 +17,6 @@ from .exceptions import (
 from .parsing import parse, parse_observable
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
 
 TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
 TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
@@ -239,7 +236,7 @@ class ListProperty(Property):
                 if isinstance(item, self.contained):
                     valid = item
 
-                elif isinstance(item, Mapping):
+                elif isinstance(item, collections.abc.Mapping):
                     # attempt a mapping-like usage...
                     valid = self.contained(**item)
 

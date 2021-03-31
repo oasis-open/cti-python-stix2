@@ -1,5 +1,6 @@
 """Base classes for type definitions in the STIX2 library."""
 
+import collections.abc
 import copy
 import re
 import uuid
@@ -21,10 +22,6 @@ from .utils import NOW, PREFIX_21_REGEX, get_timestamp
 from .versioning import new_version as _new_version
 from .versioning import revoke as _revoke
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
 
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
@@ -34,7 +31,7 @@ def get_required_properties(properties):
     return (k for k, v in properties.items() if v.required)
 
 
-class _STIXBase(Mapping):
+class _STIXBase(collections.abc.Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):
@@ -67,7 +64,7 @@ class _STIXBase(Mapping):
                     self.__class__, prop_name, reason=str(exc),
                 ) from exc
 
-    # interproperty constraint methods
+    # inter-property constraint methods
 
     def _check_mutually_exclusive_properties(self, list_of_properties, at_least_one=True):
         current_properties = self.properties_populated()
@@ -80,9 +77,9 @@ class _STIXBase(Mapping):
         if not list_of_properties:
             list_of_properties = sorted(list(self.__class__._properties.keys()))
             if isinstance(self, _Observable):
-                props_to_remove = ["type", "id", "defanged", "spec_version"]
+                props_to_remove = {"type", "id", "defanged", "spec_version"}
             else:
-                props_to_remove = ["type"]
+                props_to_remove = {"type"}
 
             list_of_properties = [prop for prop in list_of_properties if prop not in props_to_remove]
         current_properties = self.properties_populated()
@@ -211,14 +208,12 @@ class _STIXBase(Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        return self.serialize(pretty=True)
+        # Note: use .serialize() or fp_serialize() directly if specific formatting options are needed.
+        return self.serialize()
 
     def __repr__(self):
-        props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
-        return '{0}({1})'.format(
-            self.__class__.__name__,
-            ', '.join(['{0!s}={1!r}'.format(k, v) for k, v in props]),
-        )
+        props = ', '.join([f"{k}={self[k]!r}" for k in self.object_properties() if self.get(k)])
+        return f'{self.__class__.__name__}({props})'
 
     def __deepcopy__(self, memo):
         # Assume: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
@@ -415,7 +410,7 @@ def _make_json_serializable(value):
 
     json_value = value  # default assumption
 
-    if isinstance(value, Mapping):
+    if isinstance(value, collections.abc.Mapping):
         json_value = {
             k: _make_json_serializable(v)
             for k, v in value.items()
