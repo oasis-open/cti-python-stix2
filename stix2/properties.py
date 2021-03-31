@@ -422,7 +422,7 @@ class DictionaryProperty(Property):
 
 class HashesProperty(DictionaryProperty):
 
-    def __init__(self, spec_hash_names, spec_version=stix2.DEFAULT_VERSION, **kwargs):
+    def __init__(self, spec_hash_names, spec_version=DEFAULT_VERSION, **kwargs):
         super().__init__(spec_version=spec_version, **kwargs)
 
         self.__spec_hash_names = spec_hash_names
