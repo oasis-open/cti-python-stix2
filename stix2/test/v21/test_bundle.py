@@ -130,7 +130,6 @@ def test_create_bundle_fp_serialize_pretty(indicator, malware, relationship):
 
     bundle.fp_serialize(buffer, pretty=True)
 
-    assert str(bundle) == EXPECTED_BUNDLE
     assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
     assert buffer.getvalue() == EXPECTED_BUNDLE
 
