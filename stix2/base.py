@@ -17,7 +17,7 @@ from .exceptions import (
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
-from .serialization import STIXJSONEncoder, serialize
+from .serialization import STIXJSONEncoder, fp_serialize, serialize
 from .utils import NOW, PREFIX_21_REGEX, get_timestamp
 from .versioning import new_version as _new_version
 from .versioning import revoke as _revoke
@@ -261,6 +261,35 @@ class _STIXBase(collections.abc.Mapping):
             ``stix2.serialization.serialize`` for options.
         """
         return serialize(self, *args, **kwargs)
+
+    def fp_serialize(self, *args, **kwargs):
+        """
+        Serialize a STIX object to ``fp`` (a text stream file-like supporting object).
+
+        Examples:
+            >>> import stix2
+            >>> identity = stix2.Identity(name='Example Corp.', identity_class='organization')
+            >>> print(identity.serialize(sort_keys=True))
+            {"created": "2018-06-08T19:03:54.066Z", ... "name": "Example Corp.", "type": "identity"}
+            >>> print(identity.serialize(sort_keys=True, indent=4))
+            {
+                "created": "2018-06-08T19:03:54.066Z",
+                "id": "identity--d7f3e25a-ba1c-447a-ab71-6434b092b05e",
+                "identity_class": "organization",
+                "modified": "2018-06-08T19:03:54.066Z",
+                "name": "Example Corp.",
+                "type": "identity"
+            }
+            >>> with open("example.json", mode="w", encoding="utf-8") as f:
+            >>>     identity.fp_serialize(f, pretty=True)
+
+        Returns:
+            None
+
+        See Also:
+            ``stix2.serialization.fp_serialize`` for options.
+        """
+        fp_serialize(self, *args, **kwargs)
 
 
 class _DomainObject(_STIXBase, _MarkingsMixin):
