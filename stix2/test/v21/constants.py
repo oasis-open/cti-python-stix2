@@ -28,10 +28,10 @@ SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 VULNERABILITY_ID = "vulnerability--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 
 EXTENSION_DEFINITION_IDS = [
-    "extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff",  # new-sdo
-    "extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e",  # property-extension
-    "extension-definition--71736db5-10db-43d3-b0e3-65cf81601fe1",  # top-level-property-extension
-    "extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff",  # new-sdo, new-sco, property-extension
+    "extension-definition--1f611280-fbe1-48e8-92ab-ff47ce02d5b7",  # new-sdo
+    "extension-definition--368f4787-5b43-467c-9693-0c9de4289c4b",  # property-extension
+    "extension-definition--dd73de4f-a7f3-49ea-8ec1-8e884196b7a8",  # top-level-property-extension
+    "extension-definition--150c1738-28c9-44d0-802d-70523218240b",  # new-sdo, new-sco, property-extension
 ]
 MARKING_IDS = [
     "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
