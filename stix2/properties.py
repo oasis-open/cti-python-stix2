@@ -757,12 +757,11 @@ class ObservableProperty(Property):
                 has_custom = True
 
             if not allow_custom and has_custom:
-                if parsed_obj.has_custom:
-                    raise CustomContentError(
-                        "customized {} observable found".format(
-                            parsed_obj["type"],
-                        ),
-                    )
+                raise CustomContentError(
+                    "customized {} observable found".format(
+                        parsed_obj["type"],
+                    ),
+                )
 
             dictified[key] = parsed_obj
 
