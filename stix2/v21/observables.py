@@ -468,7 +468,6 @@ class HTTPRequestExt(_Extension):
 
 
 class ICMPExt(_Extension):
-    # TODO: Add link
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_ozypx0lmkebv>`__.
     """

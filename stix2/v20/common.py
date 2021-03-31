@@ -74,7 +74,6 @@ class TLPMarking(_STIXBase20):
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709287>`__.
     """
 
-    # TODO: don't allow the creation of any other TLPMarkings than the ones below
     _type = 'tlp'
     _properties = OrderedDict([
         ('tlp', StringProperty(required=True)),

@@ -16,9 +16,7 @@ from .exceptions import (
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
-from .serialization import (
-    STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, serialize,
-)
+from .serialization import STIXJSONEncoder, serialize
 from .utils import NOW, PREFIX_21_REGEX, get_timestamp
 from .versioning import new_version as _new_version
 from .versioning import revoke as _revoke
@@ -27,10 +25,6 @@ try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
-
-# TODO: Remove STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, serialize from __all__ on next major release.
-# Kept for backwards compatibility.
-__all__ = ['STIXJSONEncoder', 'STIXJSONIncludeOptionalDefaultsEncoder', '_STIXBase', 'serialize']
 
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
