@@ -27,7 +27,7 @@ the repository on GitHub and clone your fork instead of the main repo:
 
     git clone https://github.com/yourusername/cti-python-stix2.git
 
-2. Install develoment-related dependencies:
+2. Install development-related dependencies:
 
 .. prompt:: bash
 
