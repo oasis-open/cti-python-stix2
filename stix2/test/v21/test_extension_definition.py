@@ -54,7 +54,7 @@ def test_extension_definition_example():
             "description": "This schema creates a new object type called my-favorite-sdo-1",
             "schema": "https://www.example.com/schema-my-favorite-sdo-1/v1/",
             "version": "1.2.1",
-            "extension_types": ["new-sdo"]
+            "extension_types": ["new-sdo"],
         },
     ],
 )
@@ -75,7 +75,8 @@ def test_parse_extension_definition(data):
 
 def test_parse_no_type():
     with pytest.raises(stix2.exceptions.ParseError):
-        stix2.parse("""{
+        stix2.parse(
+            """{
             "id": "{EXTENSION_DEFINITION_IDS[0]}",
             "spec_version": "2.1",
             "name": "New SDO 1",

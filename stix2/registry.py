@@ -69,9 +69,12 @@ def class_for_type(stix_type, stix_version, category=None):
             if class_map:
                 cls = class_map.get(stix_type)
         else:
-            cls = cat_map["objects"].get(stix_type) \
-                or cat_map["observables"].get(stix_type) \
-                or cat_map["markings"].get(stix_type)
+            cls = (
+                cat_map["objects"].get(stix_type) or
+                cat_map["observables"].get(stix_type) or
+                cat_map["markings"].get(stix_type) or
+                cat_map["extensions"].get(stix_type)
+            )
 
     # Left "observable-extensions" out; it has a different
     # substructure.  A version->category->type lookup would result
