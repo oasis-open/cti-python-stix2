@@ -806,7 +806,7 @@ class Vulnerability(_DomainObject):
     ])
 
 
-def CustomObject(type='x-custom-type', properties=None, extension_name=None):
+def CustomObject(type='x-custom-type', properties=None, extension_name=None, is_sdo=True):
     """Custom STIX Object type decorator.
 
     Example:
@@ -864,7 +864,10 @@ def CustomObject(type='x-custom-type', properties=None, extension_name=None):
         if extension_name:
             @observables.CustomExtension(type=extension_name, properties=extension_properties)
             class NameExtension:
-                extension_type = 'new-sdo'
+                if is_sdo:
+                    extension_type = 'new-sdo'
+                else:
+                    extension_type = 'new-sro'
 
             extension = extension_name.split('--')[1]
             extension = extension.replace('-', '')

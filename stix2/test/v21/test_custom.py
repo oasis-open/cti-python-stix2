@@ -1462,6 +1462,41 @@ def test_registered_new_extension_sdo_allow_custom_false():
     assert '"extensions": {"extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999": {"extension_type": "new-sdo"}}' in sdo_serialized
 
 
+def test_registered_new_extension_sro_allow_custom_false():
+    @stix2.v21.CustomObject(
+        'my-favorite-sro', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_property_name1', stix2.properties.StringProperty(required=True)),
+            ('some_property_name2', stix2.properties.StringProperty()),
+        ], 'extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce', False,
+    )
+    class MyFavSRO:
+        pass
+
+    my_favorite_sro = {
+        'type': 'my-favorite-sro',
+        'spec_version': '2.1',
+        'id': 'my-favorite-sro--c5ba9dba-5ad9-4bbe-9825-df4cb8675774',
+        'created': '2014-02-20T09:16:08.989000Z',
+        'modified': '2014-02-20T09:16:08.989000Z',
+        'name': 'This is the name of my favorite',
+        'some_property_name1': 'value1',
+        'some_property_name2': 'value2',
+        # 'extensions': {
+        #     'extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce': ExtensionDefinitiond83fce45ef584c6ca3f41fbc32e98c6e()
+        # }
+    }
+    sro_object = stix2.parse(my_favorite_sro)
+    assert isinstance(sro_object, MyFavSRO)
+    assert isinstance(
+        sro_object.extensions['extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce'],
+        stix2.v21.EXT_MAP['extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce'],
+    )
+
+    sdo_serialized = sro_object.serialize()
+    assert '"extensions": {"extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce": {"extension_type": "new-sro"}}' in sdo_serialized
+
+
 def test_registered_new_extension_sco_allow_custom_false():
     @stix2.v21.CustomObservable(
         'my-favorite-sco', [
