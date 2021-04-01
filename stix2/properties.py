@@ -14,7 +14,10 @@ from .base import _STIXBase
 from .exceptions import CustomContentError, DictionaryKeyError, STIXError
 from .parsing import parse, parse_observable
 from .registry import STIX2_OBJ_MAPS
-from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
+from .utils import (
+    STIXTypeClass, _get_dict, get_class_hierarchy_names, get_type_from_id,
+    is_object, is_stix_type, parse_into_datetime, to_enum,
+)
 from .version import DEFAULT_VERSION
 
 try:
@@ -501,7 +504,6 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    _OBJECT_CATEGORIES = {"SDO", "SCO", "SRO"}
     _WHITELIST, _BLACKLIST = range(2)
 
     def __init__(self, valid_types=None, invalid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
@@ -525,8 +527,21 @@ class ReferenceProperty(Property):
         if valid_types is not None and len(valid_types) == 0:
             raise ValueError("Impossible type constraint: empty whitelist")
 
-        self.types = set(valid_types or invalid_types)
         self.auth_type = self._WHITELIST if valid_types else self._BLACKLIST
+
+        # Divide type requirements into generic type classes and specific
+        # types.  With respect to strings, values recognized as STIXTypeClass
+        # enum names are generic; all else are specifics.
+        self.generics = set()
+        self.specifics = set()
+        types = valid_types or invalid_types
+        for type_ in types:
+            try:
+                enum_value = to_enum(type_, STIXTypeClass)
+            except KeyError:
+                self.specifics.add(type_)
+            else:
+                self.generics.add(enum_value)
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
@@ -537,7 +552,7 @@ class ReferenceProperty(Property):
 
         _validate_id(value, self.spec_version, None)
 
-        obj_type = value[:value.index('--')]
+        obj_type = get_type_from_id(value)
 
         # Only comes into play when inverting a hybrid whitelist.
         # E.g. if the possible generic categories are A, B, C, then the
@@ -548,8 +563,8 @@ class ReferenceProperty(Property):
         # blacklist.
         blacklist_exceptions = set()
 
-        generics = self.types & self._OBJECT_CATEGORIES
-        specifics = self.types - generics
+        generics = self.generics
+        specifics = self.specifics
         auth_type = self.auth_type
         if allow_custom and auth_type == self._WHITELIST and generics:
             # If allowing customization and using a whitelist, and if generic
@@ -560,20 +575,19 @@ class ReferenceProperty(Property):
             # in the wrong category.  I.e. flip the whitelist set to a
             # blacklist of a complementary set.
             auth_type = self._BLACKLIST
-            generics = self._OBJECT_CATEGORIES - generics
+            generics = set(STIXTypeClass) - generics
             blacklist_exceptions, specifics = specifics, blacklist_exceptions
 
         if auth_type == self._WHITELIST:
-            type_ok = _type_in_generic_set(
-                obj_type, generics, self.spec_version
+            type_ok = is_stix_type(
+                obj_type, self.spec_version, *generics
             ) or obj_type in specifics
 
         else:
             type_ok = (
-                not _type_in_generic_set(
-                    obj_type, generics, self.spec_version,
-                )
-                and obj_type not in specifics
+                not is_stix_type(
+                    obj_type, self.spec_version, *generics
+                ) and obj_type not in specifics
             ) or obj_type in blacklist_exceptions
 
         if not type_ok:
@@ -585,9 +599,8 @@ class ReferenceProperty(Property):
         # We need to figure out whether the referenced object is custom or
         # not.  No good way to do that at present... just check if
         # unregistered and for the "x-" type prefix, for now?
-        has_custom = not _type_in_generic_set(
-            obj_type, self._OBJECT_CATEGORIES, self.spec_version,
-        ) or obj_type.startswith("x-")
+        has_custom = not is_object(obj_type, self.spec_version) \
+             or obj_type.startswith("x-")
 
         if not allow_custom and has_custom:
             raise CustomContentError(
@@ -595,34 +608,6 @@ class ReferenceProperty(Property):
             )
 
         return value, has_custom
-
-
-def _type_in_generic_set(type_, type_set, spec_version):
-    """
-    Determine if type_ is in the given set, with respect to the given STIX
-    version.  This handles special generic category values "SDO", "SCO",
-    "SRO", so it's not a simple set containment check.  The type_set is
-    implicitly "OR"d.
-    """
-    type_maps = STIX2_OBJ_MAPS[spec_version]
-
-    result = False
-    for type_id in type_set:
-        if type_id == "SDO":
-            result = type_ in type_maps["objects"] and type_ not in [
-                "relationship", "sighting",
-            ]  # sigh
-        elif type_id == "SCO":
-            result = type_ in type_maps["observables"]
-        elif type_id == "SRO":
-            result = type_ in ["relationship", "sighting"]
-        else:
-            raise ValueError("Unrecognized generic type category: " + type_id)
-
-        if result:
-            break
-
-    return result
 
 
 SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))*|id)$")

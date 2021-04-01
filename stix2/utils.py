@@ -45,7 +45,7 @@ class PrecisionConstraint(enum.Enum):
     #  no need for a MAX constraint yet
 
 
-def _to_enum(value, enum_type, enum_default=None):
+def to_enum(value, enum_type, enum_default=None):
     """
     Detect and convert strings to enums and None to a default enum.  This
     allows use of strings and None in APIs, while enforcing the enum type: if
@@ -88,11 +88,11 @@ class STIXdatetime(dt.datetime):
     """
 
     def __new__(cls, *args, **kwargs):
-        precision = _to_enum(
+        precision = to_enum(
             kwargs.pop("precision", Precision.ANY),
             Precision,
         )
-        precision_constraint = _to_enum(
+        precision_constraint = to_enum(
             kwargs.pop("precision_constraint", PrecisionConstraint.EXACT),
             PrecisionConstraint,
         )
@@ -233,8 +233,8 @@ def parse_into_datetime(
     :return: A STIXdatetime instance, which is a datetime but also carries the
         precision info necessary to properly JSON-serialize it.
     """
-    precision = _to_enum(precision, Precision)
-    precision_constraint = _to_enum(precision_constraint, PrecisionConstraint)
+    precision = to_enum(precision, Precision)
+    precision_constraint = to_enum(precision_constraint, PrecisionConstraint)
 
     if isinstance(value, dt.date):
         if hasattr(value, 'hour'):
