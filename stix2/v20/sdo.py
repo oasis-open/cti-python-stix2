@@ -240,7 +240,7 @@ class Report(_DomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('published', TimestampProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[], spec_version='2.0'), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.0'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(OpenVocabProperty(REPORT_LABEL), required=True)),
         ('external_references', ListProperty(ExternalReference)),

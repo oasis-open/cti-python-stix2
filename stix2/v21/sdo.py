@@ -644,7 +644,7 @@ class Report(_DomainObject):
         ('description', StringProperty()),
         ('report_types', ListProperty(OpenVocabProperty(REPORT_TYPE))),
         ('published', TimestampProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(invalid_types=[], spec_version='2.1'), required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
