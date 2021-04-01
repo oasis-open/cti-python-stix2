@@ -600,7 +600,7 @@ class ReferenceProperty(Property):
         # not.  No good way to do that at present... just check if
         # unregistered and for the "x-" type prefix, for now?
         has_custom = not is_object(obj_type, self.spec_version) \
-             or obj_type.startswith("x-")
+            or obj_type.startswith("x-")
 
         if not allow_custom and has_custom:
             raise CustomContentError(
