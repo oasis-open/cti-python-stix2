@@ -47,7 +47,7 @@ EXPECTED_LOCATION_2_REPR = "Location(" + " ".join(
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
-    region='northern-america'""".split()
+    region='northern-america'""".split(),
 ) + ")"
 
 
