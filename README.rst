@@ -39,7 +39,7 @@ be set automatically if not provided as keyword arguments.
                           pattern_type="stix",
                           pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']")
 
-To parse a STIX JSON string into a Python STIX object, use ``parse()``:
+To parse a STIX JSON string into a Python STIX object, use ``parse()``. To serialize a STIX object, use ``serialize()``:
 
 .. code-block:: python
 
@@ -61,7 +61,7 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
         "valid_from": "2017-09-26T23:33:39.829952Z"
     }""")
 
-    print(indicator)
+    print(indicator.serialize(pretty=true))
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
