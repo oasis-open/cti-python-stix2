@@ -107,7 +107,7 @@ run:
 then look at the resulting report in ``htmlcov/index.html``.
 
 All commits pushed to the ``master`` branch or submitted as a pull request are
-tested with `Travis-CI <https://travis-ci.org/oasis-open/cti-python-stix2>`_
+tested with `GitHub Actions <https://github.com/oasis-open/cti-python-stix2/actions>`_
 automatically.
 
 Adding a dependency
