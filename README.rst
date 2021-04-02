@@ -61,7 +61,7 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``. To seria
         "valid_from": "2017-09-26T23:33:39.829952Z"
     }""")
 
-    print(indicator.serialize(pretty=true))
+    print(indicator.serialize(pretty=True))
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
