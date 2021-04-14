@@ -370,7 +370,7 @@ def test_enum_property_invalid():
 
 @pytest.mark.xfail(
     reason="Temporarily disabled custom open vocab enforcement",
-    strict=True
+    strict=True,
 )
 @pytest.mark.parametrize(
     "vocab", [
