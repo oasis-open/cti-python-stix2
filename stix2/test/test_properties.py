@@ -368,6 +368,10 @@ def test_enum_property_invalid():
         enum_prop.clean('z', True)
 
 
+@pytest.mark.xfail(
+    reason="Temporarily disabled custom open vocab enforcement",
+    strict=True
+)
 @pytest.mark.parametrize(
     "vocab", [
         ['a', 'b', 'c'],

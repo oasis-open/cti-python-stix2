@@ -690,12 +690,18 @@ class OpenVocabProperty(StringProperty):
             value, allow_custom,
         )
 
-        has_custom = cleaned_value not in self.allowed
+        # Disabled: it was decided that enforcing this is too strict (might
+        # break too much user code).  Revisit when we have the capability for
+        # more granular config settings when creating objects.
+        #
+        # has_custom = cleaned_value not in self.allowed
+        #
+        # if not allow_custom and has_custom:
+        #     raise CustomContentError(
+        #         "custom value in open vocab: '{}'".format(cleaned_value),
+        #     )
 
-        if not allow_custom and has_custom:
-            raise CustomContentError(
-                "custom value in open vocab: '{}'".format(cleaned_value),
-            )
+        has_custom = False
 
         return cleaned_value, has_custom
 
