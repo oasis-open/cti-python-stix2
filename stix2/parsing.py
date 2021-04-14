@@ -87,11 +87,14 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
             # be parsed into STIX object, returned as is
             return stix_dict
         for key_id, ext_def in stix_dict.get('extensions', {}).items():
-            if key_id.startswith('extension-definition--') and ext_def.get('extension_type', None):
+            if (
+                key_id.startswith('extension-definition--') and
+                'property-extension' not in ext_def.get('extension_type', '')
+            ):
                 # prevents ParseError for unregistered objects when
-                # 'is_new_object' or 'is_extension_so' are set to True and allow_custom=False
+                # allow_custom=False and the extension defines a new object
                 return stix_dict
-        raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % stix_dict['type'])
+        raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % obj_type)
 
     return obj_class(allow_custom=allow_custom, **stix_dict)
 

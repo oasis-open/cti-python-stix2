@@ -76,8 +76,4 @@ def class_for_type(stix_type, stix_version, category=None):
                 cat_map["extensions"].get(stix_type)
             )
 
-    # Left "observable-extensions" out; it has a different
-    # substructure.  A version->category->type lookup would result
-    # in another map, not a class.  So it doesn't fit the pattern.
-
     return cls

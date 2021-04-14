@@ -126,7 +126,6 @@ class _STIXBase(collections.abc.Mapping):
             if ext_found is False:
                 raise ExtraPropertiesError(cls, extra_kwargs)
 
-        # because allow_custom is true, any extra kwargs are custom
         if custom_props or extra_kwargs:
             self._allow_custom = True
             if isinstance(self, stix2.v21._STIXBase21):
@@ -153,7 +152,8 @@ class _STIXBase(collections.abc.Mapping):
         if missing_kwargs:
             new_ext_check = (
                 bool(getattr(self, "extension_type", None))
-            ) and issubclass(cls, stix2.v21._Extension)
+                and issubclass(cls, stix2.v21._Extension)
+            )
             if new_ext_check is False:
                 raise MissingPropertiesError(cls, missing_kwargs)
 
