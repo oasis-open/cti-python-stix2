@@ -117,7 +117,7 @@ class Property(object):
             creating an object with that property. No default value exists for
             these properties. (Default: ``False``)
         fixed: This provides a constant default value. Users are free to
-            provide this value explicity when constructing an object (which
+            provide this value explicitly when constructing an object (which
             allows you to copy **all** values from an existing object to a new
             object), but if the user provides a value other than the ``fixed``
             value, it will raise an error. This is semantically equivalent to

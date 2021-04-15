@@ -119,8 +119,14 @@ class _STIXBase(collections.abc.Mapping):
 
         if extra_kwargs and not self._allow_custom:
             ext_found = False
+            # This section performs a check on top-level objects that support extensions.
+            # If extra_kwargs is not empty, allow_custom False, and the extension_type is not
+            # toplevel then we raise the ExtraPropertiesError regardless.
             for key_id, ext_def in kwargs.get('extensions', {}).items():
-                if key_id.startswith('extension-definition--'):
+                if (
+                    key_id.startswith('extension-definition--') and
+                    ext_def.get('extension_type', '') == 'toplevel-property-extension'
+                ):
                     ext_found = True
                     break
             if ext_found is False:
@@ -150,6 +156,10 @@ class _STIXBase(collections.abc.Mapping):
         required_properties = set(get_required_properties(self._properties))
         missing_kwargs = required_properties - set(setting_kwargs)
         if missing_kwargs:
+            # In this scenario, we are inside within the scope of the extension.
+            # It is possible to check if this is a new Extension Class by
+            # querying "extension_type". Note: There is an API limitation currently
+            # because a toplevel-property-extension cannot validate its parent properties
             new_ext_check = (
                 bool(getattr(self, "extension_type", None))
                 and issubclass(cls, stix2.v21._Extension)
