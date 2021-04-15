@@ -24,7 +24,7 @@ def test_campaign_example():
         **CAMPAIGN_MORE_KWARGS
     )
 
-    assert str(campaign) == EXPECTED
+    assert campaign.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(

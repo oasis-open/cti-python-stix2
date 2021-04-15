@@ -42,7 +42,7 @@ COA_WITH_REF_DICT = json.loads(COA_WITH_REF_JSON)
 )
 def test_course_of_action_example(sdo_json, sdo_dict):
     coa = stix2.v21.CourseOfAction(**sdo_dict)
-    assert str(coa) == sdo_json
+    assert coa.serialize(pretty=True) == sdo_json
 
 
 @pytest.mark.parametrize(

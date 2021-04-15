@@ -1,4 +1,4 @@
-from taxii2client import Collection
+from taxii2client.v21 import Collection
 
 import stix2
 
@@ -8,7 +8,7 @@ import stix2
 
 def main():
     collection = Collection(
-        "http://127.0.0.1:5000/trustgroup1/collections/52892447-4d7e-4f70-b94d-d7f22742ff63/",
+        "http://127.0.0.1:5000/trustgroup1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/",
         user="admin", password="Password0",
     )
 
@@ -16,12 +16,12 @@ def main():
     taxii = stix2.TAXIICollectionSource(collection)
 
     # get (url watch indicator)
-    indicator_fw = taxii.get("indicator--00000000-0000-4000-8000-000000000001")
+    indicator_fw = taxii.get("indicator--6770298f-0fd8-471a-ab8c-1c658a46574e")
     print("\n\n-------Queried for Indicator - got:")
     print(indicator_fw.serialize(indent=4))
 
     # all versions (url watch indicator - currently two)
-    indicator_fw_versions = taxii.all_versions("indicator--00000000-0000-4000-8000-000000000001")
+    indicator_fw_versions = taxii.all_versions("indicator--6770298f-0fd8-471a-ab8c-1c658a46574e")
     print("\n\n------Queried for indicator (all_versions()) - got:")
     for indicator in indicator_fw_versions:
         print(indicator.serialize(indent=4))

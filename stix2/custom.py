@@ -2,8 +2,8 @@ from collections import OrderedDict
 
 from .base import _cls_init
 from .registration import (
-    _register_marking, _register_object, _register_observable,
-    _register_observable_extension,
+    _get_extension_class, _register_extension, _register_marking,
+    _register_object, _register_observable,
 )
 
 
@@ -29,6 +29,11 @@ def _custom_object_builder(cls, type, properties, version, base_class):
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+            ext = getattr(self, 'with_extension', None)
+            if ext and version != '2.0':
+                if 'extensions' not in self._inner:
+                    self._inner['extensions'] = {}
+                self._inner['extensions'][ext] = _get_extension_class(ext, version)()
 
     _CustomObject.__name__ = cls.__name__
 
@@ -47,6 +52,11 @@ def _custom_marking_builder(cls, type, properties, version, base_class):
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+            ext = getattr(self, 'with_extension', None)
+            if ext and version != '2.0':
+                if 'extensions' not in self._inner:
+                    self._inner['extensions'] = {}
+                self._inner['extensions'][ext] = _get_extension_class(ext, version)()
 
     _CustomMarking.__name__ = cls.__name__
 
@@ -70,6 +80,11 @@ def _custom_observable_builder(cls, type, properties, version, base_class, id_co
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+            ext = getattr(self, 'with_extension', None)
+            if ext and version != '2.0':
+                if 'extensions' not in self._inner:
+                    self._inner['extensions'] = {}
+                self._inner['extensions'][ext] = _get_extension_class(ext, version)()
 
     _CustomObservable.__name__ = cls.__name__
 
@@ -77,7 +92,7 @@ def _custom_observable_builder(cls, type, properties, version, base_class, id_co
     return _CustomObservable
 
 
-def _custom_extension_builder(cls, observable, type, properties, version, base_class):
+def _custom_extension_builder(cls, type, properties, version, base_class):
     prop_dict = _get_properties_dict(properties)
 
     class _CustomExtension(cls, base_class):
@@ -91,5 +106,5 @@ def _custom_extension_builder(cls, observable, type, properties, version, base_c
 
     _CustomExtension.__name__ = cls.__name__
 
-    _register_observable_extension(observable, _CustomExtension, version=version)
+    _register_extension(_CustomExtension, version=version)
     return _CustomExtension

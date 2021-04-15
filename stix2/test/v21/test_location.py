@@ -54,7 +54,7 @@ EXPECTED_LOCATION_2_REPR = "Location(" + " ".join(
 def test_location_with_some_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
 
-    loc = stix2.v21.Location(
+    location = stix2.v21.Location(
         id=LOCATION_ID,
         created=now,
         modified=now,
@@ -62,8 +62,8 @@ def test_location_with_some_required_properties():
         longitude=2.3522,
     )
 
-    assert str(loc) == EXPECTED_LOCATION_1
-    rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(loc))
+    assert location.serialize(pretty=True) == EXPECTED_LOCATION_1
+    rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(location))
     assert rep == EXPECTED_LOCATION_1_REPR
 
 

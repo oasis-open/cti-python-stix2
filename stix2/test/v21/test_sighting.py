@@ -38,7 +38,7 @@ BAD_SIGHTING = """{
 def test_sighting_all_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 6, 37, tzinfo=pytz.utc)
 
-    s = stix2.v21.Sighting(
+    sighting = stix2.v21.Sighting(
         type='sighting',
         id=SIGHTING_ID,
         created=now,
@@ -46,7 +46,7 @@ def test_sighting_all_required_properties():
         sighting_of_ref=INDICATOR_ID,
         where_sighted_refs=[IDENTITY_ID, LOCATION_ID],
     )
-    assert str(s) == EXPECTED_SIGHTING
+    assert sighting.serialize(pretty=True) == EXPECTED_SIGHTING
 
 
 def test_sighting_bad_where_sighted_refs():

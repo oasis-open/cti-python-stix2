@@ -3,8 +3,9 @@
 from collections import OrderedDict
 
 from ..properties import (
-    BooleanProperty, IDProperty, IntegerProperty, ListProperty,
-    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, ExtensionsProperty, IDProperty, IntegerProperty,
+    ListProperty, ReferenceProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from ..utils import NOW
 from .base import _RelationshipObject
@@ -13,7 +14,7 @@ from .common import ExternalReference, GranularMarking
 
 class Relationship(_RelationshipObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_al0fb8fcd9e7>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_e2e1szrqfoan>`__.
     """
 
     _invalid_source_target_types = ['bundle', 'language-content', 'marking-definition', 'relationship', 'sighting']
@@ -39,6 +40,7 @@ class Relationship(_RelationshipObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
@@ -69,7 +71,7 @@ class Relationship(_RelationshipObject):
 
 class Sighting(_RelationshipObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_7p0n81ikux8f>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_a795guqsap3r>`__.
     """
 
     _type = 'sighting'
@@ -95,6 +97,7 @@ class Sighting(_RelationshipObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     # Explicitly define the first kwargs to make readable Sighting declarations.

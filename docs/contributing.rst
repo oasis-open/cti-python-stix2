@@ -27,7 +27,7 @@ the repository on GitHub and clone your fork instead of the main repo:
 
     git clone https://github.com/yourusername/cti-python-stix2.git
 
-2. Install develoment-related dependencies:
+2. Install development-related dependencies:
 
 .. prompt:: bash
 
@@ -107,7 +107,7 @@ run:
 then look at the resulting report in ``htmlcov/index.html``.
 
 All commits pushed to the ``master`` branch or submitted as a pull request are
-tested with `Travis-CI <https://travis-ci.org/oasis-open/cti-python-stix2>`_
+tested with `GitHub Actions <https://github.com/oasis-open/cti-python-stix2/actions>`_
 automatically.
 
 Adding a dependency

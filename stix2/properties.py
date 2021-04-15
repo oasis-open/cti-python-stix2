@@ -2,28 +2,23 @@
 
 import base64
 import binascii
+import collections.abc
 import copy
 import inspect
 import re
 import uuid
 
+from . import registry, version
 from .base import _STIXBase
 from .exceptions import (
     CustomContentError, DictionaryKeyError, MissingPropertiesError,
     MutuallyExclusivePropertiesError, STIXError,
 )
 from .parsing import parse, parse_observable
-from .registry import STIX2_OBJ_MAPS
 from .utils import _get_dict, get_class_hierarchy_names, parse_into_datetime
-from .version import DEFAULT_VERSION
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
-TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
-TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
+TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )
@@ -122,7 +117,7 @@ class Property(object):
             creating an object with that property. No default value exists for
             these properties. (Default: ``False``)
         fixed: This provides a constant default value. Users are free to
-            provide this value explicity when constructing an object (which
+            provide this value explicitly when constructing an object (which
             allows you to copy **all** values from an existing object to a new
             object), but if the user provides a value other than the ``fixed``
             value, it will raise an error. This is semantically equivalent to
@@ -169,7 +164,7 @@ class Property(object):
 
         if required and default:
             raise STIXError(
-                "Cant't use 'required' and 'default' together. 'required'"
+                "Can't use 'required' and 'default' together. 'required'"
                 "really means 'the user must provide this.'",
             )
 
@@ -240,7 +235,7 @@ class ListProperty(Property):
                 if isinstance(item, self.contained):
                     valid = item
 
-                elif isinstance(item, Mapping):
+                elif isinstance(item, collections.abc.Mapping):
                     # attempt a mapping-like usage...
                     valid = self.contained(**item)
 
@@ -273,7 +268,7 @@ class StringProperty(Property):
 
 class TypeProperty(Property):
 
-    def __init__(self, type, spec_version=DEFAULT_VERSION):
+    def __init__(self, type, spec_version=version.DEFAULT_VERSION):
         _validate_type(type, spec_version)
         self.spec_version = spec_version
         super(TypeProperty, self).__init__(fixed=type)
@@ -281,7 +276,7 @@ class TypeProperty(Property):
 
 class IDProperty(Property):
 
-    def __init__(self, type, spec_version=DEFAULT_VERSION):
+    def __init__(self, type, spec_version=version.DEFAULT_VERSION):
         self.required_prefix = type + "--"
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
@@ -380,7 +375,7 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version=DEFAULT_VERSION, **kwargs):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -469,7 +464,7 @@ class HexProperty(Property):
 
 class ReferenceProperty(Property):
 
-    def __init__(self, valid_types=None, invalid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, invalid_types=None, spec_version=version.DEFAULT_VERSION, **kwargs):
         """
         references sometimes must be to a specific object type
         """
@@ -534,10 +529,10 @@ def enumerate_types(types, spec_version):
 
     if "SDO" in types:
         return_types.remove("SDO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['objects'].keys()
+        return_types += registry.STIX2_OBJ_MAPS[spec_version]['objects'].keys()
     if "SCO" in types:
         return_types.remove("SCO")
-        return_types += STIX2_OBJ_MAPS[spec_version]['observables'].keys()
+        return_types += registry.STIX2_OBJ_MAPS[spec_version]['observables'].keys()
     if "SRO" in types:
         return_types.remove("SRO")
         return_types += ['relationship', 'sighting']
@@ -603,7 +598,7 @@ class ObservableProperty(Property):
     """Property for holding Cyber Observable Objects.
     """
 
-    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
@@ -620,7 +615,7 @@ class ObservableProperty(Property):
         if dictified == {}:
             raise ValueError("The observable property must contain a non-empty dictionary")
 
-        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
+        valid_refs = {k: v['type'] for (k, v) in dictified.items()}
 
         for key, obj in dictified.items():
             parsed_obj = parse_observable(
@@ -638,9 +633,8 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, enclosing_type=None, required=False):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, allow_custom=False, required=False):
         self.allow_custom = allow_custom
-        self.enclosing_type = enclosing_type
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
     def clean(self, value):
@@ -653,10 +647,10 @@ class ExtensionsProperty(DictionaryProperty):
         except ValueError:
             raise ValueError("The extensions property must contain a dictionary")
 
-        specific_type_map = STIX2_OBJ_MAPS[self.spec_version]['observable-extensions'].get(self.enclosing_type, {})
+        extension_type_map = registry.STIX2_OBJ_MAPS[self.spec_version].get('extensions', {})
         for key, subvalue in dictified.items():
-            if key in specific_type_map:
-                cls = specific_type_map[key]
+            if key in extension_type_map:
+                cls = extension_type_map[key]
                 if type(subvalue) is dict:
                     if self.allow_custom:
                         subvalue['allow_custom'] = True
@@ -671,6 +665,9 @@ class ExtensionsProperty(DictionaryProperty):
             else:
                 if self.allow_custom:
                     dictified[key] = subvalue
+                elif key.startswith('extension-definition--'):
+                    _validate_id(key, '2.1', 'extension-definition')
+                    dictified[key] = subvalue
                 else:
                     raise CustomContentError("Can't parse unknown extension type: {}".format(key))
         return dictified
@@ -678,7 +675,7 @@ class ExtensionsProperty(DictionaryProperty):
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version=DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
+    def __init__(self, spec_version=version.DEFAULT_VERSION, allow_custom=False, *args, **kwargs):
         self.allow_custom = allow_custom
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
@@ -686,8 +683,9 @@ class STIXObjectProperty(Property):
     def clean(self, value):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
+        stix2_classes = {'_DomainObject', '_RelationshipObject', 'MarkingDefinition'}
         if any(
-            x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
+            x in stix2_classes
             for x in get_class_hierarchy_names(value)
         ):
             # A simple "is this a spec version 2.1+ object" test.  For now,

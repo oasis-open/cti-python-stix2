@@ -244,7 +244,7 @@ def test_embedded_property():
 
 
 def test_extension_property_valid():
-    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version='2.1')
     assert ext_prop({
         'windows-pebinary-ext': {
             'pe_type': 'exe',
@@ -253,13 +253,13 @@ def test_extension_property_valid():
 
 
 def test_extension_property_invalid1():
-    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version='2.1')
     with pytest.raises(ValueError):
         ext_prop.clean(1)
 
 
 def test_extension_property_invalid2():
-    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='file')
+    ext_prop = ExtensionsProperty(spec_version='2.1')
     with pytest.raises(CustomContentError):
         ext_prop.clean(
             {
@@ -268,19 +268,6 @@ def test_extension_property_invalid2():
                 },
             },
         )
-
-
-def test_extension_property_invalid_type():
-    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='indicator')
-    with pytest.raises(CustomContentError) as excinfo:
-        ext_prop.clean(
-            {
-                'windows-pebinary-ext': {
-                    'pe_type': 'exe',
-                },
-            },
-        )
-    assert "Can't parse unknown extension" in str(excinfo.value)
 
 
 def test_extension_at_least_one_property_constraint():

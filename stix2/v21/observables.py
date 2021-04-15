@@ -22,7 +22,7 @@ from .common import GranularMarking
 
 class Artifact(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_rqwyxo6gp7cv>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_4jegwl6ojbes>`__.
     """
 
     _type = 'artifact'
@@ -39,7 +39,7 @@ class Artifact(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["hashes", "payload_bin"]
 
@@ -51,7 +51,7 @@ class Artifact(_Observable):
 
 class AutonomousSystem(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_bxebwa6l91fb>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_27gux0aol9e3>`__.
     """
 
     _type = 'autonomous-system'
@@ -65,14 +65,14 @@ class AutonomousSystem(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["number"]
 
 
 class Directory(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_vhpkn06q7fvl>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_lyvpga5hlw52>`__.
     """
 
     _type = 'directory'
@@ -90,14 +90,14 @@ class Directory(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["path"]
 
 
 class DomainName(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_i2zf5h7vnrd9>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_prhhksbxbg87>`__.
     """
 
     _type = 'domain-name'
@@ -110,14 +110,14 @@ class DomainName(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
 
 class EmailAddress(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_am7srelb9c14>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_wmenahkvqmgj>`__.
     """
 
     _type = 'email-addr'
@@ -131,19 +131,19 @@ class EmailAddress(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
 
 class EmailMIMEComponent(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_kzv52qqc0xw1>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_qpo5x7d8mefq>`__.
     """
 
     _properties = OrderedDict([
         ('body', StringProperty()),
-        ('body_raw_ref', ReferenceProperty(valid_types=['artifact', 'file'], spec_version="2.1")),
+        ('body_raw_ref', ReferenceProperty(valid_types=['artifact', 'file'], spec_version='2.1')),
         ('content_type', StringProperty()),
         ('content_disposition', StringProperty()),
     ])
@@ -155,7 +155,7 @@ class EmailMIMEComponent(_STIXBase21):
 
 class EmailMessage(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_loz634bn09om>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_grboc7sq5514>`__.
     """
 
     _type = 'email-message'
@@ -181,7 +181,7 @@ class EmailMessage(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["from_ref", "subject", "body"]
 
@@ -195,19 +195,19 @@ class EmailMessage(_Observable):
 
 class ArchiveExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_mm25z9wuw4tr>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_xi3g7dwaigs6>`__.
     """
 
     _type = 'archive-ext'
     _properties = OrderedDict([
-        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version="2.1"), required=True)),
+        ('contains_refs', ListProperty(ReferenceProperty(valid_types=['file', 'directory'], spec_version='2.1'), required=True)),
         ('comment', StringProperty()),
     ])
 
 
 class AlternateDataStream(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_nbqgazg6fsma>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_8i2ts0xicqea>`__.
     """
 
     _properties = OrderedDict([
@@ -219,7 +219,7 @@ class AlternateDataStream(_STIXBase21):
 
 class NTFSExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_tb77nk1g3y6f>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_o6cweepfrsci>`__.
     """
 
     _type = 'ntfs-ext'
@@ -231,7 +231,7 @@ class NTFSExt(_Extension):
 
 class PDFExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_30hzxqrmkg8w>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_8xmpb2ghp9km>`__.
     """
 
     _type = 'pdf-ext'
@@ -246,7 +246,7 @@ class PDFExt(_Extension):
 
 class RasterImageExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_20mnz0u5ppxr>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_u5z7i2ox8w4x>`__.
     """
 
     _type = 'raster-image-ext'
@@ -260,7 +260,7 @@ class RasterImageExt(_Extension):
 
 class WindowsPEOptionalHeaderType(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_wyp5qdc2wugy>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_29l09w731pzc>`__.
     """
 
     _properties = OrderedDict([
@@ -304,7 +304,7 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
 
 class WindowsPESection(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_wiqw87xsov3t>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_ioapwyd8oimw>`__.
     """
 
     _properties = OrderedDict([
@@ -317,7 +317,7 @@ class WindowsPESection(_STIXBase21):
 
 class WindowsPEBinaryExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_5f9bgdmj91h5>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_gg5zibddf9bs>`__.
     """
 
     _type = 'windows-pebinary-ext'
@@ -339,7 +339,7 @@ class WindowsPEBinaryExt(_Extension):
 
 class File(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_vq03pryd7u32>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_99bl2dibcztv>`__.
     """
 
     _type = 'file'
@@ -362,7 +362,7 @@ class File(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["hashes", "name", "parent_directory_ref", "extensions"]
 
@@ -373,7 +373,7 @@ class File(_Observable):
 
 class IPv4Address(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ta83c412bfsc>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_ki1ufj1ku8s0>`__.
     """
 
     _type = 'ipv4-addr'
@@ -387,14 +387,14 @@ class IPv4Address(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
 
 class IPv6Address(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_f76hsv2pvwwq>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_oeggeryskriq>`__.
     """
 
     _type = 'ipv6-addr'
@@ -408,14 +408,14 @@ class IPv6Address(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
 
 class MACAddress(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_6lhrrdef8852>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_f92nr9plf58y>`__.
     """
 
     _type = 'mac-addr'
@@ -427,14 +427,14 @@ class MACAddress(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
 
 class Mutex(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_u65ia5eoc7cv>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_84hwlkdmev1w>`__.
     """
 
     _type = 'mutex'
@@ -446,14 +446,14 @@ class Mutex(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["name"]
 
 
 class HTTPRequestExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_60k6dn28qicj>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_b0e376hgtml8>`__.
     """
 
     _type = 'http-request-ext'
@@ -463,14 +463,13 @@ class HTTPRequestExt(_Extension):
         ('request_version', StringProperty()),
         ('request_header', DictionaryProperty(spec_version='2.1')),
         ('message_body_length', IntegerProperty()),
-        ('message_body_data_ref', ReferenceProperty(valid_types='artifact', spec_version="2.1")),
+        ('message_body_data_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
     ])
 
 
 class ICMPExt(_Extension):
-    # TODO: Add link
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_3g6wds21zwzl>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_ozypx0lmkebv>`__.
     """
 
     _type = 'icmp-ext'
@@ -482,7 +481,7 @@ class ICMPExt(_Extension):
 
 class SocketExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_f54f1hripxsg>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_8jamupj9ubdv>`__.
     """
 
     _type = 'socket-ext'
@@ -535,7 +534,7 @@ class SocketExt(_Extension):
 
 class TCPExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_2z78x4m8ewcw>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_k2njqio7f142>`__.
     """
 
     _type = 'tcp-ext'
@@ -547,7 +546,7 @@ class TCPExt(_Extension):
 
 class NetworkTraffic(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_e5nyr5squmsd>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_rgnc3w40xy>`__.
     """
 
     _type = 'network-traffic'
@@ -575,7 +574,7 @@ class NetworkTraffic(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["start", "src_ref", "dst_ref", "src_port", "dst_port", "protocols"]
 
@@ -602,7 +601,7 @@ class NetworkTraffic(_Observable):
 
 class WindowsProcessExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_4wfs4ve800kf>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_oyegq07gjf5t>`__.
     """
 
     _type = 'windows-process-ext'
@@ -628,7 +627,7 @@ class WindowsProcessExt(_Extension):
 
 class WindowsServiceExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_s2rmoe7djlt>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_lbcvc2ahx1s0>`__.
     """
 
     _type = 'windows-service-ext'
@@ -648,7 +647,7 @@ class WindowsServiceExt(_Extension):
                 ],
             ),
         ),
-        ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version="2.1"))),
+        ('service_dll_refs', ListProperty(ReferenceProperty(valid_types='file', spec_version='2.1'))),
         (
             'service_type', EnumProperty(
                 allowed=[
@@ -677,7 +676,7 @@ class WindowsServiceExt(_Extension):
 
 class Process(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ur7snm473t1d>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_hpppnm86a1jm>`__.
     """
 
     _type = 'process'
@@ -700,7 +699,7 @@ class Process(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = []
 
@@ -721,7 +720,7 @@ class Process(_Observable):
 
 class Software(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_jru33yeokrmh>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_7rkyhtkdthok>`__.
     """
 
     _type = 'software'
@@ -738,14 +737,14 @@ class Software(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["name", "cpe", "swid", "vendor", "version"]
 
 
 class URL(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_6bsklda6vc0c>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_ah3hict2dez0>`__.
     """
 
     _type = 'url'
@@ -757,14 +756,14 @@ class URL(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["value"]
 
 
 class UNIXAccountExt(_Extension):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_z25gmwyz67kl>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_hodiamlggpw5>`__.
     """
 
     _type = 'unix-account-ext'
@@ -778,7 +777,7 @@ class UNIXAccountExt(_Extension):
 
 class UserAccount(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_hah33g4ntxnx>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_azo70vgj1vm2>`__.
     """
 
     _type = 'user-account'
@@ -803,14 +802,14 @@ class UserAccount(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["account_type", "user_id", "account_login"]
 
 
 class WindowsRegistryValueType(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_6jiqabgqp2hp>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_u7n4ndghs3qq>`__.
     """
 
     _type = 'windows-registry-value-type'
@@ -841,7 +840,7 @@ class WindowsRegistryValueType(_STIXBase21):
 
 class WindowsRegistryKey(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_bdim4of4dl37>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_luvw8wjlfo3y>`__.
     """
 
     _type = 'windows-registry-key'
@@ -858,14 +857,14 @@ class WindowsRegistryKey(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["key", "values"]
 
 
 class X509V3ExtensionsType(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_c1kt4dheb6vz>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_oudvonxzdlku>`__.
     """
 
     _type = 'x509-v3-extensions-type'
@@ -891,7 +890,7 @@ class X509V3ExtensionsType(_STIXBase21):
 
 class X509Certificate(_Observable):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_g3kniyun8ykv>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_8abcy1o5x9w1>`__.
     """
 
     _type = 'x509-certificate'
@@ -915,7 +914,7 @@ class X509Certificate(_Observable):
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
         ('defanged', BooleanProperty(default=lambda: False)),
-        ('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
     _id_contributing_properties = ["hashes", "serial_number"]
 
@@ -932,7 +931,7 @@ class X509Certificate(_Observable):
         self._check_at_least_one_property(att_list)
 
 
-def CustomObservable(type='x-custom-observable', properties=None, id_contrib_props=None):
+def CustomObservable(type='x-custom-observable', properties=None, id_contrib_props=None, extension_name=None):
     """Custom STIX Cyber Observable Object type decorator.
 
     Example:
@@ -956,16 +955,25 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
                 [('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1')))],
                 [('granular_markings', ListProperty(GranularMarking))],
                 [('defanged', BooleanProperty(default=lambda: False))],
-                [('extensions', ExtensionsProperty(spec_version='2.1', enclosing_type=type))],
+                [('extensions', ExtensionsProperty(spec_version='2.1'))],
             ]),
         )
+        if extension_name:
+            @CustomExtension(type=extension_name, properties=properties)
+            class NameExtension:
+                extension_type = 'new-sco'
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
+            cls.with_extension = extension_name
         return _custom_observable_builder(cls, type, _properties, '2.1', _Observable, id_contrib_props)
     return wrapper
 
 
-def CustomExtension(observable=None, type='x-custom-observable-ext', properties=None):
-    """Decorator for custom extensions to STIX Cyber Observables.
+def CustomExtension(type='x-custom-observable-ext', properties=None):
+    """Custom STIX Object Extension decorator.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.1', _Extension)
+        return _custom_extension_builder(cls, type, properties, '2.1', _Extension)
     return wrapper

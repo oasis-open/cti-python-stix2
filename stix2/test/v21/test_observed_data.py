@@ -155,7 +155,7 @@ def test_observed_data_example_with_object_refs():
         ],
     )
 
-    assert str(observed_data) == EXPECTED_OBJECT_REFS
+    assert observed_data.serialize(pretty=True) == EXPECTED_OBJECT_REFS
 
 
 def test_observed_data_object_constraint():

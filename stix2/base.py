@@ -1,5 +1,6 @@
 """Base classes for type definitions in the STIX2 library."""
 
+import collections.abc
 import copy
 import re
 import uuid
@@ -16,22 +17,10 @@ from .exceptions import (
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
-from .serialization import (
-    STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, fp_serialize,
-    serialize,
-)
+from .serialization import STIXJSONEncoder, fp_serialize, serialize
 from .utils import NOW, PREFIX_21_REGEX, get_timestamp
 from .versioning import new_version as _new_version
 from .versioning import revoke as _revoke
-
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
-# TODO: Remove STIXJSONEncoder, STIXJSONIncludeOptionalDefaultsEncoder, serialize from __all__ on next major release.
-# Kept for backwards compatibility.
-__all__ = ['STIXJSONEncoder', 'STIXJSONIncludeOptionalDefaultsEncoder', '_STIXBase', 'serialize']
 
 DEFAULT_ERROR = "{type} must have {property}='{expected}'."
 SCO_DET_ID_NAMESPACE = uuid.UUID("00abedb4-aa42-466c-9c01-fed23315a9b7")
@@ -41,7 +30,7 @@ def get_required_properties(properties):
     return (k for k, v in properties.items() if v.required)
 
 
-class _STIXBase(Mapping):
+class _STIXBase(collections.abc.Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):
@@ -74,7 +63,7 @@ class _STIXBase(Mapping):
                     self.__class__, prop_name, reason=str(exc),
                 ) from exc
 
-    # interproperty constraint methods
+    # inter-property constraint methods
 
     def _check_mutually_exclusive_properties(self, list_of_properties, at_least_one=True):
         current_properties = self.properties_populated()
@@ -85,17 +74,17 @@ class _STIXBase(Mapping):
 
     def _check_at_least_one_property(self, list_of_properties=None):
         if not list_of_properties:
-            list_of_properties = sorted(list(self.__class__._properties.keys()))
+            list_of_properties = sorted(self.__class__._properties.keys())
             if isinstance(self, _Observable):
-                props_to_remove = ["type", "id", "defanged", "spec_version"]
+                props_to_remove = {"type", "id", "defanged", "spec_version"}
             else:
-                props_to_remove = ["type"]
+                props_to_remove = {"type"}
 
             list_of_properties = [prop for prop in list_of_properties if prop not in props_to_remove]
         current_properties = self.properties_populated()
         list_of_properties_populated = set(list_of_properties).intersection(current_properties)
 
-        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == set(['extensions'])):
+        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == {'extensions'}):
             raise AtLeastOnePropertyError(self.__class__, list_of_properties)
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties):
@@ -124,10 +113,25 @@ class _STIXBase(Mapping):
             raise ValueError("'custom_properties' must be a dictionary")
 
         extra_kwargs = list(set(kwargs) - set(self._properties))
-        if extra_kwargs and not self._allow_custom:
-            raise ExtraPropertiesError(cls, extra_kwargs)
+        if extra_kwargs and issubclass(cls, stix2.v21._Extension):
+            props_to_remove = ['extension_type']
+            extra_kwargs = [prop for prop in extra_kwargs if prop not in props_to_remove]
 
-        # because allow_custom is true, any extra kwargs are custom
+        if extra_kwargs and not self._allow_custom:
+            ext_found = False
+            # This section performs a check on top-level objects that support extensions.
+            # If extra_kwargs is not empty, allow_custom False, and the extension_type is not
+            # toplevel then we raise the ExtraPropertiesError regardless.
+            for key_id, ext_def in kwargs.get('extensions', {}).items():
+                if (
+                    key_id.startswith('extension-definition--') and
+                    ext_def.get('extension_type', '') == 'toplevel-property-extension'
+                ):
+                    ext_found = True
+                    break
+            if ext_found is False:
+                raise ExtraPropertiesError(cls, extra_kwargs)
+
         if custom_props or extra_kwargs:
             self._allow_custom = True
             if isinstance(self, stix2.v21._STIXBase21):
@@ -152,7 +156,16 @@ class _STIXBase(Mapping):
         required_properties = set(get_required_properties(self._properties))
         missing_kwargs = required_properties - set(setting_kwargs)
         if missing_kwargs:
-            raise MissingPropertiesError(cls, missing_kwargs)
+            # In this scenario, we are inside within the scope of the extension.
+            # It is possible to check if this is a new Extension Class by
+            # querying "extension_type". Note: There is an API limitation currently
+            # because a toplevel-property-extension cannot validate its parent properties
+            new_ext_check = (
+                bool(getattr(self, "extension_type", None))
+                and issubclass(cls, stix2.v21._Extension)
+            )
+            if new_ext_check is False:
+                raise MissingPropertiesError(cls, missing_kwargs)
 
         for prop_name, prop_metadata in self._properties.items():
             self._check_property(prop_name, prop_metadata, setting_kwargs)
@@ -204,14 +217,12 @@ class _STIXBase(Mapping):
         super(_STIXBase, self).__setattr__(name, value)
 
     def __str__(self):
-        return self.serialize(pretty=True)
+        # Note: use .serialize() or fp_serialize() directly if specific formatting options are needed.
+        return self.serialize()
 
     def __repr__(self):
-        props = [(k, self[k]) for k in self.object_properties() if self.get(k)]
-        return '{0}({1})'.format(
-            self.__class__.__name__,
-            ', '.join(['{0!s}={1!r}'.format(k, v) for k, v in props]),
-        )
+        props = ', '.join([f"{k}={self[k]!r}" for k in self.object_properties() if self.get(k)])
+        return f'{self.__class__.__name__}({props})'
 
     def __deepcopy__(self, memo):
         # Assume: we can ignore the memo argument, because no object will ever contain the same sub-object multiple times.
@@ -304,20 +315,7 @@ class _Observable(_STIXBase):
     def __init__(self, **kwargs):
         # the constructor might be called independently of an observed data object
         self._STIXBase__valid_refs = kwargs.pop('_valid_refs', [])
-        self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
         super(_Observable, self).__init__(**kwargs)
-
-        if 'id' not in kwargs and not isinstance(self, stix2.v20._Observable):
-            # Specific to 2.1+ observables: generate a deterministic ID
-            id_ = self._generate_id()
-
-            # Spec says fall back to UUIDv4 if no contributing properties were
-            # given.  That's what already happened (the following is actually
-            # overwriting the default uuidv4), so nothing to do here.
-            if id_ is not None:
-                # Can't assign to self (we're immutable), so slip the ID in
-                # more sneakily.
-                self._inner["id"] = id_
 
     def _check_ref(self, ref, prop, prop_name):
         """
@@ -450,7 +448,7 @@ def _make_json_serializable(value):
 
     json_value = value  # default assumption
 
-    if isinstance(value, Mapping):
+    if isinstance(value, collections.abc.Mapping):
         json_value = {
             k: _make_json_serializable(v)
             for k, v in value.items()

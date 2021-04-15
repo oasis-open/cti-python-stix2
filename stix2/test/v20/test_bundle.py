@@ -120,7 +120,6 @@ def test_create_bundle_fp_serialize_pretty(indicator, malware, relationship):
 
     bundle.fp_serialize(buffer, pretty=True)
 
-    assert str(bundle) == EXPECTED_BUNDLE
     assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
     assert buffer.getvalue() == EXPECTED_BUNDLE
 
@@ -138,7 +137,7 @@ def test_create_bundle_fp_serialize_nonpretty(indicator, malware, relationship):
 def test_create_bundle1(indicator, malware, relationship):
     bundle = stix2.v20.Bundle(objects=[indicator, malware, relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
     assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
@@ -151,31 +150,31 @@ def test_create_bundle2(indicator, malware, relationship):
 def test_create_bundle_with_positional_args(indicator, malware, relationship):
     bundle = stix2.v20.Bundle(indicator, malware, relationship)
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_positional_listarg(indicator, malware, relationship):
     bundle = stix2.v20.Bundle([indicator, malware, relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_listarg_and_positional_arg(indicator, malware, relationship):
     bundle = stix2.v20.Bundle([indicator, malware], relationship)
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_listarg_and_kwarg(indicator, malware, relationship):
     bundle = stix2.v20.Bundle([indicator, malware], objects=[relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_arg_listarg_and_kwarg(indicator, malware, relationship):
     bundle = stix2.v20.Bundle([indicator], malware, objects=[relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_invalid(indicator, malware, relationship):

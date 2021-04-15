@@ -24,7 +24,7 @@ To accomplish these goals, and to incorporate lessons learned while developing
    where users would create an object and then assign attributes to it, in
    ``stix2`` all properties must be provided when creating the object.
 2. Where necessary, library objects should act like ``dict``'s. When treated as
-   a ``str``, the JSON reprentation of the object should be used.
+   a ``str``, the JSON representation of the object should be used.
 3. Core Python data types (including numeric types, ``datetime``) should be used
    when appropriate, and serialized to the correct format in JSON as specified
    in the STIX 2 spec.

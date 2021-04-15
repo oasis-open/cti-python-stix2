@@ -34,7 +34,7 @@ def test_threat_actor_example():
         threat_actor_types=["crime-syndicate"],
     )
 
-    assert str(threat_actor) == EXPECTED
+    assert threat_actor.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(

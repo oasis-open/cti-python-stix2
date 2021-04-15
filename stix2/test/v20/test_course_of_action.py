@@ -28,7 +28,7 @@ def test_course_of_action_example():
         description="This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
     )
 
-    assert str(coa) == EXPECTED
+    assert coa.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(

@@ -3,13 +3,14 @@
 from collections import OrderedDict
 
 from ..custom import _custom_marking_builder
-from ..exceptions import InvalidValueError
+from ..exceptions import InvalidValueError, PropertyPresenceError
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
 from ..properties import (
-    BooleanProperty, DictionaryProperty, HashesProperty, IDProperty,
-    IntegerProperty, ListProperty, Property, ReferenceProperty,
-    SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, DictionaryProperty, EnumProperty, ExtensionsProperty,
+    HashesProperty, IDProperty, IntegerProperty, ListProperty, Property,
+    ReferenceProperty, SelectorProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase21
@@ -17,7 +18,7 @@ from .base import _STIXBase21
 
 class ExternalReference(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_bajcvqteiard>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_72bcfr3t79jx>`__.
     """
 
     _properties = OrderedDict([
@@ -51,7 +52,7 @@ class ExternalReference(_STIXBase21):
 
 class KillChainPhase(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_i4tjv75ce50h>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_i4tjv75ce50h>`__.
     """
 
     _properties = OrderedDict([
@@ -62,7 +63,7 @@ class KillChainPhase(_STIXBase21):
 
 class GranularMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_robezi5egfdr>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_robezi5egfdr>`__.
     """
 
     _properties = OrderedDict([
@@ -78,7 +79,7 @@ class GranularMarking(_STIXBase21):
 
 class LanguageContent(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_nfwr8z9ax2bi>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_z9r1cwtu8jja>`__.
     """
 
     _type = 'language-content'
@@ -90,13 +91,53 @@ class LanguageContent(_STIXBase21):
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('object_ref', ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1', required=True)),
-        # TODO: 'object_modified' it MUST be an exact match for the modified time of the STIX Object (SRO or SDO) being referenced.
+        # TODO: 'object_modified' MUST be an exact match for the modified time of the STIX Object being referenced
         ('object_modified', TimestampProperty(precision='millisecond')),
-        # TODO: 'contents' https://docs.google.com/document/d/1ShNq4c3e1CkfANmD9O--mdZ5H0O_GLnjN28a_yrEaco/edit#heading=h.cfz5hcantmvx
+        # TODO: Implement 'contents' property requirements as defined in STIX 2.1 CS02
         ('contents', DictionaryProperty(spec_version='2.1', required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
+    ])
+
+
+class ExtensionDefinition(_STIXBase21):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_32j232tfvtly>`__.
+    """
+
+    _type = 'extension-definition'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type, spec_version='2.1')),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1', required=True)),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('schema', StringProperty(required=True)),
+        ('version', StringProperty(required=True)),
+        (
+            'extension_types', ListProperty(
+                EnumProperty(
+                    allowed=[
+                            'new-sdo',
+                            'new-sco',
+                            'new-sro',
+                            'property-extension',
+                            'toplevel-property-extension',
+                    ],
+                ), required=True,
+            ),
+        ),
+        ('extension_properties', ListProperty(StringProperty)),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -105,7 +146,7 @@ class LanguageContent(_STIXBase21):
 
 class TLPMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_yd3ar14ekwrs>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_yd3ar14ekwrs>`__.
     """
 
     _type = 'tlp'
@@ -116,7 +157,7 @@ class TLPMarking(_STIXBase21):
 
 class StatementMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_3ru8r05saera>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_3ru8r05saera>`__.
     """
 
     _type = 'statement'
@@ -146,26 +187,27 @@ class MarkingProperty(Property):
 
 class MarkingDefinition(_STIXBase21, _MarkingsMixin):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_hr5vgqxjk7ns>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_k5fndj2c7c1k>`__.
     """
 
     _type = 'marking-definition'
     _properties = OrderedDict([
         ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
-        ('id', IDProperty(_type)),
+        ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
         ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-        ('definition_type', StringProperty(required=True)),
+        ('definition_type', StringProperty()),
         ('name', StringProperty()),
-        ('definition', MarkingProperty(required=True)),
+        ('definition', MarkingProperty()),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, **kwargs):
-        if set(('definition_type', 'definition')).issubset(kwargs.keys()):
+        if {'definition_type', 'definition'}.issubset(kwargs.keys()):
             # Create correct marking type object
             try:
                 marking_type = OBJ_MAP_MARKING[kwargs['definition_type']]
@@ -180,6 +222,18 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
 
     def _check_object_constraints(self):
         super(MarkingDefinition, self)._check_object_constraints()
+
+        definition = self.get("definition")
+        definition_type = self.get("definition_type")
+        extensions = self.get("extensions")
+
+        if not (definition_type and definition) and not extensions:
+            raise PropertyPresenceError(
+                "MarkingDefinition objects must have the properties "
+                "'definition_type' and 'definition' if 'extensions' is not present",
+                MarkingDefinition,
+            )
+
         check_tlp_marking(self, '2.1')
 
     def serialize(self, pretty=False, include_optional_defaults=False, **kwargs):
@@ -193,7 +247,7 @@ OBJ_MAP_MARKING = {
 }
 
 
-def CustomMarking(type='x-custom-marking', properties=None):
+def CustomMarking(type='x-custom-marking', properties=None, extension_name=None):
     """Custom STIX Marking decorator.
 
     Example:
@@ -208,6 +262,18 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
     """
     def wrapper(cls):
+        if extension_name:
+            from . import observables
+
+            @observables.CustomExtension(type=extension_name, properties=properties)
+            class NameExtension:
+                extension_type = 'property-extension'
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
+            cls.with_extension = extension_name
+            return _custom_marking_builder(cls, type, MarkingDefinition._properties, '2.1', _STIXBase21)
         return _custom_marking_builder(cls, type, properties, '2.1', _STIXBase21)
     return wrapper
 

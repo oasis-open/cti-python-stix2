@@ -56,7 +56,7 @@ def test_opinion_with_required_properties():
         explanation=EXPLANATION,
     )
 
-    assert str(opi) == EXPECTED_OPINION
+    assert opi.serialize(pretty=True) == EXPECTED_OPINION
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(opi))
     assert rep == EXPECTED_OPINION_REPR
 

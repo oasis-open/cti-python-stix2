@@ -895,7 +895,7 @@ def test_custom_observable_object_no_id_contrib_props():
 
 
 @stix2.v21.CustomExtension(
-    stix2.v21.DomainName, 'x-new-ext', [
+    'x-new-ext', [
         ('property1', stix2.properties.StringProperty(required=True)),
         ('property2', stix2.properties.IntegerProperty()),
     ],
@@ -957,64 +957,22 @@ def test_custom_extension_wrong_observable_type():
 )
 def test_custom_extension_with_list_and_dict_properties_observable_type(data):
     @stix2.v21.CustomExtension(
-        stix2.v21.UserAccount, 'x-some-extension-ext', [
-            ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
+        'x-some-extension-ext', [
+                ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
         ],
     )
     class SomeCustomExtension:
         pass
 
     example = SomeCustomExtension(keys=[{'test123': 123, 'test345': 'aaaa'}])
-    assert data == str(example)
-
-
-def test_custom_extension_invalid_observable():
-    # These extensions are being applied to improperly-created Observables.
-    # The Observable classes should have been created with the CustomObservable decorator.
-    class Foo(object):
-        pass
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(
-            Foo, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class FooExtension():
-            pass  # pragma: no cover
-    assert str(excinfo.value) == "'observable' must be a valid Observable class!"
-
-    class Bar(stix2.v21.observables._Observable):
-        pass
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(
-            Bar, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class BarExtension():
-            pass
-    assert "Unknown observable type" in str(excinfo.value)
-    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
-
-    class Baz(stix2.v21.observables._Observable):
-        _type = 'Baz'
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v21.CustomExtension(
-            Baz, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class BazExtension():
-            pass
-    assert "Unknown observable type" in str(excinfo.value)
-    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
+    assert data == example.serialize(pretty=True)
 
 
 def test_custom_extension_invalid_type_name():
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.File, 'x', {
-                'property1': stix2.properties.StringProperty(required=True),
+            'x', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class FooExtension():
@@ -1023,8 +981,8 @@ def test_custom_extension_invalid_type_name():
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.File, 'x_new_ext', {
-                'property1': stix2.properties.StringProperty(required=True),
+            'x_new_ext', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class BlaExtension():
@@ -1033,8 +991,8 @@ def test_custom_extension_invalid_type_name():
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.File, '7x-new-ext', {
-                'property1': stix2.properties.StringProperty(required=True),
+            '7x-new-ext', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class Bla2Extension():
@@ -1044,29 +1002,29 @@ def test_custom_extension_invalid_type_name():
 
 def test_custom_extension_no_properties():
     with pytest.raises(ValueError):
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', None)
+        @stix2.v21.CustomExtension('x-new2-ext', None)
         class BarExtension():
             pass
 
 
 def test_custom_extension_empty_properties():
     with pytest.raises(ValueError):
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', [])
+        @stix2.v21.CustomExtension('x-new2-ext', [])
         class BarExtension():
             pass
 
 
 def test_custom_extension_dict_properties():
     with pytest.raises(ValueError):
-        @stix2.v21.CustomExtension(stix2.v21.DomainName, 'x-new2-ext', {})
+        @stix2.v21.CustomExtension('x-new2-ext', {})
         class BarExtension():
             pass
 
 
 def test_custom_extension_no_init_1():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new-extension-ext', [
-            ('property1', stix2.properties.StringProperty(required=True)),
+        'x-new-extension-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
     class NewExt():
@@ -1078,8 +1036,8 @@ def test_custom_extension_no_init_1():
 
 def test_custom_extension_no_init_2():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new2-ext', [
-            ('property1', stix2.properties.StringProperty(required=True)),
+        'x-new2-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
     class NewExt2(object):
@@ -1092,8 +1050,8 @@ def test_custom_extension_no_init_2():
 def test_invalid_custom_property_in_extension():
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.DomainName, 'x-new3-ext', [
-                ('6property1', stix2.properties.StringProperty(required=True)),
+            'x-new3-ext', [
+                    ('6property1', stix2.properties.StringProperty(required=True)),
             ],
         )
         class NewExt():
@@ -1207,7 +1165,7 @@ def test_register_custom_object():
 
 def test_extension_property_location():
     assert 'extensions' in stix2.v21.OBJ_MAP_OBSERVABLE['x-new-observable']._properties
-    assert 'extensions' not in stix2.v21.EXT_MAP['domain-name']['x-new-ext']._properties
+    assert 'extensions' not in stix2.v21.EXT_MAP['x-new-ext']._properties
 
 
 @pytest.mark.parametrize(
@@ -1244,7 +1202,7 @@ def test_custom_object_nested_dictionary(data):
         dictionary={'key': {'key_b': 'value', 'key_a': 'value'}},
     )
 
-    assert data == str(example)
+    assert data == example.serialize(pretty=True)
 
 
 @stix2.v21.CustomObject(
@@ -1312,9 +1270,9 @@ def test_register_duplicate_observable():
 
 def test_register_observable_custom_extension():
     @stix2.v21.CustomExtension(
-        stix2.v21.DomainName, 'x-new-2-ext', [
-            ('property1', stix2.properties.StringProperty(required=True)),
-            ('property2', stix2.properties.IntegerProperty()),
+        'x-new-2-ext', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+                ('property2', stix2.properties.IntegerProperty()),
         ],
     )
     class NewExtension2():
@@ -1323,17 +1281,285 @@ def test_register_observable_custom_extension():
     example = NewExtension2(property1="Hi there")
 
     assert 'domain-name' in stix2.registry.STIX2_OBJ_MAPS['2.1']['observables']
-    assert example._type in stix2.registry.STIX2_OBJ_MAPS['2.1']['observable-extensions']['domain-name']
+    assert example._type in stix2.registry.STIX2_OBJ_MAPS['2.1']['extensions']
 
 
 def test_register_duplicate_observable_extension():
     with pytest.raises(DuplicateRegistrationError) as excinfo:
         @stix2.v21.CustomExtension(
-            stix2.v21.DomainName, 'x-new-2-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-                ('property2', stix2.properties.IntegerProperty()),
+            'x-new-2-ext', [
+                    ('property1', stix2.properties.StringProperty(required=True)),
+                    ('property2', stix2.properties.IntegerProperty()),
             ],
         )
         class NewExtension2():
             pass
     assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_unregistered_top_level_extension_passes_with_allow_custom_false():
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        rank=5,
+        toxicity=8,
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e': {
+                'extension_type': 'toplevel-property-extension',
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.rank == 5
+    assert indicator.toxicity == 8
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['extension_type'] == 'toplevel-property-extension'
+    assert isinstance(indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e'], dict)
+
+
+def test_unregistered_embedded_extension_passes_with_allow_custom_false():
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e': {
+                'extension_type': 'property-extension',
+                'rank': 5,
+                'toxicity': 8,
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['rank'] == 5
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['toxicity'] == 8
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['extension_type'] == 'property-extension'
+    assert isinstance(indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e'], dict)
+
+
+def test_registered_top_level_extension_passes_with_allow_custom_false():
+    @stix2.v21.CustomExtension(
+        'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e', [
+            ('rank', stix2.properties.IntegerProperty(required=True)),
+            ('toxicity', stix2.properties.IntegerProperty(required=True)),
+        ],
+    )
+    class ExtensionFoo1:
+        extension_type = 'toplevel-property-extension'
+
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        rank=5,
+        toxicity=8,
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e': {
+                'extension_type': 'toplevel-property-extension',
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.rank == 5
+    assert indicator.toxicity == 8
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e']['extension_type'] == 'toplevel-property-extension'
+    assert isinstance(indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e98c6e'], ExtensionFoo1)
+
+
+def test_registered_embedded_extension_passes_with_allow_custom_false():
+    @stix2.v21.CustomExtension(
+        'extension-definition--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e', [
+            ('rank', stix2.properties.IntegerProperty(required=True)),
+            ('toxicity', stix2.properties.IntegerProperty(required=True)),
+        ],
+    )
+    class ExtensionFoo1:
+        pass
+
+    indicator = stix2.v21.Indicator(
+        id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',
+        created='2014-02-20T09:16:08.989000Z',
+        modified='2014-02-20T09:16:08.989000Z',
+        name='File hash for Poison Ivy variant',
+        description='This file hash indicates that a sample of Poison Ivy is present.',
+        labels=[
+            'malicious-activity',
+        ],
+        pattern='[file:hashes.\'SHA-256\' = \'ef537f25c895bfa782526529a9b63d97aa631564d5d789c2b765448c8635fb6c\']',
+        pattern_type='stix',
+        valid_from='2014-02-20T09:00:00.000000Z',
+        extensions={
+            'extension-definition--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e': {
+                'extension_type': 'property-extension',
+                'rank': 5,
+                'toxicity': 8,
+            },
+        },
+        allow_custom=False,
+    )
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e']['rank'] == 5
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e']['toxicity'] == 8
+    assert indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e']['extension_type'] == 'property-extension'
+    assert isinstance(indicator.extensions['extension-definition--d83fce45-ef58-4c6c-a3ff-1fbc32e98c6e'], ExtensionFoo1)
+
+
+def test_registered_new_extension_sdo_allow_custom_false():
+    @stix2.v21.CustomObject(
+        'my-favorite-sdo', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_property_name1', stix2.properties.StringProperty(required=True)),
+            ('some_property_name2', stix2.properties.StringProperty()),
+        ], 'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999',
+    )
+    class MyFavSDO:
+        pass
+
+    my_favorite_sdo = {
+        'type': 'my-favorite-sdo',
+        'spec_version': '2.1',
+        'id': 'my-favorite-sdo--c5ba9dba-5ad9-4bbe-9825-df4cb8675774',
+        'created': '2014-02-20T09:16:08.989000Z',
+        'modified': '2014-02-20T09:16:08.989000Z',
+        'name': 'This is the name of my favorite',
+        'some_property_name1': 'value1',
+        'some_property_name2': 'value2',
+        # 'extensions': {
+        #     'extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999': ExtensionDefinitiond83fce45ef584c6ca3f41fbc32e98c6e()
+        # }
+    }
+    sdo_object = stix2.parse(my_favorite_sdo)
+    assert isinstance(sdo_object, MyFavSDO)
+    assert isinstance(
+        sdo_object.extensions['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999'],
+        stix2.v21.EXT_MAP['extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999'],
+    )
+
+    sdo_serialized = sdo_object.serialize()
+    assert '"extensions": {"extension-definition--d83fce45-ef58-4c6c-a3f4-1fbc32e9999": {"extension_type": "new-sdo"}}' in sdo_serialized
+
+
+def test_registered_new_extension_sro_allow_custom_false():
+    @stix2.v21.CustomObject(
+        'my-favorite-sro', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_property_name1', stix2.properties.StringProperty(required=True)),
+            ('some_property_name2', stix2.properties.StringProperty()),
+        ], 'extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce', False,
+    )
+    class MyFavSRO:
+        pass
+
+    my_favorite_sro = {
+        'type': 'my-favorite-sro',
+        'spec_version': '2.1',
+        'id': 'my-favorite-sro--c5ba9dba-5ad9-4bbe-9825-df4cb8675774',
+        'created': '2014-02-20T09:16:08.989000Z',
+        'modified': '2014-02-20T09:16:08.989000Z',
+        'name': 'This is the name of my favorite',
+        'some_property_name1': 'value1',
+        'some_property_name2': 'value2',
+        # 'extensions': {
+        #     'extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce': ExtensionDefinitiond83fce45ef584c6ca3f41fbc32e98c6e()
+        # }
+    }
+    sro_object = stix2.parse(my_favorite_sro)
+    assert isinstance(sro_object, MyFavSRO)
+    assert isinstance(
+        sro_object.extensions['extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce'],
+        stix2.v21.EXT_MAP['extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce'],
+    )
+
+    sdo_serialized = sro_object.serialize()
+    assert '"extensions": {"extension-definition--e96690a5-dc13-4f27-99dd-0f2188ad74ce": {"extension_type": "new-sro"}}' in sdo_serialized
+
+
+def test_registered_new_extension_sco_allow_custom_false():
+    @stix2.v21.CustomObservable(
+        'my-favorite-sco', [
+            ('name', stix2.properties.StringProperty(required=True)),
+            ('some_network_protocol_field', stix2.properties.StringProperty(required=True)),
+        ], ['name', 'some_network_protocol_field'], 'extension-definition--a932fcc6-e032-177c-126f-cb970a5a1fff',
+    )
+    class MyFavSCO:
+        pass
+
+    my_favorite_sco = {
+        'type': 'my-favorite-sco',
+        'spec_version': '2.1',
+        'id': 'my-favorite-sco--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
+        'name': 'This is the name of my favorite SCO',
+        'some_network_protocol_field': 'value',
+        # 'extensions': {
+        #     'extension-definition--a932fcc6-e032-177c-126f-cb970a5a1fff': {
+        #         'is_extension_so': true
+        #     }
+        # }
+    }
+
+    sco_object = stix2.parse(my_favorite_sco)
+    assert isinstance(sco_object, MyFavSCO)
+    assert isinstance(
+        sco_object.extensions['extension-definition--a932fcc6-e032-177c-126f-cb970a5a1fff'],
+        stix2.v21.EXT_MAP['extension-definition--a932fcc6-e032-177c-126f-cb970a5a1fff'],
+    )
+
+    sco_serialized = sco_object.serialize()
+    assert '"extensions": {"extension-definition--a932fcc6-e032-177c-126f-cb970a5a1fff": {"extension_type": "new-sco"}}' in sco_serialized
+
+
+def test_registered_new_extension_marking_allow_custom_false():
+    @stix2.v21.CustomMarking(
+        'my-favorite-marking', [
+            ('some_marking_field', stix2.properties.StringProperty(required=True)),
+        ], 'extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff',
+    )
+    class MyFavMarking:
+        pass
+
+    my_favorite_marking = {
+        'type': 'marking-definition',
+        'spec_version': '2.1',
+        'id': 'marking-definition--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
+        'name': 'This is the name of my favorite Marking',
+        'extensions': {
+            'extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff': {
+                'extension_type': 'property-extension',
+                'some_marking_field': 'value',
+            },
+        },
+    }
+
+    marking_object = stix2.parse(my_favorite_marking)
+    assert isinstance(marking_object, stix2.v21.MarkingDefinition)
+    assert isinstance(
+        marking_object.extensions['extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff'],
+        stix2.v21.EXT_MAP['extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff'],
+    )
+
+    marking_serialized = marking_object.serialize(sort_keys=True)
+    assert '"extensions": {"extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff": ' \
+           '{"extension_type": "property-extension", "some_marking_field": "value"}}' in marking_serialized

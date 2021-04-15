@@ -39,7 +39,7 @@ be set automatically if not provided as keyword arguments.
                           pattern_type="stix",
                           pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']")
 
-To parse a STIX JSON string into a Python STIX object, use ``parse()``:
+To parse a STIX JSON string into a Python STIX object, use ``parse()``. To serialize a STIX object, use ``serialize()``:
 
 .. code-block:: python
 
@@ -61,15 +61,15 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
         "valid_from": "2017-09-26T23:33:39.829952Z"
     }""")
 
-    print(indicator)
+    print(indicator.serialize(pretty=True))
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
 STIX 2 Technical Specification Support
 --------------------------------------
 
-This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html>`__
-published on 20 March 2020 currently at the Committee Specification (CS) level.
+This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html>`__
+published on 25 January 2021 currently at the Committee Specification (CS) 02 level.
 
 The stix2 Python library supports multiple versions of the STIX 2 Technical
 Specification. The library will be updated to support new Committee

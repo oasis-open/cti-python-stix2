@@ -39,7 +39,7 @@ def test_intrusion_set_example():
         goals=["acquisition-theft", "harassment", "damage"],
     )
 
-    assert str(intrusion_set) == EXPECTED
+    assert intrusion_set.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(
