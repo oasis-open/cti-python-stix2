@@ -1,4 +1,4 @@
-from taxii2client import Collection
+from taxii2client.v21 import Collection
 
 import stix2
 
