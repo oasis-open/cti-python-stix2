@@ -223,6 +223,7 @@ def test_indicator_with_custom_embedded_objs():
         valid_from=epoch,
         indicator_types=['malicious-activity'],
         external_references=[ext_ref],
+        allow_custom=True,
     )
 
     assert ind.indicator_types == ['malicious-activity']

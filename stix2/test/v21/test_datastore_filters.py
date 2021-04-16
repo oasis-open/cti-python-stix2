@@ -24,7 +24,7 @@ stix_objs = [
         "created": "2014-05-08T09:00:00.000Z",
         "id": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
         "indicator_types": [
-            "file-hash-watchlist",
+            "compromised",
         ],
         "modified": "2014-05-08T09:00:00.000Z",
         "name": "File hash for Poison Ivy variant",

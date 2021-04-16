@@ -3,12 +3,15 @@ import datetime as dt
 import pytest
 import pytz
 
-import stix2
-from stix2.exceptions import ExtraPropertiesError, STIXError
+from stix2.base import _STIXBase
+from stix2.exceptions import (
+    CustomContentError, ExtraPropertiesError, STIXError,
+)
 from stix2.properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, HexProperty, IntegerProperty, ListProperty, Property,
-    StringProperty, TimestampProperty, TypeProperty,
+    FloatProperty, HashesProperty, HexProperty, IntegerProperty, ListProperty,
+    OpenVocabProperty, Property, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 
 
@@ -16,8 +19,8 @@ def test_property():
     p = Property()
 
     assert p.required is False
-    assert p.clean('foo') == 'foo'
-    assert p.clean(3) == 3
+    assert p.clean('foo') == ('foo', False)
+    assert p.clean(3) == (3, False)
 
 
 def test_basic_clean():
@@ -47,7 +50,7 @@ def test_property_default():
     assert p.default() == 77
 
 
-def test_property_fixed():
+def test_fixed_property():
     p = Property(fixed="2.0")
 
     assert p.clean("2.0")
@@ -65,16 +68,18 @@ def test_property_fixed_and_required():
         Property(default=lambda: 3, required=True)
 
 
-def test_list_property():
+def test_list_property_property_type():
     p = ListProperty(StringProperty)
 
-    assert p.clean(['abc', 'xyz'])
+    result = p.clean(['abc', 'xyz'], False)
+    assert result == (['abc', 'xyz'], False)
+
     with pytest.raises(ValueError):
-        p.clean([])
+        p.clean([], False)
 
 
 def test_list_property_property_type_custom():
-    class TestObj(stix2.base._STIXBase):
+    class TestObj(_STIXBase):
         _type = "test"
         _properties = {
             "foo": StringProperty(),
@@ -86,20 +91,26 @@ def test_list_property_property_type_custom():
         TestObj(foo="xyz"),
     ]
 
-    assert p.clean(objs_custom)
+    result = p.clean(objs_custom, True)
+    assert result == (objs_custom, True)
+
+    with pytest.raises(CustomContentError):
+        p.clean(objs_custom, False)
 
     dicts_custom = [
         {"foo": "abc", "bar": 123},
         {"foo": "xyz"},
     ]
 
-    # no opportunity to set allow_custom=True when using dicts
+    result = p.clean(dicts_custom, True)
+    assert result == (objs_custom, True)
+
     with pytest.raises(ExtraPropertiesError):
-        p.clean(dicts_custom)
+        p.clean(dicts_custom, False)
 
 
 def test_list_property_object_type():
-    class TestObj(stix2.base._STIXBase):
+    class TestObj(_STIXBase):
         _type = "test"
         _properties = {
             "foo": StringProperty(),
@@ -107,14 +118,16 @@ def test_list_property_object_type():
     p = ListProperty(TestObj)
 
     objs = [TestObj(foo="abc"), TestObj(foo="xyz")]
-    assert p.clean(objs)
+    result = p.clean(objs, False)
+    assert result == (objs, False)
 
     dicts = [{"foo": "abc"}, {"foo": "xyz"}]
-    assert p.clean(dicts)
+    result = p.clean(dicts, False)
+    assert result == (objs, False)
 
 
 def test_list_property_object_type_custom():
-    class TestObj(stix2.base._STIXBase):
+    class TestObj(_STIXBase):
         _type = "test"
         _properties = {
             "foo": StringProperty(),
@@ -126,16 +139,22 @@ def test_list_property_object_type_custom():
         TestObj(foo="xyz"),
     ]
 
-    assert p.clean(objs_custom)
+    result = p.clean(objs_custom, True)
+    assert result == (objs_custom, True)
+
+    with pytest.raises(CustomContentError):
+        p.clean(objs_custom, False)
 
     dicts_custom = [
         {"foo": "abc", "bar": 123},
         {"foo": "xyz"},
     ]
 
-    # no opportunity to set allow_custom=True when using dicts
+    result = p.clean(dicts_custom, True)
+    assert result == (objs_custom, True)
+
     with pytest.raises(ExtraPropertiesError):
-        p.clean(dicts_custom)
+        p.clean(dicts_custom, False)
 
 
 def test_list_property_bad_element_type():
@@ -144,7 +163,7 @@ def test_list_property_bad_element_type():
 
 
 def test_list_property_bad_value_type():
-    class TestObj(stix2.base._STIXBase):
+    class TestObj(_STIXBase):
         _type = "test"
         _properties = {
             "foo": StringProperty(),
@@ -152,7 +171,7 @@ def test_list_property_bad_value_type():
 
     list_prop = ListProperty(TestObj)
     with pytest.raises(ValueError):
-        list_prop.clean([1])
+        list_prop.clean([1], False)
 
 
 def test_string_property():
@@ -296,7 +315,7 @@ def test_boolean_property_invalid(value):
 )
 def test_timestamp_property_valid(value):
     ts_prop = TimestampProperty()
-    assert ts_prop.clean(value) == dt.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc)
+    assert ts_prop.clean(value) == (dt.datetime(2017, 1, 1, 12, 34, 56, tzinfo=pytz.utc), False)
 
 
 def test_timestamp_property_invalid():
@@ -332,15 +351,103 @@ def test_hex_property():
 )
 def test_enum_property_valid(value):
     enum_prop = EnumProperty(value)
-    assert enum_prop.clean('b')
+    assert enum_prop.clean('b', False)
 
 
 def test_enum_property_clean():
     enum_prop = EnumProperty(['1'])
-    assert enum_prop.clean(1) == '1'
+    assert enum_prop.clean(1, False) == ('1', False)
 
 
 def test_enum_property_invalid():
     enum_prop = EnumProperty(['a', 'b', 'c'])
     with pytest.raises(ValueError):
-        enum_prop.clean('z')
+        enum_prop.clean('z', False)
+
+    with pytest.raises(ValueError):
+        enum_prop.clean('z', True)
+
+
+@pytest.mark.xfail(
+    reason="Temporarily disabled custom open vocab enforcement",
+    strict=True,
+)
+@pytest.mark.parametrize(
+    "vocab", [
+        ['a', 'b', 'c'],
+        ('a', 'b', 'c'),
+        'b',
+    ],
+)
+def test_openvocab_property(vocab):
+    ov_prop = OpenVocabProperty(vocab)
+
+    assert ov_prop.clean("b", False) == ("b", False)
+    assert ov_prop.clean("b", True) == ("b", False)
+
+    with pytest.raises(CustomContentError):
+        ov_prop.clean("d", False)
+
+    assert ov_prop.clean("d", True) == ("d", True)
+
+
+@pytest.mark.parametrize(
+    "value", [
+        {"sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b"},
+        [('MD5', '2dfb1bcc980200c6706feee399d41b3f'), ('RIPEMD-160', 'b3a8cd8a27c90af79b3c81754f267780f443dfef')],
+    ],
+)
+def test_hashes_property_valid(value):
+    hash_prop = HashesProperty(["sha256", "md5", "ripemd160"])
+    _, has_custom = hash_prop.clean(value, False)
+    assert not has_custom
+
+
+@pytest.mark.parametrize(
+    "value", [
+        {"MD5": "a"},
+        {"SHA-256": "2dfb1bcc980200c6706feee399d41b3f"},
+    ],
+)
+def test_hashes_property_invalid(value):
+    hash_prop = HashesProperty(["sha256", "md5"])
+
+    with pytest.raises(ValueError):
+        hash_prop.clean(value, False)
+
+
+def test_hashes_property_custom():
+    value = {
+        "sha256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
+        "abc-123": "aaaaaaaaaaaaaaaaaaaaa",
+    }
+    expected_cleaned_value = {
+        # cleaning transforms recognized hash algorithm names to the spec-
+        # mandated name.
+        "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
+        "abc-123": "aaaaaaaaaaaaaaaaaaaaa",
+    }
+
+    hash_prop = HashesProperty(["SHA-256"])
+    result = hash_prop.clean(value, True)
+    assert result == (expected_cleaned_value, True)
+
+    with pytest.raises(CustomContentError):
+        hash_prop.clean(value, False)
+
+
+def test_hashes_no_library_support():
+    prop = HashesProperty(["foo"])
+
+    result = prop.clean({"foo": "bar"}, False)
+    assert result == ({"foo": "bar"}, False)
+
+    result = prop.clean({"foo": "bar"}, True)
+    assert result == ({"foo": "bar"}, False)
+
+    with pytest.raises(CustomContentError):
+        # require exact name match for unsupported hash algorithms
+        prop.clean({"FOO": "bar"}, False)
+
+    result = prop.clean({"FOO": "bar"}, True)
+    assert result == ({"FOO": "bar"}, True)

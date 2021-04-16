@@ -19,7 +19,7 @@ IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -31,7 +31,7 @@ IND2 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -43,7 +43,7 @@ IND3 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.936Z",
     "name": "Malicious site hosting downloader",
@@ -55,7 +55,7 @@ IND4 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -67,7 +67,7 @@ IND5 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -79,7 +79,7 @@ IND6 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-31T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -91,7 +91,7 @@ IND7 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -103,7 +103,7 @@ IND8 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -285,7 +285,7 @@ def test_memory_store_object_creator_of_present(mem_store):
     iden = Identity(
         id=IDENTITY_ID,
         name="Foo Corp.",
-        identity_class="corporation",
+        identity_class="organization",
     )
 
     mem_store.add(camp)
