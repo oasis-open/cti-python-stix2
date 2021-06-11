@@ -590,17 +590,25 @@ class ReferenceProperty(Property):
                 ) and obj_type not in specifics
             ) or obj_type in blacklist_exceptions
 
-        if not type_ok:
-            raise ValueError(
-                "The type-specifying prefix '%s' for this property is not "
-                "valid" % obj_type,
-            )
-
         # We need to figure out whether the referenced object is custom or
         # not.  No good way to do that at present... just check if
         # unregistered and for the "x-" type prefix, for now?
         has_custom = not is_object(obj_type, self.spec_version) \
             or obj_type.startswith("x-")
+
+        if not type_ok:
+            types = self.specifics.union(self.generics)
+            types = ", ".join(x.name if isinstance(x, STIXTypeClass) else x for x in types)
+            if self.auth_type == self._WHITELIST:
+                msg = "not one of the valid types for this property: %s." % types
+            else:
+                msg = "one of the invalid types for this property: %s." % types
+            if not allow_custom and has_custom:
+                msg += " A custom object type may be allowed with allow_custom=True."
+            raise ValueError(
+                "The type-specifying prefix '%s' for this property is %s"
+                % (obj_type, msg),
+            )
 
         if not allow_custom and has_custom:
             raise CustomContentError(
