@@ -190,6 +190,27 @@ def test_reference_property_blacklist_standard_type():
         )
 
 
+def test_reference_property_blacklist_custom_type():
+    ref_prop = ReferenceProperty(invalid_types="my-type", spec_version="2.1")
+
+    result = ref_prop.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+    assert result == ("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    with pytest.raises(ValueError):
+        ref_prop.clean("my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+    with pytest.raises(CustomContentError):
+        # This is not the blacklisted type, but it's still custom, and
+        # customization is disallowed here.
+        ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
+
+    result = ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+    assert result == ("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
+
+
 def test_reference_property_blacklist_generic_type():
     ref_prop = ReferenceProperty(
         invalid_types=["SDO", "SRO"], spec_version="2.1",
