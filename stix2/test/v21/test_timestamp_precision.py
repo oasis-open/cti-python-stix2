@@ -5,8 +5,8 @@ import pytest
 
 import stix2
 from stix2.utils import (
-    Precision, PrecisionConstraint, STIXdatetime, _to_enum, format_datetime,
-    parse_into_datetime,
+    Precision, PrecisionConstraint, STIXdatetime, format_datetime,
+    parse_into_datetime, to_enum,
 )
 
 _DT = datetime.datetime.utcnow()
@@ -27,7 +27,7 @@ _DT_STR = _DT.strftime("%Y-%m-%dT%H:%M:%S")
     ],
 )
 def test_to_enum(value, enum_type, enum_default, enum_expected):
-    result = _to_enum(value, enum_type, enum_default)
+    result = to_enum(value, enum_type, enum_default)
     assert result == enum_expected
 
 
@@ -41,7 +41,7 @@ def test_to_enum(value, enum_type, enum_default, enum_expected):
 )
 def test_to_enum_errors(value, err_type):
     with pytest.raises(err_type):
-        _to_enum(value, Precision)
+        to_enum(value, Precision)
 
 
 @pytest.mark.xfail(

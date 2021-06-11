@@ -206,8 +206,10 @@ def test_custom_properties_dict_in_bundled_object():
             'x_foo': 'bar',
         },
     }
-    bundle = stix2.v21.Bundle(custom_identity)
+    with pytest.raises(InvalidValueError):
+        stix2.v21.Bundle(custom_identity)
 
+    bundle = stix2.v21.Bundle(custom_identity, allow_custom=True)
     assert bundle.objects[0].x_foo == "bar"
     assert '"x_foo": "bar"' in str(bundle)
 
@@ -251,6 +253,7 @@ def test_custom_property_object_in_observable_extension():
         x_foo='bar',
     )
     artifact = stix2.v21.File(
+        allow_custom=True,
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
@@ -283,7 +286,6 @@ def test_custom_property_dict_in_observable_extension():
         name='test',
         extensions={
             'ntfs-ext': {
-                'allow_custom': True,
                 'sid': 1,
                 'x_foo': 'bar',
             },
@@ -504,6 +506,48 @@ def test_custom_object_invalid_type_name():
         class NewObj3(object):
             pass  # pragma: no cover
     assert "Invalid type name '7x-new-object':" in str(excinfo.value)
+
+
+def test_custom_subobject_dict():
+    obj_dict = {
+        "type": "bundle",
+        "id": "bundle--78d99c4a-4eda-4c59-b264-60807f05d799",
+        "objects": [
+            {
+                "type": "identity",
+                "spec_version": "2.1",
+                "name": "alice",
+                "identity_class": "individual",
+                "x_foo": 123,
+            },
+        ],
+    }
+
+    obj = stix2.parse(obj_dict, allow_custom=True)
+    assert obj["objects"][0]["x_foo"] == 123
+    assert obj.has_custom
+
+    with pytest.raises(InvalidValueError):
+        stix2.parse(obj_dict, allow_custom=False)
+
+
+def test_custom_subobject_obj():
+    ident = stix2.v21.Identity(
+        name="alice", identity_class=123, x_foo=123, allow_custom=True,
+    )
+
+    obj_dict = {
+        "type": "bundle",
+        "id": "bundle--78d99c4a-4eda-4c59-b264-60807f05d799",
+        "objects": [ident],
+    }
+
+    obj = stix2.parse(obj_dict, allow_custom=True)
+    assert obj["objects"][0]["x_foo"] == 123
+    assert obj.has_custom
+
+    with pytest.raises(InvalidValueError):
+        stix2.parse(obj_dict, allow_custom=False)
 
 
 def test_parse_custom_object_type():
@@ -1117,6 +1161,37 @@ def test_parse_observable_with_custom_extension():
     assert parsed.extensions['x-new-ext'].property2 == 12
 
 
+def test_parse_observable_with_custom_extension_property():
+    input_str = """{
+        "type": "observed-data",
+        "spec_version": "2.1",
+        "first_observed": "1976-09-09T01:50:24.000Z",
+        "last_observed": "1988-01-18T15:22:10.000Z",
+        "number_observed": 5,
+        "objects": {
+            "0": {
+                "type": "file",
+                "spec_version": "2.1",
+                "name": "cats.png",
+                "extensions": {
+                    "raster-image-ext": {
+                        "image_height": 1024,
+                        "image_width": 768,
+                        "x-foo": false
+                    }
+                }
+            }
+        }
+    }"""
+
+    parsed = stix2.parse(input_str, version='2.1', allow_custom=True)
+    assert parsed.has_custom
+    assert parsed["objects"]["0"]["extensions"]["raster-image-ext"]["x-foo"] is False
+
+    with pytest.raises(InvalidValueError):
+        stix2.parse(input_str, version="2.1", allow_custom=False)
+
+
 def test_custom_and_spec_extension_mix():
     """
     Try to make sure that when allow_custom=True, encountering a custom
@@ -1337,3 +1412,30 @@ def test_register_duplicate_observable_extension():
         class NewExtension2():
             pass
     assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_allow_custom_propagation():
+    obj_dict = {
+        "type": "bundle",
+        "objects": [
+            {
+                "type": "file",
+                "spec_version": "2.1",
+                "name": "data.dat",
+                "extensions": {
+                    "archive-ext": {
+                        "contains_refs": [
+                            "file--3d4da5f6-31d8-4a66-a172-f31af9bf5238",
+                            "file--4bb16def-cdfc-40d1-b6a4-815de6c60b74",
+                        ],
+                        "x_foo": "bar",
+                    },
+                },
+            },
+        ],
+    }
+
+    # allow_custom=False at the top level should catch the custom property way
+    # down in the SCO extension.
+    with pytest.raises(InvalidValueError):
+        stix2.parse(obj_dict, allow_custom=False)
