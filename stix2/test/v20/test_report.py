@@ -4,6 +4,7 @@ import pytest
 import pytz
 
 import stix2
+from stix2.exceptions import InvalidValueError
 
 from .constants import (
     CAMPAIGN_ID, IDENTITY_ID, INDICATOR_ID, INDICATOR_KWARGS, RELATIONSHIP_ID,
@@ -133,3 +134,30 @@ def test_parse_report(data):
     assert rept.name == "The Black Vine Cyberespionage Group"
 
 # TODO: Add other examples
+
+
+def test_report_on_custom():
+    with pytest.raises(InvalidValueError):
+        stix2.v20.Report(
+            name="my report",
+            labels=["a label"],
+            published="2016-01-20T17:00:00Z",
+            object_refs=[
+                "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+                "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7",
+            ],
+        )
+
+    report = stix2.v20.Report(
+        name="my report",
+        labels=["a label"],
+        published="2016-01-20T17:00:00Z",
+        object_refs=[
+            "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+            "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7",
+        ],
+        allow_custom=True,
+    )
+
+    assert "some-type--2672975a-ce1e-4473-a1c6-0d79868930c7" \
+        in report.object_refs

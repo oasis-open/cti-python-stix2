@@ -12,6 +12,7 @@ from ..properties import (
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase20
+from .vocab import HASHING_ALGORITHM
 
 
 def _should_set_millisecond(cr, marking_type):
@@ -38,7 +39,7 @@ class ExternalReference(_STIXBase20):
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty(spec_version='2.0')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version='2.0')),
         ('external_id', StringProperty()),
     ])
 
@@ -103,9 +104,9 @@ class MarkingProperty(Property):
     marking-definition objects.
     """
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         if type(value) in OBJ_MAP_MARKING.values():
-            return value
+            return value, False
         else:
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 

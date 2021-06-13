@@ -234,7 +234,7 @@ def test_stix_object_property():
     prop = stix2.properties.STIXObjectProperty(spec_version='2.1')
 
     identity = stix2.v21.Identity(name="test", identity_class="individual")
-    assert prop.clean(identity) is identity
+    assert prop.clean(identity, False) == (identity, False)
 
 
 def test_bundle_obj_id_found():

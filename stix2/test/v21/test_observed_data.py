@@ -208,7 +208,7 @@ def test_observed_data_example_with_bad_refs():
 
     assert excinfo.value.cls == stix2.v21.Directory
     assert excinfo.value.prop_name == "contains_refs"
-    assert "The type-specifying prefix 'monkey' for this property is not valid" in excinfo.value.reason
+    assert "The type-specifying prefix 'monkey' for this property is not" in excinfo.value.reason
 
 
 def test_observed_data_example_with_non_dictionary():
