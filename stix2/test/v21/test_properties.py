@@ -571,20 +571,6 @@ def test_extension_property_invalid3():
     assert result[1]
 
 
-def test_extension_property_invalid_type():
-    ext_prop = ExtensionsProperty(spec_version='2.1', enclosing_type='indicator')
-    with pytest.raises(CustomContentError) as excinfo:
-        ext_prop.clean(
-            {
-                'windows-pebinary-ext': {
-                    'pe_type': 'exe',
-                },
-            },
-            False,
-        )
-    assert "Can't parse unknown extension" in str(excinfo.value)
-
-
 def test_extension_at_least_one_property_constraint():
     with pytest.raises(AtLeastOnePropertyError):
         stix2.v21.TCPExt()
