@@ -6,11 +6,7 @@ from ..base import (
 
 
 class _STIXBase21(_STIXBase):
-
-    def __init__(self, **kwargs):
-        if 'extensions' in self._properties:
-            self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
-        super(_STIXBase21, self).__init__(**kwargs)
+    pass
 
 
 class _Observable(_Observable, _STIXBase21):

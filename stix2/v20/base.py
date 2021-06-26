@@ -10,10 +10,7 @@ class _STIXBase20(_STIXBase):
 
 
 class _Observable(_Observable, _STIXBase20):
-
-    def __init__(self, **kwargs):
-        self._properties['extensions'].allow_custom = kwargs.get('allow_custom', False)
-        super(_Observable, self).__init__(**kwargs)
+    pass
 
 
 class _Extension(_Extension, _STIXBase20):
