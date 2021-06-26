@@ -14,7 +14,7 @@ from ..properties import (
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase21
-from .vocab import HASHING_ALGORITHM
+from .vocab import HASHING_ALGORITHM, EXTENSION_TYPE
 
 
 class ExternalReference(_STIXBase21):
@@ -126,13 +126,7 @@ class ExtensionDefinition(_STIXBase21):
         (
             'extension_types', ListProperty(
                 EnumProperty(
-                    allowed=[
-                            'new-sdo',
-                            'new-sco',
-                            'new-sro',
-                            'property-extension',
-                            'toplevel-property-extension',
-                    ],
+                    allowed=EXTENSION_TYPE,
                 ), required=True,
             ),
         ),
