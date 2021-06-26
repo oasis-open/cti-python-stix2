@@ -984,7 +984,7 @@ def test_custom_extension_wrong_observable_type():
             },
         )
 
-    assert 'Cannot determine extension type' in excinfo.value.reason
+    assert "Can't create extension 'ntfs-ext'" in excinfo.value.reason
 
 
 @pytest.mark.parametrize(
@@ -1226,6 +1226,41 @@ def test_parse_observable_with_unregistered_custom_extension(data):
     parsed_ob = stix2.parse(data, allow_custom=True, version='2.1')
     assert parsed_ob['extensions']['x-foobar-ext']['property1'] == 'foo'
     assert not isinstance(parsed_ob['extensions']['x-foobar-ext'], stix2.base._STIXBase)
+
+
+def test_unregistered_new_style_extension():
+
+    f_dict = {
+        "type": "file",
+        "name": "foo.txt",
+        "extensions": {
+            "extension-definition--31adb724-a9a4-44b6-8ec2-fd4b181c9507": {
+                "extension-type": "property-extension",
+                "a": 1,
+                "b": True
+            }
+        }
+    }
+
+    f = stix2.parse(f_dict, allow_custom=False)
+
+    assert f.extensions[
+        "extension-definition--31adb724-a9a4-44b6-8ec2-fd4b181c9507"
+    ]["a"] == 1
+    assert f.extensions[
+        "extension-definition--31adb724-a9a4-44b6-8ec2-fd4b181c9507"
+    ]["b"]
+    assert not f.has_custom
+
+    f = stix2.parse(f_dict, allow_custom=True)
+
+    assert f.extensions[
+        "extension-definition--31adb724-a9a4-44b6-8ec2-fd4b181c9507"
+    ]["a"] == 1
+    assert f.extensions[
+        "extension-definition--31adb724-a9a4-44b6-8ec2-fd4b181c9507"
+    ]["b"]
+    assert not f.has_custom
 
 
 def test_register_custom_object():

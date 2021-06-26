@@ -795,7 +795,7 @@ def test_custom_extension_wrong_observable_type():
             },
         )
 
-    assert 'Cannot determine extension type' in excinfo.value.reason
+    assert "Can't create extension 'ntfs-ext' from" in excinfo.value.reason
 
 
 @pytest.mark.parametrize(
