@@ -793,8 +793,8 @@ class ExtensionsProperty(DictionaryProperty):
                 else:
                     raise TypeError(
                         "Can't create extension '{}' from {}.".format(
-                            key, type(subvalue)
-                        )
+                            key, type(subvalue),
+                        ),
                     )
 
                 has_custom = has_custom or ext.has_custom
@@ -818,7 +818,7 @@ class ExtensionsProperty(DictionaryProperty):
 
                 if key.startswith('extension-definition--'):
                     _validate_id(
-                        key, self.spec_version, 'extension-definition--'
+                        key, self.spec_version, 'extension-definition--',
                     )
                 elif allow_custom:
                     has_custom = True

@@ -14,7 +14,7 @@ from ..properties import (
 )
 from ..utils import NOW, _get_dict
 from .base import _STIXBase21
-from .vocab import HASHING_ALGORITHM, EXTENSION_TYPE
+from .vocab import EXTENSION_TYPE, HASHING_ALGORITHM
 
 
 class ExternalReference(_STIXBase21):

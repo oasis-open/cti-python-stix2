@@ -1237,9 +1237,9 @@ def test_unregistered_new_style_extension():
             "extension-definition--31adb724-a9a4-44b6-8ec2-fd4b181c9507": {
                 "extension-type": "property-extension",
                 "a": 1,
-                "b": True
-            }
-        }
+                "b": True,
+            },
+        },
     }
 
     f = stix2.parse(f_dict, allow_custom=False)
@@ -1508,7 +1508,7 @@ def test_registered_embedded_extension_passes_with_allow_custom_false():
         ],
     )
     class ExtensionFoo1:
-        pass
+        extension_type = "property-extension"
 
     indicator = stix2.v21.Indicator(
         id='indicator--e97bfccf-8970-4a3c-9cd1-5b5b97ed5d0c',

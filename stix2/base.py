@@ -78,20 +78,34 @@ class _STIXBase(collections.abc.Mapping):
         if count > 1 or (at_least_one and count == 0):
             raise MutuallyExclusivePropertiesError(self.__class__, list_of_properties)
 
-    def _check_at_least_one_property(self, list_of_properties=None):
-        if not list_of_properties:
-            list_of_properties = sorted(self.__class__._properties.keys())
+    def _check_at_least_one_property(self, properties_checked=None):
+        """
+        Check whether one or more of the given properties are present.
+
+        :param properties_checked: An iterable of the names of the properties
+            of interest, or None to check against a default list.  The default
+            list includes all properties defined on the object, with some
+            hard-coded exceptions.
+        :raises AtLeastOnePropertyError: If none of the given properties are
+            present.
+        """
+        if properties_checked is None:
+            property_exceptions = {"extensions", "type"}
             if isinstance(self, _Observable):
-                props_to_remove = {"type", "id", "defanged", "spec_version"}
-            else:
-                props_to_remove = {"type"}
+                property_exceptions |= {"id", "defanged", "spec_version"}
 
-            list_of_properties = [prop for prop in list_of_properties if prop not in props_to_remove]
-        current_properties = self.properties_populated()
-        list_of_properties_populated = set(list_of_properties).intersection(current_properties)
+            properties_checked = self._properties.keys() - property_exceptions
 
-        if list_of_properties and (not list_of_properties_populated or list_of_properties_populated == {'extensions'}):
-            raise AtLeastOnePropertyError(self.__class__, list_of_properties)
+        elif not isinstance(properties_checked, set):
+            properties_checked = set(properties_checked)
+
+        if properties_checked:
+            properties_checked_assigned = properties_checked & self.keys()
+
+            if not properties_checked_assigned:
+                raise AtLeastOnePropertyError(
+                    self.__class__, properties_checked
+                )
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties):
         failed_dependency_pairs = []
@@ -118,8 +132,6 @@ class _STIXBase(collections.abc.Mapping):
             raise ValueError("'custom_properties' must be a dictionary")
 
         extra_kwargs = kwargs.keys() - self._properties.keys()
-        if extra_kwargs and issubclass(cls, stix2.v21._Extension):
-            extra_kwargs = {prop for prop in extra_kwargs if prop != 'extension_type'}
 
         if extra_kwargs and not allow_custom:
             ext_found = False
@@ -129,7 +141,7 @@ class _STIXBase(collections.abc.Mapping):
             for key_id, ext_def in kwargs.get('extensions', {}).items():
                 if (
                     key_id.startswith('extension-definition--') and
-                    ext_def.get('extension_type', '') == 'toplevel-property-extension'
+                    ext_def.get('extension_type') == 'toplevel-property-extension'
                 ):
                     ext_found = True
                     break

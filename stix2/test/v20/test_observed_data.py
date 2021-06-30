@@ -1117,6 +1117,7 @@ def test_process_example_empty_error():
     assert excinfo.value.cls == stix2.v20.Process
     properties_of_process = list(stix2.v20.Process._properties.keys())
     properties_of_process.remove("type")
+    properties_of_process.remove("extensions")
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
     msg = msg.format(
