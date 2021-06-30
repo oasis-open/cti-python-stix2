@@ -433,7 +433,7 @@ def test_version_marking():
 
 def test_version_disable_custom():
     m = stix2.v20.Malware(
-        name="foo", labels=["label"], description="Steals your identity!",
+        name="foo", labels=["spyware"], description="Steals your identity!",
         x_custom=123, allow_custom=True,
     )
 
@@ -450,7 +450,7 @@ def test_version_disable_custom():
 
 def test_version_enable_custom():
     m = stix2.v20.Malware(
-        name="foo", labels=["label"], description="Steals your identity!",
+        name="foo", labels=["spyware"], description="Steals your identity!",
     )
 
     # Add a custom property to an object for which it was previously disallowed
@@ -464,7 +464,7 @@ def test_version_enable_custom():
 
 def test_version_propagate_custom():
     m = stix2.v20.Malware(
-        name="foo", labels=["label"],
+        name="foo", labels=["spyware"],
     )
 
     # Remember custom-not-allowed setting from original; produce error
@@ -476,7 +476,7 @@ def test_version_propagate_custom():
     assert m2.description == "Steals your identity!"
 
     m_custom = stix2.v20.Malware(
-        name="foo", labels=["label"], x_custom=123, allow_custom=True,
+        name="foo", labels=["spyware"], x_custom=123, allow_custom=True,
     )
 
     # Remember custom-allowed setting from original; should work

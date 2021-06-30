@@ -90,7 +90,7 @@ class Sighting(_RelationshipObject):
         ('sighting_of_ref', ReferenceProperty(valid_types="SDO", spec_version='2.1', required=True)),
         ('observed_data_refs', ListProperty(ReferenceProperty(valid_types='observed-data', spec_version='2.1'))),
         ('where_sighted_refs', ListProperty(ReferenceProperty(valid_types=['identity', 'location'], spec_version='2.1'))),
-        ('summary', BooleanProperty()),
+        ('summary', BooleanProperty(default=lambda: False)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),

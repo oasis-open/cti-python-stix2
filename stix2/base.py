@@ -1,6 +1,7 @@
 """Base classes for type definitions in the STIX2 library."""
 
 import copy
+import itertools
 import re
 import uuid
 
@@ -12,7 +13,7 @@ from stix2.canonicalization.Canonicalize import canonicalize
 from .exceptions import (
     AtLeastOnePropertyError, DependentPropertiesError, ExtraPropertiesError,
     ImmutableError, InvalidObjRefError, InvalidValueError,
-    MissingPropertiesError, MutuallyExclusivePropertiesError,
+    MissingPropertiesError, MutuallyExclusivePropertiesError, STIXError,
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
@@ -54,7 +55,7 @@ class _STIXBase(Mapping):
 
         return all_properties
 
-    def _check_property(self, prop_name, prop, kwargs):
+    def _check_property(self, prop_name, prop, kwargs, allow_custom):
         if prop_name not in kwargs:
             if hasattr(prop, 'default'):
                 value = prop.default()
@@ -62,9 +63,12 @@ class _STIXBase(Mapping):
                     value = self.__now
                 kwargs[prop_name] = value
 
+        has_custom = False
         if prop_name in kwargs:
             try:
-                kwargs[prop_name] = prop.clean(kwargs[prop_name])
+                kwargs[prop_name], has_custom = prop.clean(
+                    kwargs[prop_name], allow_custom,
+                )
             except InvalidValueError:
                 # No point in wrapping InvalidValueError in another
                 # InvalidValueError... so let those propagate.
@@ -73,6 +77,8 @@ class _STIXBase(Mapping):
                 raise InvalidValueError(
                     self.__class__, prop_name, reason=str(exc),
                 ) from exc
+
+        return has_custom
 
     # interproperty constraint methods
 
@@ -113,7 +119,6 @@ class _STIXBase(Mapping):
 
     def __init__(self, allow_custom=False, interoperability=False, **kwargs):
         cls = self.__class__
-        self._allow_custom = allow_custom
         self.__interoperability = interoperability
 
         # Use the same timestamp for any auto-generated datetimes
@@ -124,16 +129,18 @@ class _STIXBase(Mapping):
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
 
-        extra_kwargs = list(set(kwargs) - set(self._properties))
-        if extra_kwargs and not self._allow_custom:
+        extra_kwargs = kwargs.keys() - self._properties.keys()
+        if extra_kwargs and not allow_custom:
             raise ExtraPropertiesError(cls, extra_kwargs)
 
-        # because allow_custom is true, any extra kwargs are custom
-        if custom_props or extra_kwargs:
-            self._allow_custom = True
-            if isinstance(self, stix2.v21._STIXBase21):
-                all_custom_prop_names = extra_kwargs
-                all_custom_prop_names.extend(list(custom_props.keys()))
+        if custom_props:
+            # loophole for custom_properties...
+            allow_custom = True
+
+        all_custom_prop_names = extra_kwargs | custom_props.keys() - \
+            self._properties.keys()
+        if all_custom_prop_names:
+            if not isinstance(self, stix2.v20._STIXBase20):
                 for prop_name in all_custom_prop_names:
                     if not re.match(PREFIX_21_REGEX, prop_name):
                         raise InvalidValueError(
@@ -142,12 +149,11 @@ class _STIXBase(Mapping):
                         )
 
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
-        setting_kwargs = {}
-        props = kwargs.copy()
-        props.update(custom_props)
-        for prop_name, prop_value in props.items():
-            if prop_value is not None and prop_value != []:
-                setting_kwargs[prop_name] = prop_value
+        setting_kwargs = {
+            k: v
+            for k, v in itertools.chain(kwargs.items(), custom_props.items())
+            if v is not None and v != []
+        }
 
         # Detect any missing required properties
         required_properties = set(get_required_properties(self._properties))
@@ -155,8 +161,13 @@ class _STIXBase(Mapping):
         if missing_kwargs:
             raise MissingPropertiesError(cls, missing_kwargs)
 
+        has_custom = bool(all_custom_prop_names)
         for prop_name, prop_metadata in self._properties.items():
-            self._check_property(prop_name, prop_metadata, setting_kwargs)
+            temp_custom = self._check_property(
+                prop_name, prop_metadata, setting_kwargs, allow_custom,
+            )
+
+            has_custom = has_custom or temp_custom
 
         # Cache defaulted optional properties for serialization
         defaulted = []
@@ -174,6 +185,22 @@ class _STIXBase(Mapping):
         self._inner = setting_kwargs
 
         self._check_object_constraints()
+
+        if allow_custom:
+            self.__has_custom = has_custom
+
+        else:
+            # The simple case: our property cleaners are supposed to do their
+            # job and prevent customizations, so we just set to False.  But
+            # this sanity check is helpful for finding bugs in those clean()
+            # methods.
+            if has_custom:
+                raise STIXError(
+                    "Internal error: a clean() method did not properly enforce "
+                    "allow_custom=False!",
+                )
+
+            self.__has_custom = False
 
     def __getitem__(self, key):
         return self._inner[key]
@@ -221,14 +248,17 @@ class _STIXBase(Mapping):
         if isinstance(self, _Observable):
             # Assume: valid references in the original object are still valid in the new version
             new_inner['_valid_refs'] = {'*': '*'}
-        new_inner['allow_custom'] = self._allow_custom
         new_inner['interoperability'] = self.__interoperability
-        return cls(**new_inner)
+        return cls(allow_custom=True, **new_inner)
 
     def properties_populated(self):
         return list(self._inner.keys())
 
-#  Versioning API
+    @property
+    def has_custom(self):
+        return self.__has_custom
+
+    #  Versioning API
 
     def new_version(self, **kwargs):
         return _new_version(self, **kwargs)
@@ -365,20 +395,21 @@ class _Observable(_STIXBase):
             if ref_type not in allowed_types:
                 raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 
-    def _check_property(self, prop_name, prop, kwargs):
-        super(_Observable, self)._check_property(prop_name, prop, kwargs)
-        if prop_name not in kwargs:
-            return
+    def _check_property(self, prop_name, prop, kwargs, allow_custom):
+        has_custom = super(_Observable, self)._check_property(prop_name, prop, kwargs, allow_custom)
 
-        from .properties import ObjectReferenceProperty
-        if prop_name.endswith('_ref'):
-            if isinstance(prop, ObjectReferenceProperty):
-                ref = kwargs[prop_name]
-                self._check_ref(ref, prop, prop_name)
-        elif prop_name.endswith('_refs'):
-            if isinstance(prop.contained, ObjectReferenceProperty):
-                for ref in kwargs[prop_name]:
+        if prop_name in kwargs:
+            from .properties import ObjectReferenceProperty
+            if prop_name.endswith('_ref'):
+                if isinstance(prop, ObjectReferenceProperty):
+                    ref = kwargs[prop_name]
                     self._check_ref(ref, prop, prop_name)
+            elif prop_name.endswith('_refs'):
+                if isinstance(prop.contained, ObjectReferenceProperty):
+                    for ref in kwargs[prop_name]:
+                        self._check_ref(ref, prop, prop_name)
+
+        return has_custom
 
     def _generate_id(self):
         """
@@ -454,6 +485,7 @@ def _make_json_serializable(value):
     etc.  "Convenience" types this library uses as property values are
     JSON-serialized to produce a JSON-serializable value.  (So you will always
     get strings for those.)
+>>>>>>> e9d417de2592c0c7367c312ca0fd25dc8f8a9818
 
     The conversion will not affect the passed in value.
 

@@ -66,7 +66,7 @@ def stix_objs1():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
@@ -80,7 +80,7 @@ def stix_objs1():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
@@ -94,7 +94,7 @@ def stix_objs1():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.936Z",
         "name": "Malicious site hosting downloader",
@@ -108,7 +108,7 @@ def stix_objs1():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
@@ -122,7 +122,7 @@ def stix_objs1():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
@@ -183,7 +183,7 @@ def stix_objs2():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000001",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-31T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
@@ -197,7 +197,7 @@ def stix_objs2():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",
@@ -211,7 +211,7 @@ def stix_objs2():
         "created": "2017-01-27T13:49:53.935Z",
         "id": "indicator--00000000-0000-4000-8000-000000000002",
         "indicator_types": [
-            "url-watchlist",
+            "malicious-activity",
         ],
         "modified": "2017-01-27T13:49:53.935Z",
         "name": "Malicious site hosting downloader",

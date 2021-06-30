@@ -9,12 +9,17 @@ from ..custom import _custom_object_builder
 from ..exceptions import InvalidValueError
 from ..properties import (
     BooleanProperty, IDProperty, IntegerProperty, ListProperty,
-    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
+    ObservableProperty, OpenVocabProperty, PatternProperty, ReferenceProperty,
+    StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .base import _DomainObject
 from .common import ExternalReference, GranularMarking, KillChainPhase
+from .vocab import (
+    ATTACK_MOTIVATION, ATTACK_RESOURCE_LEVEL, IDENTITY_CLASS, INDICATOR_LABEL,
+    INDUSTRY_SECTOR, MALWARE_LABEL, REPORT_LABEL, THREAT_ACTOR_LABEL,
+    THREAT_ACTOR_ROLE, THREAT_ACTOR_SOPHISTICATION, TOOL_LABEL,
+)
 
 
 class AttackPattern(_DomainObject):
@@ -102,8 +107,8 @@ class Identity(_DomainObject):
         ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('identity_class', StringProperty(required=True)),
-        ('sectors', ListProperty(StringProperty)),
+        ('identity_class', OpenVocabProperty(IDENTITY_CLASS, required=True)),
+        ('sectors', ListProperty(OpenVocabProperty(INDUSTRY_SECTOR))),
         ('contact_information', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -132,7 +137,7 @@ class Indicator(_DomainObject):
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty, required=True)),
+        ('labels', ListProperty(OpenVocabProperty(INDICATOR_LABEL), required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -163,8 +168,8 @@ class IntrusionSet(_DomainObject):
         ('last_seen', TimestampProperty()),
         ('goals', ListProperty(StringProperty)),
         ('resource_level', StringProperty()),
-        ('primary_motivation', StringProperty()),
-        ('secondary_motivations', ListProperty(StringProperty)),
+        ('primary_motivation', OpenVocabProperty(ATTACK_MOTIVATION)),
+        ('secondary_motivations', ListProperty(OpenVocabProperty(ATTACK_MOTIVATION))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),
@@ -189,7 +194,7 @@ class Malware(_DomainObject):
         ('description', StringProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty, required=True)),
+        ('labels', ListProperty(OpenVocabProperty(MALWARE_LABEL), required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -219,12 +224,6 @@ class ObservedData(_DomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
-    def __init__(self, *args, **kwargs):
-        self._allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
-
-        super(ObservedData, self).__init__(*args, **kwargs)
-
 
 class Report(_DomainObject):
     """For more detailed information on this object's properties, see
@@ -243,7 +242,7 @@ class Report(_DomainObject):
         ('published', TimestampProperty(required=True)),
         ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.0'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty, required=True)),
+        ('labels', ListProperty(OpenVocabProperty(REPORT_LABEL), required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -271,15 +270,15 @@ class ThreatActor(_DomainObject):
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('aliases', ListProperty(StringProperty)),
-        ('roles', ListProperty(StringProperty)),
+        ('roles', ListProperty(OpenVocabProperty(THREAT_ACTOR_ROLE))),
         ('goals', ListProperty(StringProperty)),
-        ('sophistication', StringProperty()),
-        ('resource_level', StringProperty()),
-        ('primary_motivation', StringProperty()),
-        ('secondary_motivations', ListProperty(StringProperty)),
-        ('personal_motivations', ListProperty(StringProperty)),
+        ('sophistication', OpenVocabProperty(THREAT_ACTOR_SOPHISTICATION)),
+        ('resource_level', OpenVocabProperty(ATTACK_RESOURCE_LEVEL)),
+        ('primary_motivation', OpenVocabProperty(ATTACK_MOTIVATION)),
+        ('secondary_motivations', ListProperty(OpenVocabProperty(ATTACK_MOTIVATION))),
+        ('personal_motivations', ListProperty(OpenVocabProperty(ATTACK_MOTIVATION))),
         ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty, required=True)),
+        ('labels', ListProperty(OpenVocabProperty(THREAT_ACTOR_LABEL), required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -303,7 +302,7 @@ class Tool(_DomainObject):
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty, required=True)),
+        ('labels', ListProperty(OpenVocabProperty(TOOL_LABEL), required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
