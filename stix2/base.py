@@ -18,6 +18,7 @@ from .exceptions import (
 )
 from .markings import _MarkingsMixin
 from .markings.utils import validate
+from .registry import class_for_type
 from .serialization import STIXJSONEncoder, fp_serialize, serialize
 from .utils import NOW, PREFIX_21_REGEX, get_timestamp
 from .versioning import new_version as _new_version
@@ -126,46 +127,51 @@ class _STIXBase(collections.abc.Mapping):
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
 
-        # Detect any keyword arguments not allowed for a specific type
         custom_props = kwargs.pop('custom_properties', {})
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
 
+        # Detect any keyword arguments not allowed for a specific type.
+        # In STIX 2.1, this is complicated by "toplevel-property-extension"
+        # type extensions, which can add extra properties which are *not*
+        # considered custom.
         extra_kwargs = kwargs.keys() - self._properties.keys()
 
-        if extra_kwargs and not allow_custom:
-            ext_found = False
-            # This section performs a check on top-level objects that support extensions.
-            # If extra_kwargs is not empty, allow_custom False, and the extension_type is not
-            # toplevel then we raise the ExtraPropertiesError regardless.
-            for key_id, ext_def in kwargs.get('extensions', {}).items():
-                if (
-                    key_id.startswith('extension-definition--') and
-                    ext_def.get('extension_type') == 'toplevel-property-extension'
-                ):
-                    ext_found = True
-                    break
-            if ext_found is False:
-                raise ExtraPropertiesError(cls, extra_kwargs)
+        extensions = kwargs.get("extensions")
+        if extensions:
+            has_unregistered_toplevel_extension = False
+            registered_toplevel_extension_props = set()
 
-        extension_toplevel_properties = set()
-        unregistered_top_level_extension = False
-        if 'extensions' in kwargs and not isinstance(self, stix2.v20._STIXBase20):
-            for ext_name, ext in kwargs['extensions'].items():
-                if ext.get('extension_type', '') == 'toplevel-property-extension':
-                    registered_extensions = stix2.registry.STIX2_OBJ_MAPS['2.1'].get('extensions', {})
-                    if ext_name in registered_extensions:
-                        registered_ext_properties = registered_extensions[ext_name]._properties.keys()
-                        extension_toplevel_properties.update(registered_ext_properties)
+            for ext_id, ext in extensions.items():
+                if ext.get("extension_type") == "toplevel-property-extension":
+                    registered_ext_class = class_for_type(
+                        ext_id, "2.1", "extensions"
+                    )
+                    if registered_ext_class:
+                        registered_toplevel_extension_props |= \
+                            registered_ext_class._properties.keys()
                     else:
-                        unregistered_top_level_extension = True
+                        has_unregistered_toplevel_extension = True
 
-        if custom_props or unregistered_top_level_extension:
-            # loophole for custom_properties and unregistered top-level extensions...
+            if has_unregistered_toplevel_extension:
+                # Must assume all extras are extension properties, not custom.
+                extra_kwargs.clear()
+
+            else:
+                # All toplevel property extensions (if any) have been
+                # registered.  So we can tell what their properties are and
+                # treat only those as not custom.
+                extra_kwargs -= registered_toplevel_extension_props
+
+        if extra_kwargs and not allow_custom:
+            raise ExtraPropertiesError(cls, extra_kwargs)
+
+        if custom_props:
+            # loophole for custom_properties...
             allow_custom = True
 
         all_custom_prop_names = (extra_kwargs | custom_props.keys()) - \
-            self._properties.keys() - extension_toplevel_properties
+            self._properties.keys()
         if all_custom_prop_names:
             if not isinstance(self, stix2.v20._STIXBase20):
                 for prop_name in all_custom_prop_names:

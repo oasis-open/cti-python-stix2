@@ -49,7 +49,8 @@ def class_for_type(stix_type, stix_version, category=None):
     Get the registered class which implements a particular STIX type for a
     particular STIX version.
 
-    :param stix_type: A STIX type as a string
+    :param stix_type: A STIX type as a string, or for extension-definition
+        style extensions, the STIX ID of the definition.
     :param stix_version: A STIX version as a string, e.g. "2.1"
     :param category: An optional "category" value, which is just used directly
         as a second key after the STIX version, and depends on how the types
