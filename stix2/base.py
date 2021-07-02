@@ -105,7 +105,7 @@ class _STIXBase(collections.abc.Mapping):
 
             if not properties_checked_assigned:
                 raise AtLeastOnePropertyError(
-                    self.__class__, properties_checked
+                    self.__class__, properties_checked,
                 )
 
     def _check_properties_dependency(self, list_of_properties, list_of_dependent_properties):
@@ -145,7 +145,7 @@ class _STIXBase(collections.abc.Mapping):
             for ext_id, ext in extensions.items():
                 if ext.get("extension_type") == "toplevel-property-extension":
                     registered_ext_class = class_for_type(
-                        ext_id, "2.1", "extensions"
+                        ext_id, "2.1", "extensions",
                     )
                     if registered_ext_class:
                         registered_toplevel_extension_props |= \
