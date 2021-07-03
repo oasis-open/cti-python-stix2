@@ -1,8 +1,10 @@
 """STIX 2.1 Common Data Types and Properties."""
 
 from collections import OrderedDict
+from collections.abc import Mapping
 
-from ..custom import _custom_marking_builder
+from . import _Extension
+from ..custom import _custom_marking_builder, _custom_extension_builder
 from ..exceptions import InvalidValueError, PropertyPresenceError
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
@@ -139,6 +141,30 @@ class ExtensionDefinition(_STIXBase21):
     ])
 
 
+def CustomExtension(type='x-custom-ext', properties=None):
+    """Custom STIX Object Extension decorator.
+    """
+    def wrapper(cls):
+
+        # Auto-create an "extension_type" property from the class attribute, if
+        # it exists.
+        extension_type = getattr(cls, "extension_type", None)
+        if extension_type:
+            extension_type_prop = EnumProperty(
+                EXTENSION_TYPE,
+                required=False,
+                fixed=extension_type,
+            )
+
+            if isinstance(properties, Mapping):
+                properties["extension_type"] = extension_type_prop
+            else:
+                properties.append(("extension_type", extension_type_prop))
+
+        return _custom_extension_builder(cls, type, properties, '2.1', _Extension)
+    return wrapper
+
+
 class TLPMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_yd3ar14ekwrs>`__.
@@ -260,7 +286,7 @@ def CustomMarking(type='x-custom-marking', properties=None, extension_name=None)
         if extension_name:
             from . import observables
 
-            @observables.CustomExtension(type=extension_name, properties=properties)
+            @CustomExtension(type=extension_name, properties=properties)
             class NameExtension:
                 extension_type = 'property-extension'
 

@@ -7,7 +7,6 @@ import warnings
 
 from stix2patterns.validator import run_validator
 
-from . import observables
 from ..custom import _custom_object_builder
 from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
@@ -20,7 +19,9 @@ from ..properties import (
 )
 from ..utils import NOW
 from .base import _DomainObject
-from .common import ExternalReference, GranularMarking, KillChainPhase
+from .common import (
+    CustomExtension, ExternalReference, GranularMarking, KillChainPhase
+)
 from .vocab import (
     ATTACK_MOTIVATION, ATTACK_RESOURCE_LEVEL, GROUPING_CONTEXT, IDENTITY_CLASS,
     IMPLEMENTATION_LANGUAGE, INDICATOR_TYPE, INDUSTRY_SECTOR,
@@ -858,7 +859,7 @@ def CustomObject(type='x-custom-type', properties=None, extension_name=None, is_
             ]),
         )
         if extension_name:
-            @observables.CustomExtension(type=extension_name, properties=extension_properties)
+            @CustomExtension(type=extension_name, properties=extension_properties)
             class NameExtension:
                 if is_sdo:
                     extension_type = 'new-sdo'

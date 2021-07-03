@@ -6,10 +6,9 @@ _Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
-from collections.abc import Mapping
 import itertools
 
-from ..custom import _custom_extension_builder, _custom_observable_builder
+from ..custom import _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -19,9 +18,9 @@ from ..properties import (
     TypeProperty,
 )
 from .base import _Extension, _Observable, _STIXBase21
-from .common import GranularMarking
+from .common import GranularMarking, CustomExtension
 from .vocab import (
-    ACCOUNT_TYPE, ENCRYPTION_ALGORITHM, EXTENSION_TYPE, HASHING_ALGORITHM,
+    ACCOUNT_TYPE, ENCRYPTION_ALGORITHM, HASHING_ALGORITHM,
     NETWORK_SOCKET_ADDRESS_FAMILY, NETWORK_SOCKET_TYPE,
     WINDOWS_INTEGRITY_LEVEL, WINDOWS_PEBINARY_TYPE, WINDOWS_REGISTRY_DATATYPE,
     WINDOWS_SERVICE_START_TYPE, WINDOWS_SERVICE_STATUS, WINDOWS_SERVICE_TYPE,
@@ -898,25 +897,3 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
     return wrapper
 
 
-def CustomExtension(type='x-custom-observable-ext', properties=None):
-    """Custom STIX Object Extension decorator.
-    """
-    def wrapper(cls):
-
-        # Auto-create an "extension_type" property from the class attribute, if
-        # it exists.
-        extension_type = getattr(cls, "extension_type", None)
-        if extension_type:
-            extension_type_prop = EnumProperty(
-                EXTENSION_TYPE,
-                required=False,
-                fixed=extension_type,
-            )
-
-            if isinstance(properties, Mapping):
-                properties["extension_type"] = extension_type_prop
-            else:
-                properties.append(("extension_type", extension_type_prop))
-
-        return _custom_extension_builder(cls, type, properties, '2.1', _Extension)
-    return wrapper
