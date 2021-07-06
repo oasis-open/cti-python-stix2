@@ -138,8 +138,12 @@ select additional or substitute Maintainers, per `consensus agreements
 -  `Chris Lenk <mailto:clenk@mitre.org>`__; GitHub ID:
    https://github.com/clenk/; WWW: `MITRE Corporation <http://www.mitre.org/>`__
 
--  `Emmanuelle Vargas-Gonzalez <mailto:emmanuelle@mitre.org>`__; GitHub ID:
-   https://github.com/emmanvg/; WWW: `MITRE
+-  `Rich Piazza <mailto:rpiazza@mitre.org>`__; GitHub ID:
+   https://github.com/rpiazza/; WWW: `MITRE
+   Corporation <https://www.mitre.org/>`__
+   
+-  `Andy Chisholm <mailto:chisholm@mitre.org>`__; GitHub ID:
+   https://github.com/chisholm/; WWW: `MITRE
    Corporation <https://www.mitre.org/>`__
 
 -  `Jason Keirstead <mailto:Jason.Keirstead@ca.ibm.com>`__; GitHub ID:
