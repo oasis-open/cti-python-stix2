@@ -91,7 +91,7 @@ class Campaign(_DomainObject):
         last_seen = self.get('last_seen')
 
         if first_seen and last_seen and last_seen < first_seen:
-            msg = "{0.id} 'last_seen' must be greater than or equal 'first_seen'"
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))
 
 
