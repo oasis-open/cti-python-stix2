@@ -561,7 +561,7 @@ class NetworkTraffic(_Observable):
         ('defanged', BooleanProperty(default=lambda: False)),
         ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
-    _id_contributing_properties = ["start", "src_ref", "dst_ref", "src_port", "dst_port", "protocols"]
+    _id_contributing_properties = ["start", "end", "src_ref", "dst_ref", "src_port", "dst_port", "protocols", "extensions"]
 
     def _check_object_constraints(self):
         super(NetworkTraffic, self)._check_object_constraints()
@@ -579,8 +579,8 @@ class NetworkTraffic(_Observable):
             msg = "{0.id} if 'is_active' is True, 'end' must not be included"
             raise ValueError(msg.format(self))
 
-        if start and end and end <= start:
-            msg = "{0.id} 'end' must be greater than 'start'"
+        if start and end and end < start:
+            msg = "{0.id} 'end' must be greater than or equal to 'start'"
             raise ValueError(msg.format(self))
 
 
