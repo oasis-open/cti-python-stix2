@@ -140,7 +140,7 @@ select additional or substitute Maintainers, per `consensus agreements
 
 -  `Rich Piazza <mailto:rpiazza@mitre.org>`__; GitHub ID:
    https://github.com/rpiazza/; WWW: `MITRE Corporation <https://www.mitre.org/>`__
-   
+
 -  `Andy Chisholm <mailto:chisholm@mitre.org>`__; GitHub ID:
    https://github.com/chisholm/; WWW: `MITRE Corporation <https://www.mitre.org/>`__
 
