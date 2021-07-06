@@ -1,3 +1,4 @@
+import contextlib
 import uuid
 
 import pytest
@@ -8,7 +9,9 @@ import stix2.registration
 import stix2.registry
 import stix2.v21
 
-from ...exceptions import DuplicateRegistrationError, InvalidValueError
+from ...exceptions import (
+    DuplicateRegistrationError, InvalidValueError, MissingPropertiesError
+)
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 # Custom Properties in SDOs
@@ -1673,6 +1676,194 @@ def test_registered_new_extension_marking_allow_custom_false():
     marking_serialized = marking_object.serialize(sort_keys=True)
     assert '"extensions": {"extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff": ' \
            '{"extension_type": "property-extension", "some_marking_field": "value"}}' in marking_serialized
+
+
+@contextlib.contextmanager
+def _register_extension(ext, props):
+
+    ext_def_id = "extension-definition--" + str(uuid.uuid4())
+
+    stix2.v21.CustomExtension(
+        ext_def_id,
+        props
+    )(ext)
+
+    try:
+        yield ext_def_id
+    finally:
+        # "unregister" the extension
+        del stix2.registry.STIX2_OBJ_MAPS["2.1"]["extensions"][ext_def_id]
+
+
+def test_nested_ext_prop_meta():
+
+    class TestExt:
+        extension_type = "property-extension"
+
+    props = {
+        "intprop": stix2.properties.IntegerProperty(required=True),
+        "strprop": stix2.properties.StringProperty(
+            required=False, default=lambda: "foo"
+        )
+    }
+
+    with _register_extension(TestExt, props) as ext_def_id:
+
+        obj = stix2.v21.Identity(
+            name="test",
+            extensions={
+                ext_def_id: {
+                    "extension_type": "property-extension",
+                    "intprop": "1",
+                    "strprop": 2
+                }
+            }
+        )
+
+        assert obj.extensions[ext_def_id].extension_type == "property-extension"
+        assert obj.extensions[ext_def_id].intprop == 1
+        assert obj.extensions[ext_def_id].strprop == "2"
+
+        obj = stix2.v21.Identity(
+            name="test",
+            extensions={
+                ext_def_id: {
+                    "extension_type": "property-extension",
+                    "intprop": "1",
+                }
+            }
+        )
+
+        # Ensure default kicked in
+        assert obj.extensions[ext_def_id].strprop == "foo"
+
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "property-extension",
+                        # wrong value type
+                        "intprop": "foo"
+                    }
+                }
+            )
+
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "property-extension",
+                        # missing required property
+                        "strprop": "foo"
+                    }
+                }
+            )
+
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "property-extension",
+                        "intprop": 1,
+                        # Use of undefined property
+                        "foo": False,
+                    }
+                }
+            )
+
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                extensions={
+                    ext_def_id: {
+                        # extension_type doesn't match with registration
+                        "extension_type": "new-sdo",
+                        "intprop": 1,
+                        "strprop": "foo",
+                    }
+                }
+            )
+
+
+def test_toplevel_ext_prop_meta():
+
+    class TestExt:
+        extension_type = "toplevel-property-extension"
+
+    props = {
+        "intprop": stix2.properties.IntegerProperty(required=True),
+        "strprop": stix2.properties.StringProperty(
+            required=False, default=lambda: "foo"
+        )
+    }
+
+    with _register_extension(TestExt, props) as ext_def_id:
+
+        obj = stix2.v21.Identity(
+            name="test",
+            intprop="1",
+            strprop=2,
+            extensions={
+                ext_def_id: {
+                    "extension_type": "toplevel-property-extension"
+                }
+            }
+        )
+
+        assert obj.extensions[ext_def_id].extension_type == "toplevel-property-extension"
+        assert obj.intprop == 1
+        assert obj.strprop == "2"
+
+        obj = stix2.v21.Identity(
+            name="test",
+            intprop=1,
+            extensions={
+                ext_def_id: {
+                    "extension_type": "toplevel-property-extension"
+                }
+            }
+        )
+
+        # Ensure default kicked in
+        assert obj.strprop == "foo"
+
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                intprop="foo",  # wrong value type
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "toplevel-property-extension"
+                    }
+                }
+            )
+
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                intprop=1,
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "toplevel-property-extension",
+                        # Use of undefined property
+                        "foo": False,
+                    }
+                }
+            )
+
+        with pytest.raises(MissingPropertiesError):
+            stix2.v21.Identity(
+                name="test",
+                strprop="foo",  # missing required property
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "toplevel-property-extension"
+                    }
+                }
+            )
 
 
 def test_allow_custom_propagation():

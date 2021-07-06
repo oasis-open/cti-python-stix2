@@ -857,7 +857,7 @@ def CustomObject(type='x-custom-type', properties=None, extension_name=None, is_
         )
 
         if extension_name:
-            @CustomExtension(type=extension_name, properties=extension_properties)
+            @CustomExtension(type=extension_name, properties={})
             class NameExtension:
                 if is_sdo:
                     extension_type = 'new-sdo'

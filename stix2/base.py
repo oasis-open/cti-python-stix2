@@ -1,5 +1,6 @@
 """Base classes for type definitions in the STIX2 library."""
 
+import collections
 import collections.abc
 import copy
 import itertools
@@ -36,14 +37,32 @@ class _STIXBase(collections.abc.Mapping):
     """Base class for STIX object types"""
 
     def object_properties(self):
-        props = set(self._properties.keys())
-        custom_props = list(set(self._inner.keys()) - props)
-        custom_props.sort()
+        """
+        Get a list of property names in a particular order: spec order for
+        spec defined properties, followed by toplevel-property-extension
+        properties (any order), followed by custom properties (any order).
 
-        all_properties = list(self._properties.keys())
-        all_properties.extend(custom_props)  # Any custom properties to the bottom
+        The returned list doesn't include only defined+extension properties,
+        nor does it include only assigned properties (i.e. those this object
+        actually possesses).  It's a mix of both: the spec defined property
+        group and extension group include all of them, regardless of whether
+        they're present on this object; the custom group include only names of
+        properties present on this object.
 
-        return all_properties
+        :return: A list of property names
+        """
+        if self.__property_order is None:
+            custom_props = sorted(
+                self.keys() - self._properties.keys()
+                - self.__ext_property_names
+            )
+
+            # Any custom properties to the bottom
+            self.__property_order = list(self._properties) \
+                + list(self.__ext_property_names) \
+                + custom_props
+
+        return self.__property_order
 
     def _check_property(self, prop_name, prop, kwargs, allow_custom):
         if prop_name not in kwargs:
@@ -131,46 +150,45 @@ class _STIXBase(collections.abc.Mapping):
         if custom_props and not isinstance(custom_props, dict):
             raise ValueError("'custom_properties' must be a dictionary")
 
-        # Detect any keyword arguments not allowed for a specific type.
+        # Detect any keyword arguments representing customization.
         # In STIX 2.1, this is complicated by "toplevel-property-extension"
         # type extensions, which can add extra properties which are *not*
         # considered custom.
-        extra_kwargs = kwargs.keys() - self._properties.keys()
-
         extensions = kwargs.get("extensions")
+        registered_toplevel_extension_props = {}
+        has_unregistered_toplevel_extension = False
         if extensions:
-            has_unregistered_toplevel_extension = False
-            registered_toplevel_extension_props = set()
-
             for ext_id, ext in extensions.items():
                 if ext.get("extension_type") == "toplevel-property-extension":
                     registered_ext_class = class_for_type(
                         ext_id, "2.1", "extensions",
                     )
                     if registered_ext_class:
-                        registered_toplevel_extension_props |= \
-                            registered_ext_class._properties.keys()
+                        registered_toplevel_extension_props.update(
+                            registered_ext_class._toplevel_properties
+                        )
                     else:
                         has_unregistered_toplevel_extension = True
 
-            if has_unregistered_toplevel_extension:
-                # Must assume all extras are extension properties, not custom.
-                extra_kwargs.clear()
+        if has_unregistered_toplevel_extension:
+            # Must assume all extras are extension properties, not custom.
+            custom_kwargs = set()
 
-            else:
-                # All toplevel property extensions (if any) have been
-                # registered.  So we can tell what their properties are and
-                # treat only those as not custom.
-                extra_kwargs -= registered_toplevel_extension_props
+        else:
+            # All toplevel property extensions (if any) have been
+            # registered.  So we can tell what their properties are and
+            # treat only those as not custom.
+            custom_kwargs = kwargs.keys() - self._properties.keys() \
+                - registered_toplevel_extension_props.keys()
 
-        if extra_kwargs and not allow_custom:
-            raise ExtraPropertiesError(cls, extra_kwargs)
+        if custom_kwargs and not allow_custom:
+            raise ExtraPropertiesError(cls, custom_kwargs)
 
         if custom_props:
             # loophole for custom_properties...
             allow_custom = True
 
-        all_custom_prop_names = (extra_kwargs | custom_props.keys()) - \
+        all_custom_prop_names = (custom_kwargs | custom_props.keys()) - \
             self._properties.keys()
         if all_custom_prop_names:
             if not isinstance(self, stix2.v20._STIXBase20):
@@ -181,6 +199,21 @@ class _STIXBase(collections.abc.Mapping):
                             reason="Property name '%s' must begin with an alpha character." % prop_name,
                         )
 
+        # defined_properties = all properties defined on this type, plus all
+        # properties defined on this instance as a result of toplevel property
+        # extensions.
+        defined_properties = collections.ChainMap(
+            self._properties, registered_toplevel_extension_props
+        )
+
+        # object_properties() needs this; cache it here to avoid needing to
+        # recompute.
+        self.__ext_property_names = set(registered_toplevel_extension_props)
+        # object_properties() will compute this on first call, based on
+        # __ext_property_names above.  Maybe it makes sense to not compute this
+        # unless really necessary.
+        self.__property_order = None
+
         # Remove any keyword arguments whose value is None or [] (i.e. empty list)
         setting_kwargs = {
             k: v
@@ -189,22 +222,15 @@ class _STIXBase(collections.abc.Mapping):
         }
 
         # Detect any missing required properties
-        required_properties = set(get_required_properties(self._properties))
-        missing_kwargs = required_properties - set(setting_kwargs)
+        required_properties = set(
+            get_required_properties(defined_properties)
+        )
+        missing_kwargs = required_properties - setting_kwargs.keys()
         if missing_kwargs:
-            # In this scenario, we are inside within the scope of the extension.
-            # It is possible to check if this is a new Extension Class by
-            # querying "extension_type". Note: There is an API limitation currently
-            # because a toplevel-property-extension cannot validate its parent properties
-            new_ext_check = (
-                bool(getattr(self, "extension_type", None))
-                and issubclass(cls, stix2.v21._Extension)
-            )
-            if new_ext_check is False:
-                raise MissingPropertiesError(cls, missing_kwargs)
+            raise MissingPropertiesError(cls, missing_kwargs)
 
         has_custom = bool(all_custom_prop_names)
-        for prop_name, prop_metadata in self._properties.items():
+        for prop_name, prop_metadata in defined_properties.items():
             temp_custom = self._check_property(
                 prop_name, prop_metadata, setting_kwargs, allow_custom,
             )
@@ -213,7 +239,7 @@ class _STIXBase(collections.abc.Mapping):
 
         # Cache defaulted optional properties for serialization
         defaulted = []
-        for name, prop in self._properties.items():
+        for name, prop in defined_properties.items():
             try:
                 if (
                     not prop.required and not hasattr(prop, '_fixed_value') and

@@ -889,7 +889,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
             ),
         )
         if extension_name:
-            @CustomExtension(type=extension_name, properties=properties)
+            @CustomExtension(type=extension_name, properties={})
             class NameExtension:
                 extension_type = 'new-sco'
 
@@ -899,5 +899,3 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
             cls.with_extension = extension_name
         return _custom_observable_builder(cls, type, _properties, '2.1', _Observable, id_contrib_props)
     return wrapper
-
-
