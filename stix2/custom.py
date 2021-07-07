@@ -110,14 +110,14 @@ def _custom_extension_builder(cls, type, properties, version, base_class):
         extension_type_prop = EnumProperty(
             [
                 "new-sdo", "new-sco", "new-sro", "property-extension",
-                "toplevel-property-extension"
+                "toplevel-property-extension",
             ],
             required=False,
             fixed=extension_type,
         )
 
         nested_properties = {
-            "extension_type": extension_type_prop
+            "extension_type": extension_type_prop,
         }
 
         if extension_type == "toplevel-property-extension":

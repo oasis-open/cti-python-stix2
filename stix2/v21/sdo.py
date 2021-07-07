@@ -19,7 +19,7 @@ from ..properties import (
 from ..utils import NOW
 from .base import _DomainObject
 from .common import (
-    CustomExtension, ExternalReference, GranularMarking, KillChainPhase
+    CustomExtension, ExternalReference, GranularMarking, KillChainPhase,
 )
 from .vocab import (
     ATTACK_MOTIVATION, ATTACK_RESOURCE_LEVEL, GROUPING_CONTEXT, IDENTITY_CLASS,

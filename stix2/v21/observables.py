@@ -18,7 +18,7 @@ from ..properties import (
     TypeProperty,
 )
 from .base import _Extension, _Observable, _STIXBase21
-from .common import GranularMarking, CustomExtension
+from .common import CustomExtension, GranularMarking
 from .vocab import (
     ACCOUNT_TYPE, ENCRYPTION_ALGORITHM, HASHING_ALGORITHM,
     NETWORK_SOCKET_ADDRESS_FAMILY, NETWORK_SOCKET_TYPE,
@@ -877,7 +877,7 @@ def CustomObservable(type='x-custom-observable', properties=None, id_contrib_pro
                 [
                     ('type', TypeProperty(type, spec_version='2.1')),
                     ('spec_version', StringProperty(fixed='2.1')),
-                    ('id', IDProperty(type, spec_version='2.1'))
+                    ('id', IDProperty(type, spec_version='2.1')),
                 ],
                 properties,
                 [

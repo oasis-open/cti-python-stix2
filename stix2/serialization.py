@@ -1,6 +1,5 @@
 """STIX2 core serialization methods."""
 
-import copy
 import datetime as dt
 import io
 

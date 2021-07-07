@@ -3,7 +3,7 @@
 from collections import OrderedDict
 
 from . import _Extension
-from ..custom import _custom_marking_builder, _custom_extension_builder
+from ..custom import _custom_extension_builder, _custom_marking_builder
 from ..exceptions import InvalidValueError, PropertyPresenceError
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
@@ -268,8 +268,6 @@ def CustomMarking(type='x-custom-marking', properties=None, extension_name=None)
     """
     def wrapper(cls):
         if extension_name:
-            from . import observables
-
             @CustomExtension(type=extension_name, properties=properties)
             class NameExtension:
                 extension_type = 'property-extension'

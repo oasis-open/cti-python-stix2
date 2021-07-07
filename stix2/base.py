@@ -137,7 +137,7 @@ class _STIXBase(collections.abc.Mapping):
                     )
                     if registered_ext_class:
                         registered_toplevel_extension_props.update(
-                            registered_ext_class._toplevel_properties
+                            registered_ext_class._toplevel_properties,
                         )
                     else:
                         has_unregistered_toplevel_extension = True
@@ -175,7 +175,7 @@ class _STIXBase(collections.abc.Mapping):
         # properties defined on this instance as a result of toplevel property
         # extensions.
         defined_properties = collections.ChainMap(
-            self._properties, registered_toplevel_extension_props
+            self._properties, registered_toplevel_extension_props,
         )
 
         assigned_properties = collections.ChainMap(kwargs, custom_props)
@@ -186,7 +186,7 @@ class _STIXBase(collections.abc.Mapping):
         property_order = itertools.chain(
             self._properties,
             toplevel_extension_props,
-            sorted(all_custom_prop_names)
+            sorted(all_custom_prop_names),
         )
 
         setting_kwargs = {}
@@ -208,7 +208,7 @@ class _STIXBase(collections.abc.Mapping):
 
         # Detect any missing required properties
         required_properties = set(
-            get_required_properties(defined_properties)
+            get_required_properties(defined_properties),
         )
         missing_kwargs = required_properties - setting_kwargs.keys()
         if missing_kwargs:

@@ -10,7 +10,7 @@ import stix2.registry
 import stix2.v21
 
 from ...exceptions import (
-    DuplicateRegistrationError, InvalidValueError, MissingPropertiesError
+    DuplicateRegistrationError, InvalidValueError, MissingPropertiesError,
 )
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
@@ -1685,7 +1685,7 @@ def _register_extension(ext, props):
 
     stix2.v21.CustomExtension(
         ext_def_id,
-        props
+        props,
     )(ext)
 
     try:
@@ -1703,8 +1703,8 @@ def test_nested_ext_prop_meta():
     props = {
         "intprop": stix2.properties.IntegerProperty(required=True),
         "strprop": stix2.properties.StringProperty(
-            required=False, default=lambda: "foo"
-        )
+            required=False, default=lambda: "foo",
+        ),
     }
 
     with _register_extension(TestExt, props) as ext_def_id:
@@ -1715,9 +1715,9 @@ def test_nested_ext_prop_meta():
                 ext_def_id: {
                     "extension_type": "property-extension",
                     "intprop": "1",
-                    "strprop": 2
-                }
-            }
+                    "strprop": 2,
+                },
+            },
         )
 
         assert obj.extensions[ext_def_id].extension_type == "property-extension"
@@ -1730,8 +1730,8 @@ def test_nested_ext_prop_meta():
                 ext_def_id: {
                     "extension_type": "property-extension",
                     "intprop": "1",
-                }
-            }
+                },
+            },
         )
 
         # Ensure default kicked in
@@ -1744,9 +1744,9 @@ def test_nested_ext_prop_meta():
                     ext_def_id: {
                         "extension_type": "property-extension",
                         # wrong value type
-                        "intprop": "foo"
-                    }
-                }
+                        "intprop": "foo",
+                    },
+                },
             )
 
         with pytest.raises(InvalidValueError):
@@ -1756,9 +1756,9 @@ def test_nested_ext_prop_meta():
                     ext_def_id: {
                         "extension_type": "property-extension",
                         # missing required property
-                        "strprop": "foo"
-                    }
-                }
+                        "strprop": "foo",
+                    },
+                },
             )
 
         with pytest.raises(InvalidValueError):
@@ -1770,8 +1770,8 @@ def test_nested_ext_prop_meta():
                         "intprop": 1,
                         # Use of undefined property
                         "foo": False,
-                    }
-                }
+                    },
+                },
             )
 
         with pytest.raises(InvalidValueError):
@@ -1783,8 +1783,8 @@ def test_nested_ext_prop_meta():
                         "extension_type": "new-sdo",
                         "intprop": 1,
                         "strprop": "foo",
-                    }
-                }
+                    },
+                },
             )
 
 
@@ -1796,8 +1796,8 @@ def test_toplevel_ext_prop_meta():
     props = {
         "intprop": stix2.properties.IntegerProperty(required=True),
         "strprop": stix2.properties.StringProperty(
-            required=False, default=lambda: "foo"
-        )
+            required=False, default=lambda: "foo",
+        ),
     }
 
     with _register_extension(TestExt, props) as ext_def_id:
@@ -1808,9 +1808,9 @@ def test_toplevel_ext_prop_meta():
             strprop=2,
             extensions={
                 ext_def_id: {
-                    "extension_type": "toplevel-property-extension"
-                }
-            }
+                    "extension_type": "toplevel-property-extension",
+                },
+            },
         )
 
         assert obj.extensions[ext_def_id].extension_type == "toplevel-property-extension"
@@ -1822,9 +1822,9 @@ def test_toplevel_ext_prop_meta():
             intprop=1,
             extensions={
                 ext_def_id: {
-                    "extension_type": "toplevel-property-extension"
-                }
-            }
+                    "extension_type": "toplevel-property-extension",
+                },
+            },
         )
 
         # Ensure default kicked in
@@ -1836,9 +1836,9 @@ def test_toplevel_ext_prop_meta():
                 intprop="foo",  # wrong value type
                 extensions={
                     ext_def_id: {
-                        "extension_type": "toplevel-property-extension"
-                    }
-                }
+                        "extension_type": "toplevel-property-extension",
+                    },
+                },
             )
 
         with pytest.raises(InvalidValueError):
@@ -1850,8 +1850,8 @@ def test_toplevel_ext_prop_meta():
                         "extension_type": "toplevel-property-extension",
                         # Use of undefined property
                         "foo": False,
-                    }
-                }
+                    },
+                },
             )
 
         with pytest.raises(MissingPropertiesError):
@@ -1860,9 +1860,9 @@ def test_toplevel_ext_prop_meta():
                 strprop="foo",  # missing required property
                 extensions={
                     ext_def_id: {
-                        "extension_type": "toplevel-property-extension"
-                    }
-                }
+                        "extension_type": "toplevel-property-extension",
+                    },
+                },
             )
 
 
