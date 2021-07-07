@@ -1863,7 +1863,7 @@ def test_toplevel_ext_prop_meta():
                         "extension_type": "toplevel-property-extension",
                         # Use of a defined property, but intended for the
                         # top level.  This should still error out.
-                        "intprop": 1,
+                        "strprop": 1,
                     },
                 },
             )
