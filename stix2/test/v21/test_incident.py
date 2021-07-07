@@ -78,4 +78,3 @@ def test_incident_with_custom():
     )
 
     assert incident.x_foo == "bar"
-    assert "x_foo" in incident.object_properties()

@@ -74,6 +74,6 @@ def test_identity_with_custom():
     )
 
     assert identity.x_foo == "bar"
-    assert "x_foo" in identity.object_properties()
+    assert "x_foo" in identity
 
 # TODO: Add other examples

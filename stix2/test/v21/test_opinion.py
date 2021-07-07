@@ -38,7 +38,8 @@ EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
     modified='2016-05-12T08:17:27.000Z',
     explanation="%s",
     opinion='strongly-disagree',
-    object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471']
+    object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
+    revoked=False
     """ % EXPLANATION
 ).split()) + ")"
 

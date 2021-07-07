@@ -19,20 +19,19 @@ from .base import (
 )
 from .bundle import Bundle
 from .common import (
-    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking,
+    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomExtension, CustomMarking,
     ExtensionDefinition, ExternalReference, GranularMarking, KillChainPhase,
     LanguageContent, MarkingDefinition, StatementMarking, TLPMarking,
 )
 from .observables import (
     URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
-    CustomExtension, CustomObservable, Directory, DomainName, EmailAddress,
-    EmailMessage, EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
-    IPv4Address, IPv6Address, MACAddress, Mutex, NetworkTraffic, NTFSExt,
-    PDFExt, Process, RasterImageExt, SocketExt, Software, TCPExt,
-    UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
-    WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
-    WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
-    X509Certificate, X509V3ExtensionsType,
+    CustomObservable, Directory, DomainName, EmailAddress, EmailMessage,
+    EmailMIMEComponent, File, HTTPRequestExt, ICMPExt, IPv4Address,
+    IPv6Address, MACAddress, Mutex, NetworkTraffic, NTFSExt, PDFExt, Process,
+    RasterImageExt, SocketExt, Software, TCPExt, UNIXAccountExt, UserAccount,
+    WindowsPEBinaryExt, WindowsPEOptionalHeaderType, WindowsPESection,
+    WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
+    WindowsServiceExt, X509Certificate, X509V3ExtensionsType,
 )
 from .sdo import (
     AttackPattern, Campaign, CourseOfAction, CustomObject, Grouping, Identity,
