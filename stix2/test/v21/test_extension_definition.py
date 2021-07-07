@@ -105,4 +105,3 @@ def test_extension_definition_with_custom():
     )
 
     assert extension_definition.x_foo == "bar"
-    assert "x_foo" in extension_definition.object_properties()

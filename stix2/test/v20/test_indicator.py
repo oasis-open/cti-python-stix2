@@ -28,6 +28,7 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join(
     modified='2017-01-01T00:00:01.000Z',
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     valid_from='1970-01-01T00:00:01Z',
+    revoked=False,
     labels=['malicious-activity']
 """.split(),
 ) + ")"

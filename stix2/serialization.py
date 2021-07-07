@@ -24,7 +24,7 @@ class STIXJSONEncoder(json.JSONEncoder):
         if isinstance(obj, (dt.date, dt.datetime)):
             return format_datetime(obj)
         elif isinstance(obj, stix2.base._STIXBase):
-            tmp_obj = dict(copy.deepcopy(obj))
+            tmp_obj = dict(obj)
             for prop_name in obj._defaulted_optional_properties:
                 del tmp_obj[prop_name]
             return tmp_obj
@@ -177,7 +177,7 @@ def find_property_index(obj, search_key, search_value):
 
     if isinstance(obj, stix2.base._STIXBase):
         if search_key in obj and obj[search_key] == search_value:
-            idx = _find(obj.object_properties(), search_key)
+            idx = _find(list(obj), search_key)
         else:
             idx = _find_property_in_seq(obj.values(), search_key, search_value)
     elif isinstance(obj, dict):

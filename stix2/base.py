@@ -36,34 +36,6 @@ def get_required_properties(properties):
 class _STIXBase(collections.abc.Mapping):
     """Base class for STIX object types"""
 
-    def object_properties(self):
-        """
-        Get a list of property names in a particular order: spec order for
-        spec defined properties, followed by toplevel-property-extension
-        properties (any order), followed by custom properties (any order).
-
-        The returned list doesn't include only defined+extension properties,
-        nor does it include only assigned properties (i.e. those this object
-        actually possesses).  It's a mix of both: the spec defined property
-        group and extension group include all of them, regardless of whether
-        they're present on this object; the custom group include only names of
-        properties present on this object.
-
-        :return: A list of property names
-        """
-        if self.__property_order is None:
-            custom_props = sorted(
-                self.keys() - self._properties.keys()
-                - self.__ext_property_names
-            )
-
-            # Any custom properties to the bottom
-            self.__property_order = list(self._properties) \
-                + list(self.__ext_property_names) \
-                + custom_props
-
-        return self.__property_order
-
     def _check_property(self, prop_name, prop, kwargs, allow_custom):
         if prop_name not in kwargs:
             if hasattr(prop, 'default'):
@@ -206,20 +178,33 @@ class _STIXBase(collections.abc.Mapping):
             self._properties, registered_toplevel_extension_props
         )
 
-        # object_properties() needs this; cache it here to avoid needing to
-        # recompute.
-        self.__ext_property_names = set(registered_toplevel_extension_props)
-        # object_properties() will compute this on first call, based on
-        # __ext_property_names above.  Maybe it makes sense to not compute this
-        # unless really necessary.
-        self.__property_order = None
+        assigned_properties = collections.ChainMap(kwargs, custom_props)
 
-        # Remove any keyword arguments whose value is None or [] (i.e. empty list)
-        setting_kwargs = {
-            k: v
-            for k, v in itertools.chain(kwargs.items(), custom_props.items())
-            if v is not None and v != []
-        }
+        # Establish property order: spec-defined, toplevel extension, custom.
+        toplevel_extension_props = registered_toplevel_extension_props.keys() \
+            | (kwargs.keys() - self._properties.keys() - custom_kwargs)
+        property_order = itertools.chain(
+            self._properties,
+            toplevel_extension_props,
+            sorted(all_custom_prop_names)
+        )
+
+        setting_kwargs = {}
+
+        has_custom = bool(all_custom_prop_names)
+        for prop_name in property_order:
+
+            prop_val = assigned_properties.get(prop_name)
+            if prop_val not in (None, []):
+                setting_kwargs[prop_name] = prop_val
+
+            prop = defined_properties.get(prop_name)
+            if prop:
+                temp_custom = self._check_property(
+                    prop_name, prop, setting_kwargs, allow_custom,
+                )
+
+                has_custom = has_custom or temp_custom
 
         # Detect any missing required properties
         required_properties = set(
@@ -228,14 +213,6 @@ class _STIXBase(collections.abc.Mapping):
         missing_kwargs = required_properties - setting_kwargs.keys()
         if missing_kwargs:
             raise MissingPropertiesError(cls, missing_kwargs)
-
-        has_custom = bool(all_custom_prop_names)
-        for prop_name, prop_metadata in defined_properties.items():
-            temp_custom = self._check_property(
-                prop_name, prop_metadata, setting_kwargs, allow_custom,
-            )
-
-            has_custom = has_custom or temp_custom
 
         # Cache defaulted optional properties for serialization
         defaulted = []
@@ -304,7 +281,7 @@ class _STIXBase(collections.abc.Mapping):
         return self.serialize()
 
     def __repr__(self):
-        props = ', '.join([f"{k}={self[k]!r}" for k in self.object_properties() if self.get(k)])
+        props = ', '.join([f"{k}={self[k]!r}" for k in self])
         return f'{self.__class__.__name__}({props})'
 
     def __deepcopy__(self, memo):
