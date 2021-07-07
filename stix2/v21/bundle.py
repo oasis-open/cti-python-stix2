@@ -10,7 +10,7 @@ from .base import _STIXBase21
 
 class Bundle(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_nuwp4rox8c7r>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_gms872kuzdmg>`__.
     """
 
     _type = 'bundle'
@@ -37,7 +37,7 @@ class Bundle(_STIXBase21):
     def get_obj(self, obj_uuid):
         if "objects" in self._inner:
             found_objs = [elem for elem in self.objects if elem['id'] == obj_uuid]
-            if found_objs == []:
+            if not found_objs:
                 raise KeyError("'%s' does not match the id property of any of the bundle's objects" % obj_uuid)
             return found_objs
         else:

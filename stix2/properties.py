@@ -2,6 +2,7 @@
 
 import base64
 import binascii
+import collections.abc
 import copy
 import inspect
 import re
@@ -13,20 +14,15 @@ import stix2.hashes
 from .base import _STIXBase
 from .exceptions import CustomContentError, DictionaryKeyError, STIXError
 from .parsing import parse, parse_observable
-from .registry import STIX2_OBJ_MAPS
+from .registry import class_for_type
 from .utils import (
     STIXTypeClass, _get_dict, get_class_hierarchy_names, get_type_from_id,
     is_object, is_stix_type, parse_into_datetime, to_enum,
 )
 from .version import DEFAULT_VERSION
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
-TYPE_REGEX = re.compile(r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$')
-TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+(-[a-z0-9]+)*\-?$')
+TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
+TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
 ERROR_INVALID_ID = (
     "not a valid STIX identifier, must match <object-type>--<UUID>: {}"
 )
@@ -125,7 +121,7 @@ class Property(object):
             creating an object with that property. No default value exists for
             these properties. (Default: ``False``)
         fixed: This provides a constant default value. Users are free to
-            provide this value explicity when constructing an object (which
+            provide this value explicitly when constructing an object (which
             allows you to copy **all** values from an existing object to a new
             object), but if the user provides a value other than the ``fixed``
             value, it will raise an error. This is semantically equivalent to
@@ -184,7 +180,7 @@ class Property(object):
 
         if required and default:
             raise STIXError(
-                "Cant't use 'required' and 'default' together. 'required'"
+                "Can't use 'required' and 'default' together. 'required'"
                 "really means 'the user must provide this.'",
             )
 
@@ -250,7 +246,7 @@ class ListProperty(Property):
                 if isinstance(item, self.contained):
                     valid = item
 
-                elif isinstance(item, Mapping):
+                elif isinstance(item, collections.abc.Mapping):
                     # attempt a mapping-like usage...
                     valid = self.contained(allow_custom=allow_custom, **item)
 
@@ -738,7 +734,7 @@ class ObservableProperty(Property):
         if dictified == {}:
             raise ValueError("The observable property must contain a non-empty dictionary")
 
-        valid_refs = dict((k, v['type']) for (k, v) in dictified.items())
+        valid_refs = {k: v['type'] for (k, v) in dictified.items()}
 
         has_custom = False
         for key, obj in dictified.items():
@@ -771,8 +767,7 @@ class ExtensionsProperty(DictionaryProperty):
     """Property for representing extensions on Observable objects.
     """
 
-    def __init__(self, spec_version=DEFAULT_VERSION, enclosing_type=None, required=False):
-        self.enclosing_type = enclosing_type
+    def __init__(self, spec_version=DEFAULT_VERSION, required=False):
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
     def clean(self, value, allow_custom):
@@ -786,17 +781,21 @@ class ExtensionsProperty(DictionaryProperty):
             raise ValueError("The extensions property must contain a dictionary")
 
         has_custom = False
-        specific_type_map = STIX2_OBJ_MAPS[self.spec_version]['observable-extensions'].get(self.enclosing_type, {})
         for key, subvalue in dictified.items():
-            if key in specific_type_map:
-                cls = specific_type_map[key]
-                if type(subvalue) is dict:
+            cls = class_for_type(key, self.spec_version, "extensions")
+            if cls:
+                if isinstance(subvalue, dict):
                     ext = cls(allow_custom=allow_custom, **subvalue)
-                elif type(subvalue) is cls:
-                    # If already an instance of an _Extension class, assume it's valid
+                elif isinstance(subvalue, cls):
+                    # If already an instance of the registered class, assume
+                    # it's valid
                     ext = subvalue
                 else:
-                    raise ValueError("Cannot determine extension type.")
+                    raise TypeError(
+                        "Can't create extension '{}' from {}.".format(
+                            key, type(subvalue),
+                        ),
+                    )
 
                 has_custom = has_custom or ext.has_custom
 
@@ -810,11 +809,23 @@ class ExtensionsProperty(DictionaryProperty):
                 dictified[key] = ext
 
             else:
-                if allow_custom:
+                # If an unregistered "extension-definition--" style extension,
+                # we don't know what's supposed to be in it, so we can't
+                # determine whether there's anything custom.  So, assume there
+                # are no customizations.  If it's a different type of extension,
+                # non-registration implies customization (since all spec-defined
+                # extensions should be pre-registered with the library).
+
+                if key.startswith('extension-definition--'):
+                    _validate_id(
+                        key, self.spec_version, 'extension-definition--',
+                    )
+                elif allow_custom:
                     has_custom = True
-                    dictified[key] = subvalue
                 else:
                     raise CustomContentError("Can't parse unknown extension type: {}".format(key))
+
+                dictified[key] = subvalue
 
         return dictified, has_custom
 
@@ -828,8 +839,9 @@ class STIXObjectProperty(Property):
     def clean(self, value, allow_custom):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
+        stix2_classes = {'_DomainObject', '_RelationshipObject', 'MarkingDefinition'}
         if any(
-            x in ('_DomainObject', '_RelationshipObject', 'MarkingDefinition')
+            x in stix2_classes
             for x in get_class_hierarchy_names(value)
         ):
             # A simple "is this a spec version 2.1+ object" test.  For now,

@@ -37,7 +37,7 @@ def _collect_stix2_mappings():
                 STIX2_OBJ_MAPS[ver] = {}
                 STIX2_OBJ_MAPS[ver]['objects'] = mod.OBJ_MAP
                 STIX2_OBJ_MAPS[ver]['observables'] = mod.OBJ_MAP_OBSERVABLE
-                STIX2_OBJ_MAPS[ver]['observable-extensions'] = mod.EXT_MAP
+                STIX2_OBJ_MAPS[ver]['extensions'] = mod.EXT_MAP
             elif re.match(r'^stix2\.v2[0-9]\.common$', name) and is_pkg is False:
                 ver = _stix_vid_to_version(stix_vid)
                 mod = importlib.import_module(name, str(top_level_module.__name__))
@@ -49,7 +49,8 @@ def class_for_type(stix_type, stix_version, category=None):
     Get the registered class which implements a particular STIX type for a
     particular STIX version.
 
-    :param stix_type: A STIX type as a string
+    :param stix_type: A STIX type as a string, or for extension-definition
+        style extensions, the STIX ID of the definition.
     :param stix_version: A STIX version as a string, e.g. "2.1"
     :param category: An optional "category" value, which is just used directly
         as a second key after the STIX version, and depends on how the types
@@ -69,12 +70,11 @@ def class_for_type(stix_type, stix_version, category=None):
             if class_map:
                 cls = class_map.get(stix_type)
         else:
-            cls = cat_map["objects"].get(stix_type) \
-                or cat_map["observables"].get(stix_type) \
-                or cat_map["markings"].get(stix_type)
-
-    # Left "observable-extensions" out; it has a different
-    # substructure.  A version->category->type lookup would result
-    # in another map, not a class.  So it doesn't fit the pattern.
+            cls = (
+                cat_map["objects"].get(stix_type) or
+                cat_map["observables"].get(stix_type) or
+                cat_map["markings"].get(stix_type) or
+                cat_map["extensions"].get(stix_type)
+            )
 
     return cls

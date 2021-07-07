@@ -27,7 +27,8 @@ EXPECTED_LOCATION_1_REPR = "Location(" + " ".join(
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
     latitude=48.8566,
-    longitude=2.3522""".split(),
+    longitude=2.3522,
+    revoked=False""".split(),
 ) + ")"
 
 EXPECTED_LOCATION_2 = """{
@@ -47,14 +48,15 @@ EXPECTED_LOCATION_2_REPR = "Location(" + " ".join(
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
-    region='northern-america'""".split(),
+    region='northern-america',
+    revoked=False""".split(),
 ) + ")"
 
 
 def test_location_with_some_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
 
-    loc = stix2.v21.Location(
+    location = stix2.v21.Location(
         id=LOCATION_ID,
         created=now,
         modified=now,
@@ -62,8 +64,8 @@ def test_location_with_some_required_properties():
         longitude=2.3522,
     )
 
-    assert str(loc) == EXPECTED_LOCATION_1
-    rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(loc))
+    assert location.serialize(pretty=True) == EXPECTED_LOCATION_1
+    rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(location))
     assert rep == EXPECTED_LOCATION_1_REPR
 
 

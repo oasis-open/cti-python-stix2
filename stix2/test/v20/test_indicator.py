@@ -28,6 +28,7 @@ EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join(
     modified='2017-01-01T00:00:01.000Z',
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     valid_from='1970-01-01T00:00:01Z',
+    revoked=False,
     labels=['malicious-activity']
 """.split(),
 ) + ")"
@@ -48,7 +49,7 @@ def test_indicator_with_all_required_properties():
     )
 
     assert ind.revoked is False
-    assert str(ind) == EXPECTED_INDICATOR
+    assert ind.serialize(pretty=True) == EXPECTED_INDICATOR
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(ind))
     assert rep == EXPECTED_INDICATOR_REPR
 
