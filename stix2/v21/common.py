@@ -20,7 +20,7 @@ from .vocab import EXTENSION_TYPE, HASHING_ALGORITHM
 
 class ExternalReference(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_72bcfr3t79jx>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_72bcfr3t79jx>`__.
     """
 
     _properties = OrderedDict([
@@ -54,7 +54,7 @@ class ExternalReference(_STIXBase21):
 
 class KillChainPhase(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_i4tjv75ce50h>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_i4tjv75ce50h>`__.
     """
 
     _properties = OrderedDict([
@@ -65,7 +65,7 @@ class KillChainPhase(_STIXBase21):
 
 class GranularMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_robezi5egfdr>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_robezi5egfdr>`__.
     """
 
     _properties = OrderedDict([
@@ -81,7 +81,7 @@ class GranularMarking(_STIXBase21):
 
 class LanguageContent(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_z9r1cwtu8jja>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_z9r1cwtu8jja>`__.
     """
 
     _type = 'language-content'
@@ -109,7 +109,7 @@ class LanguageContent(_STIXBase21):
 
 class ExtensionDefinition(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_32j232tfvtly>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_32j232tfvtly>`__.
     """
 
     _type = 'extension-definition'
@@ -151,7 +151,7 @@ def CustomExtension(type='x-custom-ext', properties=None):
 
 class TLPMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_yd3ar14ekwrs>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_yd3ar14ekwrs>`__.
     """
 
     _type = 'tlp'
@@ -162,7 +162,7 @@ class TLPMarking(_STIXBase21):
 
 class StatementMarking(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_3ru8r05saera>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_3ru8r05saera>`__.
     """
 
     _type = 'statement'
@@ -192,7 +192,7 @@ class MarkingProperty(Property):
 
 class MarkingDefinition(_STIXBase21, _MarkingsMixin):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_k5fndj2c7c1k>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_k5fndj2c7c1k>`__.
     """
 
     _type = 'marking-definition'

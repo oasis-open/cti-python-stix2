@@ -33,7 +33,7 @@ from .vocab import (
 
 class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_axjijf603msy>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_axjijf603msy>`__.
     """
 
     _type = 'attack-pattern'
@@ -61,7 +61,7 @@ class AttackPattern(_DomainObject):
 
 class Campaign(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_pcpvfz4ik6d6>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_pcpvfz4ik6d6>`__.
     """
 
     _type = 'campaign'
@@ -101,7 +101,7 @@ class Campaign(_DomainObject):
 
 class CourseOfAction(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_a925mpw39txn>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_a925mpw39txn>`__.
     """
 
     _type = 'course-of-action'
@@ -127,7 +127,7 @@ class CourseOfAction(_DomainObject):
 
 class Grouping(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_t56pn7elv6u7>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_t56pn7elv6u7>`__.
     """
 
     _type = 'grouping'
@@ -155,7 +155,7 @@ class Grouping(_DomainObject):
 
 class Identity(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_wh296fiwpklp>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_wh296fiwpklp>`__.
     """
 
     _type = 'identity'
@@ -185,7 +185,7 @@ class Identity(_DomainObject):
 
 class Incident(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_sczfhw64pjxt>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_sczfhw64pjxt>`__.
     """
 
     _type = 'incident'
@@ -212,7 +212,7 @@ class Incident(_DomainObject):
 
 class Indicator(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_muftrcpnf89v>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_muftrcpnf89v>`__.
     """
 
     _type = 'indicator'
@@ -272,7 +272,7 @@ class Indicator(_DomainObject):
 
 class Infrastructure(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_jo3k1o6lr9>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_jo3k1o6lr9>`__.
     """
 
     _type = 'infrastructure'
@@ -313,7 +313,7 @@ class Infrastructure(_DomainObject):
 
 class IntrusionSet(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_jo3k1o6lr9>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_5ol9xlbbnrdn>`__.
     """
 
     _type = 'intrusion-set'
@@ -356,7 +356,7 @@ class IntrusionSet(_DomainObject):
 
 class Location(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_th8nitr8jb4k>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_th8nitr8jb4k>`__.
     """
 
     _type = 'location'
@@ -464,7 +464,7 @@ class Location(_DomainObject):
 
 class Malware(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_s5l7katgbp09>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_s5l7katgbp09>`__.
     """
 
     _type = 'malware'
@@ -517,7 +517,7 @@ class Malware(_DomainObject):
 
 class MalwareAnalysis(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_6hdrixb3ua4j>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_6hdrixb3ua4j>`__.
     """
 
     _type = 'malware-analysis'
@@ -562,7 +562,7 @@ class MalwareAnalysis(_DomainObject):
 
 class Note(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_gudodcg1sbb9>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_gudodcg1sbb9>`__.
     """
 
     _type = 'note'
@@ -590,7 +590,7 @@ class Note(_DomainObject):
 
 class ObservedData(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_p49j1fwoxldc>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_p49j1fwoxldc>`__.
     """
 
     _type = 'observed-data'
@@ -644,7 +644,7 @@ class ObservedData(_DomainObject):
 
 class Opinion(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_ht1vtzfbtzda>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_ht1vtzfbtzda>`__.
     """
 
     _type = 'opinion'
@@ -672,7 +672,7 @@ class Opinion(_DomainObject):
 
 class Report(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_n8bjzg1ysgdq>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_n8bjzg1ysgdq>`__.
     """
 
     _type = 'report'
@@ -701,7 +701,7 @@ class Report(_DomainObject):
 
 class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_k017w16zutw>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_k017w16zutw>`__.
     """
 
     _type = 'threat-actor'
@@ -748,7 +748,7 @@ class ThreatActor(_DomainObject):
 
 class Tool(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_z4voa9ndw8v>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_z4voa9ndw8v>`__.
     """
 
     _type = 'tool'
@@ -778,7 +778,7 @@ class Tool(_DomainObject):
 
 class Vulnerability(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html#_q5ytzmajn6re>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_q5ytzmajn6re>`__.
     """
 
     _type = 'vulnerability'
