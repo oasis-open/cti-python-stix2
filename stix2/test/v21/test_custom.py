@@ -1854,6 +1854,20 @@ def test_toplevel_ext_prop_meta():
                 },
             )
 
+        with pytest.raises(InvalidValueError):
+            stix2.v21.Identity(
+                name="test",
+                intprop=1,
+                extensions={
+                    ext_def_id: {
+                        "extension_type": "toplevel-property-extension",
+                        # Use of a defined property, but intended for the
+                        # top level.  This should still error out.
+                        "intprop": 1,
+                    },
+                },
+            )
+
         with pytest.raises(MissingPropertiesError):
             stix2.v21.Identity(
                 name="test",
