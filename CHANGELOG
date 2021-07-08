@@ -4,31 +4,31 @@ CHANGELOG
 This version aligns with the STIX 2.1 CS 03 (WD12) document, also know as the "OASIS Standard".
 
 Main Changes
-#509 Add Sighting.summary default value 
+#509 Add Sighting.summary default value
 #503 Revamp how STIX content customization is detected and enforced  enhancement
-#500 fp write for STIX Objects 
-#492 Drop 'six' dependency (backwards breaking) 
-#490 Change canonicalization to normalization 
-#489 Fix observation expression DNF transformer to preserve FOLLOWEDBY order. 
-#485 Update CustomObservable decorator 
-#483 add is_sdo() et al functions 
-#481 Refactor stix2.parsing into more focused modules 
-#480 Support Pagination in TAXII DataStore 
-#476 FileSystemsSink.add creates an additional level of directory hierarchy 
-#458 Versioning refinements 
-#468 Extensions Support 
+#500 fp write for STIX Objects
+#492 Drop 'six' dependency (backwards breaking)
+#490 Change canonicalization to normalization
+#489 Fix observation expression DNF transformer to preserve FOLLOWEDBY order.
+#485 Update CustomObservable decorator
+#483 add is_sdo() et al functions
+#481 Refactor stix2.parsing into more focused modules
+#480 Support Pagination in TAXII DataStore
+#476 FileSystemsSink.add creates an additional level of directory hierarchy
+#458 Versioning refinements
+#468 Extensions Support
 
 Changes for CS03:
 #517 Update links in code to current specification
-#515 Add new infrastructure-type-ov entries 
-#514 Update Network Traffic for CS03 
-#504 Fix sighting.last_seen check 
+#515 Add new infrastructure-type-ov entries
+#514 Update Network Traffic for CS03
+#504 Fix sighting.last_seen check
 
 Semantic Similarity
-#499 Update incident weights for semantic similarity 
-#496 Similarity/Equivalence Changes 
-#493 Update the semantic equivalence user guide page 
-#491 Graph Equivalence Changes 
+#499 Update incident weights for semantic similarity
+#496 Similarity/Equivalence Changes
+#493 Update the semantic equivalence user guide page
+#491 Graph Equivalence Changes
 
 Testing, etc
 #482 Migrate test to GitHub Actions, update test & check configuration
