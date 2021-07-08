@@ -1,7 +1,39 @@
 CHANGELOG
 =========
 
-2.1.0 - 2020-11-20
+This version aligns with the STIX 2.1 CS 03 (WD12) document, also know as the "OASIS Standard".
+
+Main Changes
+#509 Add Sighting.summary default value 
+#503 Revamp how STIX content customization is detected and enforced  enhancement
+#500 fp write for STIX Objects 
+#492 Drop 'six' dependency (backwards breaking) 
+#490 Change canonicalization to normalization 
+#489 Fix observation expression DNF transformer to preserve FOLLOWEDBY order. 
+#485 Update CustomObservable decorator 
+#483 add is_sdo() et al functions 
+#481 Refactor stix2.parsing into more focused modules 
+#480 Support Pagination in TAXII DataStore 
+#476 FileSystemsSink.add creates an additional level of directory hierarchy 
+#458 Versioning refinements 
+#468 Extensions Support 
+
+Changes for CS03:
+#517 Update links in code to current specification
+#515 Add new infrastructure-type-ov entries 
+#514 Update Network Traffic for CS03 
+#504 Fix sighting.last_seen check 
+
+Semantic Similarity
+#499 Update incident weights for semantic similarity 
+#496 Similarity/Equivalence Changes 
+#493 Update the semantic equivalence user guide page 
+#491 Graph Equivalence Changes 
+
+Testing, etc
+#482 Migrate test to GitHub Actions, update test & check configuration
+
+2.1.0 2020-11-20
 
 * #337 Switches fuzzywuzzy dependency for rapidfuzz (@maxbachmann)
 * #430 Adds ability to mix single objects and lists in the Bundle constructor
@@ -27,15 +59,15 @@ CHANGELOG
 * #474 Fixes order of object properties when serialized to match examples from
   the STIX specification
 
-2.0.2 - 2020-07-07
+2.0.2 2020-07-07
 
 * #423 Fixes issue with six dependency.
 
-2.0.1 - 2020-07-06
+2.0.1 2020-07-06
 
 * Fixes issue with PyPI.
 
-2.0.0 - 2020-07-06
+2.0.0 2020-07-06
 
 * #418 Drops support for Python versions older than 3.5
 * #397 Drops python-dateutil dependency to just use built-in datetime instead
@@ -48,13 +80,13 @@ CHANGELOG
 * #401 Fixes bug where some objects can be versioned and revoked that shouldn't
 * #417 Improves efficiency of ListProperty
 
-1.4.0 - 2020-04-03
+1.4.0 2020-04-03
 
 * #347, #355, #356, #357, #358, #360, #362, #369, #370, #379, #374, #384 Updates STIX 2.1 support to CS01
 * #376 Fixes bug where registering object of same name would overwrite it; will
   now raise an error
 
-1.3.1 - 2020-03-06
+1.3.1 2020-03-06
 
 * #322 Adds encoding option FileSystemSource and MemorySource
 * #354 Adds ability to specify id-contributing properties on custom SCOs
@@ -67,7 +99,7 @@ CHANGELOG
 * #348 Fixes bug with generating deterministic IDs for SCOs
 * #344 Fixes bug with propagating errors from the pattern validator
 
-1.3.0 - 2020-01-04
+1.3.0 2020-01-04
 
 * #305 Updates support of STIX 2.1 to WD06
 * #304 Updates semantic equivalence to latest draft, and allows programmatic
@@ -79,13 +111,13 @@ CHANGELOG
 * #316 Fix socket extension key checking
 * #317 Fixes checking of Indicator's pattern property based on pattern_version
 
-1.2.1 - 2019-10-16
+1.2.1 2019-10-16
 
 * #301 Adds more detailed debugging semantic equivalence output
 * #301 Updates semantic equivalence errors
 * #300 Fixes bug with deterministic IDs for SCOs containing unicode
 
-1.2.0 - 2019-09-25
+1.2.0 2019-09-25
 
 * #268, #271, #273, #275, #283, #285, #290 Changes support of STIX 2.1 to WD05 (CSD02), for all object types
 * #269 Updates id properties to take a spec_version parameter
@@ -94,7 +126,7 @@ CHANGELOG
 * #286 Fixes handling of custom observable extensions
 * #287 Fixes bug with timestamp precision preservation in MarkingDefinition objects
 
-1.1.3 - 2019-08-12
+1.1.3 2019-08-12
 
 * #258 Ignores empty values for optional fields
 * #259 Adds support for lang granular markings
@@ -103,32 +135,32 @@ CHANGELOG
 * #264 Supports accessing objects in bundles via STIX Object IDs
 * #274 Fixes bug parsing bundle containing custom objects
 
-1.1.2 - 2019-02-13
+1.1.2 2019-02-13
 
 * #86 Adds helper function to Location objects to generate a URL to the location in an online map engine.
 
-1.1.1 - 2019-01-11
+1.1.1 2019-01-11
 
 * #234 Update documentation structure to better navigate between v20/v21 objects
 * #232 FileSystemStore now raises an exception if you attempt to overwrite an existing file
 * #236 Fix a serialization problem with the WindowsRegistryKey observable object
 * #238 Fix a problem with the LanguageContent object not allowing its creation with an empty dictionary
 
-1.1.0 - 2018-12-11
+1.1.0 2018-12-11
 
-- Most (if not all) STIX 2.1 SDOs/SROs and core objects have been implemented according to the latest CSD/WD document
-- There is an implementation for the conversion scales
-- #196, #193 Removing duplicate code for: properties, registering objects, parsing objects, custom objects
-- #80, #197 Most (if not all) tests created for v20 are also implemented for v21
-- #189 Added extra checks for the pre-commit tool
-- #202 It is now possible to pass a Bundle into add() method in Memory datastores
+Most (if not all) STIX 2.1 SDOs/SROs and core objects have been implemented according to the latest CSD/WD document
+There is an implementation for the conversion scales
+#196, #193 Removing duplicate code for: properties, registering objects, parsing objects, custom objects
+#80, #197 Most (if not all) tests created for v20 are also implemented for v21
+#189 Added extra checks for the pre-commit tool
+#202 It is now possible to pass a Bundle into add() method in Memory datastores
 
-1.0.4 - 2018-11-15
+1.0.4 2018-11-15
 
 * #225 MemorySource fix to support custom objects
 * #212 More consistency in Observable extensions behavior/error messages
 
-1.0.3 - 2018-10-31
+1.0.3 2018-10-31
 
 * #187 Pickle proof objects
 * #181 Improvements to error handling for datastores
@@ -140,16 +172,16 @@ CHANGELOG
 * #213 Python 3.7 support
 * #214 Support for multiple object versions in MemoryStore
 
-1.0.2 - 2018-05-18
+1.0.2 2018-05-18
 
 * Fixes bugs when using allow_custom (#176, #179).
 
-1.0.1 - 2018-04-27
+1.0.1 2018-04-27
 
 * Fixes bug with incorrect TAXII parameters (#169).
 * Fixes bug with constructing patterns (#171).
 
-1.0.0 - 2018-04-16
+1.0.0 2018-04-16
 
 * Adds the Workbench layer API.
 * Adds checks to ensure valid type names are provided.
@@ -166,11 +198,11 @@ CHANGELOG
 * Changes `get_dict` to a private function.
 * `taxii2-client` is now an optional dependency.
 
-0.5.1 - 2018-03-06
+0.5.1 2018-03-06
 
 * Fixes issue with PyPI.
 
-0.5.0 - 2018-03-06
+0.5.0 2018-03-06
 
 * Adds functions to dereference relationships.
 * Adds a function to get an object's type from its ID.
@@ -179,7 +211,7 @@ CHANGELOG
   with custom properties, and a missing IntrusionSet property.
 * Drops Python 3.3 support.
 
-0.4.0 - 2017-11-13
+0.4.0 2017-11-13
 
 * Adds `creator_of` function to easily get the Identity that created an object,
   and a `serialize` function for fast serialization without sorting properties.
@@ -188,7 +220,7 @@ CHANGELOG
 * Includes internal changes to make it easier to support multiple versions of
   the STIX specification.
 
-0.3.0 - 2017-10-06
+0.3.0 2017-10-06
 
 * Adds data stores, object factory, and the environment layer.
 * Supports pattern expressions and data markings.
@@ -196,17 +228,17 @@ CHANGELOG
 * Includes support for custom object types, custom properties, custom observable
   objects, and custom observable extensions.
 
-0.2.0 - 2017-05-31
+0.2.0 2017-05-31
 
 * Adds a TAXII data source.
 
-0.1.0 - 2017-05-22
+0.1.0 2017-05-22
 
 * Include support for serializing/deserializing all STIX objects and Cyber
   Observable objects.
 * Markings are supported but not validated.
 
-0.0.1 - 2017-02-24
+0.0.1 2017-02-24
 
 * First packaged version
 * Supports all SDOs, Relationships, Bundle (not Sightings).
