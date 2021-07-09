@@ -24,6 +24,33 @@ IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
 )
 
 
+@contextlib.contextmanager
+def _register_extension(ext, props):
+    """
+    A contextmanager useful for registering an extension and then ensuring
+    it gets unregistered again.  A random extension-definition STIX ID is
+    generated for the extension and yielded as the contextmanager's value.
+
+    :param ext: The class which would normally be decorated with the
+        CustomExtension decorator.
+    :param props: Properties as would normally be passed into the
+        CustomExtension decorator.
+    """
+
+    ext_def_id = "extension-definition--" + str(uuid.uuid4())
+
+    stix2.v21.CustomExtension(
+        ext_def_id,
+        props,
+    )(ext)
+
+    try:
+        yield ext_def_id
+    finally:
+        # "unregister" the extension
+        del stix2.registry.STIX2_OBJ_MAPS["2.1"]["extensions"][ext_def_id]
+
+
 def test_identity_custom_property():
     identity = stix2.v21.Identity(
         id=IDENTITY_ID,
@@ -1645,54 +1672,64 @@ def test_registered_new_extension_sco_allow_custom_false():
 
 
 def test_registered_new_extension_marking_allow_custom_false():
-    @stix2.v21.CustomMarking(
-        'my-favorite-marking', [
-            ('some_marking_field', stix2.properties.StringProperty(required=True)),
-        ], 'extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff',
-    )
-    class MyFavMarking:
-        pass
 
-    my_favorite_marking = {
-        'type': 'marking-definition',
-        'spec_version': '2.1',
-        'id': 'marking-definition--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
-        'name': 'This is the name of my favorite Marking',
-        'extensions': {
-            'extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff': {
-                'extension_type': 'property-extension',
-                'some_marking_field': 'value',
-            },
-        },
+    class MyFavMarking:
+        extension_type = "property-extension"
+
+    props = {
+        'some_marking_field': stix2.properties.StringProperty(required=True),
     }
 
-    marking_object = stix2.parse(my_favorite_marking)
-    assert isinstance(marking_object, stix2.v21.MarkingDefinition)
-    assert isinstance(
-        marking_object.extensions['extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff'],
-        stix2.v21.EXT_MAP['extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff'],
-    )
+    with _register_extension(MyFavMarking, props) as ext_def_id:
 
-    marking_serialized = marking_object.serialize(sort_keys=True)
-    assert '"extensions": {"extension-definition--a932fcc6-e032-176c-126f-cb970a5a1fff": ' \
-           '{"extension_type": "property-extension", "some_marking_field": "value"}}' in marking_serialized
+        my_favorite_marking = {
+            'type': 'marking-definition',
+            'spec_version': '2.1',
+            'id': 'marking-definition--f9dbe89c-0030-4a9d-8b78-0dcd0a0de874',
+            'name': 'This is the name of my favorite Marking',
+            'extensions': {
+                ext_def_id: {
+                    'extension_type': 'property-extension',
+                    'some_marking_field': 'value',
+                },
+            },
+        }
+
+        marking_object = stix2.parse(my_favorite_marking)
+        assert isinstance(marking_object, stix2.v21.MarkingDefinition)
+        assert isinstance(
+            marking_object.extensions[ext_def_id],
+            stix2.v21.EXT_MAP[ext_def_id],
+        )
+
+        marking_serialized = marking_object.serialize(sort_keys=True)
+        assert '"extensions": {{"{}": ' \
+               '{{"extension_type": "property-extension", "some_marking_field": "value"}}}}'.format(ext_def_id) in marking_serialized
 
 
-@contextlib.contextmanager
-def _register_extension(ext, props):
+def test_custom_marking_toplevel_properties():
+    class CustomMarking:
+        extension_type = "toplevel-property-extension"
 
-    ext_def_id = "extension-definition--" + str(uuid.uuid4())
+    props = {
+        "foo": stix2.properties.StringProperty(required=True)
+    }
 
-    stix2.v21.CustomExtension(
-        ext_def_id,
-        props,
-    )(ext)
+    with _register_extension(CustomMarking, props) as ext_def_id:
 
-    try:
-        yield ext_def_id
-    finally:
-        # "unregister" the extension
-        del stix2.registry.STIX2_OBJ_MAPS["2.1"]["extensions"][ext_def_id]
+        marking_dict = {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "foo": "hello",
+            "extensions": {
+                ext_def_id: {
+                    "extension_type": "toplevel-property-extension"
+                }
+            }
+        }
+
+        marking = stix2.parse(marking_dict)
+        assert marking.foo == "hello"
 
 
 def test_nested_ext_prop_meta():
