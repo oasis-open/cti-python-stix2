@@ -132,11 +132,6 @@ def _register_observable(new_observable, version=version.DEFAULT_VERSION):
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 
-def _get_extension_class(extension_uuid, version):
-    """Retrieve a registered class Extension"""
-    return registry.STIX2_OBJ_MAPS[version]['extensions'].get(extension_uuid)
-
-
 def _register_extension(
     new_extension, version=version.DEFAULT_VERSION,
 ):
