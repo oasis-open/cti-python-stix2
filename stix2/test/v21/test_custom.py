@@ -1917,6 +1917,64 @@ def test_toplevel_ext_prop_meta():
             )
 
 
+def test_toplevel_extension_includes_extensions():
+    """
+    Test whether the library allows an extension to enable extension support
+    itself. :)  I.e. a toplevel property extension which adds the "extensions"
+    property.
+    """
+
+    class ExtensionsExtension:
+        extension_type = "toplevel-property-extension"
+
+    ext_props = {
+        "extensions": stix2.properties.ExtensionsProperty(spec_version="2.1")
+    }
+
+    with _register_extension(ExtensionsExtension, ext_props) as ext_id:
+
+        # extension-definition is not defined with an "extensions" property.
+        obj_dict = {
+            "type": "extension-definition",
+            "spec_version": "2.1",
+            "created_by_ref": "identity--8a1fd5dd-4586-4ded-bd39-04bda62f8415",
+            "name": "my extension",
+            "version": "1.2.3",
+            "schema": "add extension support to an object!",
+            "extension_types": ["toplevel-property-extension"],
+            "extensions": {
+                ext_id: {
+                    "extension_type": "toplevel-property-extension"
+                }
+            }
+        }
+
+        stix2.parse(obj_dict)
+
+
+def test_invalid_extension_prop_name():
+
+    with pytest.raises(ValueError):
+        @stix2.v21.common.CustomExtension(
+            "extension-definition--0530fdbd-0fa3-42ab-90cf-660e0abad370",
+            [
+                ("7foo", stix2.properties.StringProperty())
+            ]
+        )
+        class CustomExt:
+            extension_type = "property-extension"
+
+    with pytest.raises(ValueError):
+        @stix2.v21.common.CustomExtension(
+            "extension-definition--0530fdbd-0fa3-42ab-90cf-660e0abad370",
+            [
+                ("7foo", stix2.properties.StringProperty())
+            ]
+        )
+        class CustomExt:
+            extension_type = "toplevel-property-extension"
+
+
 def test_allow_custom_propagation():
     obj_dict = {
         "type": "bundle",
