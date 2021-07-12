@@ -1712,7 +1712,7 @@ def test_custom_marking_toplevel_properties():
         extension_type = "toplevel-property-extension"
 
     props = {
-        "foo": stix2.properties.StringProperty(required=True)
+        "foo": stix2.properties.StringProperty(required=True),
     }
 
     with _register_extension(CustomMarking, props) as ext_def_id:
@@ -1723,9 +1723,9 @@ def test_custom_marking_toplevel_properties():
             "foo": "hello",
             "extensions": {
                 ext_def_id: {
-                    "extension_type": "toplevel-property-extension"
-                }
-            }
+                    "extension_type": "toplevel-property-extension",
+                },
+            },
         }
 
         marking = stix2.parse(marking_dict)
@@ -1928,7 +1928,7 @@ def test_toplevel_extension_includes_extensions():
         extension_type = "toplevel-property-extension"
 
     ext_props = {
-        "extensions": stix2.properties.ExtensionsProperty(spec_version="2.1")
+        "extensions": stix2.properties.ExtensionsProperty(spec_version="2.1"),
     }
 
     with _register_extension(ExtensionsExtension, ext_props) as ext_id:
@@ -1944,9 +1944,9 @@ def test_toplevel_extension_includes_extensions():
             "extension_types": ["toplevel-property-extension"],
             "extensions": {
                 ext_id: {
-                    "extension_type": "toplevel-property-extension"
-                }
-            }
+                    "extension_type": "toplevel-property-extension",
+                },
+            },
         }
 
         stix2.parse(obj_dict)
@@ -1958,8 +1958,8 @@ def test_invalid_extension_prop_name():
         @stix2.v21.common.CustomExtension(
             "extension-definition--0530fdbd-0fa3-42ab-90cf-660e0abad370",
             [
-                ("7foo", stix2.properties.StringProperty())
-            ]
+                ("7foo", stix2.properties.StringProperty()),
+            ],
         )
         class CustomExt:
             extension_type = "property-extension"
@@ -1968,8 +1968,8 @@ def test_invalid_extension_prop_name():
         @stix2.v21.common.CustomExtension(
             "extension-definition--0530fdbd-0fa3-42ab-90cf-660e0abad370",
             [
-                ("7foo", stix2.properties.StringProperty())
-            ]
+                ("7foo", stix2.properties.StringProperty()),
+            ],
         )
         class CustomExt:
             extension_type = "toplevel-property-extension"
