@@ -1971,7 +1971,7 @@ def test_invalid_extension_prop_name():
                 ("7foo", stix2.properties.StringProperty()),
             ],
         )
-        class CustomExt:
+        class CustomExt:  # noqa: F811
             extension_type = "toplevel-property-extension"
 
 
