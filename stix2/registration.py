@@ -1,3 +1,4 @@
+import itertools
 import re
 
 from . import registry, version
@@ -132,11 +133,6 @@ def _register_observable(new_observable, version=version.DEFAULT_VERSION):
     OBJ_MAP_OBSERVABLE[new_observable._type] = new_observable
 
 
-def _get_extension_class(extension_uuid, version):
-    """Retrieve a registered class Extension"""
-    return registry.STIX2_OBJ_MAPS[version]['extensions'].get(extension_uuid)
-
-
 def _register_extension(
     new_extension, version=version.DEFAULT_VERSION,
 ):
@@ -149,7 +145,12 @@ def _register_extension(
 
     """
     ext_type = new_extension._type
-    properties = new_extension._properties
+
+    # Need to check both toplevel and nested properties
+    prop_groups = [new_extension._properties]
+    if hasattr(new_extension, "_toplevel_properties"):
+        prop_groups.append(new_extension._toplevel_properties)
+    prop_names = itertools.chain.from_iterable(prop_groups)
 
     _validate_type(ext_type, version)
 
@@ -166,7 +167,7 @@ def _register_extension(
                 ext_type,
             )
 
-        for prop_name in properties.keys():
+        for prop_name in prop_names:
             if not re.match(PREFIX_21_REGEX, prop_name):
                 raise ValueError("Property name '%s' must begin with an alpha character." % prop_name)
 

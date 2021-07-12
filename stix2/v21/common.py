@@ -252,7 +252,7 @@ OBJ_MAP_MARKING = {
 }
 
 
-def CustomMarking(type='x-custom-marking', properties=None, extension_name=None):
+def CustomMarking(type='x-custom-marking', properties=None):
     """Custom STIX Marking decorator.
 
     Example:
@@ -267,16 +267,6 @@ def CustomMarking(type='x-custom-marking', properties=None, extension_name=None)
 
     """
     def wrapper(cls):
-        if extension_name:
-            @CustomExtension(type=extension_name, properties=properties)
-            class NameExtension:
-                extension_type = 'property-extension'
-
-            extension = extension_name.split('--')[1]
-            extension = extension.replace('-', '')
-            NameExtension.__name__ = 'ExtensionDefinition' + extension
-            cls.with_extension = extension_name
-            return _custom_marking_builder(cls, type, MarkingDefinition._properties, '2.1', _STIXBase21)
         return _custom_marking_builder(cls, type, properties, '2.1', _STIXBase21)
     return wrapper
 

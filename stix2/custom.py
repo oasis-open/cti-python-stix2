@@ -3,9 +3,10 @@ from collections import OrderedDict
 from .base import _cls_init
 from .properties import EnumProperty
 from .registration import (
-    _get_extension_class, _register_extension, _register_marking,
-    _register_object, _register_observable,
+    _register_extension, _register_marking, _register_object,
+    _register_observable,
 )
+from .registry import class_for_type
 
 
 def _get_properties_dict(properties):
@@ -34,7 +35,7 @@ def _custom_object_builder(cls, type, properties, version, base_class):
             if ext and version != '2.0':
                 if 'extensions' not in self._inner:
                     self._inner['extensions'] = {}
-                self._inner['extensions'][ext] = _get_extension_class(ext, version)()
+                self._inner['extensions'][ext] = class_for_type(ext, version, "extensions")()
 
     _CustomObject.__name__ = cls.__name__
 
@@ -53,11 +54,6 @@ def _custom_marking_builder(cls, type, properties, version, base_class):
         def __init__(self, **kwargs):
             base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
-            ext = getattr(self, 'with_extension', None)
-            if ext and version != '2.0':
-                if 'extensions' not in self._inner:
-                    self._inner['extensions'] = {}
-                self._inner['extensions'][ext] = _get_extension_class(ext, version)()
 
     _CustomMarking.__name__ = cls.__name__
 
@@ -85,7 +81,7 @@ def _custom_observable_builder(cls, type, properties, version, base_class, id_co
             if ext and version != '2.0':
                 if 'extensions' not in self._inner:
                     self._inner['extensions'] = {}
-                self._inner['extensions'][ext] = _get_extension_class(ext, version)()
+                self._inner['extensions'][ext] = class_for_type(ext, version, "extensions")()
 
     _CustomObservable.__name__ = cls.__name__
 
