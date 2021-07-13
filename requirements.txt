@@ -1,7 +1,7 @@
 bumpversion
 ipython
 nbconvert<6
-nbsphinx==0.4.3
+nbsphinx==0.8.6
 pre-commit
 pygments<3,>=2.4.1
 pytest
