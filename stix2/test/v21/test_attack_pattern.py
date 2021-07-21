@@ -38,7 +38,7 @@ def test_attack_pattern_example():
         description="...",
     )
 
-    assert str(ap) == EXPECTED
+    assert ap.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(
@@ -114,7 +114,7 @@ def test_less_precise_timestamps():
         description="...",
     )
 
-    assert str(ap) == EXPECTED
+    assert ap.serialize(pretty=True) == EXPECTED
 
 
 # TODO: Add other examples

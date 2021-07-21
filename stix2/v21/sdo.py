@@ -1,7 +1,6 @@
 """STIX 2.1 Domain Objects."""
 
 from collections import OrderedDict
-import itertools
 from urllib.parse import quote_plus
 import warnings
 
@@ -12,13 +11,16 @@ from ..exceptions import (
     InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
 )
 from ..properties import (
-    BooleanProperty, EnumProperty, FloatProperty, IDProperty, IntegerProperty,
-    ListProperty, ObservableProperty, OpenVocabProperty, PatternProperty,
-    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+    IDProperty, IntegerProperty, ListProperty, ObservableProperty,
+    OpenVocabProperty, PatternProperty, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
 from .base import _DomainObject
-from .common import ExternalReference, GranularMarking, KillChainPhase
+from .common import (
+    CustomExtension, ExternalReference, GranularMarking, KillChainPhase,
+)
 from .vocab import (
     ATTACK_MOTIVATION, ATTACK_RESOURCE_LEVEL, GROUPING_CONTEXT, IDENTITY_CLASS,
     IMPLEMENTATION_LANGUAGE, INDICATOR_TYPE, INDUSTRY_SECTOR,
@@ -31,7 +33,7 @@ from .vocab import (
 
 class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_4ohsa4pay4h4>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_axjijf603msy>`__.
     """
 
     _type = 'attack-pattern'
@@ -53,12 +55,13 @@ class AttackPattern(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class Campaign(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_vvysvm8mt434>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_pcpvfz4ik6d6>`__.
     """
 
     _type = 'campaign'
@@ -82,6 +85,7 @@ class Campaign(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -91,13 +95,13 @@ class Campaign(_DomainObject):
         last_seen = self.get('last_seen')
 
         if first_seen and last_seen and last_seen < first_seen:
-            msg = "{0.id} 'last_seen' must be greater than or equal 'first_seen'"
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))
 
 
 class CourseOfAction(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_d5yf99f0a230>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_a925mpw39txn>`__.
     """
 
     _type = 'course-of-action'
@@ -117,12 +121,13 @@ class CourseOfAction(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class Grouping(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_9e3uldaqqha2>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_t56pn7elv6u7>`__.
     """
 
     _type = 'grouping'
@@ -144,12 +149,13 @@ class Grouping(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class Identity(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ru8fmldl2p6w>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_wh296fiwpklp>`__.
     """
 
     _type = 'identity'
@@ -173,12 +179,40 @@ class Identity(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
+    ])
+
+
+class Incident(_DomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_sczfhw64pjxt>`__.
+    """
+
+    _type = 'incident'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type, spec_version='2.1')),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class Indicator(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_wfiae74706sw>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_muftrcpnf89v>`__.
     """
 
     _type = 'indicator'
@@ -205,6 +239,7 @@ class Indicator(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, *args, **kwargs):
@@ -237,7 +272,7 @@ class Indicator(_DomainObject):
 
 class Infrastructure(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_l2alfbbcmfep>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_jo3k1o6lr9>`__.
     """
 
     _type = 'infrastructure'
@@ -262,6 +297,7 @@ class Infrastructure(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -277,7 +313,7 @@ class Infrastructure(_DomainObject):
 
 class IntrusionSet(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ticprjb32bc4>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_5ol9xlbbnrdn>`__.
     """
 
     _type = 'intrusion-set'
@@ -304,6 +340,7 @@ class IntrusionSet(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -319,7 +356,7 @@ class IntrusionSet(_DomainObject):
 
 class Location(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_sqez6sri9vtz>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_th8nitr8jb4k>`__.
     """
 
     _type = 'location'
@@ -348,6 +385,7 @@ class Location(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -426,7 +464,7 @@ class Location(_DomainObject):
 
 class Malware(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_gc4ooz6oaz7y>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_s5l7katgbp09>`__.
     """
 
     _type = 'malware'
@@ -457,6 +495,7 @@ class Malware(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -478,7 +517,7 @@ class Malware(_DomainObject):
 
 class MalwareAnalysis(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_dw67pa20zss5>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_6hdrixb3ua4j>`__.
     """
 
     _type = 'malware-analysis'
@@ -512,6 +551,7 @@ class MalwareAnalysis(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -522,7 +562,7 @@ class MalwareAnalysis(_DomainObject):
 
 class Note(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_hr77jvcbs9jk>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_gudodcg1sbb9>`__.
     """
 
     _type = 'note'
@@ -544,12 +584,13 @@ class Note(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class ObservedData(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_h1590esrzg5f>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_p49j1fwoxldc>`__.
     """
 
     _type = 'observed-data'
@@ -564,7 +605,7 @@ class ObservedData(_DomainObject):
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
         ('objects', ObservableProperty(spec_version='2.1')),
-        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SRO"], spec_version="2.1"))),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SRO"], spec_version='2.1'))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -572,6 +613,7 @@ class ObservedData(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, *args, **kwargs):
@@ -602,7 +644,7 @@ class ObservedData(_DomainObject):
 
 class Opinion(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_sr2hswmu5t1>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_ht1vtzfbtzda>`__.
     """
 
     _type = 'opinion'
@@ -624,12 +666,13 @@ class Opinion(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class Report(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ha4fpad0r9pf>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_n8bjzg1ysgdq>`__.
     """
 
     _type = 'report'
@@ -652,6 +695,7 @@ class Report(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, *args, **kwargs):
@@ -662,7 +706,7 @@ class Report(_DomainObject):
 
 class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_2wowmlcbkqst>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_k017w16zutw>`__.
     """
 
     _type = 'threat-actor'
@@ -693,6 +737,7 @@ class ThreatActor(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -708,7 +753,7 @@ class ThreatActor(_DomainObject):
 
 class Tool(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_m21z3a1f3lou>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_z4voa9ndw8v>`__.
     """
 
     _type = 'tool'
@@ -732,12 +777,13 @@ class Tool(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
 class Vulnerability(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_d9f0iay06wtx>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_q5ytzmajn6re>`__.
     """
 
     _type = 'vulnerability'
@@ -757,10 +803,11 @@ class Vulnerability(_DomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-def CustomObject(type='x-custom-type', properties=None):
+def CustomObject(type='x-custom-type', properties=None, extension_name=None, is_sdo=True):
     """Custom STIX Object type decorator.
 
     Example:
@@ -790,29 +837,42 @@ def CustomObject(type='x-custom-type', properties=None):
 
     """
     def wrapper(cls):
-        _properties = list(
-            itertools.chain.from_iterable([
-                [
-                    ('type', TypeProperty(type, spec_version='2.1')),
-                    ('spec_version', StringProperty(fixed='2.1')),
-                    ('id', IDProperty(type, spec_version='2.1')),
-                    ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-                    ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-                    ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
-                ],
-                [x for x in properties if not x[0].startswith('x_')],
-                [
-                    ('revoked', BooleanProperty(default=lambda: False)),
-                    ('labels', ListProperty(StringProperty)),
-                    ('confidence', IntegerProperty()),
-                    ('lang', StringProperty()),
-                    ('external_references', ListProperty(ExternalReference)),
-                    ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-                    ('granular_markings', ListProperty(GranularMarking)),
-                ],
-                sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-            ]),
+        extension_properties = [x for x in properties if not x[0].startswith('x_')]
+        _properties = (
+            [
+                ('type', TypeProperty(type, spec_version='2.1')),
+                ('spec_version', StringProperty(fixed='2.1')),
+                ('id', IDProperty(type, spec_version='2.1')),
+                ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+            ]
+            + extension_properties
+            + [
+                ('revoked', BooleanProperty(default=lambda: False)),
+                ('labels', ListProperty(StringProperty)),
+                ('confidence', IntegerProperty()),
+                ('lang', StringProperty()),
+                ('external_references', ListProperty(ExternalReference)),
+                ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+                ('granular_markings', ListProperty(GranularMarking)),
+                ('extensions', ExtensionsProperty(spec_version='2.1')),
+            ]
+            + sorted((x for x in properties if x[0].startswith('x_')), key=lambda x: x[0])
         )
+
+        if extension_name:
+            @CustomExtension(type=extension_name, properties={})
+            class NameExtension:
+                if is_sdo:
+                    extension_type = 'new-sdo'
+                else:
+                    extension_type = 'new-sro'
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
+            cls.with_extension = extension_name
         return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 
     return wrapper

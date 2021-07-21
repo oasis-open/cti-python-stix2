@@ -56,7 +56,7 @@ class TimestampConstant(_Constant):
 
 
 class IntegerConstant(_Constant):
-    """Pattern interger constant
+    """Pattern integer constant
 
     Args:
         value (int): integer value
@@ -265,7 +265,7 @@ class BasicObjectPathComponent(_ObjectPathComponent):
     """Basic object path component (for an observation or expression)
 
     By "Basic", implies that the object path component is not a
-    list, object reference or futher referenced property, i.e. terminal
+    list, object reference or further referenced property, i.e. terminal
     component
 
     Args:

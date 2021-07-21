@@ -216,7 +216,7 @@ class ObservedData(_DomainObject):
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
-        ('objects', ObservableProperty(spec_version="2.0", required=True)),
+        ('objects', ObservableProperty(spec_version='2.0', required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('external_references', ListProperty(ExternalReference)),

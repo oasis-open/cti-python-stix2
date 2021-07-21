@@ -38,7 +38,8 @@ EXPECTED_OPINION_REPR = "Opinion(" + " ".join((
     modified='2016-05-12T08:17:27.000Z',
     explanation="%s",
     opinion='strongly-disagree',
-    object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471']
+    object_refs=['relationship--16d2358f-3b0d-4c88-b047-0da2f7ed4471'],
+    revoked=False
     """ % EXPLANATION
 ).split()) + ")"
 
@@ -56,7 +57,7 @@ def test_opinion_with_required_properties():
         explanation=EXPLANATION,
     )
 
-    assert str(opi) == EXPECTED_OPINION
+    assert opi.serialize(pretty=True) == EXPECTED_OPINION
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(opi))
     assert rep == EXPECTED_OPINION_REPR
 

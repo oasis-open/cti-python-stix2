@@ -10,11 +10,24 @@ class _STIXBase21(_STIXBase):
 
 
 class _Observable(_Observable, _STIXBase21):
-    pass
+
+    def __init__(self, **kwargs):
+        super(_Observable, self).__init__(**kwargs)
+        if 'id' not in kwargs:
+            # Specific to 2.1+ observables: generate a deterministic ID
+            id_ = self._generate_id()
+
+            # Spec says fall back to UUIDv4 if no contributing properties were
+            # given.  That's what already happened (the following is actually
+            # overwriting the default uuidv4), so nothing to do here.
+            if id_ is not None:
+                # Can't assign to self (we're immutable), so slip the ID in
+                # more sneakily.
+                self._inner["id"] = id_
 
 
 class _Extension(_Extension, _STIXBase21):
-    pass
+    extension_type = None
 
 
 class _DomainObject(_DomainObject, _STIXBase21):

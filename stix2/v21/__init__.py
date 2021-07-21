@@ -19,24 +19,23 @@ from .base import (
 )
 from .bundle import Bundle
 from .common import (
-    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
-    GranularMarking, KillChainPhase, LanguageContent, MarkingDefinition,
-    StatementMarking, TLPMarking,
+    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomExtension, CustomMarking,
+    ExtensionDefinition, ExternalReference, GranularMarking, KillChainPhase,
+    LanguageContent, MarkingDefinition, StatementMarking, TLPMarking,
 )
 from .observables import (
     URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
-    CustomExtension, CustomObservable, Directory, DomainName, EmailAddress,
-    EmailMessage, EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
-    IPv4Address, IPv6Address, MACAddress, Mutex, NetworkTraffic, NTFSExt,
-    PDFExt, Process, RasterImageExt, SocketExt, Software, TCPExt,
-    UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
-    WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
-    WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
-    X509Certificate, X509V3ExtensionsType,
+    CustomObservable, Directory, DomainName, EmailAddress, EmailMessage,
+    EmailMIMEComponent, File, HTTPRequestExt, ICMPExt, IPv4Address,
+    IPv6Address, MACAddress, Mutex, NetworkTraffic, NTFSExt, PDFExt, Process,
+    RasterImageExt, SocketExt, Software, TCPExt, UNIXAccountExt, UserAccount,
+    WindowsPEBinaryExt, WindowsPEOptionalHeaderType, WindowsPESection,
+    WindowsProcessExt, WindowsRegistryKey, WindowsRegistryValueType,
+    WindowsServiceExt, X509Certificate, X509V3ExtensionsType,
 )
 from .sdo import (
     AttackPattern, Campaign, CourseOfAction, CustomObject, Grouping, Identity,
-    Indicator, Infrastructure, IntrusionSet, Location, Malware,
+    Incident, Indicator, Infrastructure, IntrusionSet, Location, Malware,
     MalwareAnalysis, Note, ObservedData, Opinion, Report, ThreatActor, Tool,
     Vulnerability,
 )
@@ -49,6 +48,7 @@ OBJ_MAP = {
     'course-of-action': CourseOfAction,
     'grouping': Grouping,
     'identity': Identity,
+    'incident': Incident,
     'indicator': Indicator,
     'infrastructure': Infrastructure,
     'intrusion-set': IntrusionSet,
@@ -65,6 +65,7 @@ OBJ_MAP = {
     'threat-actor': ThreatActor,
     'tool': Tool,
     'sighting': Sighting,
+    'extension-definition': ExtensionDefinition,
     'vulnerability': Vulnerability,
 }
 
@@ -90,28 +91,19 @@ OBJ_MAP_OBSERVABLE = {
 }
 
 EXT_MAP = {
-    'file': {
-        'archive-ext': ArchiveExt,
-        'ntfs-ext': NTFSExt,
-        'pdf-ext': PDFExt,
-        'raster-image-ext': RasterImageExt,
-        'windows-pebinary-ext': WindowsPEBinaryExt,
-    },
-    'network-traffic': {
-        'http-request-ext': HTTPRequestExt,
-        'icmp-ext': ICMPExt,
-        'socket-ext': SocketExt,
-        'tcp-ext': TCPExt,
-    },
-    'process': {
-        'windows-process-ext': WindowsProcessExt,
-        'windows-service-ext': WindowsServiceExt,
-    },
-    'user-account': {
-        'unix-account-ext': UNIXAccountExt,
-    },
+    'archive-ext': ArchiveExt,
+    'ntfs-ext': NTFSExt,
+    'pdf-ext': PDFExt,
+    'raster-image-ext': RasterImageExt,
+    'windows-pebinary-ext': WindowsPEBinaryExt,
+    'http-request-ext': HTTPRequestExt,
+    'icmp-ext': ICMPExt,
+    'socket-ext': SocketExt,
+    'tcp-ext': TCPExt,
+    'windows-process-ext': WindowsProcessExt,
+    'windows-service-ext': WindowsServiceExt,
+    'unix-account-ext': UNIXAccountExt,
 }
-
 
 # Ensure star-imports from this module get the right symbols.  "base" is a
 # known problem, since there are multiple modules with that name and one can
@@ -119,9 +111,9 @@ EXT_MAP = {
 __all__ = """
     Bundle,
 
-    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
-    GranularMarking, KillChainPhase, LanguageContent, MarkingDefinition,
-    StatementMarking, TLPMarking,
+    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExtensionDefinition,
+    ExternalReference, GranularMarking, KillChainPhase, LanguageContent,
+    MarkingDefinition, StatementMarking, TLPMarking,
 
     URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
     CustomExtension, CustomObservable, Directory, DomainName, EmailAddress,
@@ -134,7 +126,7 @@ __all__ = """
     X509Certificate, X509V3ExtensionsType,
 
     AttackPattern, Campaign, CourseOfAction, CustomObject, Grouping, Identity,
-    Indicator, Infrastructure, IntrusionSet, Location, Malware,
+    Incident, Indicator, Infrastructure, IntrusionSet, Location, Malware,
     MalwareAnalysis, Note, ObservedData, Opinion, Report, ThreatActor, Tool,
     Vulnerability,
 

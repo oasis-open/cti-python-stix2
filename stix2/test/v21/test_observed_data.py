@@ -155,7 +155,7 @@ def test_observed_data_example_with_object_refs():
         ],
     )
 
-    assert str(observed_data) == EXPECTED_OBJECT_REFS
+    assert observed_data.serialize(pretty=True) == EXPECTED_OBJECT_REFS
 
 
 def test_observed_data_object_constraint():
@@ -1218,8 +1218,8 @@ def test_process_example_empty_error():
         stix2.v21.Process()
 
     assert excinfo.value.cls == stix2.v21.Process
-    properties_of_process = list(stix2.v21.Process._properties.keys())
-    properties_of_process = [prop for prop in properties_of_process if prop not in ["type", "id", "defanged", "spec_version"]]
+    properties_of_process = stix2.v21.Process._properties.keys()
+    properties_of_process -= {"type", "id", "defanged", "spec_version", "extensions"}
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
     msg = msg.format(

@@ -43,11 +43,7 @@ def test_no_contrib_props_defined():
         _properties = OrderedDict((
             ('type', TypeProperty(_type, spec_version='2.1')),
             ('id', IDProperty(_type, spec_version='2.1')),
-            (
-                'extensions', ExtensionsProperty(
-                    spec_version='2.1', enclosing_type=_type,
-                ),
-            ),
+            ('extensions', ExtensionsProperty(spec_version='2.1')),
         ))
         _id_contributing_properties = []
 
@@ -64,11 +60,7 @@ def test_json_compatible_prop_values():
         _properties = OrderedDict((
             ('type', TypeProperty(_type, spec_version='2.1')),
             ('id', IDProperty(_type, spec_version='2.1')),
-            (
-                'extensions', ExtensionsProperty(
-                    spec_version='2.1', enclosing_type=_type,
-                ),
-            ),
+            ('extensions', ExtensionsProperty(spec_version='2.1')),
             ('string', StringProperty()),
             ('int', IntegerProperty()),
             ('float', FloatProperty()),
@@ -104,11 +96,7 @@ def test_json_incompatible_timestamp_value():
         _properties = OrderedDict((
             ('type', TypeProperty(_type, spec_version='2.1')),
             ('id', IDProperty(_type, spec_version='2.1')),
-            (
-                'extensions', ExtensionsProperty(
-                    spec_version='2.1', enclosing_type=_type,
-                ),
-            ),
+            ('extensions', ExtensionsProperty(spec_version='2.1')),
             ('timestamp', TimestampProperty()),
         ))
         _id_contributing_properties = ['timestamp']
@@ -140,11 +128,7 @@ def test_embedded_object():
         _properties = OrderedDict((
             ('type', TypeProperty(_type, spec_version='2.1')),
             ('id', IDProperty(_type, spec_version='2.1')),
-            (
-                'extensions', ExtensionsProperty(
-                    spec_version='2.1', enclosing_type=_type,
-                ),
-            ),
+            ('extensions', ExtensionsProperty(spec_version='2.1')),
             ('sub_obj', EmbeddedObjectProperty(type=SubObj)),
         ))
         _id_contributing_properties = ['sub_obj']
@@ -171,11 +155,7 @@ def test_empty_hash():
         _properties = OrderedDict((
             ('type', TypeProperty(_type, spec_version='2.1')),
             ('id', IDProperty(_type, spec_version='2.1')),
-            (
-                'extensions', ExtensionsProperty(
-                    spec_version='2.1', enclosing_type=_type,
-                ),
-            ),
+            ('extensions', ExtensionsProperty(spec_version='2.1')),
             ('hashes', HashesProperty(HASHING_ALGORITHM)),
         ))
         _id_contributing_properties = ['hashes']
