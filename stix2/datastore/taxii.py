@@ -308,11 +308,13 @@ class TAXIICollectionSource(DataSource):
                     " the supplied TAXII Collection object are either not found or access is"
                     " denied. Received error: ", e,
                 )
+
+            # TAXII 2.0 paging can result in a 416 (Range Not Satisfiable) if
+            # the server isn't sending Content-Range headers, so the pager just
+            # goes until it runs out of pages.  So 416 can't be treated as a
+            # real error, just an end-of-pages condition.  For other codes,
+            # propagate the exception.
             elif e.response.status_code != 416:
-                # TAXII 2.0 paging can result in a 416 (Range Not Satisfiable)
-                # if the server isn't sending Content-Range headers, so the
-                # pager just goes until it runs out of pages.  So 416 can't be
-                # treated as a real error, just an end-of-pages condition.
                 raise
 
         # deduplicate data (before filtering as reduces wasted filtering)
