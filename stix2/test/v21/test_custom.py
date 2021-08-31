@@ -538,6 +538,84 @@ def test_custom_object_invalid_type_name():
     assert "Invalid type name '7x-new-object':" in str(excinfo.value)
 
 
+def test_custom_object_ref_property_containing_identifier():
+    @stix2.v21.CustomObject(
+        'x-new-obj-with-ref', [
+            ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_object_refs_property_containing_identifiers():
+    @stix2.v21.CustomObject(
+        'x-new-obj-with-refs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_object_ref_property_containing_objectref():
+    with pytest.raises(ValueError, match=r"not a subclass of 'ReferenceProperty"):
+        @stix2.v21.CustomObject(
+            'x-new-obj-with-objref', [
+                ('property_ref', stix2.properties.ObjectReferenceProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_object_refs_property_containing_objectrefs():
+    with pytest.raises(ValueError, match=r"not a 'ListProperty' containing a subclass of 'ReferenceProperty"):
+        @stix2.v21.CustomObject(
+            'x-new-obj-with-objrefs', [
+                ('property_refs', stix2.properties.ListProperty(stix2.properties.ObjectReferenceProperty())),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_object_invalid_ref_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomObject(
+            'x-new-obj', [
+                ('property_ref', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+    assert "is named like a reference property but is not" in str(excinfo.value)
+
+
+def test_custom_object_invalid_refs_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomObject(
+            'x-new-obj', [
+                ('property_refs', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+    assert "is named like a reference list property but is not" in str(excinfo.value)
+
+
+def test_custom_object_invalid_refs_list_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v21.CustomObject(
+            'x-new-obj', [
+                ('property_refs', stix2.properties.ListProperty(stix2.properties.StringProperty)),
+            ],
+        )
+        class NewObs():
+            pass
+    assert "is named like a reference list property but is not" in str(excinfo.value)
+
+
 def test_custom_subobject_dict():
     obj_dict = {
         "type": "bundle",
@@ -730,6 +808,48 @@ def test_custom_observable_object_invalid_type_name():
     assert "Invalid type name '7x-new-obs':" in str(excinfo.value)
 
 
+def test_custom_observable_object_ref_property_as_identifier():
+    @stix2.v21.CustomObservable(
+        'x-new-obs-with-ref', [
+            ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_observable_object_refs_property_containing_identifiers():
+    @stix2.v21.CustomObservable(
+        'x-new-obs-with-refs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_observable_object_ref_property_as_objectref():
+    with pytest.raises(ValueError, match=r"not a subclass of 'ReferenceProperty"):
+        @stix2.v21.CustomObservable(
+            'x-new-obs-with-objref', [
+                ('property_ref', stix2.properties.ObjectReferenceProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_observable_object_refs_property_containing_objectrefs():
+    with pytest.raises(ValueError, match=r"not a 'ListProperty' containing a subclass of 'ReferenceProperty"):
+        @stix2.v21.CustomObservable(
+            'x-new-obs-with-objrefs', [
+                ('property_refs', stix2.properties.ListProperty(stix2.properties.ObjectReferenceProperty())),
+            ],
+        )
+        class NewObs():
+            pass
+
+
 def test_custom_observable_object_invalid_ref_property():
     with pytest.raises(ValueError) as excinfo:
         @stix2.v21.CustomObservable(
@@ -739,7 +859,7 @@ def test_custom_observable_object_invalid_ref_property():
         )
         class NewObs():
             pass
-    assert "is named like a reference property but is not a ReferenceProperty" in str(excinfo.value)
+    assert "is named like a reference property but is not" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_refs_property():
@@ -751,7 +871,7 @@ def test_custom_observable_object_invalid_refs_property():
         )
         class NewObs():
             pass
-    assert "is named like a reference list property but is not a ListProperty containing ReferenceProperty" in str(excinfo.value)
+    assert "is named like a reference list property but is not" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_refs_list_property():
@@ -763,7 +883,7 @@ def test_custom_observable_object_invalid_refs_list_property():
         )
         class NewObs():
             pass
-    assert "is named like a reference list property but is not a ListProperty containing ReferenceProperty" in str(excinfo.value)
+    assert "is named like a reference list property but is not" in str(excinfo.value)
 
 
 def test_custom_no_properties_raises_exception():

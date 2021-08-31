@@ -296,19 +296,10 @@ class TAXIICollectionSource(DataSource):
 
         # query TAXII collection
         all_data = []
+        paged_request = tcv21.as_pages if isinstance(self.collection, tcv21.Collection) else tcv20.as_pages
         try:
-            paged_request = tcv21.as_pages if isinstance(self.collection, tcv21.Collection) else tcv20.as_pages
-
             for resource in paged_request(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
                 all_data.extend(resource.get("objects", []))
-
-            # deduplicate data (before filtering as reduces wasted filtering)
-            all_data = deduplicate(all_data)
-
-            # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
-            query.remove(taxii_filters)
-            all_data = list(apply_common_filters(all_data, query))
-
         except HTTPError as e:
             # if resources not found or access is denied from TAXII server, return empty list
             if e.response.status_code == 404:
@@ -317,6 +308,21 @@ class TAXIICollectionSource(DataSource):
                     " the supplied TAXII Collection object are either not found or access is"
                     " denied. Received error: ", e,
                 )
+
+            # TAXII 2.0 paging can result in a 416 (Range Not Satisfiable) if
+            # the server isn't sending Content-Range headers, so the pager just
+            # goes until it runs out of pages.  So 416 can't be treated as a
+            # real error, just an end-of-pages condition.  For other codes,
+            # propagate the exception.
+            elif e.response.status_code != 416:
+                raise
+
+        # deduplicate data (before filtering as reduces wasted filtering)
+        all_data = deduplicate(all_data)
+
+        # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
+        query.remove(taxii_filters)
+        all_data = list(apply_common_filters(all_data, query))
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict, allow_custom=self.allow_custom, version=version) for stix_obj_dict in all_data]
