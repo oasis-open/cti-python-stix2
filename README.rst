@@ -68,8 +68,8 @@ For more in-depth documentation, please see `https://stix2.readthedocs.io/ <http
 STIX 2 Technical Specification Support
 --------------------------------------
 
-This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html>`__
-published on 25 January 2021 currently at the Committee Specification (CS) 02 level.
+This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html>`__
+published on 10 June 2021 currently at the Committee Specification (CS) 03 level, also know as the "OASIS Standard".
 
 The stix2 Python library supports multiple versions of the STIX 2 Technical
 Specification. The library will be updated to support new Committee
