@@ -343,8 +343,8 @@ class TAXIICollectionSource(DataSource):
             For instance - "?match[type]=indicator,sighting" can be in a
             filter in any of these formats:
 
-            Filter("type", "<any op>", "indicator,sighting")
-            Filter("type", "<any op>", ["indicator", "sighting"])
+            Filter("type", "=", "indicator,sighting")
+            Filter("type", "=", ["indicator", "sighting"])
 
         Args:
             query (list): list of filters to extract which ones are TAXII
@@ -357,7 +357,7 @@ class TAXIICollectionSource(DataSource):
         taxii_filters = []
 
         for filter_ in query:
-            if filter_.property in TAXII_FILTERS:
+            if filter_.property in TAXII_FILTERS and filter_.op == "=":
                 taxii_filters.append(filter_)
 
         return taxii_filters
