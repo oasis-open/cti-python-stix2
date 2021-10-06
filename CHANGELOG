@@ -1,13 +1,21 @@
 CHANGELOG
 =========
 
+3.0.1 2021-09-24
+
+* #513 Fixes check for reference properties to apply to all custom objects, not
+  just custom observables (@maybe-sybr)
+* #526 Fixes TAXIICollection queries to propagate HTTPErrors, not ignore them
+* #528 Fixes bug where all TAXII filters were converted to exact matches
+
+
 3.0.0 2021-07-13
 
-This version aligns with the STIX 2.1 CS 03 (WD12) document, also know as the "OASIS Standard".
+This version aligns with the STIX 2.1 CS 03 (WD12) document, also known as the "OASIS Standard".
 
 Main Changes
 #509 Add Sighting.summary default value
-#503 Revamp how STIX content customization is detected and enforced  enhancement
+#503 Revamp how STIX content customization is detected and enforced enhancement
 #500 fp write for STIX Objects
 #492 Drop 'six' dependency (backwards breaking)
 #490 Change canonicalization to normalization
