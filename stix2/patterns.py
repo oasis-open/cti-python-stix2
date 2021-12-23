@@ -505,7 +505,7 @@ class _BooleanExpression(_PatternExpression):
     def __init__(self, operator, operands):
         self.operator = operator
         self.operands = list(operands)
-        for arg in operands:
+        for arg in self.operands:
             if not hasattr(self, "root_types"):
                 self.root_types = arg.root_types
             elif operator == "AND":
