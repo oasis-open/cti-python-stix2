@@ -384,6 +384,15 @@ def test_comp_absorb_equivalent(patt1, patt2):
             "[a:b=1 AND (a:b=2 AND (a:b=3 OR a:b=4))]",
             "[(a:b=1 AND a:b=2 AND a:b=3) OR (a:b=1 AND a:b=2 AND a:b=4)]",
         ),
+        # Some tests with different SCO types
+        (
+            "[(a:b=1 OR b:c=1) AND (b:d=1 OR c:d=1)]",
+            "[b:c=1 AND b:d=1]",
+        ),
+        (
+            "[(a:b=1 OR b:c=1) AND (b:d=1 OR c:d=1)]",
+            "[(z:y=1 OR b:c=1) AND (b:d=1 OR x:w=1 OR v:u=1)]",
+        ),
     ],
 )
 def test_comp_dnf_equivalent(patt1, patt2):
