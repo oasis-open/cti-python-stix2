@@ -81,7 +81,7 @@ class STIXPatternVisitorForSTIX2():
         if len(children) == 1:
             return children[0]
         else:
-            return FollowedByObservationExpression([children[0], children[2]])
+            return self.instantiate("FollowedByObservationExpression", [children[0], children[2]])
 
     # Visit a parse tree produced by STIXPatternParser#observationExpressionOr.
     def visitObservationExpressionOr(self, ctx):
@@ -231,17 +231,17 @@ class STIXPatternVisitorForSTIX2():
             if not check_for_valid_timetamp_syntax(children[3].value):
                 raise (ValueError("Stop time is not a legal timestamp"))
 
-        return StartStopQualifier(children[1], children[3])
+        return self.instantiate("StartStopQualifier", children[1], children[3])
 
     # Visit a parse tree produced by STIXPatternParser#withinQualifier.
     def visitWithinQualifier(self, ctx):
         children = self.visitChildren(ctx)
-        return WithinQualifier(children[1])
+        return self.instantiate("WithinQualifier", children[1])
 
     # Visit a parse tree produced by STIXPatternParser#repeatedQualifier.
     def visitRepeatedQualifier(self, ctx):
         children = self.visitChildren(ctx)
-        return RepeatQualifier(children[1])
+        return self.instantiate("RepeatQualifier", children[1])
 
     # Visit a parse tree produced by STIXPatternParser#objectPath.
     def visitObjectPath(self, ctx):
@@ -326,9 +326,9 @@ class STIXPatternVisitorForSTIX2():
 
     def visitTerminal(self, node):
         if node.symbol.type == self.parser_class.IntPosLiteral or node.symbol.type == self.parser_class.IntNegLiteral:
-            return IntegerConstant(node.getText())
+            return self.instantiate("IntegerConstant", node.getText())
         elif node.symbol.type == self.parser_class.FloatPosLiteral or node.symbol.type == self.parser_class.FloatNegLiteral:
-            return FloatConstant(node.getText())
+            return self.instantiate("FloatConstant", node.getText())
         elif node.symbol.type == self.parser_class.HexLiteral:
             return HexConstant(node.getText(), from_parse_tree=True)
         elif node.symbol.type == self.parser_class.BinaryLiteral:
@@ -339,13 +339,13 @@ class STIXPatternVisitorForSTIX2():
             else:
                 raise ParseException("The pattern does not start and end with a single quote")
         elif node.symbol.type == self.parser_class.BoolLiteral:
-            return BooleanConstant(node.getText())
+            return self.instantiate("BooleanConstant", node.getText())
         elif node.symbol.type == self.parser_class.TimestampLiteral:
             value = node.getText()
             # STIX 2.1 uses a special timestamp literal syntax
             if value.startswith("t"):
                 value = value[2:-1]
-            return TimestampConstant(value)
+            return self.instantiate("TimestampConstant", value)
         else:
             return node
 
