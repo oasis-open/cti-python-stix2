@@ -13,20 +13,14 @@ from stix2.equivalence.pattern.transform.specials import (
     ipv4_addr, ipv6_addr, windows_reg_key,
 )
 from stix2.patterns import (
-    AndBooleanExpression, OrBooleanExpression, ParentheticalExpression,
-    _BooleanExpression, _ComparisonExpression,
+    AndBooleanExpression, ObjectPath, OrBooleanExpression,
+    ParentheticalExpression, _BooleanExpression, _ComparisonExpression,
 )
 
 
 def _dupe_ast(ast):
     """
     Create a duplicate of the given AST.
-
-    Note:
-        The comparison expression "leaves", i.e. simple <path> <op> <value>
-        comparisons are currently not duplicated.  I don't think it's necessary
-        as of this writing; they are never changed.  But revisit this if/when
-        necessary.
 
     Args:
         ast: The AST to duplicate
@@ -45,9 +39,13 @@ def _dupe_ast(ast):
         ])
 
     elif isinstance(ast, _ComparisonExpression):
-        # Change this to create a dupe, if we ever need to change simple
-        # comparison expressions as part of normalization.
-        result = ast
+        # Maybe we go as far as duping the ObjectPath object too?
+        new_object_path = ObjectPath(
+            ast.lhs.object_type_name, ast.lhs.property_path,
+        )
+        result = _ComparisonExpression(
+            ast.operator, new_object_path, ast.rhs, ast.negated,
+        )
 
     else:
         raise TypeError("Can't duplicate " + type(ast).__name__)
@@ -333,17 +331,33 @@ class DNFTransformer(ComparisonExpressionTransformer):
                 other_children.append(child)
 
         if or_children:
-            distributed_children = [
-                AndBooleanExpression([
-                    # Make dupes: distribution implies adding repetition, and
-                    # we should ensure each repetition is independent of the
-                    # others.
-                    _dupe_ast(sub_ast) for sub_ast in itertools.chain(
-                        other_children, prod_seq,
-                    )
-                ])
+            distributed_and_arg_sets = (
+                itertools.chain(other_children, prod_seq)
                 for prod_seq in itertools.product(*or_children)
-            ]
+            )
+
+            # The AST implementation will error if AND boolean comparison
+            # operands have no common SCO types.  We need to handle that here.
+            # The following will drop AND's with no common SCO types, which is
+            # harmless (since they're impossible patterns and couldn't match
+            # anything anyway).  It also acts as a nice simplification of the
+            # pattern.  If the original AND node was legal (operands had at
+            # least one SCO type in common), it is guaranteed that there will
+            # be at least one legal distributed AND node (distributed_children
+            # below will not wind up empty).
+            distributed_children = []
+            for and_arg_set in distributed_and_arg_sets:
+                try:
+                    and_node = AndBooleanExpression(
+                        # Make dupes: distribution implies adding repetition,
+                        # and we should ensure each repetition is independent
+                        # of the others.
+                        _dupe_ast(arg) for arg in and_arg_set
+                    )
+                except ValueError:
+                    pass
+                else:
+                    distributed_children.append(and_node)
 
             # Need to recursively continue to distribute AND over OR in
             # any of our new sub-expressions which need it.  This causes
