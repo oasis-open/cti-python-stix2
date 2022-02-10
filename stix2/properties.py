@@ -829,8 +829,9 @@ class ExtensionsProperty(DictionaryProperty):
                 # extensions should be pre-registered with the library).
 
                 if key.startswith('extension-definition--'):
+                    interoperability = self.interoperability if hasattr(self, 'interoperability') else False
                     _validate_id(
-                        key, self.spec_version, 'extension-definition--',
+                        key, self.spec_version, 'extension-definition--', interoperability
                     )
                 elif allow_custom:
                     has_custom = True
