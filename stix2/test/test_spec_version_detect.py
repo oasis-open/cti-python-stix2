@@ -77,6 +77,35 @@ from stix2.utils import detect_spec_version
             },
             "2.0",
         ),
+        (
+            {
+                "type": "bundle",
+                "id": "bundle--8379cb02-8131-47c8-8a7c-9a1f0e0986b1",
+                "spec_version": "2.1",
+                "objects": [
+                    {
+                        "type": "identity",
+                        "spec_version": "2.1",
+                        "id": "identity--d7f72e8d-657a-43ec-9324-b3ec67a97486",
+                        "created": "1972-05-21T05:33:09.000Z",
+                        "modified": "1973-05-28T02:10:54.000Z",
+                        "name": "alice",
+                        "identity_class": "individual",
+                    },
+                    {
+                        "type": "marking-definition",
+                        "spec_version": "2.1",
+                        "id": "marking-definition--2a13090f-a493-4b70-85fe-fa021d91dcd2",
+                        "created": "1998-03-27T19:44:53.000Z",
+                        "definition_type": "statement",
+                        "definition": {
+                            "statement": "Copyright (c) ACME Corp.",
+                        },
+                    },
+                ],
+            },
+            "2.0",
+        ),
         # STIX 2.1 examples
         (
             {

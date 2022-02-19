@@ -349,6 +349,10 @@ def test_is_not_sro_dict(dict_):
         {"type": "identity"},
         {"type": "software"},
         {"type": "marking-definition"},
+        # Presence of spec_version property implies a STIX 2.0 bundle,
+        # regardless of the property's value.  STIX 2.1 bundles don't have a
+        # "spec_version" property defined.
+        {"type": "bundle", "spec_version": "2.1"},
         {
             "type": "bundle",
             "id": "bundle--8f431680-6278-4767-ba43-5edb682d7086",
@@ -370,12 +374,20 @@ def test_is_object_dict(dict_):
         {"type": "identity", "spec_version": "2.1"},
         {"type": "software", "spec_version": "2.1"},
         {"type": "marking-definition", "spec_version": "2.1"},
-        {"type": "bundle", "spec_version": "2.1"},
         {"type": "language-content", "spec_version": "2.1"},
         {"type": "relationship", "spec_version": "2.1"},
         {"type": "sighting", "spec_version": "2.1"},
         {"type": "foo", "spec_version": "2.1"},
         {"type": "foo"},
+        {
+            "type": "bundle",
+            "id": "bundle--8f431680-6278-4767-ba43-5edb682d7086",
+            "objects": [
+                {"type": "identity"},
+                {"type": "software"},
+                {"type": "marking-definition"},
+            ],
+        },
     ],
 )
 def test_is_not_object_dict(dict_):

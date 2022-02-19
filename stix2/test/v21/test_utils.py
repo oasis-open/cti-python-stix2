@@ -382,7 +382,7 @@ def test_is_object_dict(dict_):
         {"type": "identity"},
         {"type": "software"},
         {"type": "marking-definition"},
-        {"type": "bundle"},
+        {"type": "bundle", "spec_version": "2.1"},
         {"type": "language-content"},
         {"type": "relationship"},
         {"type": "sighting"},
