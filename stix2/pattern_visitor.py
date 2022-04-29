@@ -392,6 +392,6 @@ def create_pattern_object(pattern, module_suffix="", module_name="", version=DEF
 
     pattern_obj = pattern_class(pattern)
     builder = visitor_class(
-        parser_class, module_suffix, module_name
+        parser_class, module_suffix, module_name,
     )
     return pattern_obj.visit(builder)

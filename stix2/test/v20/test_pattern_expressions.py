@@ -5,8 +5,9 @@ import pytz
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
-import stix2.utils
 import stix2.patterns
+import stix2.utils
+
 from .pattern_ast_overrides import *
 
 
@@ -594,7 +595,7 @@ def test_list_constant():
 def test_ast_class_override_comp_equals():
     patt_ast = create_pattern_object(
         "[a:b=1]", "Testing", "stix2.test.v20.pattern_ast_overrides",
-        version="2.0"
+        version="2.0",
     )
 
     assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
@@ -606,20 +607,20 @@ def test_ast_class_override_string_constant():
     patt_ast = create_pattern_object(
         "[a:'b'[1].'c' < 'foo']", "Testing",
         "stix2.test.v20.pattern_ast_overrides",
-        version="2.0"
+        version="2.0",
     )
 
     assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
     assert isinstance(
-        patt_ast.operand, stix2.patterns.LessThanComparisonExpression
+        patt_ast.operand, stix2.patterns.LessThanComparisonExpression,
     )
     assert isinstance(
         patt_ast.operand.lhs.property_path[0].property_name,
-        str
+        str,
     )
     assert isinstance(
         patt_ast.operand.lhs.property_path[1].property_name,
-        str
+        str,
     )
     assert isinstance(patt_ast.operand.rhs, StringConstantForTesting)
 
@@ -629,18 +630,18 @@ def test_ast_class_override_string_constant():
 def test_ast_class_override_startstop_qualifier():
     patt_ast = create_pattern_object(
         "[a:b=1] START '1993-01-20T01:33:52.592Z' STOP '2001-08-19T23:50:23.129Z'",
-        "Testing", "stix2.test.v20.pattern_ast_overrides", version="2.0"
+        "Testing", "stix2.test.v20.pattern_ast_overrides", version="2.0",
     )
 
     assert isinstance(patt_ast, stix2.patterns.QualifiedObservationExpression)
     assert isinstance(
-        patt_ast.observation_expression, stix2.patterns.ObservationExpression
+        patt_ast.observation_expression, stix2.patterns.ObservationExpression,
     )
     assert isinstance(
         patt_ast.observation_expression.operand,
-        EqualityComparisonExpressionForTesting
+        EqualityComparisonExpressionForTesting,
     )
     assert isinstance(
-        patt_ast.qualifier, StartStopQualifierForTesting
+        patt_ast.qualifier, StartStopQualifierForTesting,
     )
     assert str(patt_ast) == "[a:b = 1] START '1993-01-20T01:33:52.592Z' STOP '2001-08-19T23:50:23.129Z'"
