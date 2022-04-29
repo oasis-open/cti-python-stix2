@@ -16,4 +16,3 @@ class StringConstantForTesting(StringConstant):
 
 class StartStopQualifierForTesting(StartStopQualifier):
     pass
-

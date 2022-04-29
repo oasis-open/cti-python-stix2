@@ -9,6 +9,8 @@ from stix2.pattern_visitor import create_pattern_object
 import stix2.patterns
 import stix2.utils
 
+# flake8 does not approve of star imports.
+# flake8: noqa: F405
 from .pattern_ast_overrides import *
 
 
