@@ -6,7 +6,12 @@ from stix2patterns.exceptions import ParseException
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
+import stix2.patterns
 import stix2.utils
+
+# flake8 does not approve of star imports.
+# flake8: noqa: F405
+from .pattern_ast_overrides import *
 
 
 def test_create_comparison_expression():
@@ -747,3 +752,58 @@ def test_parsing_multiple_slashes_quotes():
 def test_parse_error():
     with pytest.raises(ParseException):
         create_pattern_object("[ file: name = 'weirdname]", version="2.1")
+
+
+def test_ast_class_override_comp_equals():
+    patt_ast = create_pattern_object(
+        "[a:b=1]", "Testing", "stix2.test.v21.pattern_ast_overrides",
+        version="2.1",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
+    assert isinstance(patt_ast.operand, EqualityComparisonExpressionForTesting)
+    assert str(patt_ast) == "[a:b = 1]"
+
+
+def test_ast_class_override_string_constant():
+    patt_ast = create_pattern_object(
+        "[a:'b'[1].'c' < 'foo']", "Testing",
+        "stix2.test.v21.pattern_ast_overrides",
+        version="2.1",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
+    assert isinstance(
+        patt_ast.operand, stix2.patterns.LessThanComparisonExpression,
+    )
+    assert isinstance(
+        patt_ast.operand.lhs.property_path[0].property_name,
+        str,
+    )
+    assert isinstance(
+        patt_ast.operand.lhs.property_path[1].property_name,
+        str,
+    )
+    assert isinstance(patt_ast.operand.rhs, StringConstantForTesting)
+
+    assert str(patt_ast) == "[a:'b'[1].c < 'foo']"
+
+
+def test_ast_class_override_startstop_qualifier():
+    patt_ast = create_pattern_object(
+        "[a:b=1] START t'1993-01-20T01:33:52.592Z' STOP t'2001-08-19T23:50:23.129Z'",
+        "Testing", "stix2.test.v21.pattern_ast_overrides", version="2.1",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.QualifiedObservationExpression)
+    assert isinstance(
+        patt_ast.observation_expression, stix2.patterns.ObservationExpression,
+    )
+    assert isinstance(
+        patt_ast.observation_expression.operand,
+        EqualityComparisonExpressionForTesting,
+    )
+    assert isinstance(
+        patt_ast.qualifier, StartStopQualifierForTesting,
+    )
+    assert str(patt_ast) == "[a:b = 1] START t'1993-01-20T01:33:52.592Z' STOP t'2001-08-19T23:50:23.129Z'"
