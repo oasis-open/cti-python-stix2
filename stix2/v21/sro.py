@@ -55,9 +55,6 @@ class Relationship(_RelationshipObject):
             kwargs['relationship_type'] = relationship_type
         if target_ref and not kwargs.get('target_ref'):
             kwargs['target_ref'] = target_ref
-        interoperability = kwargs.get('interoperability', False)
-        self._properties['source_ref'].interoperability = interoperability
-        self._properties['target_ref'].interoperability = interoperability
 
         super(Relationship, self).__init__(**kwargs)
 
@@ -108,12 +105,6 @@ class Sighting(_RelationshipObject):
         # Allow sighting_of_ref as a positional arg.
         if sighting_of_ref and not kwargs.get('sighting_of_ref'):
             kwargs['sighting_of_ref'] = sighting_of_ref
-        interoperability = kwargs.get('interoperability', False)
-        self._properties['sighting_of_ref'].interoperability = interoperability
-        if kwargs.get('observed_data_refs'):
-            self._properties['observed_data_refs'].contained.interoperability = interoperability
-        if kwargs.get('where_sighted_refs'):
-            self._properties['where_sighted_refs'].contained.interoperability = interoperability
 
         super(Sighting, self).__init__(**kwargs)
 

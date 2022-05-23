@@ -248,12 +248,6 @@ class Report(_DomainObject):
         ('granular_markings', ListProperty(GranularMarking)),
     ])
 
-    def __init__(self, *args, **kwargs):
-        self._properties['object_refs'].contained.allow_custom = kwargs.get('allow_custom', False)
-        self._properties['object_refs'].contained.interoperability = kwargs.get('interoperability', False)
-
-        super(Report, self).__init__(*args, **kwargs)
-
 
 class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see

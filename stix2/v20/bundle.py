@@ -35,14 +35,6 @@ class Bundle(_STIXBase20):
 
             kwargs['objects'] = obj_list + kwargs.get('objects', [])
 
-        allow_custom = kwargs.get('allow_custom', False)
-        self._allow_custom = allow_custom
-        self._properties['objects'].contained.allow_custom = allow_custom
-        interoperability = kwargs.get('interoperability', False)
-        self.__interoperability = interoperability
-        self._properties['id'].interoperability = interoperability
-        self._properties['objects'].contained.interoperability = interoperability
-
         super(Bundle, self).__init__(**kwargs)
 
     def get_obj(self, obj_uuid):

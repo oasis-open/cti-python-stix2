@@ -12,9 +12,6 @@ class _STIXBase21(_STIXBase):
 class _Observable(_Observable, _STIXBase21):
 
     def __init__(self, **kwargs):
-        interoperability = kwargs.get('interoperability', False)
-        self.__interoperability = interoperability
-        self._properties['id'].interoperability = interoperability
         super(_Observable, self).__init__(**kwargs)
         if 'id' not in kwargs:
             # Specific to 2.1+ observables: generate a deterministic ID

@@ -698,11 +698,6 @@ class Report(_DomainObject):
         ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
-    def __init__(self, *args, **kwargs):
-        self._properties['object_refs'].contained.interoperability = kwargs.get('interoperability', False)
-
-        super(Report, self).__init__(*args, **kwargs)
-
 
 class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
