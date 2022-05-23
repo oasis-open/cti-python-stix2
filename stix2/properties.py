@@ -21,13 +21,9 @@ from .utils import (
 )
 from .version import DEFAULT_VERSION
 
-ID_REGEX_interoperability = re.compile(r"[0-9a-fA-F]{8}-"
-                                       "[0-9a-fA-F]{4}-"
-                                       "[0-9a-fA-F]{4}-"
-                                       "[0-9a-fA-F]{4}-"
-                                       "[0-9a-fA-F]{12}$")
-
-
+ID_REGEX_interoperability = re.compile(
+    r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+)
 TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
 TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
 ERROR_INVALID_ID = (
@@ -234,7 +230,7 @@ class ListProperty(Property):
 
         super(ListProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability):
         try:
             iter(value)
         except TypeError:
@@ -247,7 +243,7 @@ class ListProperty(Property):
         has_custom = False
         if isinstance(self.contained, Property):
             for item in value:
-                valid, temp_custom = self.contained.clean(item, allow_custom)
+                valid, temp_custom = self.contained.clean(item, allow_custom, interoperability)
                 result.append(valid)
                 has_custom = has_custom or temp_custom
 
@@ -258,7 +254,7 @@ class ListProperty(Property):
 
                 elif isinstance(item, collections.abc.Mapping):
                     # attempt a mapping-like usage...
-                    valid = self.contained(allow_custom=allow_custom, **item)
+                    valid = self.contained(allow_custom=allow_custom, interoperability=interoperability, **item)
 
                 else:
                     raise ValueError(
@@ -285,7 +281,7 @@ class StringProperty(Property):
     def __init__(self, **kwargs):
         super(StringProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, interoperability=False):
         if not isinstance(value, str):
             value = str(value)
         return value, False
@@ -306,8 +302,7 @@ class IDProperty(Property):
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
 
-    def clean(self, value, allow_custom=False):
-        interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
+    def clean(self, value, allow_custom=False, interoperability=False):
         _validate_id(value, self.spec_version, self.required_prefix, interoperability)
         return value, False
 
@@ -552,12 +547,11 @@ class ReferenceProperty(Property):
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
 
-        interoperability = self.interoperability if hasattr(self, 'interoperability') and self.interoperability else False
         _validate_id(value, self.spec_version, None, interoperability)
 
         obj_type = get_type_from_id(value)
@@ -652,7 +646,7 @@ class EmbeddedObjectProperty(Property):
         self.type = type
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability):
         if isinstance(value, dict):
             value = self.type(allow_custom=allow_custom, **value)
         elif not isinstance(value, self.type):
@@ -701,9 +695,9 @@ class OpenVocabProperty(StringProperty):
             allowed = [allowed]
         self.allowed = allowed
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability):
         cleaned_value, _ = super(OpenVocabProperty, self).clean(
-            value, allow_custom,
+            value, allow_custom, interoperability
         )
 
         # Disabled: it was decided that enforcing this is too strict (might
@@ -829,9 +823,8 @@ class ExtensionsProperty(DictionaryProperty):
                 # extensions should be pre-registered with the library).
 
                 if key.startswith('extension-definition--'):
-                    interoperability = self.interoperability if hasattr(self, 'interoperability') else False
                     _validate_id(
-                        key, self.spec_version, 'extension-definition--', interoperability
+                        key, self.spec_version, 'extension-definition--',
                     )
                 elif allow_custom:
                     has_custom = True
@@ -845,12 +838,11 @@ class ExtensionsProperty(DictionaryProperty):
 
 class STIXObjectProperty(Property):
 
-    def __init__(self, spec_version=DEFAULT_VERSION, interoperability=False, *args, **kwargs):
+    def __init__(self, spec_version=DEFAULT_VERSION, *args, **kwargs):
         self.spec_version = spec_version
-        self.interoperability = interoperability
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
         stix2_classes = {'_DomainObject', '_RelationshipObject', 'MarkingDefinition'}
@@ -890,7 +882,7 @@ class STIXObjectProperty(Property):
                 "containing objects of a different spec version.",
             )
 
-        parsed_obj = parse(dictified, allow_custom=allow_custom, interoperability=self.interoperability)
+        parsed_obj = parse(dictified, allow_custom=allow_custom, interoperability=interoperability)
 
         if isinstance(parsed_obj, _STIXBase):
             has_custom = parsed_obj.has_custom
