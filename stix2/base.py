@@ -120,9 +120,11 @@ class _STIXBase(collections.abc.Mapping):
         self.__now = get_timestamp()
 
         self.__INTEROPERABILITY_types = (
-            stix2.properties.EmbeddedObjectProperty, stix2.properties.IDProperty,
+            stix2.properties.EmbeddedObjectProperty, stix2.properties.EnumProperty,
+            stix2.properties.ExtensionsProperty, stix2.properties.DictionaryProperty,
+            stix2.properties.HashesProperty, stix2.properties.IDProperty,
             stix2.properties.ListProperty, stix2.properties.OpenVocabProperty,
-            stix2.properties.ReferenceProperty
+            stix2.properties.ReferenceProperty, stix2.properties.SelectorProperty,
         )
 
         custom_props = kwargs.pop('custom_properties', {})
@@ -208,7 +210,7 @@ class _STIXBase(collections.abc.Mapping):
             prop = defined_properties.get(prop_name)
             if prop:
                 temp_custom = self._check_property(
-                    prop_name, prop, setting_kwargs, allow_custom, interoperability
+                    prop_name, prop, setting_kwargs, allow_custom, interoperability,
                 )
 
                 has_custom = has_custom or temp_custom
