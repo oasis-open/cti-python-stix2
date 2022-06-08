@@ -5,6 +5,10 @@ class STIXError(Exception):
     """Base class for errors generated in the stix2 library."""
 
 
+class PropertyValueError(STIXError):
+    """Value error for property values."""
+
+
 class ObjectConfigurationError(STIXError):
     """
     Represents specification violations regarding the composition of STIX

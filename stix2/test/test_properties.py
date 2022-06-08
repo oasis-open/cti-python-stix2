@@ -5,7 +5,7 @@ import pytz
 
 from stix2.base import _STIXBase
 from stix2.exceptions import (
-    CustomContentError, ExtraPropertiesError, STIXError,
+    CustomContentError, ExtraPropertiesError, PropertyValueError, STIXError,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
@@ -30,12 +30,12 @@ def test_basic_clean():
             if value == 42:
                 return value
             else:
-                raise ValueError("Must be 42")
+                raise PropertyValueError("Must be 42")
 
     p = Prop()
 
     assert p.clean(42) == 42
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean(41)
 
 
@@ -54,9 +54,9 @@ def test_fixed_property():
     p = Property(fixed="2.0")
 
     assert p.clean("2.0")
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         assert p.clean("x") is False
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         assert p.clean(2.0) is False
 
     assert p.default() == "2.0"
@@ -74,7 +74,7 @@ def test_list_property_property_type():
     result = p.clean(['abc', 'xyz'], False)
     assert result == (['abc', 'xyz'], False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean([], False)
 
 
@@ -170,7 +170,7 @@ def test_list_property_bad_value_type():
         }
 
     list_prop = ListProperty(TestObj)
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         list_prop.clean([1], False)
 
 
@@ -186,7 +186,7 @@ def test_type_property():
     prop = TypeProperty('my-type')
 
     assert prop.clean('my-type')
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         prop.clean('not-my-type')
     assert prop.clean(prop.default())
 
@@ -213,7 +213,7 @@ def test_integer_property_valid(value):
 )
 def test_integer_property_invalid_min_with_constraints(value):
     int_prop = IntegerProperty(min=0, max=180)
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         int_prop.clean(value)
     assert "minimum value is" in str(excinfo.value)
 
@@ -227,7 +227,7 @@ def test_integer_property_invalid_min_with_constraints(value):
 )
 def test_integer_property_invalid_max_with_constraints(value):
     int_prop = IntegerProperty(min=0, max=180)
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         int_prop.clean(value)
     assert "maximum value is" in str(excinfo.value)
 
@@ -240,7 +240,7 @@ def test_integer_property_invalid_max_with_constraints(value):
 )
 def test_integer_property_invalid(value):
     int_prop = IntegerProperty()
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         int_prop.clean(value)
 
 
@@ -265,7 +265,7 @@ def test_float_property_valid(value):
 )
 def test_float_property_invalid(value):
     int_prop = FloatProperty()
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         int_prop.clean(value)
 
 
@@ -304,7 +304,7 @@ def test_boolean_property_valid(value):
 )
 def test_boolean_property_invalid(value):
     bool_prop = BooleanProperty()
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         bool_prop.clean(value)
 
 
@@ -322,7 +322,7 @@ def test_timestamp_property_invalid():
     ts_prop = TimestampProperty()
     with pytest.raises(TypeError):
         ts_prop.clean(1)
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ts_prop.clean("someday sometime")
 
 
@@ -330,7 +330,7 @@ def test_binary_property():
     bin_prop = BinaryProperty()
 
     assert bin_prop.clean("TG9yZW0gSXBzdW0=")
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         bin_prop.clean("foobar")
 
 
@@ -338,7 +338,7 @@ def test_hex_property():
     hex_prop = HexProperty()
 
     assert hex_prop.clean("4c6f72656d20497073756d")
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         hex_prop.clean("foobar")
 
 
@@ -361,10 +361,10 @@ def test_enum_property_clean():
 
 def test_enum_property_invalid():
     enum_prop = EnumProperty(['a', 'b', 'c'])
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         enum_prop.clean('z', False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         enum_prop.clean('z', True)
 
 
@@ -412,7 +412,7 @@ def test_hashes_property_valid(value):
 def test_hashes_property_invalid(value):
     hash_prop = HashesProperty(["sha256", "md5"])
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         hash_prop.clean(value, False)
 
 

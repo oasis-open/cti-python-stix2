@@ -6,7 +6,9 @@ import stix2.registration
 import stix2.registry
 import stix2.v20
 
-from ...exceptions import DuplicateRegistrationError, InvalidValueError
+from ...exceptions import (
+    DuplicateRegistrationError, InvalidValueError, PropertyValueError,
+)
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v20.Identity(
@@ -364,7 +366,7 @@ def test_custom_object_no_init_2():
 
 
 def test_custom_object_invalid_type_name():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         @stix2.v20.CustomObject(
             'x', [
                 ('property1', stix2.properties.StringProperty(required=True)),
@@ -374,7 +376,7 @@ def test_custom_object_invalid_type_name():
             pass  # pragma: no cover
     assert "Invalid type name 'x': " in str(excinfo.value)
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         @stix2.v20.CustomObject(
             'x_new_object', [
                 ('property1', stix2.properties.StringProperty(required=True)),
@@ -619,7 +621,7 @@ def test_custom_observable_object_no_init_2():
 
 
 def test_custom_observable_object_invalid_type_name():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         @stix2.v20.CustomObservable(
             'x', [
                 ('property1', stix2.properties.StringProperty()),
@@ -629,7 +631,7 @@ def test_custom_observable_object_invalid_type_name():
             pass  # pragma: no cover
     assert "Invalid type name 'x':" in str(excinfo.value)
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         @stix2.v20.CustomObservable(
             'x_new_obs', [
                 ('property1', stix2.properties.StringProperty()),
@@ -944,7 +946,7 @@ def test_custom_extension_with_list_and_dict_properties_observable_type(data):
 
 
 def test_custom_extension_invalid_type_name():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         @stix2.v20.CustomExtension(
             'x', {
                     'property1': stix2.properties.StringProperty(required=True),
@@ -954,7 +956,7 @@ def test_custom_extension_invalid_type_name():
             pass  # pragma: no cover
     assert "Invalid type name 'x':" in str(excinfo.value)
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         @stix2.v20.CustomExtension(
             'x_new_ext', {
                     'property1': stix2.properties.StringProperty(required=True),

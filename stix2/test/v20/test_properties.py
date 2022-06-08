@@ -5,7 +5,7 @@ import pytest
 import stix2
 from stix2.exceptions import (
     AtLeastOnePropertyError, CustomContentError, DictionaryKeyError,
-    ExtraPropertiesError, ParseError,
+    ExtraPropertiesError, ParseError, PropertyValueError,
 )
 from stix2.properties import (
     DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty,
@@ -58,7 +58,7 @@ def test_id_property_valid_for_type(value):
 
 
 def test_id_property_wrong_type():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         ID_PROP.clean('not-my-type--232c9d3f-49fc-4440-bb01-607f638778e7')
     assert str(excinfo.value) == "must start with 'my-type--'."
 
@@ -74,7 +74,7 @@ def test_id_property_wrong_type():
     ],
 )
 def test_id_property_not_a_valid_hex_uuid(value):
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ID_PROP.clean(value)
 
 
@@ -90,20 +90,20 @@ def test_reference_property_whitelist_standard_type():
     )
     assert result == ("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("foo--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("foo--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
 
 def test_reference_property_whitelist_custom_type():
     ref_prop = ReferenceProperty(valid_types="my-type", spec_version="2.0")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("not-my-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
     with pytest.raises(CustomContentError):
@@ -143,13 +143,13 @@ def test_reference_property_whitelist_generic_type():
     )
     assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean("identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
 
@@ -175,12 +175,12 @@ def test_reference_property_blacklist_standard_type():
     )
     assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean(
             "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
         )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean(
             "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
@@ -211,22 +211,22 @@ def test_reference_property_blacklist_generic_type():
     )
     assert result == ("some-type--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean(
             "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
         )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean(
             "identity--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean(
             "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False,
         )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ref_prop.clean(
             "relationship--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True,
         )
@@ -248,7 +248,7 @@ def test_reference_property_whitelist_hybrid_type():
     result = p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
     assert result == ("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean("b--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
     # should just assume "b" is a custom SCO type.
@@ -259,16 +259,16 @@ def test_reference_property_whitelist_hybrid_type():
 def test_reference_property_blacklist_hybrid_type():
     p = ReferenceProperty(invalid_types=["a", "SCO"], spec_version="2.0")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean("file--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         p.clean("a--8a8e8758-f92c-4058-ba38-f061cd42a0cf", True)
 
     with pytest.raises(CustomContentError):
@@ -280,7 +280,7 @@ def test_reference_property_blacklist_hybrid_type():
 
 
 def test_reference_property_impossible_constraint():
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ReferenceProperty(valid_types=[], spec_version="2.0")
 
 
@@ -329,14 +329,14 @@ def test_dictionary_property_invalid_key(d):
         # string-encoded "dictionaries" that are, we need a better error message
         # or an alternative to `json.loads()` ... and preferably *not* `eval()`. :-)
         # Changing the following to `'{"description": "something"}'` does not cause
-        # any ValueError to be raised.
+        # any PropertyValueError to be raised.
         ("{'description': 'something'}", "The dictionary property must contain a dictionary"),
     ],
 )
 def test_dictionary_property_invalid(d):
     dict_prop = DictionaryProperty(spec_version="2.0")
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         dict_prop.clean(d[0])
     assert str(excinfo.value) == d[1]
 
@@ -393,7 +393,7 @@ def test_embedded_property():
     result = emb_prop.clean(mime, True)
     assert result == (mime, False)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         emb_prop.clean("string", False)
 
 
@@ -482,7 +482,7 @@ def test_extension_property_valid():
 
 def test_extension_property_invalid1():
     ext_prop = ExtensionsProperty(spec_version="2.0")
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         ext_prop.clean(1, False)
 
 
@@ -545,7 +545,7 @@ def test_extension_at_least_one_property_constraint():
 def test_marking_property_error():
     mark_prop = MarkingProperty()
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         mark_prop.clean('my-marking')
 
     assert str(excinfo.value) == "must be a Statement, TLP Marking or a registered marking."
@@ -556,7 +556,7 @@ def test_stix_property_not_compliant_spec():
     indicator = stix2.v20.Indicator(spec_version="2.0", allow_custom=True, **constants.INDICATOR_KWARGS)
     stix_prop = STIXObjectProperty(spec_version="2.0")
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         stix_prop.clean(indicator, False)
 
     assert "Spec version 2.0 bundles don't yet support containing objects of a different spec version." in str(excinfo.value)

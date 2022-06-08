@@ -12,7 +12,9 @@ import stix2
 import stix2.hashes
 
 from .base import _STIXBase
-from .exceptions import CustomContentError, DictionaryKeyError, STIXError
+from .exceptions import (
+    CustomContentError, DictionaryKeyError, PropertyValueError, STIXError,
+)
 from .parsing import parse, parse_observable
 from .registry import class_for_type
 from .utils import (
@@ -58,11 +60,11 @@ def _validate_id(id_, spec_version, required_prefix):
     :param required_prefix: The required prefix on the identifier, if any.
         This function doesn't add a "--" suffix to the prefix, so callers must
         add it if it is important.  Pass None to skip the prefix check.
-    :raises ValueError: If there are any errors with the identifier
+    :raises PropertyValueError: If there are any errors with the identifier
     """
     if required_prefix:
         if not id_.startswith(required_prefix):
-            raise ValueError("must start with '{}'.".format(required_prefix))
+            raise PropertyValueError("must start with '{}'.".format(required_prefix))
 
     try:
         if required_prefix:
@@ -74,10 +76,10 @@ def _validate_id(id_, spec_version, required_prefix):
         result = _check_uuid(uuid_part, spec_version)
     except ValueError:
         # replace their ValueError with ours
-        raise ValueError(ERROR_INVALID_ID.format(id_))
+        raise PropertyValueError(ERROR_INVALID_ID.format(id_))
 
     if not result:
-        raise ValueError(ERROR_INVALID_ID.format(id_))
+        raise PropertyValueError(ERROR_INVALID_ID.format(id_))
 
 
 def _validate_type(type_, spec_version):
@@ -87,25 +89,25 @@ def _validate_type(type_, spec_version):
 
     :param type_: The STIX type name
     :param spec_version: The STIX specification version to use
-    :raises ValueError: If there are any errors with the identifier
+    :raises PropertyValueError: If there are any errors with the identifier
     """
     if spec_version == "2.0":
         if not re.match(TYPE_REGEX, type_):
-            raise ValueError(
+            raise PropertyValueError(
                 "Invalid type name '%s': must only contain the "
                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." %
                 type_,
             )
     else:  # 2.1+
         if not re.match(TYPE_21_REGEX, type_):
-            raise ValueError(
+            raise PropertyValueError(
                 "Invalid type name '%s': must only contain the "
                 "characters a-z (lowercase ASCII), 0-9, and hyphen (-) "
                 "and must begin with an a-z character" % type_,
             )
 
     if len(type_) < 3 or len(type_) > 250:
-        raise ValueError(
+        raise PropertyValueError(
             "Invalid type name '%s': must be between 3 and 250 characters." % type_,
         )
 
@@ -172,7 +174,7 @@ class Property(object):
 
     def _default_clean(self, value, allow_custom=False):
         if value != self._fixed_value:
-            raise ValueError("must equal '{}'.".format(self._fixed_value))
+            raise PropertyValueError("must equal '{}'.".format(self._fixed_value))
         return value, False
 
     def __init__(self, required=False, fixed=None, default=None):
@@ -228,7 +230,7 @@ class ListProperty(Property):
         try:
             iter(value)
         except TypeError:
-            raise ValueError("must be an iterable.")
+            raise PropertyValueError("must be an iterable.")
 
         if isinstance(value, (_STIXBase, str)):
             value = [value]
@@ -251,7 +253,7 @@ class ListProperty(Property):
                     valid = self.contained(allow_custom=allow_custom, **item)
 
                 else:
-                    raise ValueError(
+                    raise PropertyValueError(
                         "Can't create a {} out of {}".format(
                             self.contained._type, str(item),
                         ),
@@ -265,7 +267,7 @@ class ListProperty(Property):
 
         # STIX spec forbids empty lists
         if len(result) < 1:
-            raise ValueError("must not be empty.")
+            raise PropertyValueError("must not be empty.")
 
         return result, has_custom
 
@@ -315,15 +317,15 @@ class IntegerProperty(Property):
         try:
             value = int(value)
         except Exception:
-            raise ValueError("must be an integer.")
+            raise PropertyValueError("must be an integer.")
 
         if self.min is not None and value < self.min:
             msg = "minimum value is {}. received {}".format(self.min, value)
-            raise ValueError(msg)
+            raise PropertyValueError(msg)
 
         if self.max is not None and value > self.max:
             msg = "maximum value is {}. received {}".format(self.max, value)
-            raise ValueError(msg)
+            raise PropertyValueError(msg)
 
         return value, False
 
@@ -339,15 +341,15 @@ class FloatProperty(Property):
         try:
             value = float(value)
         except Exception:
-            raise ValueError("must be a float.")
+            raise PropertyValueError("must be a float.")
 
         if self.min is not None and value < self.min:
             msg = "minimum value is {}. received {}".format(self.min, value)
-            raise ValueError(msg)
+            raise PropertyValueError(msg)
 
         if self.max is not None and value > self.max:
             msg = "maximum value is {}. received {}".format(self.max, value)
-            raise ValueError(msg)
+            raise PropertyValueError(msg)
 
         return value, False
 
@@ -366,7 +368,7 @@ class BooleanProperty(Property):
         elif value in self._falses:
             result = False
         else:
-            raise ValueError("must be a boolean value.")
+            raise PropertyValueError("must be a boolean value.")
 
         return result, False
 
@@ -394,8 +396,8 @@ class DictionaryProperty(Property):
     def clean(self, value, allow_custom=False):
         try:
             dictified = _get_dict(value)
-        except ValueError:
-            raise ValueError("The dictionary property must contain a dictionary")
+        except PropertyValueError:
+            raise PropertyValueError("The dictionary property must contain a dictionary")
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -414,7 +416,7 @@ class DictionaryProperty(Property):
                 raise DictionaryKeyError(k, msg)
 
         if len(dictified) < 1:
-            raise ValueError("must not be empty.")
+            raise PropertyValueError("must not be empty.")
 
         return dictified, False
 
@@ -448,7 +450,7 @@ class HashesProperty(DictionaryProperty):
             if hash_alg:
                 # Library-supported hash algorithm: sanity check the value.
                 if not stix2.hashes.check_hash(hash_alg, hash_v):
-                    raise ValueError(
+                    raise PropertyValueError(
                         "'{0}' is not a valid {1} hash".format(
                             hash_v, hash_alg.name,
                         ),
@@ -486,7 +488,7 @@ class BinaryProperty(Property):
         try:
             base64.b64decode(value)
         except (binascii.Error, TypeError):
-            raise ValueError("must contain a base64 encoded string")
+            raise PropertyValueError("must contain a base64 encoded string")
         return value, False
 
 
@@ -494,7 +496,7 @@ class HexProperty(Property):
 
     def clean(self, value, allow_custom=False):
         if not re.match(r"^([a-fA-F0-9]{2})+$", value):
-            raise ValueError("must contain an even number of hexadecimal characters")
+            raise PropertyValueError("must contain an even number of hexadecimal characters")
         return value, False
 
 
@@ -510,7 +512,7 @@ class ReferenceProperty(Property):
 
         if (valid_types is not None and invalid_types is not None) or \
                 (valid_types is None and invalid_types is None):
-            raise ValueError(
+            raise PropertyValueError(
                 "Exactly one of 'valid_types' and 'invalid_types' must be "
                 "given",
             )
@@ -521,7 +523,7 @@ class ReferenceProperty(Property):
             invalid_types = [invalid_types]
 
         if valid_types is not None and len(valid_types) == 0:
-            raise ValueError("Impossible type constraint: empty whitelist")
+            raise PropertyValueError("Impossible type constraint: empty whitelist")
 
         self.auth_type = self._WHITELIST if valid_types else self._BLACKLIST
 
@@ -601,7 +603,7 @@ class ReferenceProperty(Property):
                 msg = "one of the invalid types for this property: %s." % types
             if not allow_custom and has_custom:
                 msg += " A custom object type may be allowed with allow_custom=True."
-            raise ValueError(
+            raise PropertyValueError(
                 "The type-specifying prefix '%s' for this property is %s"
                 % (obj_type, msg),
             )
@@ -621,7 +623,7 @@ class SelectorProperty(Property):
 
     def clean(self, value, allow_custom=False):
         if not SELECTOR_REGEX.match(value):
-            raise ValueError("must adhere to selector syntax.")
+            raise PropertyValueError("must adhere to selector syntax.")
         return value, False
 
 
@@ -644,7 +646,7 @@ class EmbeddedObjectProperty(Property):
         if isinstance(value, dict):
             value = self.type(allow_custom=allow_custom, **value)
         elif not isinstance(value, self.type):
-            raise ValueError("must be of type {}.".format(self.type.__name__))
+            raise PropertyValueError("must be of type {}.".format(self.type.__name__))
 
         has_custom = False
         if isinstance(value, _STIXBase):
@@ -672,7 +674,7 @@ class EnumProperty(StringProperty):
         cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
 
         if cleaned_value not in self.allowed:
-            raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
+            raise PropertyValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
 
         return cleaned_value, False
 
@@ -729,10 +731,10 @@ class ObservableProperty(Property):
             # modify the original dict as _get_dict() does not return new
             # dict when passed a dict
             dictified = copy.deepcopy(dictified)
-        except ValueError:
-            raise ValueError("The observable property must contain a dictionary")
+        except PropertyValueError:
+            raise PropertyValueError("The observable property must contain a dictionary")
         if dictified == {}:
-            raise ValueError("The observable property must contain a non-empty dictionary")
+            raise PropertyValueError("The observable property must contain a non-empty dictionary")
 
         valid_refs = {k: v['type'] for (k, v) in dictified.items()}
 
@@ -777,8 +779,8 @@ class ExtensionsProperty(DictionaryProperty):
             # modify the original dict as _get_dict() does not return new
             # dict when passed a dict
             dictified = copy.deepcopy(dictified)
-        except ValueError:
-            raise ValueError("The extensions property must contain a dictionary")
+        except PropertyValueError:
+            raise PropertyValueError("The extensions property must contain a dictionary")
 
         has_custom = False
         for key, subvalue in dictified.items():
@@ -851,7 +853,7 @@ class STIXObjectProperty(Property):
             # (spec_version).  So this is a hack, and not technically spec-
             # compliant.
             if 'spec_version' in value and self.spec_version == '2.0':
-                raise ValueError(
+                raise PropertyValueError(
                     "Spec version 2.0 bundles don't yet support "
                     "containing objects of a different spec "
                     "version.",
@@ -863,15 +865,15 @@ class STIXObjectProperty(Property):
             return value, value.has_custom
         try:
             dictified = _get_dict(value)
-        except ValueError:
-            raise ValueError("This property may only contain a dictionary or object")
+        except PropertyValueError:
+            raise PropertyValueError("This property may only contain a dictionary or object")
         if dictified == {}:
-            raise ValueError("This property may only contain a non-empty dictionary or object")
+            raise PropertyValueError("This property may only contain a non-empty dictionary or object")
         if 'type' in dictified and dictified['type'] == 'bundle':
-            raise ValueError("This property may not contain a Bundle object")
+            raise PropertyValueError("This property may not contain a Bundle object")
         if 'spec_version' in dictified and self.spec_version == '2.0':
             # See above comment regarding spec_version.
-            raise ValueError(
+            raise PropertyValueError(
                 "Spec version 2.0 bundles don't yet support "
                 "containing objects of a different spec version.",
             )

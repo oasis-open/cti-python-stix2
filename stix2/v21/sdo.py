@@ -257,7 +257,7 @@ class Indicator(_DomainObject):
 
         if valid_from and valid_until and valid_until <= valid_from:
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
-            raise ValueError(msg.format(self))
+            raise InvalidValueError(self.__class__, 'valid_until', msg)
 
         if self.get('pattern_type') == "stix":
             try:
