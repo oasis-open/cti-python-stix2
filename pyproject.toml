@@ -1,0 +1,54 @@
+[tool.poetry]
+name = "misp-lib-stix2"
+version = "3.0.1"
+description = "Produce and consume STIX 2 JSON content"
+authors = ["OASIS Cyber Threat Intelligence Technical Committee <cti-users@lists.oasis-open.org>"]
+maintainers = ["OASIS Cyber Threat Intelligence Technical Committee <cti-users@lists.oasis-open.org>"]
+license = "BSD"
+repository = "https://github.com/MISP/cti-python-stix2"
+documentation = "https://stix2.readthedocs.io"
+readme = "README.rst"
+
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Intended Audience :: Developers',
+    'Topic :: Security',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10'
+]
+
+packages = [
+    { include = "stix2" }
+]
+
+[tool.poetry.urls]
+'Source Code' = 'https://github.com/oasis-open/cti-python-stix2/'
+'Documentation' = 'https://stix2.readthedocs.io/'
+'Bug Tracker' = 'https://github.com/oasis-open/cti-python-stix2/issues/'
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pytz = "^2022.2.1"
+requests = "^2.28.1"
+simplejson = "^3.17.6"
+stix2-patterns = "^2.0.0"
+haversine = {version = "^2.6.0", optional = true}
+medallion = {version = "^3.0.0", optional = true}
+rapidfuzz = {version = "^2.6.0", optional = true}
+taxii2-client = {version = "^2.3.0", optional = true}
+
+[tool.poetry.extras]
+taxii = ['medallion', 'taxii2-client']
+semantic = ['haversine', 'rapidfuzz']
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+
+[build-system]
+requires = ["poetry_core>=1.0", "setuptools"]
+build-backend = "poetry.core.mansonry.api"
