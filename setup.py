@@ -23,7 +23,7 @@ def get_long_description():
 
 
 setup(
-    name='stix2',
+    name='misp-lib-stix2',
     version=get_version(),
     description='Produce and consume STIX 2 JSON content',
     long_description=get_long_description(),
@@ -33,7 +33,7 @@ setup(
     author_email='cti-users@lists.oasis-open.org',
     license='BSD',
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Topic :: Security',
         'License :: OSI Approved :: BSD License',

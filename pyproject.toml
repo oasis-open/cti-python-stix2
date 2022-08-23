@@ -10,7 +10,7 @@ documentation = "https://stix2.readthedocs.io"
 readme = "README.rst"
 
 classifiers = [
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
     'Topic :: Security',
     'License :: OSI Approved :: BSD License',
