@@ -22,6 +22,8 @@ Install with `pip <https://pip.pypa.io/en/stable/>`__:
 
 Note: The library requires Python 3.7+.
 
+PyPI module: [misp-lib-stix2](https://pypi.org/project/misp-lib-stix2/)
+
 Usage
 -----
 
