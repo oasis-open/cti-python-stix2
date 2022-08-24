@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "misp-lib-stix2"
-version = "3.0.1"
+version = "3.0.1.1"
 description = "Produce and consume STIX 2 JSON content"
 authors = ["OASIS Cyber Threat Intelligence Technical Committee <cti-users@lists.oasis-open.org>"]
 maintainers = ["OASIS Cyber Threat Intelligence Technical Committee <cti-users@lists.oasis-open.org>"]
