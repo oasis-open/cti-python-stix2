@@ -1,4 +1,4 @@
-confidence
+﻿confidence
 ================
 
 .. automodule:: stix2.confidence

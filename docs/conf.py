@@ -40,7 +40,6 @@ author = 'OASIS Open'
 version = __version__
 release = __version__
 
-language = None
 exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
 pygments_style = 'sphinx'
 todo_include_todos = False
@@ -102,8 +101,8 @@ class STIXPropertyDocumenter(ClassDocumenter):
                issubclass(member, _STIXBase) and \
                hasattr(member, '_properties')
 
-    def add_content(self, more_content, no_docstring=False):
-        ClassDocumenter.add_content(self, more_content, no_docstring)
+    def add_content(self, more_content):
+        ClassDocumenter.add_content(self, more_content)
 
         obj = self.object
         self.add_line(':Properties:', '<stixattr>')

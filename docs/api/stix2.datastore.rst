@@ -1,4 +1,4 @@
-datastore
+﻿datastore
 ===============
 
 .. automodule:: stix2.datastore
