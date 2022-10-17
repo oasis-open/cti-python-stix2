@@ -1,4 +1,4 @@
-patterns
+﻿patterns
 ==============
 
 .. automodule:: stix2.patterns

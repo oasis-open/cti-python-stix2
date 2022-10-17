@@ -1,4 +1,4 @@
-workbench
+﻿workbench
 ===============
 
 .. automodule:: stix2.workbench

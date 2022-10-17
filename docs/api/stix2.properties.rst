@@ -1,4 +1,4 @@
-properties
+﻿properties
 ================
 
 .. automodule:: stix2.properties
