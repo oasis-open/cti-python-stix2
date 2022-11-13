@@ -554,7 +554,7 @@ class FileSystemSink(DataSink):
     def stix_dir(self):
         return self._stix_dir
 
-    def _check_path_and_write(self, stix_obj, encoding='utf-8'):
+    def _check_path_and_write(self, stix_obj, encoding='utf-8', pretty=True):
         """Write the given STIX object to a file in the STIX file directory.
         """
         type_dir = os.path.join(self._stix_dir, stix_obj["type"])
@@ -585,9 +585,9 @@ class FileSystemSink(DataSink):
             raise DataSourceError("Attempted to overwrite file (!) at: {}".format(file_path))
 
         with io.open(file_path, mode='w', encoding=encoding) as f:
-            fp_serialize(stix_obj, f, pretty=True, encoding=encoding, ensure_ascii=False)
+            fp_serialize(stix_obj, f, pretty=pretty, encoding=encoding, ensure_ascii=False)
 
-    def add(self, stix_data=None, version=None):
+    def add(self, stix_data=None, version=None, pretty=True):
         """Add STIX objects to file directory.
 
         Args:
@@ -611,7 +611,7 @@ class FileSystemSink(DataSink):
 
         elif isinstance(stix_data, _STIXBase):
             # adding python STIX object
-            self._check_path_and_write(stix_data)
+            self._check_path_and_write(stix_data, pretty=pretty)
 
         elif isinstance(stix_data, (str, dict)):
             parsed_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
@@ -619,7 +619,7 @@ class FileSystemSink(DataSink):
                 self.add(parsed_data, version=version)
             else:
                 # custom unregistered object type
-                self._check_path_and_write(parsed_data)
+                self._check_path_and_write(parsed_data, pretty=pretty)
 
         elif isinstance(stix_data, list):
             # recursively add individual STIX objects
