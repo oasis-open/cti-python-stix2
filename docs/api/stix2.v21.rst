@@ -1,4 +1,4 @@
-v21
+﻿v21
 =========
 
 .. automodule:: stix2.v21

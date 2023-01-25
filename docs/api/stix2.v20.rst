@@ -1,4 +1,4 @@
-v20
+﻿v20
 =========
 
 .. automodule:: stix2.v20
