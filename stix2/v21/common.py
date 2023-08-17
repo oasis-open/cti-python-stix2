@@ -281,6 +281,14 @@ TLP_WHITE = MarkingDefinition(
     definition=TLPMarking(tlp='white'),
 )
 
+TLP_CLEAR = MarkingDefinition(
+    id='marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487',
+    created='2022-10-01T00:00:00.000Z',
+    definition_type='tlp',
+    name='TLP:CLEAR',
+    definition=TLPMarking(tlp='clear'),
+)
+
 TLP_GREEN = MarkingDefinition(
     id='marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     created='2017-01-20T00:00:00.000Z',
