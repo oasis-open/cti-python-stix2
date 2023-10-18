@@ -271,6 +271,7 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_29l09w731pzc>`__.
     """
 
+    _type = 'windows-pe-optional-header-type'
     _properties = OrderedDict([
         ('magic_hex', HexProperty()),
         ('major_linker_version', IntegerProperty()),
