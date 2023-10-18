@@ -311,11 +311,12 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
         self._check_at_least_one_property()
 
 
-class WindowsPESection(_STIXBase21):
+class WindowsPESectionType(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_ioapwyd8oimw>`__.
     """
 
+    _type = 'windows-pe-section-type'
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty(min=0)),
@@ -342,7 +343,7 @@ class WindowsPEBinaryExt(_Extension):
         ('characteristics_hex', HexProperty()),
         ('file_header_hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
-        ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
+        ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESectionType))),
     ])
 
 
