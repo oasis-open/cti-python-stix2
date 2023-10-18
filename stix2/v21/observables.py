@@ -212,11 +212,12 @@ class ArchiveExt(_Extension):
     ])
 
 
-class AlternateDataStream(_STIXBase21):
+class AlternateDataStreamType(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_8i2ts0xicqea>`__.
     """
 
+    _type = 'alternate-data-stream-type'
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
