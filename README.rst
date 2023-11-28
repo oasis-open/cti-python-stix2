@@ -141,8 +141,8 @@ select additional or substitute Maintainers, per `consensus agreements
 -  `Emily Ratliff <mailto:Emily.Ratliff@ibm.com>`__; GitHub ID:
    https://github.com/ejratl; WWW: `IBM <http://www.ibm.com/>`__
 
--  `Duncan Sparrell <mailto:duncan@sfractal.com>`__; GitHub ID:
-   https://github.com/sparrell; WWW: `sFractal <http://sfractal.com/>`__
+-  `Rich Piazza <mailto:rpiazza@mitre.org>`__; GitHub ID:
+   https://github.com/rpiazza; WWW: `MITRE <http://www.mitre.org/>`__
 
 About OASIS TC Open Repositories
 --------------------------------
