@@ -57,6 +57,28 @@ def _get_pattern_normalizer():
     return _pattern_normalizer
 
 
+def normalize_pattern(pattern, stix_version=DEFAULT_VERSION):
+    """
+    Normalize a STIX pattern.
+
+    Args:
+        pattern: The STIX pattern to normalize
+        stix_version: The STIX version to use for pattern parsing, as a string
+            ("2.0", "2.1", etc).  Defaults to library-wide default version.
+
+    Returns:
+        The normalized form of the given STIX pattern
+    """
+    patt_ast = pattern_visitor.create_pattern_object(
+        pattern, version=stix_version,
+    )
+
+    pattern_normalizer = _get_pattern_normalizer()
+    norm_patt, _ = pattern_normalizer.transform(patt_ast)
+
+    return norm_patt
+
+
 def equivalent_patterns(pattern1, pattern2, stix_version=DEFAULT_VERSION):
     """
     Determine whether two STIX patterns are semantically equivalent.
@@ -70,16 +92,8 @@ def equivalent_patterns(pattern1, pattern2, stix_version=DEFAULT_VERSION):
     Returns:
         True if the patterns are semantically equivalent; False if not
     """
-    patt_ast1 = pattern_visitor.create_pattern_object(
-        pattern1, version=stix_version,
-    )
-    patt_ast2 = pattern_visitor.create_pattern_object(
-        pattern2, version=stix_version,
-    )
-
-    pattern_normalizer = _get_pattern_normalizer()
-    norm_patt1, _ = pattern_normalizer.transform(patt_ast1)
-    norm_patt2, _ = pattern_normalizer.transform(patt_ast2)
+    norm_patt1 = normalize_pattern(pattern1, stix_version)
+    norm_patt2 = normalize_pattern(pattern2, stix_version)
 
     result = observation_expression_cmp(norm_patt1, norm_patt2)
 

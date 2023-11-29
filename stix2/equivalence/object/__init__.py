@@ -6,7 +6,7 @@ import time
 
 from ...datastore import DataSource, DataStoreMixin, Filter
 from ...utils import STIXdatetime, parse_into_datetime
-from ..pattern import equivalent_patterns
+from ..pattern import normalize_pattern
 
 logger = logging.getLogger(__name__)
 
@@ -307,7 +307,13 @@ def custom_pattern_based(pattern1, pattern2):
         float: Number between 0.0 and 1.0 depending on match criteria.
 
     """
-    return equivalent_patterns(pattern1, pattern2)
+    norm_patt1 = normalize_pattern(pattern1)
+    norm_patt2 = normalize_pattern(pattern2)
+
+    patt_str1 = str(norm_patt1)[1:-1]  # don't include brackets
+    patt_str2 = str(norm_patt2)[1:-1]
+
+    return partial_string_based(patt_str1, patt_str2)
 
 
 def partial_external_reference_based(ext_refs1, ext_refs2):
