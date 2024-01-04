@@ -91,6 +91,56 @@ The contributing rules of this repository is the MISP standard rules bound to th
 If you want to contribute, no need to sign a CLA.
 
 
+Maintainers
+~~~~~~~~~~~
+
+TC Open Repository `Maintainers <https://www.oasis-open.org/resources/open-repositories/maintainers-guide>`__
+are responsible for oversight of this project's community development
+activities, including evaluation of GitHub
+`pull requests <https://github.com/oasis-open/cti-python-stix2/blob/master/CONTRIBUTING.md#fork-and-pull-collaboration-model>`__
+and `preserving <https://www.oasis-open.org/policies-guidelines/open-repositories#repositoryManagement>`__
+open source principles of openness and fairness. Maintainers are recognized
+and trusted experts who serve to implement community goals and consensus design
+preferences.
+
+Initially, the associated TC members have designated one or more persons to
+serve as Maintainer(s); subsequently, participating community members may
+select additional or substitute Maintainers, per `consensus agreements
+<https://www.oasis-open.org/resources/open-repositories/maintainers-guide#additionalMaintainers>`__.
+
+.. _currentmaintainers:
+
+**Current Maintainers of this TC Open Repository**
+
+-  `Jason Keirstead <mailto:Jason.Keirstead@ca.ibm.com>`__; GitHub ID:
+   https://github.com/JasonKeirstead; WWW: `IBM <http://www.ibm.com/>`__
+
+-  `Emily Ratliff <mailto:Emily.Ratliff@ibm.com>`__; GitHub ID:
+   https://github.com/ejratl; WWW: `IBM <http://www.ibm.com/>`__
+
+-  `Rich Piazza <mailto:rpiazza@mitre.org>`__; GitHub ID:
+   https://github.com/rpiazza; WWW: `MITRE <http://www.mitre.org/>`__
+
+About OASIS TC Open Repositories
+--------------------------------
+
+-  `TC Open Repositories: Overview and Resources <https://www.oasis-open.org/resources/open-repositories/>`__
+-  `Frequently Asked Questions <https://www.oasis-open.org/resources/open-repositories/faq>`__
+-  `Open Source Licenses <https://www.oasis-open.org/resources/open-repositories/licenses>`__
+-  `Contributor License Agreements (CLAs) <https://www.oasis-open.org/resources/open-repositories/cla>`__
+-  `Maintainers' Guidelines and Agreement <https://www.oasis-open.org/resources/open-repositories/maintainers-guide>`__
+
+Feedback
+--------
+
+Questions or comments about this TC Open Repository's activities should be
+composed as GitHub issues or comments. If use of an issue/comment is not
+possible or appropriate, questions may be directed by email to the
+Maintainer(s) `listed above <#currentmaintainers>`__. Please send general
+questions about TC Open Repository participation to OASIS Staff at
+repository-admin@oasis-open.org and any specific CLA-related questions
+to repository-cla@oasis-open.org.
+
 .. |Build_Status| image:: https://github.com/misp/cti-python-stix2/workflows/cti-python-stix2%20test%20harness/badge.svg
    :target: https://github.com/misp/cti-python-stix2/actions?query=workflow%3A%22cti-python-stix2+test+harness%22
    :alt: Build Status
