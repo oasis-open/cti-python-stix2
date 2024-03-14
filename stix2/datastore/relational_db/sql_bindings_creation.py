@@ -199,7 +199,7 @@ def generate_single_values(stix_object, properties, core_properties=[]):
     return bindings, values
 
 
-def generate_insert_for_object(stix_object, stix_object_sco):
+def generate_insert_for_object(database_connection, stix_object, stix_object_sco):
     sql_bindings_tuples = list()
     if stix_object_sco:
         core_properties = SCO_COMMON_PROPERTIES
@@ -212,9 +212,10 @@ def generate_insert_for_object(stix_object, stix_object_sco):
 
     bindings, values = generate_single_values(stix_object, properties, core_properties)
 
-    sql = f"INSERT INTO {table_name}" \
-        f" ({','.join(bindings.keys())})" \
-        f" VALUES ({','.join(values)})"
+    # sql = f"INSERT INTO {table_name}" \
+    #     f" ({','.join(bindings.keys())})" \
+    #     f" VALUES ({','.join(values)})"
+    sql = database_connection.create_insert_statement(table_name, bindings, values=values)
     sql_bindings_tuples.append((sql, bindings))
 
     print("sql:", sql)

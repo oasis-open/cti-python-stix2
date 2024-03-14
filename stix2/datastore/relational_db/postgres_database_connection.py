@@ -10,3 +10,6 @@ class PostgresDatabaseConnection(DatabaseConnection):
 
     def execute(self, sql_statement, bindings):
         self.db.run(sql_statement, parameters=bindings)
+
+    def create_insert_statement(self, table_name, bindings, **kwargs):
+        return f"INSERT INTO {table_name} ({','.join(bindings.keys())}) VALUES ({','.join(kwargs['values'])})"

@@ -39,7 +39,9 @@ def _add(store, stix_data, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        sql_binding_tuples = generate_insert_for_object(stix_obj, isinstance(stix_obj, _Observable))
+        sql_binding_tuples = generate_insert_for_object(store.database_connection,
+                                                        stix_obj,
+                                                        isinstance(stix_obj, _Observable))
         for (sql, bindings) in sql_binding_tuples:
             store.database_connection.execute(sql, bindings)
 
