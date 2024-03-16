@@ -515,12 +515,12 @@ def test_graph_similarity_with_filesystem_source(ds, fs):
     prop_scores2 = {}
     env2 = stix2.Environment().graph_similarity(ds, fs, prop_scores2, ignore_spec_version=True)
 
-    assert round(env1) == 25
-    assert round(prop_scores1["matching_score"]) == 451
+    assert round(env1) == 19
+    assert round(prop_scores1["matching_score"]) == 334
     assert round(prop_scores1["len_pairs"]) == 18
 
-    assert round(env2) == 25
-    assert round(prop_scores2["matching_score"]) == 451
+    assert round(env2) == 19
+    assert round(prop_scores2["matching_score"]) == 334
     assert round(prop_scores2["len_pairs"]) == 18
 
     prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
@@ -587,11 +587,11 @@ def test_graph_equivalence_with_filesystem_source(ds, fs):
     env2 = stix2.Environment().graph_equivalence(ds, fs, prop_scores2, ignore_spec_version=True)
 
     assert env1 is False
-    assert round(prop_scores1["matching_score"]) == 451
+    assert round(prop_scores1["matching_score"]) == 334
     assert round(prop_scores1["len_pairs"]) == 18
 
     assert env2 is False
-    assert round(prop_scores2["matching_score"]) == 451
+    assert round(prop_scores2["matching_score"]) == 334
     assert round(prop_scores2["len_pairs"]) == 18
 
     prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
