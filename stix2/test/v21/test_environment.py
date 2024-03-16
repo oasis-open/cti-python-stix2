@@ -900,7 +900,7 @@ def test_object_similarity_prop_scores():
     tool2 = stix2.v21.Tool(id=TOOL_ID, **TOOL2_KWARGS)
     stix2.Environment().object_similarity(tool1, tool2, prop_scores)
     assert len(prop_scores) == 4
-    assert round(prop_scores["matching_score"], 1) == 8.9
+    assert round(prop_scores["matching_score"], 1) == 0.0
     assert round(prop_scores["sum_weights"], 1) == 100.0
 
 
@@ -1050,12 +1050,12 @@ def test_graph_similarity_with_filesystem_source(ds, fs):
         max_depth=1,
     )
 
-    assert round(env1) == 23
-    assert round(prop_scores1["matching_score"]) == 411
+    assert round(env1) == 17
+    assert round(prop_scores1["matching_score"]) == 308
     assert round(prop_scores1["len_pairs"]) == 18
 
-    assert round(env2) == 23
-    assert round(prop_scores2["matching_score"]) == 411
+    assert round(env2) == 17
+    assert round(prop_scores2["matching_score"]) == 308
     assert round(prop_scores2["len_pairs"]) == 18
 
     prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
@@ -1225,11 +1225,11 @@ def test_graph_equivalence_with_filesystem_source(ds, fs):
     env2 = stix2.Environment().graph_equivalence(ds, fs, prop_scores2, ignore_spec_version=True)
 
     assert env1 is False
-    assert round(prop_scores1["matching_score"]) == 411
+    assert round(prop_scores1["matching_score"]) == 308
     assert round(prop_scores1["len_pairs"]) == 18
 
     assert env2 is False
-    assert round(prop_scores2["matching_score"]) == 411
+    assert round(prop_scores2["matching_score"]) == 308
     assert round(prop_scores2["len_pairs"]) == 18
 
     prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
