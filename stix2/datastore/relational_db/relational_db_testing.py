@@ -2,9 +2,11 @@ import datetime as dt
 import pytz
 
 import stix2
+
+from stix2.v21.base import _DomainObject, _Observable, _Extension
 from stix2.datastore.relational_db.relational_db import RelationalDBSink
 from stix2.datastore.relational_db.postgres_database_connection import PostgresDatabaseConnection
-from stix2.datastore.relational_db.sql_bindings_creation import generate_insert_for_object
+from stix2.datastore.relational_db.table_creation import generate_object_table, get_all_subclasses, create_core_sdo_table
 
 
 directory_stix_object = stix2.Directory(
@@ -51,7 +53,6 @@ def windows_registry_key_example():
 
 
 def malware_with_all_required_properties():
-
     ref = stix2.v21.ExternalReference(
         source_name="veris",
         external_id="0001AA7F-C601-424A-B2B8-BE6C9F5164E7",
@@ -95,17 +96,25 @@ def file_example_with_PDFExt_Object():
     )
     return f
 
-
 def main():
-    sink = RelationalDBSink(PostgresDatabaseConnection("localhost", "stix-data-sink", "rpiazza"))
-    sink.add(directory_stix_object)
-    sink.add(s)
-    reg_key = windows_registry_key_example()
-    sink.add(reg_key)
-    f = file_example_with_PDFExt_Object()
-    sink.add(f)
-    mal = malware_with_all_required_properties()
-    sink.add(mal)
+    # sink = RelationalDBSink(PostgresDatabaseConnection("localhost", "stix-data-sink", "rpiazza"))
+    # sink.add(directory_stix_object)
+    # sink.add(s)
+    # reg_key = windows_registry_key_example()
+    # sink.add(reg_key)
+    # f = file_example_with_PDFExt_Object()
+    # sink.add(f)
+    # mal = malware_with_all_required_properties()
+    # sink.add(mal)
+
+    create_core_sdo_table()
+    for sdo_class in get_all_subclasses(_DomainObject):
+        x = generate_object_table(sdo_class)
+    for sdo_class in get_all_subclasses(_Observable):
+        x = generate_object_table(sdo_class)
+    for sdo_class in get_all_subclasses(_Extension):
+        x = generate_object_table(sdo_class, is_extension=True)
+
 
 
 if __name__ == '__main__':
