@@ -1,8 +1,9 @@
-from stix2 import v20, v21
-from stix2.base import _STIXBase, _Observable
+from stix2.base import _Observable, _STIXBase
 from stix2.datastore import DataSink
+from stix2.datastore.relational_db.sql_bindings_creation import (
+    generate_insert_for_object,
+)
 from stix2.parsing import parse
-from stix2.datastore.relational_db.sql_bindings_creation import generate_insert_for_object
 
 
 def _add(store, stix_data, allow_custom=True, version=None):
@@ -39,9 +40,11 @@ def _add(store, stix_data, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        sql_binding_tuples = generate_insert_for_object(store.database_connection,
-                                                        stix_obj,
-                                                        isinstance(stix_obj, _Observable))
+        sql_binding_tuples = generate_insert_for_object(
+            store.database_connection,
+            stix_obj,
+            isinstance(stix_obj, _Observable),
+        )
         for (sql, bindings) in sql_binding_tuples:
             store.database_connection.execute(sql, bindings)
 
@@ -86,4 +89,3 @@ class RelationalDBSink(DataSink):
     def add(self, stix_data, version=None):
         _add(self, stix_data, self.allow_custom, version)
     add.__doc__ = _add.__doc__
-

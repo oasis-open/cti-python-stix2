@@ -1,13 +1,13 @@
 import datetime as dt
+
 import pytz
 
 import stix2
-
-from stix2.v21.base import _DomainObject, _Observable, _Extension
-from stix2.datastore.relational_db.relational_db import RelationalDBSink
-from stix2.datastore.relational_db.postgres_database_connection import PostgresDatabaseConnection
-from stix2.datastore.relational_db.table_creation import generate_object_table, get_all_subclasses, create_core_sdo_table
-
+# from stix2.datastore.relational_db.relational_db import RelationalDBSink
+from stix2.datastore.relational_db.table_creation import (
+    create_core_sdo_table, generate_object_table, get_all_subclasses,
+)
+from stix2.v21.base import _DomainObject, _Extension, _Observable
 
 directory_stix_object = stix2.Directory(
     path="/foo/bar/a",
@@ -17,11 +17,11 @@ directory_stix_object = stix2.Directory(
     mtime="2000-06-28T13:06:09.5827Z",
     contains_refs=[
         "file--8903b558-40e3-43e2-be90-b341c12ff7ae",
-        "directory--e0604d0c-bab3-4487-b350-87ac1a3a195c"
+        "directory--e0604d0c-bab3-4487-b350-87ac1a3a195c",
     ],
     object_marking_refs=[
-        "marking-definition--1b3eec29-5376-4837-bd93-73203e65d73c"
-    ]
+        "marking-definition--1b3eec29-5376-4837-bd93-73203e65d73c",
+    ],
 )
 
 s = stix2.v21.Software(
@@ -31,7 +31,7 @@ s = stix2.v21.Software(
         version="2002",
         languages=["c", "lisp"],
         vendor="Microsoft",
-    )
+)
 
 
 def windows_registry_key_example():
@@ -58,7 +58,7 @@ def malware_with_all_required_properties():
         external_id="0001AA7F-C601-424A-B2B8-BE6C9F5164E7",
         # hashes={
         #    "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
-        #},
+        # },
         url="https://github.com/vz-risk/VCDB/blob/master/data/json/0001AA7F-C601-424A-B2B8-BE6C9F5164E7.json",
     )
     now = dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
@@ -71,7 +71,7 @@ def malware_with_all_required_properties():
         modified=now,
         name="Cryptolocker",
         is_family=False,
-        labels=["foo", "bar"]
+        labels=["foo", "bar"],
     )
     return malware
 
@@ -96,6 +96,7 @@ def file_example_with_PDFExt_Object():
     )
     return f
 
+
 def main():
     # sink = RelationalDBSink(PostgresDatabaseConnection("localhost", "stix-data-sink", "rpiazza"))
     # sink.add(directory_stix_object)
@@ -109,12 +110,11 @@ def main():
 
     create_core_sdo_table()
     for sdo_class in get_all_subclasses(_DomainObject):
-        x = generate_object_table(sdo_class)
+        generate_object_table(sdo_class)
     for sdo_class in get_all_subclasses(_Observable):
-        x = generate_object_table(sdo_class)
+        generate_object_table(sdo_class)
     for sdo_class in get_all_subclasses(_Extension):
-        x = generate_object_table(sdo_class, is_extension=True)
-
+        generate_object_table(sdo_class, is_extension=True)
 
 
 if __name__ == '__main__':

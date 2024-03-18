@@ -2,7 +2,6 @@ from abc import abstractmethod
 
 
 class DatabaseConnection():
-
     def __init__(self):
         pass
 
@@ -18,9 +17,10 @@ class DatabaseConnection():
         Returns:
 
         """
+        pass
 
     @abstractmethod
-    def create_insert_statement (self, table_name, bindings, **kwargs):
+    def create_insert_statement(self, table_name, bindings, **kwargs):
         """
 
         Args:
@@ -32,3 +32,4 @@ class DatabaseConnection():
         Returns:
 
         """
+        pass
