@@ -5,7 +5,6 @@ import re
 
 from sqlalchemy import (
     ARRAY,
-    SERIES,
     TIMESTAMP,
     Boolean,
     CheckConstraint,
@@ -266,7 +265,7 @@ def generate_table_information(self, name, is_sdo, table_name):
     columns.append(Column("value",
                           Text,
                           nullable=False))
-    return Table(canonicalize_table_name(name), metadata, *columns)
+    return Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns)
 
 @add_method(HashesProperty)
 def generate_table_information(self, name, is_sdo, table_name):
@@ -388,7 +387,7 @@ def generate_object_table(stix_object_class, foreign_key_name=None, is_extension
                 if col is not None and isinstance(col, Table):
                     tables.append(col)
     if is_extension:
-        columns.append(Column("id", SERIES, primary_key=True))
+        columns.append(Column("id", primary_key=True))
     if foreign_key_name:
          columns.append(Column("id",
                                Text,
