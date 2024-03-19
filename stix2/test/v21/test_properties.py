@@ -8,7 +8,7 @@ from stix2.exceptions import (
 from stix2.properties import (
     DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty,
     HashesProperty, IDProperty, ListProperty, ObservableProperty,
-    ReferenceProperty, STIXObjectProperty, StringProperty,
+    ReferenceProperty, STIXObjectProperty,
 )
 from stix2.v21.common import MarkingProperty
 
