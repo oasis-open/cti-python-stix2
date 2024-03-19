@@ -269,6 +269,7 @@ def generate_table_information(self, name, is_sdo, table_name):  # noqa: F811
 @add_method(DictionaryProperty)
 def generate_table_information(self, name, is_sdo, table_name):  # noqa: F811
     columns = list()
+
     columns.append(
         Column(
             "id",
@@ -283,13 +284,36 @@ def generate_table_information(self, name, is_sdo, table_name):  # noqa: F811
             nullable=False,
         ),
     )
-    columns.append(
-        Column(
-            "value",
-            Text,
-            nullable=False,
-        ),
-    )
+    if len(self.specifics) == 1:
+        if self.specifics[0] != "string_list":
+            columns.append(
+                Column(
+                    "value",
+                    Text if self.specifics[0] == "string" else Integer,
+                    nullable=False,
+                ),
+            )
+        else:
+            columns.append(
+                Column(
+                    "value",
+                    ARRAY(Text),
+                    nullable=False,
+                ),
+            )
+    else:
+        columns.append(
+            Column(
+                "string_value",
+                Text
+            ),
+        )
+        columns.append(
+            Column(
+                "integer_value",
+                Integer
+            ),
+        )
     return Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns)
 
 
