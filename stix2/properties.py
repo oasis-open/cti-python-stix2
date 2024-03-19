@@ -387,8 +387,20 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version=DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
+
+        if not valid_types:
+            valid_types = ["string"]
+        elif not isinstance(valid_types, list):
+            valid_types = [valid_types]
+
+        for type_ in valid_types:
+            if type_ not in ("string", "integer", "string_list"):
+                raise ValueError("The value of a dictionary key cannot be ", type_)
+
+        self.specifics = valid_types
+
         super(DictionaryProperty, self).__init__(**kwargs)
 
     def clean(self, value, allow_custom=False):
