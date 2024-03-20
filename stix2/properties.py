@@ -394,6 +394,8 @@ class DictionaryProperty(Property):
             valid_types = ["string"]
         elif not isinstance(valid_types, list):
             valid_types = [valid_types]
+        elif isinstance(valid_types, list) and 'string_list' in valid_types:
+            raise ValueError("The value of a dictionary key cannot be [\"string_list\"]")
 
         for type_ in valid_types:
             if type_ not in ("string", "integer", "string_list"):
@@ -408,6 +410,8 @@ class DictionaryProperty(Property):
             dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
+        
+        valid_types = self.specifics
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -424,6 +428,25 @@ class DictionaryProperty(Property):
                     "underscore (_)"
                 )
                 raise DictionaryKeyError(k, msg)
+            
+            if valid_types == "string":
+                if not isinstance(dictified[k], str):
+                    raise ValueError("The dictionary expects values of type str")
+            elif valid_types == "integer":
+                if not isinstance(dictified[k], int):
+                    raise ValueError("The dictionary expects values of type int")
+            elif valid_types == "string_list":
+                if not isinstance(dictified[k], list):
+                    raise ValueError("The dictionary expects values of type list[str]")
+                for x in dictified[k]:
+                    if not isinstance(x, str):
+                        raise ValueError("The dictionary expects values of type list[str]")
+            else:
+                if not isinstance(dictified[k], list):
+                    raise ValueError("The dictionary expects values of type list[str/int]")
+                for x in dictified[k]:
+                    if not isinstance(x, str) or not isinstance(x, int):
+                        raise ValueError("The dictionary expects values of type list[str/int]")
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
