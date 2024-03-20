@@ -89,7 +89,7 @@ def _custom_observable_builder(cls, type, properties, version, base_class, id_co
     return _CustomObservable
 
 
-def _custom_extension_builder(cls, object_kind, type, properties, version, base_class):
+def _custom_extension_builder(cls, applies_to, type, properties, version, base_class):
 
     properties = _get_properties_dict(properties)
     toplevel_properties = None
@@ -98,7 +98,7 @@ def _custom_extension_builder(cls, object_kind, type, properties, version, base_
     # it exists.  How to treat the other properties which were given depends on
     # the extension type.
     extension_type = getattr(cls, "extension_type", None)
-    object_kind = object_kind
+    applies_to = applies_to
     if extension_type:
         # I suppose I could also go with a plain string property, since the
         # value is fixed... but an enum property seems more true to the
@@ -129,7 +129,7 @@ def _custom_extension_builder(cls, object_kind, type, properties, version, base_
 
         _type = type
         _properties = nested_properties
-        _object_kind = object_kind
+        _applies_to = applies_to
         if extension_type == "toplevel-property-extension":
             _toplevel_properties = toplevel_properties
 

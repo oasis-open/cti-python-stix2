@@ -140,11 +140,11 @@ class ExtensionDefinition(_STIXBase21):
     ])
 
 
-def CustomExtension(object_kind="sco", type='x-custom-ext', properties=None):
+def CustomExtension(type='x-custom-ext', properties=None, applies_to="sco"):
     """Custom STIX Object Extension decorator.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, object_kind, type, properties, '2.1', _Extension)
+        return _custom_extension_builder(cls, applies_to, type, properties, '2.1', _Extension)
 
     return wrapper
 

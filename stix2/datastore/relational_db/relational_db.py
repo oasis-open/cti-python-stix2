@@ -1,9 +1,26 @@
-from stix2.base import _Observable, _STIXBase
+from sqlalchemy import MetaData
+from sqlalchemy.schema import CreateTable
+
+from stix2.base import _STIXBase
 from stix2.datastore import DataSink
-from stix2.datastore.relational_db.sql_bindings_creation import (
-    generate_insert_for_object,
+from stix2.datastore.relational_db.table_creation import (
+    create_core_tables, generate_object_table,
 )
 from stix2.parsing import parse
+from stix2.v21.base import _DomainObject, _Extension, _Observable
+
+
+def _get_all_subclasses(cls):
+    all_subclasses = []
+
+    for subclass in cls.__subclasses__():
+        all_subclasses.append(subclass)
+        all_subclasses.extend(_get_all_subclasses(subclass))
+    return all_subclasses
+
+
+def insert_object(store, stix_obj, is_sdo):
+    pass
 
 
 def _add(store, stix_data, allow_custom=True, version=None):
@@ -40,13 +57,7 @@ def _add(store, stix_data, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        sql_binding_tuples = generate_insert_for_object(
-            store.database_connection,
-            stix_obj,
-            isinstance(stix_obj, _Observable),
-        )
-        for (sql, bindings) in sql_binding_tuples:
-            store.database_connection.execute(sql, bindings)
+        insert_object(store, stix_obj, isinstance(stix_obj, _Observable))
 
 
 class RelationalDBSink(DataSink):
@@ -73,18 +84,41 @@ class RelationalDBSink(DataSink):
             If part of a MemoryStore, the dict is shared with a MemorySource
 
     """
-    def __init__(self, database_connection, stix_data=None, allow_custom=True, version=None, _store=False):
+    def __init__(
+        self, database_connection, allow_custom=True, version=None,
+        instantiate_database=False,
+    ):
         super(RelationalDBSink, self).__init__()
         self.allow_custom = allow_custom
-
+        self.metadata = MetaData()
         self.database_connection = database_connection
 
-        if _store:
-            self._data = stix_data
-        else:
-            self._data = {}
-            if stix_data:
-                _add(self, stix_data, allow_custom, version)
+        if instantiate_database:
+            self._instantiate_database()
+
+    def _create_table_objects(self):
+        tables = create_core_tables(self.metadata)
+        for sdo_class in _get_all_subclasses(_DomainObject):
+            new_tables = generate_object_table(sdo_class, self.metadata, True)
+            tables.extend(new_tables)
+        for sdo_class in _get_all_subclasses(_Observable):
+            tables.extend(generate_object_table(sdo_class, self.metadata, False))
+        for sdo_class in _get_all_subclasses(_Extension):
+            if hasattr(sdo_class, "_applies_to"):
+                is_sdo = sdo_class._applies_to == "sdo"
+            else:
+                is_sdo = False
+            tables.extend(generate_object_table(sdo_class, self.metadata, is_sdo, is_extension=True))
+        return tables
+
+    def _instantiate_database(self):
+        self._create_table_objects()
+        self.metadata.create_all(self.database_connection.engine)
+
+    def generate_stix_schema(self):
+        tables = self._create_table_objects()
+        for t in tables:
+            print(CreateTable(t).compile(self.database_connection.engine))
 
     def add(self, stix_data, version=None):
         _add(self, stix_data, self.allow_custom, version)

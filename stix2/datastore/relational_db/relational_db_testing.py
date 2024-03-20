@@ -3,11 +3,10 @@ import datetime as dt
 import pytz
 
 import stix2
-# from stix2.datastore.relational_db.relational_db import RelationalDBSink
-from stix2.datastore.relational_db.table_creation import (
-    create_core_sdo_table, generate_object_table, get_all_subclasses,
+from stix2.datastore.relational_db.postgres_database_connection import (
+    PostgresDatabaseConnection,
 )
-from stix2.v21.base import _DomainObject, _Extension, _Observable
+from stix2.datastore.relational_db.relational_db import RelationalDBSink
 
 directory_stix_object = stix2.Directory(
     path="/foo/bar/a",
@@ -98,23 +97,8 @@ def file_example_with_PDFExt_Object():
 
 
 def main():
-    # sink = RelationalDBSink(PostgresDatabaseConnection("localhost", "stix-data-sink", "rpiazza"))
-    # sink.add(directory_stix_object)
-    # sink.add(s)
-    # reg_key = windows_registry_key_example()
-    # sink.add(reg_key)
-    # f = file_example_with_PDFExt_Object()
-    # sink.add(f)
-    # mal = malware_with_all_required_properties()
-    # sink.add(mal)
-
-    create_core_sdo_table()
-    for sdo_class in get_all_subclasses(_DomainObject):
-        generate_object_table(sdo_class)
-    for sdo_class in get_all_subclasses(_Observable):
-        generate_object_table(sdo_class)
-    for sdo_class in get_all_subclasses(_Extension):
-        generate_object_table(sdo_class, is_extension=True)
+    store = RelationalDBSink(PostgresDatabaseConnection("localhost", "stix-data-sink", "rpiazza"))
+    store.generate_stix_schema()
 
 
 if __name__ == '__main__':

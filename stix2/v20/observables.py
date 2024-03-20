@@ -818,5 +818,5 @@ def CustomExtension(type='x-custom-observable-ext', properties=None):
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, type, properties, '2.0', _Extension)
+        return _custom_extension_builder(cls, "sco", type, properties, '2.0', _Extension)
     return wrapper

@@ -16,7 +16,7 @@ from . import constants
 
 
 def test_dictionary_property():
-    p = DictionaryProperty(StringProperty)
+    p = DictionaryProperty(valid_types='string')
 
     assert p.clean({'spec_version': '2.1'})
     with pytest.raises(ValueError):

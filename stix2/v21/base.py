@@ -27,11 +27,11 @@ class _Observable(_Observable, _STIXBase21):
 
 
 class _Extension(_Extension, _STIXBase21):
-
-    def __init__(self, object_kind="sco", **kwargs):
+    extension_type = None
+    def __init__(self, applies_to="sco", **kwargs):
         super(_Extension, self).__init__(**kwargs)
-        self.object_kind = object_kind
-        self.extension_type = None
+        self._applies_to = applies_to
+
 
 
 class _DomainObject(_DomainObject, _STIXBase21):
