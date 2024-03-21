@@ -171,7 +171,7 @@ def determine_sql_type(self):
 
 
 @add_method(Property)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):
+def generate_table_information(self, name, **kwargs):
     pass
 
 
@@ -181,7 +181,7 @@ def determine_sql_type(self):  # noqa: F811
 
 
 @add_method(StringProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Text,
@@ -196,7 +196,7 @@ def determine_sql_type(self):  # noqa: F811
 
 
 @add_method(IntegerProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Integer,
@@ -211,7 +211,7 @@ def determine_sql_type(self):  # noqa: F811
 
 
 @add_method(FloatProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Float,
@@ -226,7 +226,7 @@ def determine_sql_type(self):  # noqa: F811
 
 
 @add_method(BooleanProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Boolean,
@@ -241,7 +241,7 @@ def determine_sql_type(self):  # noqa: F811
 
 
 @add_method(TypeProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Text,
@@ -251,8 +251,9 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(IDProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
-    foreign_key_column = "common.core_sdo.id" if is_sdo else "common.core_sco.id"
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    foreign_key_column = "common.core_sdo.id" if kwargs.get("is_sdo") else "common.core_sco.id"
+    table_name = kwargs.get("table_name")
     return Column(
         name,
         Text,
@@ -266,7 +267,7 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(EnumProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     enum_re = "|".join(self.allowed)
     return Column(
         name,
@@ -279,7 +280,7 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(TimestampProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         TIMESTAMP(timezone=True),
@@ -291,7 +292,7 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(DictionaryProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, metadata, is_sdo, table_name, is_extension=False, **kwargs):  # noqa: F811
     columns = list()
 
     columns.append(
@@ -343,7 +344,7 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(HashesProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, metadata, is_sdo, table_name, is_extension=False, **kwargs):  # noqa: F811
 
     columns = list()
     columns.append(
@@ -375,7 +376,7 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(HexProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         LargeBinary,
@@ -384,13 +385,13 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
 
 
 @add_method(BinaryProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     print("BinaryProperty not handled, yet")
     return None
 
 
 @add_method(ExtensionsProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, metadata, is_sdo, table_name, **kwargs):  # noqa: F811
     columns = list()
     columns.append(
         Column(
@@ -436,22 +437,24 @@ def ref_column(name, specifics):
 
 
 @add_method(ReferenceProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
     return ref_column(name, self.specifics)
 
 
 @add_method(EmbeddedObjectProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
-    return generate_object_table(self.type, metadata, is_sdo, table_name, is_extension)
+def generate_table_information(self, name, metadata, is_sdo, table_name, is_extension=False, is_list=False, **kwargs):  # noqa: F811
+    return generate_object_table(self.type, metadata, is_sdo, table_name, is_extension, True, is_list)
 
 
 @add_method(ObjectReferenceProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    table_name = kwargs.get('table_name')
     raise ValueError(f"Property {name} in {table_name} is of type ObjectReferenceProperty, which is for STIX 2.0 only")
 
 
 @add_method(ListProperty)
-def generate_table_information(self, metadata, name, is_sdo, table_name, is_extension=False):  # noqa: F811
+def generate_table_information(self, name, metadata, is_sdo, table_name, **kwargs):  # noqa: F811
+    is_extension = kwargs.get('is_extension')
     tables = list()
     if isinstance(self.contained, ReferenceProperty):
         columns = list()
@@ -491,10 +494,12 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
         tables.append(Table(canonicalize_table_name(table_name + "_" + name, is_sdo), metadata, *columns))
         tables.extend(
             self.contained.generate_table_information(
-                metadata,
                 name,
+                metadata,
                 False,
                 canonicalize_table_name(table_name + "_" + name, None),
+                is_extension,
+                is_list=True
             ),
         )
         return tables
@@ -509,7 +514,7 @@ def generate_table_information(self, metadata, name, is_sdo, table_name, is_exte
                 )
 
 
-def generate_object_table(stix_object_class, metadata, is_sdo, foreign_key_name=None, is_extension=False):
+def generate_object_table(stix_object_class, metadata, is_sdo, foreign_key_name=None, is_extension=False, is_embedded_object=False, is_list=False):
     properties = stix_object_class._properties
     if hasattr(stix_object_class, "_type"):
         table_name = stix_object_class._type
@@ -520,12 +525,18 @@ def generate_object_table(stix_object_class, metadata, is_sdo, foreign_key_name=
     tables = list()
     for name, prop in properties.items():
         if name == 'id' or name not in core_properties:
-            col = prop.generate_table_information(metadata, name, is_sdo, table_name, is_extension=is_extension)
+            col = prop.generate_table_information(name,
+                                                  metadata=metadata,
+                                                  is_sdo=is_sdo,
+                                                  table_name=table_name,
+                                                  is_extension=is_extension,
+                                                  is_embedded_object=is_embedded_object,
+                                                  is_list=is_list)
             if col is not None and isinstance(col, Column):
                 columns.append(col)
             if col is not None and isinstance(col, list):
                 tables.extend(col)
-    if is_extension:
+    if (is_extension and not is_embedded_object) or (is_extension and is_embedded_object and is_list):
         columns.append(
             Column(
                 "id",
@@ -535,8 +546,18 @@ def generate_object_table(stix_object_class, metadata, is_sdo, foreign_key_name=
             ),
         )
     if foreign_key_name:
-        columns.append(
-            Column(
+        if is_extension and is_embedded_object and is_list:
+            column = Column(
+                "ref_id",
+                Integer,
+                ForeignKey(
+                    canonicalize_table_name(foreign_key_name, is_sdo) + ".ref_id",
+                    ondelete="CASCADE",
+                ),
+                primary_key=True,
+            )
+        else:
+            column = Column(
                 "id",
                 Text,
                 ForeignKey(
@@ -544,8 +565,8 @@ def generate_object_table(stix_object_class, metadata, is_sdo, foreign_key_name=
                     ondelete="CASCADE",
                 ),
                 primary_key=True,
-            ),
-        )
+            )
+        columns.append(column)
         return [Table(canonicalize_table_name(table_name, is_sdo), metadata, *columns)]
     else:
         all_tables = [Table(canonicalize_table_name(table_name, is_sdo), metadata, *columns)]

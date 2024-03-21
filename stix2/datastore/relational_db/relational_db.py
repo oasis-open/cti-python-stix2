@@ -7,7 +7,7 @@ from stix2.datastore.relational_db.table_creation import (
     create_core_tables, generate_object_table,
 )
 from stix2.parsing import parse
-from stix2.v21.base import _DomainObject, _Extension, _Observable
+from stix2.v21.base import _DomainObject, _Extension, _Observable, _RelationshipObject
 
 
 def _get_all_subclasses(cls):
@@ -98,17 +98,20 @@ class RelationalDBSink(DataSink):
 
     def _create_table_objects(self):
         tables = create_core_tables(self.metadata)
-        for sdo_class in _get_all_subclasses(_DomainObject):
-            new_tables = generate_object_table(sdo_class, self.metadata, True)
+        for stix_class in _get_all_subclasses(_DomainObject):
+            new_tables = generate_object_table(stix_class, self.metadata, True)
             tables.extend(new_tables)
-        for sdo_class in _get_all_subclasses(_Observable):
-            tables.extend(generate_object_table(sdo_class, self.metadata, False))
-        for sdo_class in _get_all_subclasses(_Extension):
-            if hasattr(sdo_class, "_applies_to"):
-                is_sdo = sdo_class._applies_to == "sdo"
+        for stix_class in _get_all_subclasses(_RelationshipObject):
+            new_tables = generate_object_table(stix_class, self.metadata, True)
+            tables.extend(new_tables)
+        for stix_class in _get_all_subclasses(_Observable):
+            tables.extend(generate_object_table(stix_class, self.metadata, False))
+        for stix_class in _get_all_subclasses(_Extension):
+            if hasattr(stix_class, "_applies_to"):
+                is_sdo = stix_class._applies_to == "sdo"
             else:
                 is_sdo = False
-            tables.extend(generate_object_table(sdo_class, self.metadata, is_sdo, is_extension=True))
+            tables.extend(generate_object_table(stix_class, self.metadata, is_sdo, is_extension=True))
         return tables
 
     def _instantiate_database(self):
