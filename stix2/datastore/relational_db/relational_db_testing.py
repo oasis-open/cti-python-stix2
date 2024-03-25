@@ -3,9 +3,6 @@ import datetime as dt
 import pytz
 
 import stix2
-from stix2.datastore.relational_db.postgres_database_connection import (
-    PostgresDatabaseConnection,
-)
 from stix2.datastore.relational_db.relational_db import RelationalDBSink
 
 directory_stix_object = stix2.Directory(
@@ -97,7 +94,7 @@ def file_example_with_PDFExt_Object():
 
 
 def main():
-    store = RelationalDBSink(PostgresDatabaseConnection("localhost", "stix-data-sink", "rpiazza"))
+    store = RelationalDBSink("postgresql://localhost/stix-data-sink")
     store.generate_stix_schema()
 
 

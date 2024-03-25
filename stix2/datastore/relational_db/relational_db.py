@@ -1,13 +1,13 @@
-from sqlalchemy import MetaData
+from sqlalchemy import MetaData, create_engine
 from sqlalchemy.schema import CreateTable
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink
-from stix2.datastore.relational_db.table_creation import (
-    create_core_tables, generate_object_table,
-)
+from stix2.datastore.relational_db.table_creation import create_core_tables, generate_object_table
+from stix2.datastore.relational_db.input_creation import generate_insert_for_object
+
 from stix2.parsing import parse
-from stix2.v21.base import _DomainObject, _Extension, _Observable, _RelationshipObject
+from stix2.v21.base import (_DomainObject, _Extension, _Observable, _RelationshipObject,)
 
 
 def _get_all_subclasses(cls):
@@ -19,11 +19,7 @@ def _get_all_subclasses(cls):
     return all_subclasses
 
 
-def insert_object(store, stix_obj, is_sdo):
-    pass
-
-
-def _add(store, stix_data, allow_custom=True, version=None):
+def _add(store, stix_data, allow_custom=True, version="2.1"):
     """Add STIX objects to MemoryStore/Sink.
 
     Adds STIX objects to an in-memory dictionary for fast lookup.
@@ -57,7 +53,7 @@ def _add(store, stix_data, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        insert_object(store, stix_obj, isinstance(stix_obj, _Observable))
+        store.insert_object(stix_obj)
 
 
 class RelationalDBSink(DataSink):
@@ -85,13 +81,18 @@ class RelationalDBSink(DataSink):
 
     """
     def __init__(
-        self, database_connection, allow_custom=True, version=None,
-        instantiate_database=False,
+        self, database_connection_url, allow_custom=True, version=None,
+        instantiate_database=True,
     ):
         super(RelationalDBSink, self).__init__()
         self.allow_custom = allow_custom
         self.metadata = MetaData()
-        self.database_connection = database_connection
+        self.database_connection = create_engine(database_connection_url)
+
+        self.tables = self._create_table_objects()
+        self.tables_dictionary = dict()
+        for t in self.tables:
+            self.tables_dictionary[t.name] = t
 
         if instantiate_database:
             self._instantiate_database()
@@ -99,30 +100,38 @@ class RelationalDBSink(DataSink):
     def _create_table_objects(self):
         tables = create_core_tables(self.metadata)
         for stix_class in _get_all_subclasses(_DomainObject):
-            new_tables = generate_object_table(stix_class, self.metadata, True)
+            new_tables = generate_object_table(stix_class, self.metadata, "sdo")
             tables.extend(new_tables)
         for stix_class in _get_all_subclasses(_RelationshipObject):
-            new_tables = generate_object_table(stix_class, self.metadata, True)
+            new_tables = generate_object_table(stix_class, self.metadata, "sro")
             tables.extend(new_tables)
         for stix_class in _get_all_subclasses(_Observable):
-            tables.extend(generate_object_table(stix_class, self.metadata, False))
+            tables.extend(generate_object_table(stix_class, self.metadata, "sco"))
         for stix_class in _get_all_subclasses(_Extension):
-            if hasattr(stix_class, "_applies_to"):
-                is_sdo = stix_class._applies_to == "sdo"
-            else:
-                is_sdo = False
-            tables.extend(generate_object_table(stix_class, self.metadata, is_sdo, is_extension=True))
+            if stix_class.extension_type not in ["new-sdo", "new-sco", "new-sro"]:
+                if hasattr(stix_class, "_applies_to"):
+                    schema_name = stix_class._applies_to
+                else:
+                    schema_name = "sco"
+                tables.extend(generate_object_table(stix_class, self.metadata, schema_name, is_extension=True))
         return tables
 
     def _instantiate_database(self):
-        self._create_table_objects()
         self.metadata.create_all(self.database_connection.engine)
 
     def generate_stix_schema(self):
-        tables = self._create_table_objects()
-        for t in tables:
+        for t in self.tables:
             print(CreateTable(t).compile(self.database_connection.engine))
 
     def add(self, stix_data, version=None):
-        _add(self, stix_data, self.allow_custom, version)
+        _add(self, stix_data)
     add.__doc__ = _add.__doc__
+
+    def insert_object(self, stix_object):
+        schema_name = "sdo" if "created" in stix_object else "sco"
+        with self.database_connection.begin() as trans:
+            statements = generate_insert_for_object(self, stix_object, schema_name)
+            for stmt in statements:
+                print("executing: ", stmt)
+                trans.execute(stmt)
+            trans.commit()
