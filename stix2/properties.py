@@ -392,10 +392,11 @@ class DictionaryProperty(Property):
 
         if not valid_types:
             valid_types = ["string"]
-        elif not isinstance(valid_types, list):
+        elif not isinstance(valid_types, ListProperty):
             valid_types = [valid_types]
-        elif isinstance(valid_types, list) and 'string_list' in valid_types:
-            raise ValueError("The value of a dictionary key cannot be [\"string_list\"]")
+        
+        if 'string_list' in valid_types and len(valid_types) > 1:
+            raise ValueError("'string_list' cannot be combined with other types in a list.")
 
         for type_ in valid_types:
             if type_ not in ("string", "integer", "string_list"):
@@ -429,24 +430,18 @@ class DictionaryProperty(Property):
                 )
                 raise DictionaryKeyError(k, msg)
             
-            if valid_types == "string":
-                if not isinstance(dictified[k], str):
+            if "string" in valid_types:
+                if not isinstance(dictified[k], StringProperty):
                     raise ValueError("The dictionary expects values of type str")
-            elif valid_types == "integer":
-                if not isinstance(dictified[k], int):
+            elif "integer" in valid_types:
+                if not isinstance(dictified[k], IntegerProperty):
                     raise ValueError("The dictionary expects values of type int")
-            elif valid_types == "string_list":
-                if not isinstance(dictified[k], list):
+            elif "string_list" in valid_types:
+                if not isinstance(dictified[k], ListProperty(StringProperty)):
                     raise ValueError("The dictionary expects values of type list[str]")
-                for x in dictified[k]:
-                    if not isinstance(x, str):
-                        raise ValueError("The dictionary expects values of type list[str]")
             else:
-                if not isinstance(dictified[k], list):
-                    raise ValueError("The dictionary expects values of type list[str/int]")
-                for x in dictified[k]:
-                    if not isinstance(x, str) or not isinstance(x, int):
-                        raise ValueError("The dictionary expects values of type list[str/int]")
+                if not isinstance(dictified[k], StringProperty) or not isinstance(dictified[k], IntegerProperty):
+                    raise ValueError("The dictionary expects values of type str or int")
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")

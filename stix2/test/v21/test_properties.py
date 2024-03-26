@@ -39,20 +39,27 @@ def test_dictionary_property_values_int():
         assert q.clean()
 
 def test_dictionary_property_values_stringlist():
-    p = DictionaryProperty(valid_types="string_list", spec_version='2.1', value={'x': ['123', '456']})
+    p = DictionaryProperty(valid_types="string_list", spec_version='2.1', value={'x': ['abc', 'def']})
     assert p.clean()
 
     q = DictionaryProperty(valid_types="string_list", spec_version='2.1', value={'x': '123'})
     with pytest.raises(ValueError):
         assert q.clean()
 
+    r = DictionaryProperty(valid_types=['string', 'integer'], spec_version='2.1', value={'x': [123, 456]})
+    with pytest.raises(ValueError):
+        assert r.clean()
+
 def test_dictionary_property_values_list():
-    p = DictionaryProperty(valid_types=['string', 'integer'], spec_version='2.1', value={'x': ['123', '456']})
+    p = DictionaryProperty(valid_types=['string', 'integer'], spec_version='2.1', value={'x': 123})
     assert p.clean()
 
     q = DictionaryProperty(valid_types=['string', 'integer'], spec_version='2.1', value={'x': '123'})
+    assert q.clean()
+
+    r = DictionaryProperty(valid_types=['string', 'integer'], spec_version='2.1', value={'x': ['abc', 'def']})
     with pytest.raises(ValueError):
-        assert q.clean()
+        assert r.clean()
 
 ID_PROP = IDProperty('my-type', spec_version="2.1")
 MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
