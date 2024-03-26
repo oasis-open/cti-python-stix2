@@ -87,6 +87,7 @@ def generate_single_values(stix_object, properties, core_properties=[]):
 def generate_insert_for_embedded_object(type_name, item, foreign_key_value):
     bindings = generate_single_values(item, item._properties)
     bindings["id"] = foreign_key_value
+    return bindings
 
 
 def generate_insert_for_dictionary(item, dictionary_table, foreign_key_value, value_types):
@@ -107,11 +108,11 @@ def generate_insert_for_dictionary(item, dictionary_table, foreign_key_value, va
         return [insert(dictionary_table).values(bindings)]
 
 
-def generate_insert_for_embedded_objects(type_name, values, foreign_key_value):
-    sql_bindings_tuples = list()
+def generate_insert_for_embedded_objects(table, type_name, values, foreign_key_value):
+    bindings = dict()
     for item in values:
-        sql_bindings_tuples.extend(generate_insert_for_embedded_object(type_name, item, foreign_key_value))
-    return sql_bindings_tuples
+        bindings.extend(generate_insert_for_embedded_object(type_name, item, foreign_key_value))
+    return [insert(table).values(bindings)]
 
 
 def generate_insert_for_hashes(hashes, hashes_table, foreign_key_value):

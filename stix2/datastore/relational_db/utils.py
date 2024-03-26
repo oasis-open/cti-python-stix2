@@ -1,3 +1,5 @@
+import inflection
+
 # Helps us know which data goes in core, and which in a type-specific table.
 SCO_COMMON_PROPERTIES = {
     "id",
@@ -32,4 +34,5 @@ def canonicalize_table_name(table_name, schema_name=None):
         full_name = schema_name + "." + table_name
     else:
         full_name = table_name
-    return full_name.replace("-", "_")
+    full_name = full_name.replace("-", "_")
+    return inflection.underscore(full_name)

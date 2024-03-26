@@ -9,6 +9,7 @@ from stix2.datastore.relational_db.input_creation import (
 from stix2.datastore.relational_db.table_creation import (
     create_core_tables, generate_object_table,
 )
+from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
 from stix2.v21.base import (
     _DomainObject, _Extension, _Observable, _RelationshipObject,
@@ -99,7 +100,7 @@ class RelationalDBSink(DataSink):
         self.tables = self._create_table_objects()
         self.tables_dictionary = dict()
         for t in self.tables:
-            self.tables_dictionary[t.name] = t
+            self.tables_dictionary[canonicalize_table_name(t.name, t.schema)] = t
 
         if instantiate_database:
             self._instantiate_database()

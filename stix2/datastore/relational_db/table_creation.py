@@ -65,16 +65,17 @@ def create_ref_table(metadata, specifics, table_name, foreign_key_name, schema_n
     return Table(table_name, metadata, *columns, schema=schema_name)
 
 
-def create_hashes_table(name, metadata, schema_name, table_name):
+def create_hashes_table(name, metadata, schema_name, table_name, key_type=Text, level=1):
     columns = list()
     columns.append(
         Column(
             "id",
-            Text,
+            key_type,
             ForeignKey(
                 canonicalize_table_name(table_name, schema_name) + ".id",
                 ondelete="CASCADE",
             ),
+
             nullable=False,
         ),
     )
@@ -110,7 +111,7 @@ def create_granular_markings_table(metadata, sco_or_sdo):
             "marking_ref",
             Text,
             CheckConstraint(
-                "marking_ref ~ '^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                "marking_ref ~ '^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
             ),
         ),
         Column(
@@ -135,8 +136,7 @@ def create_external_references_tables(metadata):
             Text,
             ForeignKey("common.core_sdo" + ".id", ondelete="CASCADE"),
             CheckConstraint(
-                "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
-                # noqa: E131
+                "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
             ),
             primary_key=True,
         ),
@@ -157,8 +157,7 @@ def create_core_table(metadata, schema_name):
             "id",
             Text,
             CheckConstraint(
-                "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
-                # noqa: E131
+                "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
             ),
             primary_key=True,
         ),
@@ -171,8 +170,7 @@ def create_core_table(metadata, schema_name):
                 "created_by_ref",
                 Text,
                 CheckConstraint(
-                    "created_by_ref ~ '^identity--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
-                    # noqa: E131
+                    "created_by_ref ~ '^identity--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",   # noqa: E131
                 ),
             ),
             Column("created", TIMESTAMP(timezone=True)),
@@ -371,7 +369,27 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
 
 @add_method(HashesProperty)
 def generate_table_information(self, name, metadata, schema_name, table_name, is_extension=False, **kwargs):  # noqa: F811
-    return [create_hashes_table(name, metadata, schema_name, table_name)]
+    level = kwargs.get("level")
+    parent_table_name = kwargs.get("parent_table_name")
+    if kwargs.get("is_embedded_object"):
+        if not kwargs.get("is_list") or level == 0:
+            key_type = Text
+            # querky case where a property of an object is a single embedded objects
+            table_name = parent_table_name
+        else:
+            key_type = Integer
+    else:
+        key_type = Text
+    return [
+        create_hashes_table(
+            name,
+            metadata,
+            schema_name,
+            table_name,
+            key_type=key_type,
+            level=level,
+        ),
+    ]
 
 
 @add_method(HexProperty)
@@ -379,7 +397,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         LargeBinary,
-        nullable=not (self.required),
+        nullable=not self.required,
     )
 
 
@@ -422,7 +440,7 @@ def ref_column(name, specifics, auth_type=0):
         else:
             constraint = \
                 CheckConstraint(
-                    f"(NOT({name} ~ '^({types})') AND ({name} ~ " +
+                    f"(NOT({name} ~ '^({types})')) AND ({name} ~ " +
                     "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')",
                 )
         return Column(name, Text, constraint)
@@ -441,7 +459,11 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
 
 @add_method(EmbeddedObjectProperty)
 def generate_table_information(self, name, metadata, schema_name, table_name, is_extension=False, is_list=False, **kwargs):  # noqa: F811
-    return generate_object_table(self.type, metadata, schema_name, table_name, is_extension, True, is_list)
+    level = kwargs.get("level")
+    return generate_object_table(
+        self.type, metadata, schema_name, table_name, is_extension, True, is_list,
+        parent_table_name=table_name, level=level+1 if is_list else level,
+    )
 
 
 @add_method(ObjectReferenceProperty)
@@ -481,6 +503,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                     canonicalize_table_name(table_name, schema_name) + ".id",
                     ondelete="CASCADE",
                 ),
+                primary_key=True,
             ),
         )
         columns.append(
@@ -499,7 +522,9 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 schema_name,
                 canonicalize_table_name(table_name + "_" + name, None),  # if sub_table_needed else canonicalize_table_name(table_name, None),
                 is_extension,
+                parent_table_name=table_name,
                 is_list=True,
+                level=kwargs.get("level"),
             ),
         )
         return tables
@@ -516,7 +541,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
 
 def generate_object_table(
     stix_object_class, metadata, schema_name, foreign_key_name=None,
-    is_extension=False, is_embedded_object=False, is_list=False,
+    is_extension=False, is_embedded_object=False, is_list=False, parent_table_name=None, level=0,
 ):
     properties = stix_object_class._properties
     if hasattr(stix_object_class, "_type"):
@@ -525,6 +550,8 @@ def generate_object_table(
         table_name = stix_object_class.__name__
     if table_name.startswith("extension-definition"):
         table_name = table_name[0:30]
+    if parent_table_name:
+        table_name = parent_table_name + "_" + table_name
     core_properties = SDO_COMMON_PROPERTIES if schema_name else SCO_COMMON_PROPERTIES
     columns = list()
     tables = list()
@@ -538,12 +565,14 @@ def generate_object_table(
                 is_extension=is_extension,
                 is_embedded_object=is_embedded_object,
                 is_list=is_list,
+                level=level,
+                parent_table_name=parent_table_name,
             )
             if col is not None and isinstance(col, Column):
                 columns.append(col)
             if col is not None and isinstance(col, list):
                 tables.extend(col)
-    if (is_extension and not is_embedded_object):  # or (is_extension and is_embedded_object and is_list):
+    if is_extension and not is_embedded_object:
         columns.append(
             Column(
                 "id",
@@ -553,7 +582,26 @@ def generate_object_table(
             ),
         )
     if foreign_key_name:
-        if is_extension or (is_embedded_object and is_list):
+        if level == 0:
+            if is_extension and not is_embedded_object:
+                column = Column(
+                    "id",
+                    Text,
+                    ForeignKey(
+                        canonicalize_table_name(foreign_key_name, schema_name) + ".id",
+                        ondelete="CASCADE",
+                    ),
+                )
+            elif is_embedded_object:
+                column = Column(
+                    "id",
+                    Integer if is_list else Text,
+                    ForeignKey(
+                        canonicalize_table_name(foreign_key_name, schema_name) + (".ref_id" if is_list else ".id"),
+                        ondelete="CASCADE",
+                    ),
+                )
+        elif level > 0 and is_embedded_object:
             column = Column(
                 "id",
                 Integer if (is_embedded_object and is_list) else Text,
@@ -561,6 +609,7 @@ def generate_object_table(
                     canonicalize_table_name(foreign_key_name, schema_name) + (".ref_id" if (is_embedded_object and is_list) else ".id"),
                     ondelete="CASCADE",
                 ),
+                primary_key=True,
             )
         else:
             column = Column(
