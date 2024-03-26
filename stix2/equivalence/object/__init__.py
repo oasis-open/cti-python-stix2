@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def object_equivalence(
     obj1, obj2, prop_scores={}, threshold=70, ds1=None,
     ds2=None, ignore_spec_version=False,
-    versioning_checks=False, max_depth=1, **weight_dict
+    versioning_checks=False, max_depth=1, **weight_dict,
 ):
     """This method returns a true/false value if two objects are semantically equivalent.
     Internally, it calls the object_similarity function and compares it against the given
@@ -65,7 +65,7 @@ def object_equivalence(
     """
     similarity_result = object_similarity(
         obj1, obj2, prop_scores, ds1, ds2, ignore_spec_version,
-        versioning_checks, max_depth, **weight_dict
+        versioning_checks, max_depth, **weight_dict,
     )
     if similarity_result >= threshold:
         return True
@@ -75,7 +75,7 @@ def object_equivalence(
 def object_similarity(
     obj1, obj2, prop_scores={}, ds1=None, ds2=None,
     ignore_spec_version=False, versioning_checks=False,
-    max_depth=1, **weight_dict
+    max_depth=1, **weight_dict,
 ):
     """This method returns a measure of similarity depending on how
     similar the two objects are.

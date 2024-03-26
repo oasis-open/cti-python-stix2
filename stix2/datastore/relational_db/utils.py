@@ -5,7 +5,7 @@ SCO_COMMON_PROPERTIES = {
     "spec_version",
     "object_marking_refs",
     "granular_markings",
-    "defanged"
+    "defanged",
 }
 
 # Helps us know which data goes in core, and which in a type-specific table.
@@ -23,11 +23,11 @@ SDO_COMMON_PROPERTIES = {
     "labels",
     "confidence",
     "lang",
-    "external_references"
+    "external_references",
 }
 
 
-def canonicalize_table_name(table_name, schema_name):
+def canonicalize_table_name(table_name, schema_name=None):
     if schema_name:
         full_name = schema_name + "." + table_name
     else:

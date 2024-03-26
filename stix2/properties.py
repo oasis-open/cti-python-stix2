@@ -588,13 +588,13 @@ class ReferenceProperty(Property):
 
         if auth_type == self._WHITELIST:
             type_ok = is_stix_type(
-                obj_type, self.spec_version, *generics
+                obj_type, self.spec_version, *generics,
             ) or obj_type in specifics
 
         else:
             type_ok = (
                 not is_stix_type(
-                    obj_type, self.spec_version, *generics
+                    obj_type, self.spec_version, *generics,
                 ) and obj_type not in specifics
             ) or obj_type in blacklist_exceptions
 

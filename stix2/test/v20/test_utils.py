@@ -201,7 +201,7 @@ def test_deduplicate(stix_objs1):
 def test_find_property_index(object, tuple_to_find, expected_index):
     assert stix2.serialization.find_property_index(
         object,
-        *tuple_to_find
+        *tuple_to_find,
     ) == expected_index
 
 

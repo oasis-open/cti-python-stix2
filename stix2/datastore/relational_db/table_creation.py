@@ -6,6 +6,9 @@ from sqlalchemy import (  # create_engine,; insert,
 )
 
 from stix2.datastore.relational_db.add_method import add_method
+from stix2.datastore.relational_db.utils import (
+    SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
+)
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
@@ -15,7 +18,6 @@ from stix2.properties import (
 )
 from stix2.v21.common import KillChainPhase
 
-from stix2.datastore.relational_db.utils import SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name
 
 def aux_table_property(prop, name, core_properties):
     if isinstance(prop, ListProperty) and name not in core_properties:
@@ -36,14 +38,17 @@ def derive_column_name(prop):
 
 
 def create_object_markings_refs_table(metadata, sco_or_sdo):
-    return create_ref_table(metadata,
-                            {"marking_definition"},
-                            "common.object_marking_refs_" + sco_or_sdo,
-                            "common.core_" + sco_or_sdo + ".id",
-                            0)
+    return create_ref_table(
+        metadata,
+        {"marking_definition"},
+        "object_marking_refs_" + sco_or_sdo,
+        "common.core_" + sco_or_sdo + ".id",
+        "common",
+        0,
+    )
 
 
-def create_ref_table(metadata, specifics, table_name, foreign_key_name, auth_type=0):
+def create_ref_table(metadata, specifics, table_name, foreign_key_name, schema_name, auth_type=0):
     columns = list()
     columns.append(
         Column(
@@ -57,7 +62,7 @@ def create_ref_table(metadata, specifics, table_name, foreign_key_name, auth_typ
         ),
     )
     columns.append(ref_column("ref_id", specifics, auth_type))
-    return Table(table_name, metadata, *columns)
+    return Table(table_name, metadata, *columns, schema=schema_name)
 
 
 def create_hashes_table(name, metadata, schema_name, table_name):
@@ -87,12 +92,12 @@ def create_hashes_table(name, metadata, schema_name, table_name):
             nullable=False,
         ),
     )
-    return Table(canonicalize_table_name(table_name + "_" + name, schema_name), metadata, *columns)
+    return Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)
 
 
 def create_granular_markings_table(metadata, sco_or_sdo):
     return Table(
-        "common.granular_marking_" + sco_or_sdo,
+        "granular_marking_" + sco_or_sdo,
         metadata,
         Column(
             "id",
@@ -119,6 +124,7 @@ def create_granular_markings_table(metadata, sco_or_sdo):
                OR
                (lang IS NOT NULL AND marking_ref IS NULL)""",
         ),
+        schema="common",
     )
 
 
@@ -132,7 +138,7 @@ def create_external_references_tables(metadata):
                 "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
                 # noqa: E131
             ),
-            primary_key=True
+            primary_key=True,
         ),
         Column("source_name", Text),
         Column("description", Text),
@@ -140,7 +146,7 @@ def create_external_references_tables(metadata):
         Column("external_id", Text),
     ]
     return [
-        Table("common.external_references", metadata, *columns),
+        Table("external_references", metadata, *columns, schema="common"),
         #  create_hashes_table("hashes", metadata, "common", "external_references")
     ]
 
@@ -179,9 +185,10 @@ def create_core_table(metadata, schema_name):
     else:
         columns.append(Column("defanged", Boolean, default=False)),
     return Table(
-        "common.core_" + schema_name,
+        "core_" + schema_name,
         metadata,
-        *columns
+        *columns,
+        schema="common",
     )
 
 
@@ -205,7 +212,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Text,
-        nullable=not(self.required),
+        nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
 
@@ -220,7 +227,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Integer,
-        nullable=not(self.required),
+        nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
 
@@ -235,7 +242,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Float,
-        nullable=not(self.required),
+        nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
 
@@ -250,7 +257,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Boolean,
-        nullable=not(self.required),
+        nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
 
@@ -265,7 +272,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     return Column(
         name,
         Text,
-        nullable=not(self.required),
+        nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
 
@@ -359,7 +366,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
                 Integer,
             ),
         )
-    return [Table(canonicalize_table_name(table_name + "_" + name, schema_name), metadata, *columns)]
+    return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
 
 
 @add_method(HashesProperty)
@@ -400,7 +407,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
             nullable=False,
         ),
     )
-    return [Table(canonicalize_table_name(table_name + "_" + name, schema_name), metadata, *columns)]
+    return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
 
 
 def ref_column(name, specifics, auth_type=0):
@@ -409,13 +416,14 @@ def ref_column(name, specifics, auth_type=0):
         if auth_type == 0:
             constraint = \
                 CheckConstraint(
-                    f"{name} ~ '^({types})" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
+                    f"{name} ~ '^({types})" +
+                    "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
                 )
         else:
             constraint = \
                 CheckConstraint(
-                    f"(NOT({name} ~ '^({types})') AND ({name} ~" + "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')",
-                    # noqa: E131
+                    f"(NOT({name} ~ '^({types})') AND ({name} ~ " +
+                    "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')",
                 )
         return Column(name, Text, constraint)
     else:
@@ -454,10 +462,15 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
     is_extension = kwargs.get('is_extension')
     tables = list()
     if isinstance(self.contained, ReferenceProperty):
-        return [create_ref_table(metadata,
-                                 self.contained.specifics,
-                                 canonicalize_table_name(table_name + "_" + name, schema_name),
-                                 canonicalize_table_name(table_name, schema_name) + ".id", )]
+        return [
+            create_ref_table(
+                metadata,
+                self.contained.specifics,
+                canonicalize_table_name(table_name + "_" + name),
+                canonicalize_table_name(table_name, schema_name) + ".id",
+                "common",
+            ),
+        ]
     elif isinstance(self.contained, EmbeddedObjectProperty):
         columns = list()
         columns.append(
@@ -478,7 +491,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 nullable=False,
             ),
         )
-        tables.append(Table(canonicalize_table_name(table_name + "_" + name, schema_name), metadata, *columns))
+        tables.append(Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name))
         tables.extend(
             self.contained.generate_table_information(
                 name,
@@ -560,7 +573,7 @@ def generate_object_table(
             )
         columns.append(column)
 
-    all_tables = [Table(canonicalize_table_name(table_name, schema_name), metadata, *columns)]
+    all_tables = [Table(canonicalize_table_name(table_name), metadata, *columns, schema=schema_name)]
     all_tables.extend(tables)
     return all_tables
 
@@ -572,7 +585,7 @@ def create_core_tables(metadata):
         create_core_table(metadata, "sco"),
         create_granular_markings_table(metadata, "sco"),
         create_object_markings_refs_table(metadata, "sdo"),
-        create_object_markings_refs_table(metadata, "sco")
+        create_object_markings_refs_table(metadata, "sco"),
     ]
     tables.extend(create_external_references_tables(metadata))
     return tables

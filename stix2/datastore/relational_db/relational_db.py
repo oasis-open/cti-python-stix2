@@ -1,13 +1,18 @@
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.schema import CreateTable
+from sqlalchemy.schema import CreateSchema, CreateTable
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink
-from stix2.datastore.relational_db.table_creation import create_core_tables, generate_object_table
-from stix2.datastore.relational_db.input_creation import generate_insert_for_object
-
+from stix2.datastore.relational_db.input_creation import (
+    generate_insert_for_object,
+)
+from stix2.datastore.relational_db.table_creation import (
+    create_core_tables, generate_object_table,
+)
 from stix2.parsing import parse
-from stix2.v21.base import (_DomainObject, _Extension, _Observable, _RelationshipObject,)
+from stix2.v21.base import (
+    _DomainObject, _Extension, _Observable, _RelationshipObject,
+)
 
 
 def _get_all_subclasses(cls):
@@ -89,6 +94,8 @@ class RelationalDBSink(DataSink):
         self.metadata = MetaData()
         self.database_connection = create_engine(database_connection_url)
 
+        self._create_schemas()
+
         self.tables = self._create_table_objects()
         self.tables_dictionary = dict()
         for t in self.tables:
@@ -96,6 +103,13 @@ class RelationalDBSink(DataSink):
 
         if instantiate_database:
             self._instantiate_database()
+
+    def _create_schemas(self):
+        with self.database_connection.begin() as trans:
+            trans.execute(CreateSchema("common", if_not_exists=True))
+            trans.execute(CreateSchema("sdo", if_not_exists=True))
+            trans.execute(CreateSchema("sco", if_not_exists=True))
+            trans.execute(CreateSchema("sro", if_not_exists=True))
 
     def _create_table_objects(self):
         tables = create_core_tables(self.metadata)

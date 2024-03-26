@@ -459,7 +459,7 @@ def test_semantic_check_with_versioning(ds, ds2):
                 },
             ],
             object_marking_refs=[stix2.v20.TLP_WHITE],
-        )
+        ),
     )
     ds.add(ind)
     score = stix2.equivalence.object.reference_check(ind.id, INDICATOR_ID, ds, ds2, **weights)

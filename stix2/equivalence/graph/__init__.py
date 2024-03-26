@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def graph_equivalence(
     ds1, ds2, prop_scores={}, threshold=70,
     ignore_spec_version=False, versioning_checks=False,
-    max_depth=1, **weight_dict
+    max_depth=1, **weight_dict,
 ):
     """This method returns a true/false value if two graphs are semantically equivalent.
     Internally, it calls the graph_similarity function and compares it against the given
@@ -60,7 +60,7 @@ def graph_equivalence(
     """
     similarity_result = graph_similarity(
         ds1, ds2, prop_scores, ignore_spec_version,
-        versioning_checks, max_depth, **weight_dict
+        versioning_checks, max_depth, **weight_dict,
     )
     if similarity_result >= threshold:
         return True
@@ -69,7 +69,7 @@ def graph_equivalence(
 
 def graph_similarity(
     ds1, ds2, prop_scores={}, ignore_spec_version=False,
-    versioning_checks=False, max_depth=1, **weight_dict
+    versioning_checks=False, max_depth=1, **weight_dict,
 ):
     """This method returns a similarity score for two given graphs.
     Each DataStore can contain a connected or disconnected graph and the
@@ -147,7 +147,7 @@ def graph_similarity(
         result = object_similarity(
             object1, object2, iprop_score, ds1, ds2,
             ignore_spec_version, versioning_checks,
-            max_depth, **weights
+            max_depth, **weights,
         )
 
         if object1_id not in results:

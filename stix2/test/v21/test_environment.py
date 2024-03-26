@@ -973,7 +973,7 @@ def test_semantic_check_with_versioning(ds, ds2):
                 },
             ],
             object_marking_refs=[stix2.v21.TLP_WHITE],
-        )
+        ),
     )
     ds.add(ind)
     score = stix2.equivalence.object.reference_check(ind.id, INDICATOR_ID, ds, ds2, **weights)
@@ -1146,7 +1146,7 @@ def test_depth_limiting():
     }
     prop_scores1 = {}
     env1 = stix2.equivalence.graph.graph_similarity(
-        mem_store1, mem_store2, prop_scores1, **custom_weights
+        mem_store1, mem_store2, prop_scores1, **custom_weights,
     )
 
     assert round(env1) == 38
@@ -1159,7 +1159,7 @@ def test_depth_limiting():
     # Switching parameters
     prop_scores2 = {}
     env2 = stix2.equivalence.graph.graph_similarity(
-        mem_store2, mem_store1, prop_scores2, **custom_weights
+        mem_store2, mem_store1, prop_scores2, **custom_weights,
     )
 
     assert round(env2) == 38

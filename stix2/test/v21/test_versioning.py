@@ -48,7 +48,7 @@ def test_making_new_version_with_embedded_object():
             "source_name": "capec",
             "external_id": "CAPEC-163",
         }],
-        **CAMPAIGN_MORE_KWARGS
+        **CAMPAIGN_MORE_KWARGS,
     )
 
     campaign_v2 = campaign_v1.new_version(

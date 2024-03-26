@@ -32,7 +32,7 @@ def test_workbench_environment():
 
     # Create a STIX object
     ind = create(
-        Indicator, id=constants.INDICATOR_ID, **constants.INDICATOR_KWARGS
+        Indicator, id=constants.INDICATOR_ID, **constants.INDICATOR_KWARGS,
     )
     save(ind)
 
@@ -50,7 +50,7 @@ def test_workbench_environment():
 
 def test_workbench_get_all_attack_patterns():
     mal = AttackPattern(
-        id=constants.ATTACK_PATTERN_ID, **constants.ATTACK_PATTERN_KWARGS
+        id=constants.ATTACK_PATTERN_ID, **constants.ATTACK_PATTERN_KWARGS,
     )
     save(mal)
 
@@ -70,7 +70,7 @@ def test_workbench_get_all_campaigns():
 
 def test_workbench_get_all_courses_of_action():
     coa = CourseOfAction(
-        id=constants.COURSE_OF_ACTION_ID, **constants.COURSE_OF_ACTION_KWARGS
+        id=constants.COURSE_OF_ACTION_ID, **constants.COURSE_OF_ACTION_KWARGS,
     )
     save(coa)
 
@@ -114,7 +114,7 @@ def test_workbench_get_all_infrastructures():
 
 def test_workbench_get_all_intrusion_sets():
     ins = IntrusionSet(
-        id=constants.INTRUSION_SET_ID, **constants.INTRUSION_SET_KWARGS
+        id=constants.INTRUSION_SET_ID, **constants.INTRUSION_SET_KWARGS,
     )
     save(ins)
 
@@ -161,7 +161,7 @@ def test_workbench_get_all_notes():
 
 def test_workbench_get_all_observed_data():
     od = ObservedData(
-        id=constants.OBSERVED_DATA_ID, **constants.OBSERVED_DATA_KWARGS
+        id=constants.OBSERVED_DATA_ID, **constants.OBSERVED_DATA_KWARGS,
     )
     save(od)
 
@@ -190,7 +190,7 @@ def test_workbench_get_all_reports():
 
 def test_workbench_get_all_threat_actors():
     thr = ThreatActor(
-        id=constants.THREAT_ACTOR_ID, **constants.THREAT_ACTOR_KWARGS
+        id=constants.THREAT_ACTOR_ID, **constants.THREAT_ACTOR_KWARGS,
     )
     save(thr)
 
@@ -210,7 +210,7 @@ def test_workbench_get_all_tools():
 
 def test_workbench_get_all_vulnerabilities():
     vuln = Vulnerability(
-        id=constants.VULNERABILITY_ID, **constants.VULNERABILITY_KWARGS
+        id=constants.VULNERABILITY_ID, **constants.VULNERABILITY_KWARGS,
     )
     save(vuln)
 
