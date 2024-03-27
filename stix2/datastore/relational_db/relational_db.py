@@ -12,7 +12,7 @@ from stix2.datastore.relational_db.table_creation import (
 from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
 from stix2.v21.base import (
-    _DomainObject, _Extension, _Observable, _RelationshipObject,
+    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
 )
 
 
@@ -158,6 +158,8 @@ class RelationalDBSink(DataSink):
             tables.extend(new_tables)
         for stix_class in _get_all_subclasses(_Observable):
             tables.extend(generate_object_table(stix_class, self.metadata, "sco"))
+        for stix_class in _get_all_subclasses(_MetaObject):
+            tables.extend(generate_object_table(stix_class, self.metadata, "common"))
         for stix_class in _get_all_subclasses(_Extension):
             if stix_class.extension_type not in ["new-sdo", "new-sco", "new-sro"]:
                 if hasattr(stix_class, "_applies_to"):

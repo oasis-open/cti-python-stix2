@@ -502,7 +502,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 ForeignKey(
                     canonicalize_table_name(table_name, schema_name) + ".id",
                     ondelete="CASCADE",
-                )
+                ),
             ),
         )
         columns.append(

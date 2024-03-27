@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 from sqlalchemy import insert
 
+from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
     SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
 )

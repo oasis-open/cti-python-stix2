@@ -470,6 +470,10 @@ class _Extension(_STIXBase):
         self._check_at_least_one_property()
 
 
+class _MetaObject(_STIXBase):
+    pass
+
+
 def _choose_one_hash(hash_dict):
     if "MD5" in hash_dict:
         return {"MD5": hash_dict["MD5"]}

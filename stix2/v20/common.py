@@ -11,7 +11,7 @@ from ..properties import (
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW, _get_dict
-from .base import _STIXBase20
+from .base import _MetaObject, _STIXBase20
 from .vocab import HASHING_ALGORITHM
 
 
@@ -111,7 +111,7 @@ class MarkingProperty(Property):
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
-class MarkingDefinition(_STIXBase20, _MarkingsMixin):
+class MarkingDefinition(_MetaObject, _MarkingsMixin):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709284>`__.
     """

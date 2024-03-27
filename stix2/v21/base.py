@@ -1,7 +1,8 @@
 """Base classes for STIX 2.1 type definitions."""
 
 from ..base import (
-    _DomainObject, _Extension, _Observable, _RelationshipObject, _STIXBase,
+    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
+    _STIXBase,
 )
 
 
@@ -39,4 +40,8 @@ class _DomainObject(_DomainObject, _STIXBase21):
 
 
 class _RelationshipObject(_RelationshipObject, _STIXBase21):
+    pass
+
+
+class _MetaObject(_MetaObject, _STIXBase21):
     pass
