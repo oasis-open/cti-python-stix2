@@ -2,7 +2,7 @@ from sqlalchemy import MetaData, create_engine
 from sqlalchemy.schema import CreateSchema, CreateTable
 
 from stix2.base import _STIXBase
-from stix2.datastore import DataSink
+from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.relational_db.input_creation import (
     generate_insert_for_object,
 )
@@ -60,6 +60,42 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
             stix_obj = parse(stix_data, allow_custom, version)
 
         store.insert_object(stix_obj)
+
+
+class RelationalDBStore(DataStoreMixin):
+    """Interface to a file directory of STIX objects.
+
+    FileSystemStore is a wrapper around a paired FileSystemSink
+    and FileSystemSource.
+
+    Args:
+        stix_dir (str): path to directory of STIX objects
+        allow_custom (bool): whether to allow custom STIX content to be
+            pushed/retrieved. Defaults to True for FileSystemSource side
+            (retrieving data) and False for FileSystemSink
+            side(pushing data). However, when parameter is supplied, it
+            will be applied to both FileSystemSource and FileSystemSink.
+        bundlify (bool): whether to wrap objects in bundles when saving
+            them. Default: False.
+        encoding (str): The encoding to use when reading a file from the
+            filesystem.
+
+    Attributes:
+        source (FileSystemSource): FileSystemSource
+        sink (FileSystemSink): FileSystemSink
+
+    """
+    def __init__(self, database_connection_url, allow_custom=None, encoding='utf-8'):
+        if allow_custom is None:
+            allow_custom_source = True
+            allow_custom_sink = False
+        else:
+            allow_custom_sink = allow_custom_source = allow_custom
+
+        super(RelationalDBStore, self).__init__(
+            source=RelationalDBSource(database_connection_url, allow_custom=allow_custom_source, encoding=encoding),
+            sink=RelationalDBSink(database_connection_url, allow_custom=allow_custom_sink),
+        )
 
 
 class RelationalDBSink(DataSink):
@@ -150,3 +186,14 @@ class RelationalDBSink(DataSink):
                 print("executing: ", stmt)
                 trans.execute(stmt)
             trans.commit()
+
+
+class RelationalDBSource(DataSource):
+    def get(self, stix_id, version=None, _composite_filters=None):
+        pass
+
+    def all_versions(self, stix_id, version=None, _composite_filters=None):
+        pass
+
+    def query(self, query=None):
+        pass

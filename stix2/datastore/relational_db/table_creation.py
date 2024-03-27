@@ -490,7 +490,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 self.contained.specifics,
                 canonicalize_table_name(table_name + "_" + name),
                 canonicalize_table_name(table_name, schema_name) + ".id",
-                "common",
+                schema_name,
             ),
         ]
     elif isinstance(self.contained, EmbeddedObjectProperty):
@@ -502,8 +502,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 ForeignKey(
                     canonicalize_table_name(table_name, schema_name) + ".id",
                     ondelete="CASCADE",
-                ),
-                primary_key=True,
+                )
             ),
         )
         columns.append(
