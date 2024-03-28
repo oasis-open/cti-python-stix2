@@ -391,18 +391,18 @@ class DictionaryProperty(Property):
         self.spec_version = spec_version
 
         if not valid_types:
-            valid_types = ["string"]
-        elif not isinstance(valid_types, ListProperty):
-            valid_types = [valid_types]
+            valid_types = StringProperty
+        # elif not isinstance(valid_types, ListProperty):
+        #     valid_types = [valid_types]
         
-        if 'string_list' in valid_types and len(valid_types) > 1:
-            raise ValueError("'string_list' cannot be combined with other types in a list.")
+        # if 'string_list' in valid_types and len(valid_types) > 1:
+        #     raise ValueError("'string_list' cannot be combined with other types in a list.")
 
-        for type_ in valid_types:
-            if type_ not in ("string", "integer", "string_list"):
-                raise ValueError("The value of a dictionary key cannot be ", type_)
+        # for type_ in valid_types:
+        #     if type_ not in ("string", "integer", "string_list"):
+        #         raise ValueError("The value of a dictionary key cannot be ", type_)
 
-        self.specifics = valid_types
+        self.valid_types = valid_types
 
         super(DictionaryProperty, self).__init__(**kwargs)
 
@@ -430,18 +430,32 @@ class DictionaryProperty(Property):
                 )
                 raise DictionaryKeyError(k, msg)
             
-            if "string" in valid_types:
-                if not isinstance(dictified[k], StringProperty):
-                    raise ValueError("The dictionary expects values of type str")
-            elif "integer" in valid_types:
-                if not isinstance(dictified[k], IntegerProperty):
-                    raise ValueError("The dictionary expects values of type int")
-            elif "string_list" in valid_types:
-                if not isinstance(dictified[k], ListProperty(StringProperty)):
-                    raise ValueError("The dictionary expects values of type list[str]")
+            # if "string" in valid_types:
+            #     if not isinstance(dictified[k], StringProperty):
+            #         raise ValueError("The dictionary expects values of type str")
+            # elif "integer" in valid_types:
+            #     if not isinstance(dictified[k], IntegerProperty):
+            #         raise ValueError("The dictionary expects values of type int")
+            # elif "string_list" in valid_types:
+            #     if not isinstance(dictified[k], ListProperty(StringProperty)):
+            #         raise ValueError("The dictionary expects values of type list[str]")
+            # else:
+            #     if not isinstance(dictified[k], StringProperty) or not isinstance(dictified[k], IntegerProperty):
+            #         raise ValueError("The dictionary expects values of type str or int")
+
+            simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
+
+            if self.valid_types in simple_type:
+                self.valid_types.clean(dict[k])
+            elif isinstance(dictified[k], ListProperty()):
+                list_type = dictified[k].contained
+                if list_type in simple_type:
+                    for x in dictified[k]:
+                        list_type.clean(x)
+                else:
+                    raise ValueError("Dictionary Property does not support lists of type: ", list_type)
             else:
-                if not isinstance(dictified[k], StringProperty) or not isinstance(dictified[k], IntegerProperty):
-                    raise ValueError("The dictionary expects values of type str or int")
+                raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
