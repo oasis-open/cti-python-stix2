@@ -391,7 +391,7 @@ class DictionaryProperty(Property):
         self.spec_version = spec_version
 
         if not valid_types:
-            valid_types = StringProperty
+            valid_types = [StringProperty]
         # elif not isinstance(valid_types, ListProperty):
         #     valid_types = [valid_types]
         
@@ -444,18 +444,23 @@ class DictionaryProperty(Property):
             #         raise ValueError("The dictionary expects values of type str or int")
 
             simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
-
-            if self.valid_types in simple_type:
-                self.valid_types.clean(dict[k])
-            elif isinstance(dictified[k], ListProperty()):
-                list_type = dictified[k].contained
-                if list_type in simple_type:
-                    for x in dictified[k]:
-                        list_type.clean(x)
-                else:
-                    raise ValueError("Dictionary Property does not support lists of type: ", list_type)
-            else:
-                raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
+            clear = False
+            for type in self.valid_types:
+                if type in simple_type:
+                    try:
+                        self.valid_types.clean(dict[k])
+                    except ValueError:
+                        continue
+                    clear = True
+                elif isinstance(dictified[k], ListProperty()):
+                    list_type = dictified[k].contained
+                    if list_type in simple_type:
+                        for x in dictified[k]:
+                            list_type.clean(x)
+                    else:
+                        raise ValueError("Dictionary Property does not support lists of type: ", list_type)
+                if not clear:
+                    raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
