@@ -1,6 +1,13 @@
+import datetime
+
 import pytest
 
 import stix2
+import stix2.exceptions
+import stix2.properties
+import stix2.utils
+import stix2.v21
+import stix2.versioning
 
 from .constants import CAMPAIGN_MORE_KWARGS
 
@@ -44,10 +51,12 @@ def test_making_new_version_with_embedded_object():
         **CAMPAIGN_MORE_KWARGS
     )
 
-    campaign_v2 = campaign_v1.new_version(external_references=[{
-            "source_name": "capec",
-            "external_id": "CAPEC-164",
-    }])
+    campaign_v2 = campaign_v1.new_version(
+        external_references=[{
+                "source_name": "capec",
+                "external_id": "CAPEC-164",
+        }],
+    )
 
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.spec_version == campaign_v2.spec_version
@@ -148,7 +157,7 @@ def test_versioning_error_revoke_of_revoked():
 
 def test_making_new_version_dict():
     campaign_v1 = CAMPAIGN_MORE_KWARGS
-    campaign_v2 = stix2.utils.new_version(CAMPAIGN_MORE_KWARGS, name="fred")
+    campaign_v2 = stix2.versioning.new_version(CAMPAIGN_MORE_KWARGS, name="fred")
 
     assert campaign_v1['id'] == campaign_v2['id']
     assert campaign_v1['spec_version'] == campaign_v2['spec_version']
@@ -162,13 +171,69 @@ def test_making_new_version_dict():
 
 def test_versioning_error_dict_bad_modified_value():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.utils.new_version(CAMPAIGN_MORE_KWARGS, modified="2015-04-06T20:03:00.000Z")
+        stix2.versioning.new_version(CAMPAIGN_MORE_KWARGS, modified="2015-04-06T20:03:00.000Z")
 
     assert excinfo.value.cls == dict
     assert excinfo.value.prop_name == "modified"
     assert excinfo.value.reason == "The new modified datetime cannot be before than or equal to the current modified datetime." \
         "It cannot be equal, as according to STIX 2 specification, objects that are different " \
         "but have the same id and modified timestamp do not have defined consumer behavior."
+
+
+def test_versioning_dict_unregistered_no_modified():
+    d = {
+        "type": "not-registered",
+        "id": "not-registered--4da54535-47b7-468c-88fa-d13b04033c4b",
+        "spec_version": "2.1",
+        "created": "1995-04-07T15:37:48.178Z",
+    }
+
+    new_d = stix2.versioning.new_version(d)
+    assert "modified" in new_d
+    assert new_d["modified"] > stix2.utils.parse_into_datetime(d["created"])
+
+    new_d = stix2.versioning.new_version(d, modified="1996-11-20T01:19:29.134Z")
+    assert new_d["modified"] == "1996-11-20T01:19:29.134Z"
+
+
+def test_versioning_dict_unregistered_unversionable():
+    d = {
+        "type": "not-registered",
+        "id": "not-registered--4da54535-47b7-468c-88fa-d13b04033c4b",
+        "spec_version": "2.1",
+        "modified": "1995-04-07T15:37:48.178Z",
+    }
+
+    with pytest.raises(stix2.exceptions.ObjectNotVersionableError):
+        stix2.versioning.new_version(d)
+
+    with pytest.raises(stix2.exceptions.ObjectNotVersionableError):
+        # should fail even if we provide a "created" kwarg.
+        stix2.versioning.new_version(d, created="1985-06-29T06:09:51.157Z")
+
+
+def test_versioning_custom_object():
+    @stix2.v21.CustomObject(
+        "x-versionable-all-optional-21", [
+            ("created", stix2.properties.TimestampProperty()),
+            ("modified", stix2.properties.TimestampProperty()),
+            ("revoked", stix2.properties.BooleanProperty()),
+        ],
+    )
+    class CustomSDO:
+        pass
+
+    obj = CustomSDO(created="1990-12-18T17:56:11.346234Z")
+    new_obj = stix2.versioning.new_version(obj)
+
+    assert "modified" in new_obj
+    assert new_obj["modified"] > new_obj["created"]
+
+    obj = CustomSDO()
+    with pytest.raises(stix2.exceptions.ObjectNotVersionableError):
+        # fails due to insufficient properties on the object, even though its
+        # type supports versioning.
+        stix2.versioning.new_version(obj)
 
 
 def test_versioning_error_dict_no_modified_value():
@@ -178,22 +243,22 @@ def test_versioning_error_dict_no_modified_value():
         'created': "2016-04-06T20:03:00.000Z",
         'name': "Green Group Attacks Against Finance",
     }
-    campaign_v2 = stix2.utils.new_version(campaign_v1, modified="2017-04-06T20:03:00.000Z")
+    campaign_v2 = stix2.versioning.new_version(campaign_v1, modified="2017-04-06T20:03:00.000Z")
 
     assert str(campaign_v2['modified']) == "2017-04-06T20:03:00.000Z"
 
 
 def test_making_new_version_invalid_cls():
     campaign_v1 = "This is a campaign."
-    with pytest.raises(ValueError) as excinfo:
-        stix2.utils.new_version(campaign_v1, name="fred")
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError) as excinfo:
+        stix2.versioning.new_version(campaign_v1, name="fred")
 
-    assert 'cannot create new version of object of this type' in str(excinfo.value)
+    assert excinfo.value.object is campaign_v1
 
 
 def test_revoke_dict():
     campaign_v1 = CAMPAIGN_MORE_KWARGS
-    campaign_v2 = stix2.utils.revoke(campaign_v1)
+    campaign_v2 = stix2.versioning.revoke(campaign_v1)
 
     assert campaign_v1['id'] == campaign_v2['id']
     assert campaign_v1['spec_version'] == campaign_v2['spec_version']
@@ -206,12 +271,18 @@ def test_revoke_dict():
     assert campaign_v2['revoked']
 
 
+def test_revoke_unversionable():
+    sco = stix2.v21.File(name="data.txt")
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        sco.revoke()
+
+
 def test_versioning_error_revoke_of_revoked_dict():
     campaign_v1 = CAMPAIGN_MORE_KWARGS
-    campaign_v2 = stix2.utils.revoke(campaign_v1)
+    campaign_v2 = stix2.versioning.revoke(campaign_v1)
 
     with pytest.raises(stix2.exceptions.RevokeError) as excinfo:
-        stix2.utils.revoke(campaign_v2)
+        stix2.versioning.revoke(campaign_v2)
 
     assert excinfo.value.called_by == "revoke"
 
@@ -219,7 +290,7 @@ def test_versioning_error_revoke_of_revoked_dict():
 def test_revoke_invalid_cls():
     campaign_v1 = "This is a campaign."
     with pytest.raises(ValueError) as excinfo:
-        stix2.utils.revoke(campaign_v1)
+        stix2.versioning.revoke(campaign_v1)
 
     assert 'cannot revoke object of this type' in str(excinfo.value)
 
@@ -233,11 +304,10 @@ def test_remove_custom_stix_property():
         is_family=False,
     )
 
-    mal_nc = stix2.utils.remove_custom_stix(mal)
+    mal_nc = stix2.versioning.remove_custom_stix(mal)
 
     assert "x_custom" not in mal_nc
-    assert (stix2.utils.parse_into_datetime(mal["modified"], precision="millisecond") <
-            stix2.utils.parse_into_datetime(mal_nc["modified"], precision="millisecond"))
+    assert mal["modified"] < mal_nc["modified"]
 
 
 def test_remove_custom_stix_object():
@@ -252,15 +322,212 @@ def test_remove_custom_stix_object():
 
     animal = Animal(species="lion", animal_class="mammal")
 
-    nc = stix2.utils.remove_custom_stix(animal)
+    nc = stix2.versioning.remove_custom_stix(animal)
 
     assert nc is None
 
 
 def test_remove_custom_stix_no_custom():
     campaign_v1 = stix2.v21.Campaign(**CAMPAIGN_MORE_KWARGS)
-    campaign_v2 = stix2.utils.remove_custom_stix(campaign_v1)
+    campaign_v2 = stix2.versioning.remove_custom_stix(campaign_v1)
 
     assert len(campaign_v1.keys()) == len(campaign_v2.keys())
     assert campaign_v1.id == campaign_v2.id
     assert campaign_v1.description == campaign_v2.description
+
+
+@pytest.mark.parametrize(
+    "old, candidate_new, expected_new, use_stix21", [
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.001Z", "1999-08-15T00:19:07.001Z", False),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.001Z", False),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.000Z", "1999-08-15T00:19:07.001Z", False),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.999Z", "1999-08-15T00:19:07.001Z", False),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.0001Z", "1999-08-15T00:19:07.001Z", False),
+        ("1999-08-15T00:19:07.999Z", "1999-08-15T00:19:07.9999Z", "1999-08-15T00:19:08.000Z", False),
+
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.001Z", "1999-08-15T00:19:07.001Z", True),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000001Z", True),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.000Z", "1999-08-15T00:19:07.000001Z", True),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:06.999999Z", "1999-08-15T00:19:07.000001Z", True),
+        ("1999-08-15T00:19:07.000Z", "1999-08-15T00:19:07.000001Z", "1999-08-15T00:19:07.000001Z", True),
+        ("1999-08-15T00:19:07.999Z", "1999-08-15T00:19:07.999999Z", "1999-08-15T00:19:07.999999Z", True),
+    ],
+)
+def test_fudge_modified(old, candidate_new, expected_new, use_stix21):
+    old_dt = datetime.datetime.strptime(old, "%Y-%m-%dT%H:%M:%S.%fZ")
+    candidate_new_dt = datetime.datetime.strptime(
+        candidate_new, "%Y-%m-%dT%H:%M:%S.%fZ",
+    )
+    expected_new_dt = datetime.datetime.strptime(
+        expected_new, "%Y-%m-%dT%H:%M:%S.%fZ",
+    )
+
+    fudged = stix2.versioning._fudge_modified(
+        old_dt, candidate_new_dt, use_stix21,
+    )
+    assert fudged == expected_new_dt
+
+
+def test_version_unversionable_dict():
+    f = {
+        "type": "file",
+        "id": "file--4efb5217-e987-4438-9a1b-c800099401df",
+        "name": "data.txt",
+    }
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(f)
+
+
+def test_version_sco_with_custom():
+    """
+    If we add custom properties named like versioning properties to an object
+    type which is otherwise unversionable, versioning should start working.
+    """
+
+    file_sco_obj = stix2.v21.File(
+        name="data.txt",
+        created="1973-11-23T02:31:37Z",
+        modified="1991-05-13T19:24:57Z",
+        revoked=False,
+        allow_custom=True,
+    )
+
+    new_file_sco_obj = stix2.versioning.new_version(
+        file_sco_obj, size=1234,
+    )
+
+    assert new_file_sco_obj.size == 1234
+
+    revoked_obj = stix2.versioning.revoke(new_file_sco_obj)
+    assert revoked_obj.revoked
+
+    # Same thing with a dict
+    d = {
+        "type": "file",
+        "id": "file--d287f10a-98b4-4a47-8fa0-64b12695ea58",
+        "spec_version": "2.1",
+        "name": "data.txt",
+        "created": "1973-11-23T02:31:37Z",
+        "modified": "1991-05-13T19:24:57Z",
+        "revoked": False,
+    }
+
+    new_d = stix2.versioning.new_version(d, size=1234)
+    assert new_d["size"] == 1234
+
+    revoked_d = stix2.versioning.revoke(new_d)
+    assert revoked_d["revoked"]
+
+
+def test_version_sco_id_contributing_properties():
+    file_sco_obj = stix2.v21.File(
+        name="data.txt",
+        created="1973-11-23T02:31:37Z",
+        modified="1991-05-13T19:24:57Z",
+        revoked=False,
+        allow_custom=True,
+    )
+
+    with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as e:
+        stix2.versioning.new_version(file_sco_obj, name="foo.dat")
+
+    assert e.value.unchangable_properties == {"name"}
+
+
+def test_version_sco_id_contributing_properties_dict():
+    file_sco_dict = {
+        "type": "file",
+        "id": "file--c27c572c-2e17-5ce1-817e-67bb97629a56",
+        "spec_version": "2.1",
+        "name": "data.txt",
+        "created": "1973-11-23T02:31:37Z",
+        "modified": "1991-05-13T19:24:57Z",
+        "revoked": False,
+    }
+
+    with pytest.raises(stix2.exceptions.UnmodifiablePropertyError) as e:
+        stix2.versioning.new_version(file_sco_dict, name="foo.dat")
+
+    assert e.value.unchangable_properties == {"name"}
+
+
+def test_version_marking():
+    m = stix2.v21.MarkingDefinition(
+        name="a name",
+        created="1982-11-29T12:20:13.723Z",
+        definition_type="statement",
+        definition={"statement": "Copyright (c) 2000-2020 Acme Corp"},
+    )
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+    m = {
+        "type": "marking-definition",
+        "id": "marking-definition--2a9f3f6e-5cbd-423b-a40d-02aefd29e612",
+        "spec_version": "2.1",
+        "name": "a name",
+        "created": "1982-11-29T12:20:13.723Z",
+        "definition_type": "statement",
+        "definition": {
+            "statement": "Copyright (c) 2000-2020 Acme Corp",
+        },
+    }
+
+    with pytest.raises(stix2.exceptions.TypeNotVersionableError):
+        stix2.versioning.new_version(m)
+
+
+def test_version_disable_custom():
+    m = stix2.v21.Malware(
+        name="foo", description="Steals your identity!", is_family=False,
+        x_custom=123, allow_custom=True,
+    )
+
+    # Remove the custom property, and disallow custom properties in the
+    # resulting object.
+    m2 = stix2.versioning.new_version(m, x_custom=None, allow_custom=False)
+    assert "x_custom" not in m2
+
+    # Remove a regular property and leave the custom one, disallow custom
+    # properties, and make sure we get an error.
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        stix2.versioning.new_version(m, description=None, allow_custom=False)
+
+
+def test_version_enable_custom():
+    m = stix2.v21.Malware(
+        name="foo", description="Steals your identity!", is_family=False,
+    )
+
+    # Add a custom property to an object for which it was previously disallowed
+    m2 = stix2.versioning.new_version(m, x_custom=123, allow_custom=True)
+    assert "x_custom" in m2
+
+    # Add a custom property without enabling it, make sure we get an error
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        stix2.versioning.new_version(m, x_custom=123, allow_custom=False)
+
+
+def test_version_propagate_custom():
+    m = stix2.v21.Malware(
+        name="foo", is_family=False,
+    )
+
+    # Remember custom-not-allowed setting from original; produce error
+    with pytest.raises(stix2.exceptions.ExtraPropertiesError):
+        stix2.versioning.new_version(m, x_custom=123)
+
+    m2 = stix2.versioning.new_version(m, description="Steals your identity!")
+    assert "description" in m2
+    assert m2.description == "Steals your identity!"
+
+    m_custom = stix2.v21.Malware(
+        name="foo", is_family=False, x_custom=123, allow_custom=True,
+    )
+
+    # Remember custom-allowed setting from original; should work
+    m2_custom = stix2.versioning.new_version(m_custom, x_other_custom="abc")
+    assert "x_other_custom" in m2_custom
+    assert m2_custom.x_other_custom == "abc"

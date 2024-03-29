@@ -14,6 +14,9 @@
 
 # flake8: noqa
 
+from .base import (
+    _DomainObject, _Extension, _Observable, _RelationshipObject, _STIXBase20,
+)
 from .bundle import Bundle
 from .common import (
     TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
@@ -29,7 +32,7 @@ from .observables import (
     UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
     WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
     WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
-    X509Certificate, X509V3ExtenstionsType,
+    X509Certificate, X509V3ExtensionsType,
 )
 from .sdo import (
     AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
@@ -79,24 +82,46 @@ OBJ_MAP_OBSERVABLE = {
 }
 
 EXT_MAP = {
-    'file': {
-        'archive-ext': ArchiveExt,
-        'ntfs-ext': NTFSExt,
-        'pdf-ext': PDFExt,
-        'raster-image-ext': RasterImageExt,
-        'windows-pebinary-ext': WindowsPEBinaryExt,
-    },
-    'network-traffic': {
-        'http-request-ext': HTTPRequestExt,
-        'icmp-ext': ICMPExt,
-        'socket-ext': SocketExt,
-        'tcp-ext': TCPExt,
-    },
-    'process': {
-        'windows-process-ext': WindowsProcessExt,
-        'windows-service-ext': WindowsServiceExt,
-    },
-    'user-account': {
-        'unix-account-ext': UNIXAccountExt,
-    },
+    'archive-ext': ArchiveExt,
+    'ntfs-ext': NTFSExt,
+    'pdf-ext': PDFExt,
+    'raster-image-ext': RasterImageExt,
+    'windows-pebinary-ext': WindowsPEBinaryExt,
+    'http-request-ext': HTTPRequestExt,
+    'icmp-ext': ICMPExt,
+    'socket-ext': SocketExt,
+    'tcp-ext': TCPExt,
+    'windows-process-ext': WindowsProcessExt,
+    'windows-service-ext': WindowsServiceExt,
+    'unix-account-ext': UNIXAccountExt,
 }
+
+
+# Ensure star-imports from this module get the right symbols.  "base" is a
+# known problem, since there are multiple modules with that name and one can
+# accidentally overwrite another.
+__all__ = """
+    Bundle,
+
+    TLP_AMBER, TLP_GREEN, TLP_RED, TLP_WHITE, CustomMarking, ExternalReference,
+    GranularMarking, KillChainPhase, MarkingDefinition, StatementMarking,
+    TLPMarking,
+
+    URL, AlternateDataStream, ArchiveExt, Artifact, AutonomousSystem,
+    CustomExtension, CustomObservable, Directory, DomainName, EmailAddress,
+    EmailMessage, EmailMIMEComponent, File, HTTPRequestExt, ICMPExt,
+    IPv4Address, IPv6Address, MACAddress, Mutex, NetworkTraffic, NTFSExt,
+    PDFExt, Process, RasterImageExt, SocketExt, Software, TCPExt,
+    UNIXAccountExt, UserAccount, WindowsPEBinaryExt,
+    WindowsPEOptionalHeaderType, WindowsPESection, WindowsProcessExt,
+    WindowsRegistryKey, WindowsRegistryValueType, WindowsServiceExt,
+    X509Certificate, X509V3ExtensionsType,
+
+    AttackPattern, Campaign, CourseOfAction, CustomObject, Identity, Indicator,
+    IntrusionSet, Malware, ObservedData, Report, ThreatActor, Tool,
+    Vulnerability,
+
+    Relationship, Sighting,
+
+    OBJ_MAP, OBJ_MAP_OBSERVABLE, EXT_MAP
+""".replace(",", " ").split()

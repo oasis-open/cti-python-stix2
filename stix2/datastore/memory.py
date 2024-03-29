@@ -7,10 +7,9 @@ import os
 
 from stix2 import v20, v21
 from stix2.base import _STIXBase
-from stix2.core import parse
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.filters import FilterSet, apply_common_filters
-from stix2.utils import is_marking
+from stix2.parsing import parse
 
 
 def _add(store, stix_data, allow_custom=True, version=None):
@@ -47,12 +46,10 @@ def _add(store, stix_data, allow_custom=True, version=None):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        # Map ID directly to the object, if it is a marking.  Otherwise,
-        # map to a family, so we can track multiple versions.
-        if is_marking(stix_obj):
-            store._data[stix_obj["id"]] = stix_obj
-
-        else:
+        # Map ID to a _ObjectFamily if the object is versioned, so we can track
+        # multiple versions.  Otherwise, map directly to the object.  All
+        # versioned objects should have a "modified" property.
+        if "modified" in stix_obj:
             if stix_obj["id"] in store._data:
                 obj_family = store._data[stix_obj["id"]]
             else:
@@ -60,6 +57,9 @@ def _add(store, stix_data, allow_custom=True, version=None):
                 store._data[stix_obj["id"]] = obj_family
 
             obj_family.add(stix_obj)
+
+        else:
+            store._data[stix_obj["id"]] = stix_obj
 
 
 class _ObjectFamily(object):
@@ -75,8 +75,10 @@ class _ObjectFamily(object):
 
     def add(self, obj):
         self.all_versions[obj["modified"]] = obj
-        if (self.latest_version is None or
-                obj["modified"] > self.latest_version["modified"]):
+        if (
+            self.latest_version is None or
+            obj["modified"] > self.latest_version["modified"]
+        ):
             self.latest_version = obj
 
     def __str__(self):
@@ -188,11 +190,13 @@ class MemorySink(DataSink):
     def save_to_file(self, path, encoding="utf-8"):
         path = os.path.abspath(path)
 
-        all_objs = list(itertools.chain.from_iterable(
-            value.all_versions.values() if isinstance(value, _ObjectFamily)
-            else [value]
-            for value in self._data.values()
-        ))
+        all_objs = list(
+            itertools.chain.from_iterable(
+                value.all_versions.values() if isinstance(value, _ObjectFamily)
+                else [value]
+                for value in self._data.values()
+            ),
+        )
 
         if any("spec_version" in x for x in all_objs):
             bundle = v21.Bundle(all_objs, allow_custom=self.allow_custom)
@@ -267,12 +271,12 @@ class MemorySource(DataSource):
         """
         stix_obj = None
 
-        if is_marking(stix_id):
-            stix_obj = self._data.get(stix_id)
-        else:
-            object_family = self._data.get(stix_id)
-            if object_family:
-                stix_obj = object_family.latest_version
+        mapped_value = self._data.get(stix_id)
+        if mapped_value:
+            if isinstance(mapped_value, _ObjectFamily):
+                stix_obj = mapped_value.latest_version
+            else:
+                stix_obj = mapped_value
 
         if stix_obj:
             all_filters = list(
@@ -300,17 +304,13 @@ class MemorySource(DataSource):
 
         """
         results = []
-        stix_objs_to_filter = None
-        if is_marking(stix_id):
-            stix_obj = self._data.get(stix_id)
-            if stix_obj:
-                stix_objs_to_filter = [stix_obj]
-        else:
-            object_family = self._data.get(stix_id)
-            if object_family:
-                stix_objs_to_filter = object_family.all_versions.values()
+        mapped_value = self._data.get(stix_id)
+        if mapped_value:
+            if isinstance(mapped_value, _ObjectFamily):
+                stix_objs_to_filter = mapped_value.all_versions.values()
+            else:
+                stix_objs_to_filter = [mapped_value]
 
-        if stix_objs_to_filter:
             all_filters = list(
                 itertools.chain(
                     _composite_filters or [],
@@ -359,8 +359,8 @@ class MemorySource(DataSource):
 
         return all_data
 
-    def load_from_file(self, file_path, version=None):
-        with io.open(os.path.abspath(file_path), "r") as f:
+    def load_from_file(self, file_path, version=None, encoding='utf-8'):
+        with io.open(os.path.abspath(file_path), "r", encoding=encoding) as f:
             stix_data = json.load(f)
 
         _add(self, stix_data, self.allow_custom, version)

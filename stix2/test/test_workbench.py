@@ -4,12 +4,14 @@ import os
 import stix2
 from stix2.workbench import (
     _STIX_VID, AttackPattern, Bundle, Campaign, CourseOfAction,
-    ExternalReference, File, FileSystemSource, Filter, Identity, Indicator,
-    IntrusionSet, Malware, MarkingDefinition, NTFSExt, ObservedData,
+    ExternalReference, File, FileSystemSource, Filter, Grouping, Identity,
+    Indicator, Infrastructure, IntrusionSet, Location, Malware,
+    MalwareAnalysis, MarkingDefinition, Note, NTFSExt, ObservedData, Opinion,
     Relationship, Report, StatementMarking, ThreatActor, Tool, Vulnerability,
     add_data_source, all_versions, attack_patterns, campaigns,
-    courses_of_action, create, get, identities, indicators, intrusion_sets,
-    malware, observed_data, query, reports, save, set_default_created,
+    courses_of_action, create, get, groupings, identities, indicators,
+    infrastructures, intrusion_sets, locations, malware, malware_analyses,
+    notes, observed_data, opinions, query, reports, save, set_default_created,
     set_default_creator, set_default_external_refs,
     set_default_object_marking_refs, threat_actors, tools, vulnerabilities,
 )
@@ -35,7 +37,7 @@ def test_workbench_environment():
     save(ind)
 
     resp = get(constants.INDICATOR_ID)
-    assert resp['labels'][0] == 'malicious-activity'
+    assert resp['indicator_types'][0] == 'malicious-activity'
 
     resp = all_versions(constants.INDICATOR_ID)
     assert len(resp) == 1
@@ -77,6 +79,15 @@ def test_workbench_get_all_courses_of_action():
     assert resp[0].id == constants.COURSE_OF_ACTION_ID
 
 
+def test_workbench_get_all_groupings():
+    grup = Grouping(id=constants.GROUPING_ID, **constants.GROUPING_KWARGS)
+    save(grup)
+
+    resp = groupings()
+    assert len(resp) == 1
+    assert resp[0].id == constants.GROUPING_ID
+
+
 def test_workbench_get_all_identities():
     idty = Identity(id=constants.IDENTITY_ID, **constants.IDENTITY_KWARGS)
     save(idty)
@@ -92,6 +103,15 @@ def test_workbench_get_all_indicators():
     assert resp[0].id == constants.INDICATOR_ID
 
 
+def test_workbench_get_all_infrastructures():
+    inf = Infrastructure(id=constants.INFRASTRUCTURE_ID, **constants.INFRASTRUCTURE_KWARGS)
+    save(inf)
+
+    resp = infrastructures()
+    assert len(resp) == 1
+    assert resp[0].id == constants.INFRASTRUCTURE_ID
+
+
 def test_workbench_get_all_intrusion_sets():
     ins = IntrusionSet(
         id=constants.INTRUSION_SET_ID, **constants.INTRUSION_SET_KWARGS
@@ -103,6 +123,15 @@ def test_workbench_get_all_intrusion_sets():
     assert resp[0].id == constants.INTRUSION_SET_ID
 
 
+def test_workbench_get_all_locations():
+    loc = Location(id=constants.LOCATION_ID, **constants.LOCATION_KWARGS)
+    save(loc)
+
+    resp = locations()
+    assert len(resp) == 1
+    assert resp[0].id == constants.LOCATION_ID
+
+
 def test_workbench_get_all_malware():
     mal = Malware(id=constants.MALWARE_ID, **constants.MALWARE_KWARGS)
     save(mal)
@@ -110,6 +139,24 @@ def test_workbench_get_all_malware():
     resp = malware()
     assert len(resp) == 1
     assert resp[0].id == constants.MALWARE_ID
+
+
+def test_workbench_get_all_malware_analyses():
+    mal = MalwareAnalysis(id=constants.MALWARE_ANALYSIS_ID, **constants.MALWARE_ANALYSIS_KWARGS)
+    save(mal)
+
+    resp = malware_analyses()
+    assert len(resp) == 1
+    assert resp[0].id == constants.MALWARE_ANALYSIS_ID
+
+
+def test_workbench_get_all_notes():
+    note = Note(id=constants.NOTE_ID, **constants.NOTE_KWARGS)
+    save(note)
+
+    resp = notes()
+    assert len(resp) == 1
+    assert resp[0].id == constants.NOTE_ID
 
 
 def test_workbench_get_all_observed_data():
@@ -121,6 +168,15 @@ def test_workbench_get_all_observed_data():
     resp = observed_data()
     assert len(resp) == 1
     assert resp[0].id == constants.OBSERVED_DATA_ID
+
+
+def test_workbench_get_all_opinions():
+    op = Opinion(id=constants.OPINION_ID, **constants.OPINION_KWARGS)
+    save(op)
+
+    resp = opinions()
+    assert len(resp) == 1
+    assert resp[0].id == constants.OPINION_ID
 
 
 def test_workbench_get_all_reports():
@@ -210,6 +266,7 @@ def test_workbench_related():
 def test_workbench_related_with_filters():
     malware = Malware(
         labels=["ransomware"], name="CryptorBit", created_by_ref=constants.IDENTITY_ID,
+        is_family=False,
     )
     rel = Relationship(malware.id, 'variant-of', constants.MALWARE_ID)
     save([malware, rel])
@@ -312,6 +369,7 @@ def test_workbench_custom_property_object_in_observable_extension():
         x_foo='bar',
     )
     artifact = File(
+        allow_custom=True,
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
@@ -333,7 +391,6 @@ def test_workbench_custom_property_dict_in_observable_extension():
         name='test',
         extensions={
             'ntfs-ext': {
-                'allow_custom': True,
                 'sid': 1,
                 'x_foo': 'bar',
             },

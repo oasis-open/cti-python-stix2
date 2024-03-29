@@ -1,12 +1,13 @@
 import datetime
+import json
 import os
 import re
 import sys
 
-from six import class_types
 from sphinx.ext.autodoc import ClassDocumenter
 
 from stix2.base import _STIXBase
+from stix2.equivalence.object import WEIGHTS
 from stix2.version import __version__
 
 sys.path.insert(0, os.path.abspath('..'))
@@ -39,7 +40,6 @@ author = 'OASIS Open'
 version = __version__
 release = __version__
 
-language = None
 exclude_patterns = ['_build', '_templates', 'Thumbs.db', '.DS_Store', 'guide/.ipynb_checkpoints']
 pygments_style = 'sphinx'
 todo_include_todos = False
@@ -58,6 +58,14 @@ latex_elements = {}
 latex_documents = [
     (master_doc, 'stix2.tex', 'stix2 Documentation', 'OASIS', 'manual'),
 ]
+
+# Add a formatted version of environment.WEIGHTS
+object_default_sem_eq_weights = json.dumps(WEIGHTS, indent=4, default=lambda o: o.__name__)
+object_default_sem_eq_weights = object_default_sem_eq_weights.replace('\n', '\n    ')
+object_default_sem_eq_weights = object_default_sem_eq_weights.replace('               "', '               ')
+object_default_sem_eq_weights = object_default_sem_eq_weights.replace('"\n', '\n')
+with open('similarity_weights.rst', 'w') as f:
+    f.write(".. code-block:: python\n\n   {}\n\n".format(object_default_sem_eq_weights))
 
 
 def get_property_type(prop):
@@ -89,12 +97,12 @@ class STIXPropertyDocumenter(ClassDocumenter):
 
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
-        return isinstance(member, class_types) and \
+        return isinstance(member, type) and \
                issubclass(member, _STIXBase) and \
                hasattr(member, '_properties')
 
-    def add_content(self, more_content, no_docstring=False):
-        ClassDocumenter.add_content(self, more_content, no_docstring)
+    def add_content(self, more_content):
+        ClassDocumenter.add_content(self, more_content)
 
         obj = self.object
         self.add_line(':Properties:', '<stixattr>')

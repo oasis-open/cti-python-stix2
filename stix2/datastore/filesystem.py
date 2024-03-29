@@ -6,16 +6,15 @@ import os
 import re
 import stat
 
-import six
-
 from stix2 import v20, v21
 from stix2.base import _STIXBase
-from stix2.core import parse
 from stix2.datastore import (
     DataSink, DataSource, DataSourceError, DataStoreMixin,
 )
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
-from stix2.utils import format_datetime, get_type_from_id, is_marking
+from stix2.parsing import parse
+from stix2.serialization import fp_serialize
+from stix2.utils import format_datetime, get_type_from_id, parse_into_datetime
 
 
 def _timestamp2filename(timestamp):
@@ -24,10 +23,12 @@ def _timestamp2filename(timestamp):
     "modified" property value.  This should not include an extension.
 
     Args:
-        timestamp: A timestamp, as a datetime.datetime object.
+        timestamp: A timestamp, as a datetime.datetime object or string.
 
     """
     # The format_datetime will determine the correct level of precision.
+    if isinstance(timestamp, str):
+        timestamp = parse_into_datetime(timestamp)
     ts = format_datetime(timestamp)
     ts = re.sub(r"[-T:\.Z ]", "", ts)
     return ts
@@ -113,7 +114,7 @@ def _update_allow(allow_set, value):
 
     """
     adding_seq = hasattr(value, "__iter__") and \
-        not isinstance(value, six.string_types)
+        not isinstance(value, str)
 
     if allow_set is None:
         allow_set = set()
@@ -282,19 +283,21 @@ def _get_matching_dir_entries(parent_dir, auth_set, st_mode_test=None, ext=""):
     return results
 
 
-def _check_object_from_file(query, filepath, allow_custom, version):
+def _check_object_from_file(query, filepath, allow_custom, version, encoding):
     """
     Read a STIX object from the given file, and check it against the given
     filters.
 
     Args:
         query: Iterable of filters
-        filepath: Path to file to read
-        allow_custom: Whether to allow custom properties as well unknown
+        filepath (str): Path to file to read
+        allow_custom (bool): Whether to allow custom properties as well unknown
         custom objects.
         version (str): If present, it forces the parser to use the version
             provided. Otherwise, the library will make the best effort based
             on checking the "spec_version" property.
+        encoding (str): The encoding to use when reading a file from the
+            filesystem.
 
     Returns:
         The (parsed) STIX object, if the object passes the filters.  If
@@ -308,7 +311,7 @@ def _check_object_from_file(query, filepath, allow_custom, version):
 
     """
     try:
-        with io.open(filepath, "r") as f:
+        with io.open(filepath, "r", encoding=encoding) as f:
             stix_json = json.load(f)
     except ValueError:  # not a JSON file
         raise TypeError(
@@ -327,21 +330,62 @@ def _check_object_from_file(query, filepath, allow_custom, version):
     return result
 
 
-def _search_versioned(query, type_path, auth_ids, allow_custom, version):
+def _is_versioned_type_dir(type_path, type_name):
+    """
+    Try to detect whether the given directory is for a versioned type of STIX
+    object.  This is done by looking for a directory whose name is a STIX ID
+    of the appropriate type.  If found, treat this type as versioned.  This
+    doesn't work when a versioned type directory is empty (it will be
+    mis-classified as unversioned), but this detection is only necessary when
+    reading/querying data.  If a directory is empty, you'll get no results
+    either way.
+
+    Args:
+        type_path: A path to a directory containing one type of STIX object.
+        type_name: The STIX type name.
+
+    Returns:
+        True if the directory looks like it contains versioned objects; False
+        if not.
+
+    Raises:
+        OSError: If there are errors accessing directory contents or stat()'ing
+            files
+    """
+    id_regex = re.compile(
+        r"^" + re.escape(type_name) +
+        r"--[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}"
+        r"-[0-9a-f]{12}$",
+        re.I,
+    )
+
+    for entry in os.listdir(type_path):
+        s = os.stat(os.path.join(type_path, entry))
+        if stat.S_ISDIR(s.st_mode) and id_regex.match(entry):
+            is_versioned = True
+            break
+    else:
+        is_versioned = False
+
+    return is_versioned
+
+
+def _search_versioned(query, type_path, auth_ids, allow_custom, version, encoding):
     """
     Searches the given directory, which contains data for STIX objects of a
-    particular versioned type (i.e. not markings), and return any which match
-    the query.
+    particular versioned type, and return any which match the query.
 
     Args:
         query: The query to match against
         type_path: The directory with type-specific STIX object files
         auth_ids: Search optimization based on object ID
-        allow_custom: Whether to allow custom properties as well unknown
+        allow_custom (bool): Whether to allow custom properties as well unknown
             custom objects.
         version (str): If present, it forces the parser to use the version
             provided. Otherwise, the library will make the best effort based
             on checking the "spec_version" property.
+        encoding (str): The encoding to use when reading a file from the
+            filesystem.
 
     Returns:
         A list of all matching objects
@@ -375,6 +419,7 @@ def _search_versioned(query, type_path, auth_ids, allow_custom, version):
                 stix_obj = _check_object_from_file(
                     query, version_path,
                     allow_custom, version,
+                    encoding,
                 )
                 if stix_obj:
                     results.append(stix_obj)
@@ -385,42 +430,32 @@ def _search_versioned(query, type_path, auth_ids, allow_custom, version):
 
     # For backward-compatibility, also search for plain files named after
     # object IDs, in the type directory.
-    id_files = _get_matching_dir_entries(
-        type_path, auth_ids, stat.S_ISREG,
-        ".json",
+    backcompat_results = _search_unversioned(
+        query, type_path, auth_ids, allow_custom, version, encoding,
     )
-    for id_file in id_files:
-        id_path = os.path.join(type_path, id_file)
-
-        try:
-            stix_obj = _check_object_from_file(
-                query, id_path, allow_custom,
-                version,
-            )
-            if stix_obj:
-                results.append(stix_obj)
-        except IOError as e:
-            if e.errno != errno.ENOENT:
-                raise
-            # else, file-not-found is ok, just skip
+    results.extend(backcompat_results)
 
     return results
 
 
-def _search_markings(query, markings_path, auth_ids, allow_custom, version):
+def _search_unversioned(
+    query, type_path, auth_ids, allow_custom, version, encoding,
+):
     """
-    Searches the given directory, which contains markings data, and return any
-    which match the query.
+    Searches the given directory, which contains unversioned data, and return
+    any objects which match the query.
 
     Args:
         query: The query to match against
-        markings_path: The directory with STIX markings files
+        type_path: The directory with STIX files of unversioned type
         auth_ids: Search optimization based on object ID
-        allow_custom: Whether to allow custom properties as well unknown
+        allow_custom (bool): Whether to allow custom properties as well unknown
             custom objects.
         version (str): If present, it forces the parser to use the version
             provided. Otherwise, the library will make the best effort based
             on checking the "spec_version" property.
+        encoding (str): The encoding to use when reading a file from the
+            filesystem.
 
     Returns:
         A list of all matching objects
@@ -434,16 +469,16 @@ def _search_markings(query, markings_path, auth_ids, allow_custom, version):
     """
     results = []
     id_files = _get_matching_dir_entries(
-        markings_path, auth_ids, stat.S_ISREG,
+        type_path, auth_ids, stat.S_ISREG,
         ".json",
     )
     for id_file in id_files:
-        id_path = os.path.join(markings_path, id_file)
+        id_path = os.path.join(type_path, id_file)
 
         try:
             stix_obj = _check_object_from_file(
                 query, id_path, allow_custom,
-                version,
+                version, encoding,
             )
             if stix_obj:
                 results.append(stix_obj)
@@ -470,13 +505,15 @@ class FileSystemStore(DataStoreMixin):
             will be applied to both FileSystemSource and FileSystemSink.
         bundlify (bool): whether to wrap objects in bundles when saving
             them. Default: False.
+        encoding (str): The encoding to use when reading a file from the
+            filesystem.
 
     Attributes:
         source (FileSystemSource): FileSystemSource
         sink (FileSystemSink): FileSystemSink
 
     """
-    def __init__(self, stix_dir, allow_custom=None, bundlify=False):
+    def __init__(self, stix_dir, allow_custom=None, bundlify=False, encoding='utf-8'):
         if allow_custom is None:
             allow_custom_source = True
             allow_custom_sink = False
@@ -484,7 +521,7 @@ class FileSystemStore(DataStoreMixin):
             allow_custom_sink = allow_custom_source = allow_custom
 
         super(FileSystemStore, self).__init__(
-            source=FileSystemSource(stix_dir=stix_dir, allow_custom=allow_custom_source),
+            source=FileSystemSource(stix_dir=stix_dir, allow_custom=allow_custom_source, encoding=encoding),
             sink=FileSystemSink(stix_dir=stix_dir, allow_custom=allow_custom_sink, bundlify=bundlify),
         )
 
@@ -521,12 +558,14 @@ class FileSystemSink(DataSink):
         """Write the given STIX object to a file in the STIX file directory.
         """
         type_dir = os.path.join(self._stix_dir, stix_obj["type"])
-        if is_marking(stix_obj):
-            filename = stix_obj["id"]
-            obj_dir = type_dir
-        else:
+
+        # All versioned objects should have a "modified" property.
+        if "modified" in stix_obj:
             filename = _timestamp2filename(stix_obj["modified"])
             obj_dir = os.path.join(type_dir, stix_obj["id"])
+        else:
+            filename = stix_obj["id"]
+            obj_dir = type_dir
 
         file_path = os.path.join(obj_dir, filename + ".json")
 
@@ -544,10 +583,9 @@ class FileSystemSink(DataSink):
 
         if os.path.isfile(file_path):
             raise DataSourceError("Attempted to overwrite file (!) at: {}".format(file_path))
-        else:
-            with io.open(file_path, 'w', encoding=encoding) as f:
-                stix_obj = stix_obj.serialize(pretty=True, encoding=encoding, ensure_ascii=False)
-                f.write(stix_obj)
+
+        with io.open(file_path, mode='w', encoding=encoding) as f:
+            fp_serialize(stix_obj, f, pretty=True, encoding=encoding, ensure_ascii=False)
 
     def add(self, stix_data=None, version=None):
         """Add STIX objects to file directory.
@@ -576,8 +614,12 @@ class FileSystemSink(DataSink):
             self._check_path_and_write(stix_data)
 
         elif isinstance(stix_data, (str, dict)):
-            stix_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
-            self.add(stix_data, version=version)
+            parsed_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
+            if isinstance(parsed_data, _STIXBase):
+                self.add(parsed_data, version=version)
+            else:
+                # custom unregistered object type
+                self._check_path_and_write(parsed_data)
 
         elif isinstance(stix_data, list):
             # recursively add individual STIX objects
@@ -603,12 +645,15 @@ class FileSystemSource(DataSource):
         stix_dir (str): path to directory of STIX objects
         allow_custom (bool): Whether to allow custom STIX content to be
             added to the FileSystemSink. Default: True
+        encoding (str): The encoding to use when reading a file from the
+            filesystem.
 
     """
-    def __init__(self, stix_dir, allow_custom=True):
+    def __init__(self, stix_dir, allow_custom=True, encoding='utf-8'):
         super(FileSystemSource, self).__init__()
         self._stix_dir = os.path.abspath(stix_dir)
         self.allow_custom = allow_custom
+        self.encoding = encoding
 
         if not os.path.exists(self._stix_dir):
             raise ValueError("directory path for STIX data does not exist: %s" % self._stix_dir)
@@ -637,12 +682,14 @@ class FileSystemSource(DataSource):
         all_data = self.all_versions(stix_id, version=version, _composite_filters=_composite_filters)
 
         if all_data:
-            if is_marking(stix_id):
-                # Markings are unversioned; there shouldn't be more than one
-                # result.
-                stix_obj = all_data[0]
-            else:
+            # Simple check for a versioned STIX type: see if the objects have a
+            # "modified" property.  (Need only check one, since they are all of
+            # the same type.)
+            is_versioned = "modified" in all_data[0]
+            if is_versioned:
                 stix_obj = sorted(all_data, key=lambda k: k['modified'])[-1]
+            else:
+                stix_obj = all_data[0]
         else:
             stix_obj = None
 
@@ -708,15 +755,18 @@ class FileSystemSource(DataSource):
         )
         for type_dir in type_dirs:
             type_path = os.path.join(self._stix_dir, type_dir)
-            if type_dir == "marking-definition":
-                type_results = _search_markings(
-                    query, type_path, auth_ids,
-                    self.allow_custom, version,
-                )
-            else:
+            type_is_versioned = _is_versioned_type_dir(type_path, type_dir)
+            if type_is_versioned:
                 type_results = _search_versioned(
                     query, type_path, auth_ids,
                     self.allow_custom, version,
+                    self.encoding,
+                )
+            else:
+                type_results = _search_unversioned(
+                    query, type_path, auth_ids,
+                    self.allow_custom, version,
+                    self.encoding,
                 )
             all_data.extend(type_results)
 

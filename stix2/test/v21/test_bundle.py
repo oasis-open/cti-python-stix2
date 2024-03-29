@@ -1,3 +1,4 @@
+import io
 import json
 
 import pytest
@@ -123,10 +124,30 @@ def test_bundle_id_must_start_with_bundle():
     assert str(excinfo.value) == "Invalid value for Bundle 'id': must start with 'bundle--'."
 
 
+def test_create_bundle_fp_serialize_pretty(indicator, malware, relationship):
+    bundle = stix2.v21.Bundle(objects=[indicator, malware, relationship])
+    buffer = io.StringIO()
+
+    bundle.fp_serialize(buffer, pretty=True)
+
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
+    assert buffer.getvalue() == EXPECTED_BUNDLE
+
+
+def test_create_bundle_fp_serialize_nonpretty(indicator, malware, relationship):
+    bundle = stix2.v21.Bundle(objects=[indicator, malware, relationship])
+    buffer = io.StringIO()
+
+    bundle.fp_serialize(buffer, sort_keys=True)
+
+    assert bundle.serialize(sort_keys=True) == json.dumps(json.loads(EXPECTED_BUNDLE), sort_keys=True)
+    assert buffer.getvalue() == json.dumps(json.loads(EXPECTED_BUNDLE), sort_keys=True)
+
+
 def test_create_bundle1(indicator, malware, relationship):
     bundle = stix2.v21.Bundle(objects=[indicator, malware, relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
     assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
@@ -139,31 +160,31 @@ def test_create_bundle2(indicator, malware, relationship):
 def test_create_bundle_with_positional_args(indicator, malware, relationship):
     bundle = stix2.v21.Bundle(indicator, malware, relationship)
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_positional_listarg(indicator, malware, relationship):
     bundle = stix2.v21.Bundle([indicator, malware, relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_listarg_and_positional_arg(indicator, malware, relationship):
     bundle = stix2.v21.Bundle([indicator, malware], relationship)
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_listarg_and_kwarg(indicator, malware, relationship):
     bundle = stix2.v21.Bundle([indicator, malware], objects=[relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_with_arg_listarg_and_kwarg(indicator, malware, relationship):
     bundle = stix2.v21.Bundle([indicator], malware, objects=[relationship])
 
-    assert str(bundle) == EXPECTED_BUNDLE
+    assert bundle.serialize(pretty=True) == EXPECTED_BUNDLE
 
 
 def test_create_bundle_invalid(indicator, malware, relationship):
@@ -213,7 +234,7 @@ def test_stix_object_property():
     prop = stix2.properties.STIXObjectProperty(spec_version='2.1')
 
     identity = stix2.v21.Identity(name="test", identity_class="individual")
-    assert prop.clean(identity) is identity
+    assert prop.clean(identity, False) == (identity, False)
 
 
 def test_bundle_obj_id_found():

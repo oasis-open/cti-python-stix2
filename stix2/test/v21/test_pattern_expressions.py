@@ -1,9 +1,17 @@
 import datetime
 
 import pytest
+import pytz
+from stix2patterns.exceptions import ParseException
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
+import stix2.patterns
+import stix2.utils
+
+# flake8 does not approve of star imports.
+# flake8: noqa: F405
+from .pattern_ast_overrides import *
 
 
 def test_create_comparison_expression():
@@ -174,9 +182,19 @@ def test_greater_than():
     assert str(exp) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.0]"
 
 
+def test_parsing_greater_than():
+    patt_obj = create_pattern_object("[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]", version="2.1")
+    assert str(patt_obj) == "[file:extensions.'windows-pebinary-ext'.sections[*].entropy > 7.478901]"
+
+
 def test_less_than():
     exp = stix2.LessThanComparisonExpression("file:size", 1024)
     assert str(exp) == "file:size < 1024"
+
+
+def test_parsing_less_than():
+    patt_obj = create_pattern_object("[file:size < 1024]", version="2.1")
+    assert str(patt_obj) == "[file:size < 1024]"
 
 
 def test_greater_than_or_equal():
@@ -184,8 +202,12 @@ def test_greater_than_or_equal():
         "file:size",
         1024,
     )
-
     assert str(exp) == "file:size >= 1024"
+
+
+def test_parsing_greater_than_or_equal():
+    patt_obj = create_pattern_object("[file:size >= 1024]", version="2.1")
+    assert str(patt_obj) == "[file:size >= 1024]"
 
 
 def test_less_than_or_equal():
@@ -194,6 +216,36 @@ def test_less_than_or_equal():
         1024,
     )
     assert str(exp) == "file:size <= 1024"
+
+
+def test_parsing_less_than_or_equal():
+    patt_obj = create_pattern_object("[file:size <= 1024]", version="2.1")
+    assert str(patt_obj) == "[file:size <= 1024]"
+
+
+def test_parsing_issubset():
+    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']", version="2.1")
+    assert str(patt_obj) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
+
+
+def test_parsing_issuperset():
+    patt_obj = create_pattern_object("[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']", version="2.1")
+    assert str(patt_obj) == "[network-traffic:dst_ref.value ISSUPERSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
+
+
+def test_parsing_like():
+    patt_obj = create_pattern_object("[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']", version="2.1")
+    assert str(patt_obj) == "[directory:path LIKE 'C:\\\\Windows\\\\%\\\\foo']"
+
+
+def test_parsing_match():
+    patt_obj = create_pattern_object("[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS", version="2.1")  # noqa
+    assert str(patt_obj) == "[process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachine Root$'] FOLLOWEDBY [process:command_line MATCHES '^.+>-add GlobalSign.cer -c -s -r localMachineTrustedPublisher$'] WITHIN 300 SECONDS"  # noqa
+
+
+def test_parsing_followed_by():
+    patt_obj = create_pattern_object("([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS", version="2.1")  # noqa
+    assert str(patt_obj) == "([file:hashes.MD5 = '79054025255fb1a26e4bc422aef54eb4'] FOLLOWEDBY [windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\foo\\\\bar']) WITHIN 300 SECONDS"  # noqa
 
 
 def test_not():
@@ -256,7 +308,68 @@ def test_and_observable_expression():
     assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1009' AND user-account:account_login = 'Mary']"  # noqa
 
 
-def test_invalid_and_observable_expression():
+def test_parsing_and_observable_expression():
+    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']", version="2.1")  # noqa
+    assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] AND [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
+
+
+def test_or_observable_expression():
+    exp1 = stix2.AndBooleanExpression([
+        stix2.EqualityComparisonExpression(
+            "user-account:account_type",
+            "unix",
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:user_id",
+            stix2.StringConstant("1007"),
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:account_login",
+            "Peter",
+        ),
+    ])
+    exp2 = stix2.AndBooleanExpression([
+        stix2.EqualityComparisonExpression(
+            "user-account:account_type",
+            "unix",
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:user_id",
+            stix2.StringConstant("1008"),
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:account_login",
+            "Paul",
+        ),
+    ])
+    exp3 = stix2.AndBooleanExpression([
+        stix2.EqualityComparisonExpression(
+            "user-account:account_type",
+            "unix",
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:user_id",
+            stix2.StringConstant("1009"),
+        ),
+        stix2.EqualityComparisonExpression(
+            "user-account:account_login",
+            "Mary",
+        ),
+    ])
+    exp = stix2.OrObservationExpression([
+        stix2.ObservationExpression(exp1),
+        stix2.ObservationExpression(exp2),
+        stix2.ObservationExpression(exp3),
+    ])
+    assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1009' AND user-account:account_login = 'Mary']"  # noqa
+
+
+def test_parsing_or_observable_expression():
+    exp = create_pattern_object("[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']", version="2.1")  # noqa
+    assert str(exp) == "[user-account:account_type = 'unix' AND user-account:user_id = '1007' AND user-account:account_login = 'Peter'] OR [user-account:account_type = 'unix' AND user-account:user_id = '1008' AND user-account:account_login = 'Paul']"  # noqa
+
+
+def test_invalid_and_comparison_expression():
     with pytest.raises(ValueError):
         stix2.AndBooleanExpression([
             stix2.EqualityComparisonExpression(
@@ -268,6 +381,33 @@ def test_invalid_and_observable_expression():
                 stix2.StringConstant("admin"),
             ),
         ])
+
+
+@pytest.mark.parametrize(
+    "pattern, root_types", [
+        ("[a:a=1 AND a:b=1]", {"a"}),
+        ("[a:a=1 AND a:b=1 OR c:d=1]", {"a", "c"}),
+        ("[a:a=1 AND (a:b=1 OR c:d=1)]", {"a"}),
+        ("[(a:a=1 OR b:a=1) AND (b:a=1 OR c:c=1)]", {"b"}),
+        ("[(a:a=1 AND a:b=1) OR (b:a=1 AND b:c=1)]", {"a", "b"}),
+    ],
+)
+def test_comparison_expression_root_types(pattern, root_types):
+    ast = create_pattern_object(pattern)
+    assert ast.operand.root_types == root_types
+
+
+@pytest.mark.parametrize(
+    "pattern", [
+        "[a:b=1 AND b:c=1]",
+        "[a:b=1 AND (b:c=1 OR c:d=1)]",
+        "[(a:b=1 OR b:c=1) AND (c:d=1 OR d:e=1)]",
+        "[(a:b=1 AND b:c=1) OR (b:c=1 AND c:d=1)]",
+    ],
+)
+def test_comparison_expression_root_types_error(pattern):
+    with pytest.raises(ValueError):
+        create_pattern_object(pattern)
 
 
 def test_hex():
@@ -283,6 +423,11 @@ def test_hex():
     ])
     exp = stix2.ObservationExpression(exp_and)
     assert str(exp) == "[file:mime_type = 'image/bmp' AND file:magic_number_hex = h'ffd8']"
+
+
+def test_parsing_hex():
+    patt_obj = create_pattern_object("[file:magic_number_hex = h'ffd8']", version="2.1")
+    assert str(patt_obj) == "[file:magic_number_hex = h'ffd8']"
 
 
 def test_multiple_qualifiers():
@@ -304,10 +449,12 @@ def test_multiple_qualifiers():
 
 
 def test_set_op():
-    exp = stix2.ObservationExpression(stix2.IsSubsetComparisonExpression(
-        "network-traffic:dst_ref.value",
-        "2001:0db8:dead:beef:0000:0000:0000:0000/64",
-    ))
+    exp = stix2.ObservationExpression(
+        stix2.IsSubsetComparisonExpression(
+            "network-traffic:dst_ref.value",
+            "2001:0db8:dead:beef:0000:0000:0000:0000/64",
+        ),
+    )
     assert str(exp) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
 
 
@@ -331,6 +478,11 @@ def test_binary():
         const,
     )
     assert str(exp) == "artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q='"
+
+
+def test_parsing_binary():
+    patt_obj = create_pattern_object("[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']", version="2.1")
+    assert str(patt_obj) == "[artifact:payload_bin = b'dGhpcyBpcyBhIHRlc3Q=']"
 
 
 def test_list():
@@ -402,7 +554,7 @@ def test_invalid_boolean_constant():
 @pytest.mark.parametrize(
     "hashtype, data", [
         ('MD5', 'zzz'),
-        ('ssdeep', 'zzz=='),
+        ('SSDEEP', 'zzz=='),
     ],
 )
 def test_invalid_hash_constant(hashtype, data):
@@ -487,6 +639,44 @@ def test_invalid_startstop_qualifier():
         )
 
 
+@pytest.mark.parametrize(
+    "input_, expected_class, expected_value", [
+        (1, stix2.patterns.IntegerConstant, 1),
+        (1.5, stix2.patterns.FloatConstant, 1.5),
+        ("abc", stix2.patterns.StringConstant, "abc"),
+        (True, stix2.patterns.BooleanConstant, True),
+        (
+            "2001-02-10T21:36:15Z", stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+        (
+            datetime.datetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+            stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+    ],
+)
+def test_make_constant_simple(input_, expected_class, expected_value):
+    const = stix2.patterns.make_constant(input_)
+
+    assert isinstance(const, expected_class)
+    assert const.value == expected_value
+
+
+def test_make_constant_list():
+    list_const = stix2.patterns.make_constant([1, 2, 3])
+
+    assert isinstance(list_const, stix2.patterns.ListConstant)
+    assert all(
+        isinstance(elt, stix2.patterns.IntegerConstant)
+        for elt in list_const.value
+    )
+    assert all(
+        int_const.value == test_elt
+        for int_const, test_elt in zip(list_const.value, [1, 2, 3])
+    )
+
+
 def test_make_constant_already_a_constant():
     str_const = stix2.StringConstant('Foo')
     result = stix2.patterns.make_constant(str_const)
@@ -494,19 +684,126 @@ def test_make_constant_already_a_constant():
 
 
 def test_parsing_comparison_expression():
-    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']")
+    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']", version="2.1")
     assert str(patt_obj) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']"
 
 
-def test_parsing_qualified_expression():
+def test_parsing_repeat_and_within_qualified_expression():
     patt_obj = create_pattern_object(
         "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS",
+        version="2.1",
     )
     assert str(
         patt_obj,
     ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS"
 
 
+def test_parsing_start_stop_qualified_expression():
+    patt_obj = create_pattern_object(
+        "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'",  # noqa
+        version="2.1",
+    )
+    assert str(
+        patt_obj,
+    ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"  # noqa
+
+
 def test_list_constant():
-    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]")
+    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]", version="2.1")
     assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
+
+
+def test_parsing_boolean():
+    patt_obj = create_pattern_object("[network-traffic:is_active = true]", version="2.1")
+    assert str(patt_obj) == "[network-traffic:is_active = true]"
+
+
+def test_parsing_mixed_boolean_expression_1():
+    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]")
+    assert str(patt_obj) == "[a:b = 1 AND a:b = 2 OR a:b = 3]"
+
+
+def test_parsing_mixed_boolean_expression_2():
+    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]")
+    assert str(patt_obj) == "[a:b = 1 OR a:b = 2 AND a:b = 3]"
+
+
+def test_parsing_integer_index():
+    patt_obj = create_pattern_object("[a:b[1]=2]")
+    assert str(patt_obj) == "[a:b[1] = 2]"
+
+
+# This should never occur, because the first component will always be a property_name, and they should not be quoted.
+def test_parsing_quoted_first_path_component():
+    patt_obj = create_pattern_object("[a:'b'[1]=2]")
+    assert str(patt_obj) == "[a:'b'[1] = 2]"
+
+
+def test_parsing_quoted_second_path_component():
+    patt_obj = create_pattern_object("[a:b.'b'[1]=2]")
+    assert str(patt_obj) == "[a:b.'b'[1] = 2]"
+
+
+def test_parsing_multiple_slashes_quotes():
+    patt_obj = create_pattern_object("[ file:name = 'weird_name\\'' ]", version="2.1")
+    assert str(patt_obj) == "[file:name = 'weird_name\\'']"
+
+
+def test_parse_error():
+    with pytest.raises(ParseException):
+        create_pattern_object("[ file: name = 'weirdname]", version="2.1")
+
+
+def test_ast_class_override_comp_equals():
+    patt_ast = create_pattern_object(
+        "[a:b=1]", "Testing", "stix2.test.v21.pattern_ast_overrides",
+        version="2.1",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
+    assert isinstance(patt_ast.operand, EqualityComparisonExpressionForTesting)
+    assert str(patt_ast) == "[a:b = 1]"
+
+
+def test_ast_class_override_string_constant():
+    patt_ast = create_pattern_object(
+        "[a:'b'[1].'c' < 'foo']", "Testing",
+        "stix2.test.v21.pattern_ast_overrides",
+        version="2.1",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
+    assert isinstance(
+        patt_ast.operand, stix2.patterns.LessThanComparisonExpression,
+    )
+    assert isinstance(
+        patt_ast.operand.lhs.property_path[0].property_name,
+        str,
+    )
+    assert isinstance(
+        patt_ast.operand.lhs.property_path[1].property_name,
+        str,
+    )
+    assert isinstance(patt_ast.operand.rhs, StringConstantForTesting)
+
+    assert str(patt_ast) == "[a:'b'[1].c < 'foo']"
+
+
+def test_ast_class_override_startstop_qualifier():
+    patt_ast = create_pattern_object(
+        "[a:b=1] START t'1993-01-20T01:33:52.592Z' STOP t'2001-08-19T23:50:23.129Z'",
+        "Testing", "stix2.test.v21.pattern_ast_overrides", version="2.1",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.QualifiedObservationExpression)
+    assert isinstance(
+        patt_ast.observation_expression, stix2.patterns.ObservationExpression,
+    )
+    assert isinstance(
+        patt_ast.observation_expression.operand,
+        EqualityComparisonExpressionForTesting,
+    )
+    assert isinstance(
+        patt_ast.qualifier, StartStopQualifierForTesting,
+    )
+    assert str(patt_ast) == "[a:b = 1] START t'1993-01-20T01:33:52.592Z' STOP t'2001-08-19T23:50:23.129Z'"

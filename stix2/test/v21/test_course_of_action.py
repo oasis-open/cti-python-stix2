@@ -14,14 +14,7 @@ COA_WITH_BIN_JSON = """{
     "created": "2016-04-06T20:03:48.000Z",
     "modified": "2016-04-06T20:03:48.000Z",
     "name": "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
-    "action_type": "textual:text/plain",
-    "os_execution_envs": [
-        "a",
-        "b",
-        "c"
-    ],
-    "action_bin": "aGVsbG8gd29ybGQ="
+    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ..."
 }"""
 
 
@@ -33,17 +26,7 @@ COA_WITH_REF_JSON = """{
     "created": "2016-04-06T20:03:48.000Z",
     "modified": "2016-04-06T20:03:48.000Z",
     "name": "Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ...",
-    "action_type": "textual:text/plain",
-    "os_execution_envs": [
-        "a",
-        "b",
-        "c"
-    ],
-    "action_reference": {
-        "source_name": "a source",
-        "description": "description of a source"
-    }
+    "description": "This is how to add a filter rule to block inbound access to TCP port 80 to the existing UDP 1434 filter ..."
 }"""
 
 
@@ -59,7 +42,7 @@ COA_WITH_REF_DICT = json.loads(COA_WITH_REF_JSON)
 )
 def test_course_of_action_example(sdo_json, sdo_dict):
     coa = stix2.v21.CourseOfAction(**sdo_dict)
-    assert str(coa) == sdo_json
+    assert coa.serialize(pretty=True) == sdo_json
 
 
 @pytest.mark.parametrize(
@@ -83,16 +66,5 @@ def test_parse_course_of_action(sdo_json, sdo_dict):
 
             assert getattr(coa, attr_name) == cmp_value
 
-
-def test_course_of_action_constraint():
-    with pytest.raises(stix2.exceptions.MutuallyExclusivePropertiesError):
-        stix2.v21.CourseOfAction(
-            name="Add TCP port 80 Filter Rule to the existing Block UDP 1434 Filter",
-            action_bin="aGVsbG8gd29ybGQ=",
-            action_reference=stix2.v21.ExternalReference(
-                source_name="a source",
-                description="description of a source",
-            ),
-        )
 
 # TODO: Add other examples

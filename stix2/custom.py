@@ -1,135 +1,141 @@
 from collections import OrderedDict
-import re
 
-from .base import _cls_init, _Extension, _Observable, _STIXBase
-from .core import (
-    STIXDomainObject, _register_marking, _register_object,
-    _register_observable, _register_observable_extension,
+from .base import _cls_init
+from .properties import EnumProperty
+from .registration import (
+    _register_extension, _register_marking, _register_object,
+    _register_observable,
 )
-from .utils import TYPE_REGEX, get_class_hierarchy_names
+from .registry import class_for_type
 
 
-def _custom_object_builder(cls, type, properties, version):
-    class _CustomObject(cls, STIXDomainObject):
+def _get_properties_dict(properties):
+    try:
+        return OrderedDict(properties)
+    except TypeError as e:
+        raise ValueError(
+            "properties must be dict-like, e.g. a list "
+            "containing tuples.  For example, "
+            "[('property1', IntegerProperty())]",
+        ) from e
 
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type,
-            )
-        elif len(type) < 3 or len(type) > 250:
-            raise ValueError(
-                "Invalid type name '%s': must be between 3 and 250 characters." % type,
-            )
 
-        if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+def _custom_object_builder(cls, type, properties, version, base_class):
+    prop_dict = _get_properties_dict(properties)
+
+    class _CustomObject(cls, base_class):
 
         _type = type
-        _properties = OrderedDict(properties)
+        _properties = prop_dict
 
         def __init__(self, **kwargs):
-            _STIXBase.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+            ext = getattr(self, 'with_extension', None)
+            if ext and version != '2.0':
+                if 'extensions' not in self._inner:
+                    self._inner['extensions'] = {}
+                self._inner['extensions'][ext] = class_for_type(ext, version, "extensions")()
+
+    _CustomObject.__name__ = cls.__name__
 
     _register_object(_CustomObject, version=version)
     return _CustomObject
 
 
-def _custom_marking_builder(cls, type, properties, version):
-    class _CustomMarking(cls, _STIXBase):
+def _custom_marking_builder(cls, type, properties, version, base_class):
+    prop_dict = _get_properties_dict(properties)
 
-        if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+    class _CustomMarking(cls, base_class):
 
         _type = type
-        _properties = OrderedDict(properties)
+        _properties = prop_dict
 
         def __init__(self, **kwargs):
-            _STIXBase.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+
+    _CustomMarking.__name__ = cls.__name__
 
     _register_marking(_CustomMarking, version=version)
     return _CustomMarking
 
 
-def _custom_observable_builder(cls, type, properties, version):
-    class _CustomObservable(cls, _Observable):
+def _custom_observable_builder(cls, type, properties, version, base_class, id_contrib_props=None):
+    if id_contrib_props is None:
+        id_contrib_props = []
 
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid observable type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type,
-            )
-        elif len(type) < 3 or len(type) > 250:
-            raise ValueError("Invalid observable type name '%s': must be between 3 and 250 characters." % type)
+    prop_dict = _get_properties_dict(properties)
 
-        if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
-
-        if version == "2.0":
-            # If using STIX2.0, check properties ending in "_ref/s" are ObjectReferenceProperties
-            for prop_name, prop in properties:
-                if prop_name.endswith('_ref') and ('ObjectReferenceProperty' not in get_class_hierarchy_names(prop)):
-                    raise ValueError(
-                        "'%s' is named like an object reference property but "
-                        "is not an ObjectReferenceProperty." % prop_name,
-                    )
-                elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
-                                                       'ObjectReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
-                    raise ValueError(
-                        "'%s' is named like an object reference list property but "
-                        "is not a ListProperty containing ObjectReferenceProperty." % prop_name,
-                    )
-        else:
-            # If using STIX2.1 (or newer...), check properties ending in "_ref/s" are ReferenceProperties
-            for prop_name, prop in properties:
-                if prop_name.endswith('_ref') and ('ReferenceProperty' not in get_class_hierarchy_names(prop)):
-                    raise ValueError(
-                        "'%s' is named like a reference property but "
-                        "is not a ReferenceProperty." % prop_name,
-                    )
-                elif (prop_name.endswith('_refs') and ('ListProperty' not in get_class_hierarchy_names(prop) or
-                                                       'ReferenceProperty' not in get_class_hierarchy_names(prop.contained))):
-                    raise ValueError(
-                        "'%s' is named like a reference list property but "
-                        "is not a ListProperty containing ReferenceProperty." % prop_name,
-                    )
+    class _CustomObservable(cls, base_class):
 
         _type = type
-        _properties = OrderedDict(properties)
+        _properties = prop_dict
+        if version != '2.0':
+            _id_contributing_properties = id_contrib_props
 
         def __init__(self, **kwargs):
-            _Observable.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
+            ext = getattr(self, 'with_extension', None)
+            if ext and version != '2.0':
+                if 'extensions' not in self._inner:
+                    self._inner['extensions'] = {}
+                self._inner['extensions'][ext] = class_for_type(ext, version, "extensions")()
+
+    _CustomObservable.__name__ = cls.__name__
 
     _register_observable(_CustomObservable, version=version)
     return _CustomObservable
 
 
-def _custom_extension_builder(cls, observable, type, properties, version):
-    if not observable or not issubclass(observable, _Observable):
-        raise ValueError("'observable' must be a valid Observable class!")
+def _custom_extension_builder(cls, type, properties, version, base_class):
 
-    class _CustomExtension(cls, _Extension):
+    properties = _get_properties_dict(properties)
+    toplevel_properties = None
 
-        if not re.match(TYPE_REGEX, type):
-            raise ValueError(
-                "Invalid extension type name '%s': must only contain the "
-                "characters a-z (lowercase ASCII), 0-9, and hyphen (-)." % type,
-            )
-        elif len(type) < 3 or len(type) > 250:
-            raise ValueError("Invalid extension type name '%s': must be between 3 and 250 characters." % type)
+    # Auto-create an "extension_type" property from the class attribute, if
+    # it exists.  How to treat the other properties which were given depends on
+    # the extension type.
+    extension_type = getattr(cls, "extension_type", None)
+    if extension_type:
+        # I suppose I could also go with a plain string property, since the
+        # value is fixed... but an enum property seems more true to the
+        # property's semantics.  Also, I can't import a vocab module for the
+        # enum values without circular import errors. :(
+        extension_type_prop = EnumProperty(
+            [
+                "new-sdo", "new-sco", "new-sro", "property-extension",
+                "toplevel-property-extension",
+            ],
+            required=False,
+            fixed=extension_type,
+        )
 
-        if not properties or not isinstance(properties, list):
-            raise ValueError("Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]")
+        nested_properties = {
+            "extension_type": extension_type_prop,
+        }
+
+        if extension_type == "toplevel-property-extension":
+            toplevel_properties = properties
+        else:
+            nested_properties.update(properties)
+
+    else:
+        nested_properties = properties
+
+    class _CustomExtension(cls, base_class):
 
         _type = type
-        _properties = OrderedDict(properties)
+        _properties = nested_properties
+        if extension_type == "toplevel-property-extension":
+            _toplevel_properties = toplevel_properties
 
         def __init__(self, **kwargs):
-            _Extension.__init__(self, **kwargs)
+            base_class.__init__(self, **kwargs)
             _cls_init(cls, self, kwargs)
 
-    _register_observable_extension(observable, _CustomExtension, version=version)
+    _CustomExtension.__name__ = cls.__name__
+
+    _register_extension(_CustomExtension, version=version)
     return _CustomExtension

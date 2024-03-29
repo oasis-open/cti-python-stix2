@@ -1,22 +1,23 @@
 """STIX 2.0 Cyber Observable Objects.
 
 Embedded observable object types, such as Email MIME Component, which is
-embedded in Email Message objects, inherit from ``_STIXBase`` instead of
-Observable and do not have a ``_type`` attribute.
+embedded in Email Message objects, inherit from ``_STIXBase20`` instead of
+_Observable and do not have a ``_type`` attribute.
 """
 
 from collections import OrderedDict
 import itertools
 
-from ..base import _Extension, _Observable, _STIXBase
 from ..custom import _custom_extension_builder, _custom_observable_builder
 from ..exceptions import AtLeastOnePropertyError, DependentPropertiesError
 from ..properties import (
-    BinaryProperty, BooleanProperty, CallableValues, DictionaryProperty,
+    BinaryProperty, BooleanProperty, DictionaryProperty,
     EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
     HashesProperty, HexProperty, IntegerProperty, ListProperty,
     ObjectReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
 )
+from .base import _Extension, _Observable, _STIXBase20
+from .vocab import HASHING_ALGORITHM
 
 
 class Artifact(_Observable):
@@ -26,12 +27,12 @@ class Artifact(_Observable):
 
     _type = 'artifact'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('mime_type', StringProperty()),
         ('payload_bin', BinaryProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty()),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version='2.0')),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
     def _check_object_constraints(self):
@@ -47,11 +48,11 @@ class AutonomousSystem(_Observable):
 
     _type = 'autonomous-system'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('number', IntegerProperty(required=True)),
         ('name', StringProperty()),
         ('rir', StringProperty()),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -62,7 +63,7 @@ class Directory(_Observable):
 
     _type = 'directory'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('path', StringProperty(required=True)),
         ('path_enc', StringProperty()),
         # these are not the created/modified timestamps of the object itself
@@ -70,7 +71,7 @@ class Directory(_Observable):
         ('modified', TimestampProperty()),
         ('accessed', TimestampProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty(valid_types=['file', 'directory']))),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -81,10 +82,10 @@ class DomainName(_Observable):
 
     _type = 'domain-name'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types=['ipv4-addr', 'ipv6-addr', 'domain-name']))),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -95,15 +96,15 @@ class EmailAddress(_Observable):
 
     _type = 'email-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('display_name', StringProperty()),
         ('belongs_to_ref', ObjectReferenceProperty(valid_types='user-account')),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
-class EmailMIMEComponent(_STIXBase):
+class EmailMIMEComponent(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716231>`__.
     """  # noqa
@@ -127,7 +128,7 @@ class EmailMessage(_Observable):
 
     _type = 'email-message'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_multipart', BooleanProperty(required=True)),
         ('date', TimestampProperty()),
         ('content_type', StringProperty()),
@@ -138,11 +139,11 @@ class EmailMessage(_Observable):
         ('bcc_refs', ListProperty(ObjectReferenceProperty(valid_types='email-addr'))),
         ('subject', StringProperty()),
         ('received_lines', ListProperty(StringProperty)),
-        ('additional_header_fields', DictionaryProperty(spec_version="2.0")),
+        ('additional_header_fields', DictionaryProperty(spec_version='2.0')),
         ('body', StringProperty()),
         ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
         ('raw_email_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
     def _check_object_constraints(self):
@@ -166,14 +167,14 @@ class ArchiveExt(_Extension):
     ])
 
 
-class AlternateDataStream(_STIXBase):
+class AlternateDataStream(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716239>`__.
     """  # noqa
 
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.0")),
         ('size', IntegerProperty()),
     ])
 
@@ -199,7 +200,7 @@ class PDFExt(_Extension):
     _properties = OrderedDict([
         ('version', StringProperty()),
         ('is_optimized', BooleanProperty()),
-        ('document_info_dict', DictionaryProperty(spec_version="2.0")),
+        ('document_info_dict', DictionaryProperty(spec_version='2.0')),
         ('pdfid0', StringProperty()),
         ('pdfid1', StringProperty()),
     ])
@@ -216,11 +217,11 @@ class RasterImageExt(_Extension):
         ('image_width', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
         ('image_compression_algorithm', StringProperty()),
-        ('exif_tags', DictionaryProperty(spec_version="2.0")),
+        ('exif_tags', DictionaryProperty(spec_version='2.0')),
     ])
 
 
-class WindowsPEOptionalHeaderType(_STIXBase):
+class WindowsPEOptionalHeaderType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716248>`__.
     """  # noqa
@@ -256,7 +257,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         ('size_of_heap_commit', IntegerProperty()),
         ('loader_flags_hex', HexProperty()),
         ('number_of_rva_and_sizes', IntegerProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.0")),
     ])
 
     def _check_object_constraints(self):
@@ -264,7 +265,7 @@ class WindowsPEOptionalHeaderType(_STIXBase):
         self._check_at_least_one_property()
 
 
-class WindowsPESection(_STIXBase):
+class WindowsPESection(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716250>`__.
     """  # noqa
@@ -273,7 +274,7 @@ class WindowsPESection(_STIXBase):
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty()),
         ('entropy', FloatProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.0")),
     ])
 
 
@@ -293,7 +294,7 @@ class WindowsPEBinaryExt(_Extension):
         ('number_of_symbols', IntegerProperty()),
         ('size_of_optional_header', IntegerProperty()),
         ('characteristics_hex', HexProperty()),
-        ('file_header_hashes', HashesProperty()),
+        ('file_header_hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.0")),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
@@ -306,8 +307,8 @@ class File(_Observable):
 
     _type = 'file'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
-        ('hashes', HashesProperty()),
+        ('type', TypeProperty(_type, spec_version='2.0')),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.0")),
         ('size', IntegerProperty()),
         ('name', StringProperty()),
         ('name_enc', StringProperty()),
@@ -323,7 +324,7 @@ class File(_Observable):
         ('decryption_key', StringProperty()),
         ('contains_refs', ListProperty(ObjectReferenceProperty)),
         ('content_ref', ObjectReferenceProperty(valid_types='artifact')),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
     def _check_object_constraints(self):
@@ -339,11 +340,11 @@ class IPv4Address(_Observable):
 
     _type = 'ipv4-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -354,11 +355,11 @@ class IPv6Address(_Observable):
 
     _type = 'ipv6-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
         ('resolves_to_refs', ListProperty(ObjectReferenceProperty(valid_types='mac-addr'))),
         ('belongs_to_refs', ListProperty(ObjectReferenceProperty(valid_types='autonomous-system'))),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -369,9 +370,9 @@ class MACAddress(_Observable):
 
     _type = 'mac-addr'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -382,9 +383,9 @@ class Mutex(_Observable):
 
     _type = 'mutex'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('name', StringProperty(required=True)),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -398,7 +399,7 @@ class HTTPRequestExt(_Extension):
         ('request_method', StringProperty(required=True)),
         ('request_value', StringProperty(required=True)),
         ('request_version', StringProperty()),
-        ('request_header', DictionaryProperty(spec_version="2.0")),
+        ('request_header', DictionaryProperty(spec_version='2.0')),
         ('message_body_length', IntegerProperty()),
         ('message_body_data_ref', ObjectReferenceProperty(valid_types='artifact')),
     ])
@@ -440,24 +441,28 @@ class SocketExt(_Extension):
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
         (
-            'protocol_family', EnumProperty(allowed=[
-                "PF_INET",
-                "PF_IPX",
-                "PF_APPLETALK",
-                "PF_INET6",
-                "PF_AX25",
-                "PF_NETROM",
-            ]),
+            'protocol_family', EnumProperty(
+                allowed=[
+                    "PF_INET",
+                    "PF_IPX",
+                    "PF_APPLETALK",
+                    "PF_INET6",
+                    "PF_AX25",
+                    "PF_NETROM",
+                ],
+            ),
         ),
-        ('options', DictionaryProperty(spec_version="2.0")),
+        ('options', DictionaryProperty(spec_version='2.0')),
         (
-            'socket_type', EnumProperty(allowed=[
-                "SOCK_STREAM",
-                "SOCK_DGRAM",
-                "SOCK_RAW",
-                "SOCK_RDM",
-                "SOCK_SEQPACKET",
-            ]),
+            'socket_type', EnumProperty(
+                allowed=[
+                    "SOCK_STREAM",
+                    "SOCK_DGRAM",
+                    "SOCK_RAW",
+                    "SOCK_RDM",
+                    "SOCK_SEQPACKET",
+                ],
+            ),
         ),
         ('socket_descriptor', IntegerProperty()),
         ('socket_handle', IntegerProperty()),
@@ -483,7 +488,7 @@ class NetworkTraffic(_Observable):
 
     _type = 'network-traffic'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('start', TimestampProperty()),
         ('end', TimestampProperty()),
         ('is_active', BooleanProperty()),
@@ -496,12 +501,12 @@ class NetworkTraffic(_Observable):
         ('dst_byte_count', IntegerProperty()),
         ('src_packets', IntegerProperty()),
         ('dst_packets', IntegerProperty()),
-        ('ipfix', DictionaryProperty(spec_version="2.0")),
+        ('ipfix', DictionaryProperty(spec_version='2.0')),
         ('src_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('dst_payload_ref', ObjectReferenceProperty(valid_types='artifact')),
         ('encapsulates_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('encapsulates_by_ref', ObjectReferenceProperty(valid_types='network-traffic')),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
     def _check_object_constraints(self):
@@ -521,7 +526,7 @@ class WindowsProcessExt(_Extension):
         ('priority', StringProperty()),
         ('owner_sid', StringProperty()),
         ('window_title', StringProperty()),
-        ('startup_info', DictionaryProperty(spec_version="2.0")),
+        ('startup_info', DictionaryProperty(spec_version='2.0')),
     ])
 
 
@@ -537,33 +542,39 @@ class WindowsServiceExt(_Extension):
         ('display_name', StringProperty()),
         ('group_name', StringProperty()),
         (
-            'start_type', EnumProperty(allowed=[
-                "SERVICE_AUTO_START",
-                "SERVICE_BOOT_START",
-                "SERVICE_DEMAND_START",
-                "SERVICE_DISABLED",
-                "SERVICE_SYSTEM_ALERT",
-            ]),
+            'start_type', EnumProperty(
+                allowed=[
+                    "SERVICE_AUTO_START",
+                    "SERVICE_BOOT_START",
+                    "SERVICE_DEMAND_START",
+                    "SERVICE_DISABLED",
+                    "SERVICE_SYSTEM_ALERT",
+                ],
+            ),
         ),
         ('service_dll_refs', ListProperty(ObjectReferenceProperty(valid_types='file'))),
         (
-            'service_type', EnumProperty(allowed=[
-                "SERVICE_KERNEL_DRIVER",
-                "SERVICE_FILE_SYSTEM_DRIVER",
-                "SERVICE_WIN32_OWN_PROCESS",
-                "SERVICE_WIN32_SHARE_PROCESS",
-            ]),
+            'service_type', EnumProperty(
+                allowed=[
+                    "SERVICE_KERNEL_DRIVER",
+                    "SERVICE_FILE_SYSTEM_DRIVER",
+                    "SERVICE_WIN32_OWN_PROCESS",
+                    "SERVICE_WIN32_SHARE_PROCESS",
+                ],
+            ),
         ),
         (
-            'service_status', EnumProperty(allowed=[
-                "SERVICE_CONTINUE_PENDING",
-                "SERVICE_PAUSE_PENDING",
-                "SERVICE_PAUSED",
-                "SERVICE_RUNNING",
-                "SERVICE_START_PENDING",
-                "SERVICE_STOP_PENDING",
-                "SERVICE_STOPPED",
-            ]),
+            'service_status', EnumProperty(
+                allowed=[
+                    "SERVICE_CONTINUE_PENDING",
+                    "SERVICE_PAUSE_PENDING",
+                    "SERVICE_PAUSED",
+                    "SERVICE_RUNNING",
+                    "SERVICE_START_PENDING",
+                    "SERVICE_STOP_PENDING",
+                    "SERVICE_STOPPED",
+                ],
+            ),
         ),
     ])
 
@@ -575,7 +586,7 @@ class Process(_Observable):
 
     _type = 'process'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_hidden', BooleanProperty()),
         ('pid', IntegerProperty()),
         ('name', StringProperty()),
@@ -584,13 +595,13 @@ class Process(_Observable):
         ('cwd', StringProperty()),
         ('arguments', ListProperty(StringProperty)),
         ('command_line', StringProperty()),
-        ('environment_variables', DictionaryProperty(spec_version="2.0")),
+        ('environment_variables', DictionaryProperty(spec_version='2.0')),
         ('opened_connection_refs', ListProperty(ObjectReferenceProperty(valid_types='network-traffic'))),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('binary_ref', ObjectReferenceProperty(valid_types='file')),
         ('parent_ref', ObjectReferenceProperty(valid_types='process')),
         ('child_refs', ListProperty(ObjectReferenceProperty('process'))),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
     def _check_object_constraints(self):
@@ -615,13 +626,13 @@ class Software(_Observable):
 
     _type = 'software'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('name', StringProperty(required=True)),
         ('cpe', StringProperty()),
         ('languages', ListProperty(StringProperty)),
         ('vendor', StringProperty()),
         ('version', StringProperty()),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -632,9 +643,9 @@ class URL(_Observable):
 
     _type = 'url'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('value', StringProperty(required=True)),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -659,7 +670,7 @@ class UserAccount(_Observable):
 
     _type = 'user-account'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('user_id', StringProperty(required=True)),
         ('account_login', StringProperty()),
         ('account_type', StringProperty()),   # open vocab
@@ -673,11 +684,11 @@ class UserAccount(_Observable):
         ('password_last_changed', TimestampProperty()),
         ('account_first_login', TimestampProperty()),
         ('account_last_login', TimestampProperty()),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
-class WindowsRegistryValueType(_STIXBase):
+class WindowsRegistryValueType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716293>`__.
     """  # noqa
@@ -687,21 +698,23 @@ class WindowsRegistryValueType(_STIXBase):
         ('name', StringProperty(required=True)),
         ('data', StringProperty()),
         (
-            'data_type', EnumProperty(allowed=[
-                "REG_NONE",
-                "REG_SZ",
-                "REG_EXPAND_SZ",
-                "REG_BINARY",
-                "REG_DWORD",
-                "REG_DWORD_BIG_ENDIAN",
-                "REG_LINK",
-                "REG_MULTI_SZ",
-                "REG_RESOURCE_LIST",
-                "REG_FULL_RESOURCE_DESCRIPTION",
-                "REG_RESOURCE_REQUIREMENTS_LIST",
-                "REG_QWORD",
-                "REG_INVALID_TYPE",
-            ]),
+            'data_type', EnumProperty(
+                allowed=[
+                    "REG_NONE",
+                    "REG_SZ",
+                    "REG_EXPAND_SZ",
+                    "REG_BINARY",
+                    "REG_DWORD",
+                    "REG_DWORD_BIG_ENDIAN",
+                    "REG_LINK",
+                    "REG_MULTI_SZ",
+                    "REG_RESOURCE_LIST",
+                    "REG_FULL_RESOURCE_DESCRIPTION",
+                    "REG_RESOURCE_REQUIREMENTS_LIST",
+                    "REG_QWORD",
+                    "REG_INVALID_TYPE",
+                ],
+            ),
         ),
     ])
 
@@ -713,23 +726,18 @@ class WindowsRegistryKey(_Observable):
 
     _type = 'windows-registry-key'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('key', StringProperty(required=True)),
         ('values', ListProperty(EmbeddedObjectProperty(type=WindowsRegistryValueType))),
         # this is not the modified timestamps of the object itself
         ('modified', TimestampProperty()),
         ('creator_user_ref', ObjectReferenceProperty(valid_types='user-account')),
         ('number_of_subkeys', IntegerProperty()),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
-    @property
-    def values(self):
-        # Needed because 'values' is a property on collections.Mapping objects
-        return CallableValues(self, self._inner['values'])
 
-
-class X509V3ExtenstionsType(_STIXBase):
+class X509V3ExtensionsType(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part4-cyber-observable-objects/stix-v2.0-cs01-part4-cyber-observable-objects.html#_Toc496716298>`__.
     """  # noqa
@@ -762,9 +770,9 @@ class X509Certificate(_Observable):
 
     _type = 'x509-certificate'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('is_self_signed', BooleanProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.0")),
         ('version', StringProperty()),
         ('serial_number', StringProperty()),
         ('signature_algorithm', StringProperty()),
@@ -775,8 +783,8 @@ class X509Certificate(_Observable):
         ('subject_public_key_algorithm', StringProperty()),
         ('subject_public_key_modulus', StringProperty()),
         ('subject_public_key_exponent', IntegerProperty()),
-        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtenstionsType)),
-        ('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=_type)),
+        ('x509_v3_extensions', EmbeddedObjectProperty(type=X509V3ExtensionsType)),
+        ('extensions', ExtensionsProperty(spec_version='2.0')),
     ])
 
 
@@ -795,18 +803,20 @@ def CustomObservable(type='x-custom-observable', properties=None):
 
     """
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
-            [('type', TypeProperty(type))],
-            properties,
-            [('extensions', ExtensionsProperty(spec_version="2.0", enclosing_type=type))],
-        ]))
-        return _custom_observable_builder(cls, type, _properties, '2.0')
+        _properties = list(
+            itertools.chain.from_iterable([
+                [('type', TypeProperty(type, spec_version='2.0'))],
+                properties,
+                [('extensions', ExtensionsProperty(spec_version='2.0'))],
+            ]),
+        )
+        return _custom_observable_builder(cls, type, _properties, '2.0', _Observable)
     return wrapper
 
 
-def CustomExtension(observable=None, type='x-custom-observable-ext', properties=None):
+def CustomExtension(type='x-custom-observable-ext', properties=None):
     """Decorator for custom extensions to STIX Cyber Observables.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, observable, type, properties, '2.0')
+        return _custom_extension_builder(cls, type, properties, '2.0', _Extension)
     return wrapper

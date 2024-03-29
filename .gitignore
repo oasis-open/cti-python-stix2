@@ -55,6 +55,7 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 .ipynb_checkpoints
+similarity_weights.rst
 
 # PyBuilder
 target/

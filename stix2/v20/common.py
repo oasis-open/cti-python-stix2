@@ -3,9 +3,6 @@
 from collections import OrderedDict
 import copy
 
-import six
-
-from ..base import _STIXBase
 from ..custom import _custom_marking_builder
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
@@ -14,6 +11,8 @@ from ..properties import (
     SelectorProperty, StringProperty, TimestampProperty, TypeProperty,
 )
 from ..utils import NOW, _get_dict
+from .base import _STIXBase20
+from .vocab import HASHING_ALGORITHM
 
 
 def _should_set_millisecond(cr, marking_type):
@@ -21,7 +20,7 @@ def _should_set_millisecond(cr, marking_type):
     if marking_type == TLPMarking:
         return True
     # otherwise,  precision is kept from how it was given
-    if isinstance(cr, six.string_types):
+    if isinstance(cr, str):
         if '.' in cr:
             return True
         else:
@@ -31,7 +30,7 @@ def _should_set_millisecond(cr, marking_type):
     return False
 
 
-class ExternalReference(_STIXBase):
+class ExternalReference(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709261>`__.
     """
@@ -40,7 +39,7 @@ class ExternalReference(_STIXBase):
         ('source_name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('url', StringProperty()),
-        ('hashes', HashesProperty()),
+        ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version='2.0')),
         ('external_id', StringProperty()),
     ])
 
@@ -49,7 +48,7 @@ class ExternalReference(_STIXBase):
         self._check_at_least_one_property(['description', 'external_id', 'url'])
 
 
-class KillChainPhase(_STIXBase):
+class KillChainPhase(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709267>`__.
     """
@@ -60,7 +59,7 @@ class KillChainPhase(_STIXBase):
     ])
 
 
-class GranularMarking(_STIXBase):
+class GranularMarking(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709290>`__.
     """
@@ -71,19 +70,18 @@ class GranularMarking(_STIXBase):
     ])
 
 
-class TLPMarking(_STIXBase):
+class TLPMarking(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709287>`__.
     """
 
-    # TODO: don't allow the creation of any other TLPMarkings than the ones below
     _type = 'tlp'
     _properties = OrderedDict([
         ('tlp', StringProperty(required=True)),
     ])
 
 
-class StatementMarking(_STIXBase):
+class StatementMarking(_STIXBase20):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709286>`__.
     """
@@ -106,33 +104,33 @@ class MarkingProperty(Property):
     marking-definition objects.
     """
 
-    def clean(self, value):
+    def clean(self, value, allow_custom=False):
         if type(value) in OBJ_MAP_MARKING.values():
-            return value
+            return value, False
         else:
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
-class MarkingDefinition(_STIXBase, _MarkingsMixin):
+class MarkingDefinition(_STIXBase20, _MarkingsMixin):
     """For more detailed information on this object's properties, see
     `the STIX 2.0 specification <http://docs.oasis-open.org/cti/stix/v2.0/cs01/part1-stix-core/stix-v2.0-cs01-part1-stix-core.html#_Toc496709284>`__.
     """
 
     _type = 'marking-definition'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.0')),
         ('id', IDProperty(_type, spec_version='2.0')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.0')),
         ('created', TimestampProperty(default=lambda: NOW)),
+        ('definition_type', StringProperty(required=True)),
+        ('definition', MarkingProperty(required=True)),
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.0'))),
         ('granular_markings', ListProperty(GranularMarking)),
-        ('definition_type', StringProperty(required=True)),
-        ('definition', MarkingProperty(required=True)),
     ])
 
     def __init__(self, **kwargs):
-        if set(('definition_type', 'definition')).issubset(kwargs.keys()):
+        if {'definition_type', 'definition'}.issubset(kwargs.keys()):
             # Create correct marking type object
             try:
                 marking_type = OBJ_MAP_MARKING[kwargs['definition_type']]
@@ -182,7 +180,7 @@ def CustomMarking(type='x-custom-marking', properties=None):
 
     """
     def wrapper(cls):
-        return _custom_marking_builder(cls, type, properties, '2.0')
+        return _custom_marking_builder(cls, type, properties, '2.0', _STIXBase20)
     return wrapper
 
 

@@ -221,6 +221,16 @@ def test_filesystem_source_backward_compatible(fs_source):
     assert result.malware_types == ["version four"]
 
 
+def test_filesystem_source_sco(fs_source):
+    results = fs_source.query([stix2.Filter("type", "=", "directory")])
+
+    assert len(results) == 1
+    result = results[0]
+    assert result["type"] == "directory"
+    assert result["id"] == "directory--572827aa-e0cd-44fd-afd5-a717a7585f39"
+    assert result["path"] == "/performance/Democrat.gif"
+
+
 def test_filesystem_sink_add_python_stix_object(fs_sink, fs_source):
     # add python stix object
     camp1 = stix2.v21.Campaign(
@@ -435,6 +445,24 @@ def test_filesystem_sink_marking(fs_sink):
     os.remove(marking_filepath)
 
 
+def test_filesystem_sink_sco(fs_sink):
+    file_sco = {
+        "type": "file",
+        "id": "file--decfcc48-31b3-45f5-87c8-1b3a5d71a307",
+        "name": "cats.png",
+    }
+
+    fs_sink.add(file_sco)
+    sco_filepath = os.path.join(
+        FS_PATH, "file", file_sco["id"] + ".json",
+    )
+
+    assert os.path.exists(sco_filepath)
+
+    os.remove(sco_filepath)
+    os.rmdir(os.path.dirname(sco_filepath))
+
+
 def test_filesystem_store_get_stored_as_bundle(fs_store):
     coa = fs_store.get("course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f")
     assert coa.id == "course-of-action--95ddb356-7ba0-4bd9-a889-247262b8946f"
@@ -473,9 +501,10 @@ def test_filesystem_store_query_single_filter(fs_store):
 
 def test_filesystem_store_empty_query(fs_store):
     results = fs_store.query()  # returns all
-    assert len(results) == 30
+    assert len(results) == 31
     assert "tool--242f3da3-4425-4d11-8f5c-b842886da966" in [obj.id for obj in results]
     assert "marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168" in [obj.id for obj in results]
+    assert "directory--572827aa-e0cd-44fd-afd5-a717a7585f39" in [obj.id for obj in results]
 
 
 def test_filesystem_store_query_multiple_filters(fs_store):
@@ -487,7 +516,7 @@ def test_filesystem_store_query_multiple_filters(fs_store):
 
 def test_filesystem_store_query_dont_include_type_folder(fs_store):
     results = fs_store.query(stix2.Filter("type", "!=", "tool"))
-    assert len(results) == 28
+    assert len(results) == 29
 
 
 def test_filesystem_store_add(fs_store):
@@ -574,6 +603,26 @@ def test_filesystem_store_add_marking(fs_store):
     os.remove(marking_filepath)
 
 
+def test_filesystem_store_add_sco(fs_store):
+    sco = stix2.v21.EmailAddress(
+        value="jdoe@example.com",
+    )
+
+    fs_store.add(sco)
+    sco_filepath = os.path.join(
+        FS_PATH, "email-addr", sco["id"] + ".json",
+    )
+
+    assert os.path.exists(sco_filepath)
+
+    sco_r = fs_store.get(sco["id"])
+    assert sco_r["id"] == sco["id"]
+    assert sco_r["value"] == sco["value"]
+
+    os.remove(sco_filepath)
+    os.rmdir(os.path.dirname(sco_filepath))
+
+
 def test_filesystem_object_with_custom_property(fs_store):
     camp = stix2.v21.Campaign(
         name="Scipio Africanus",
@@ -605,9 +654,30 @@ def test_filesystem_object_with_custom_property_in_bundle(fs_store):
     assert camp_r.x_empire == camp.x_empire
 
 
+def test_filesystem_custom_object_dict(fs_store):
+    fs_store.sink.allow_custom = True
+    newobj = {
+        "type": "x-new-obj-2",
+        "id": "x-new-obj-2--d08dc866-6149-47db-aae6-7b58a827e7f0",
+        "spec_version": "2.1",
+        "created": "2020-07-20T03:45:02.879Z",
+        "modified": "2020-07-20T03:45:02.879Z",
+        "property1": "something",
+    }
+    fs_store.add(newobj)
+
+    newobj_r = fs_store.get(newobj["id"])
+    assert newobj_r["id"] == newobj["id"]
+    assert newobj_r["property1"] == 'something'
+
+    # remove dir
+    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj-2"), True)
+    fs_store.sink.allow_custom = False
+
+
 def test_filesystem_custom_object(fs_store):
     @stix2.v21.CustomObject(
-        'x-new-obj', [
+        'x-new-obj-2', [
             ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
@@ -622,7 +692,7 @@ def test_filesystem_custom_object(fs_store):
     assert newobj_r["property1"] == 'something'
 
     # remove dir
-    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj"), True)
+    shutil.rmtree(os.path.join(FS_PATH, "x-new-obj-2"), True)
 
 
 def test_relationships(rel_fs_store):
@@ -1024,6 +1094,7 @@ def test_search_auth_set_black_empty(rel_fs_store):
         "attack-pattern",
         "campaign",
         "course-of-action",
+        "directory",
         "identity",
         "indicator",
         "intrusion-set",

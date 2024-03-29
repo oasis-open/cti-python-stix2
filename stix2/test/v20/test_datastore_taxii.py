@@ -3,12 +3,13 @@ import json
 from medallion.filters.basic_filter import BasicFilter
 import pytest
 from requests.models import Response
-import six
-from taxii2client import Collection, _filter_kwargs_to_query_params
+from taxii2client.common import _filter_kwargs_to_query_params
+from taxii2client.v20 import MEDIA_TYPE_STIX_V20, Collection
 
 import stix2
 from stix2.datastore import DataSourceError
 from stix2.datastore.filters import Filter
+from stix2.utils import get_timestamp
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 
@@ -21,15 +22,24 @@ class MockTAXIICollectionEndpoint(Collection):
             url, collection_info=collection_info,
         )
         self.objects = []
+        self.manifests = []
 
     def add_objects(self, bundle):
         self._verify_can_write()
-        if isinstance(bundle, six.string_types):
-            bundle = json.loads(bundle, encoding='utf-8')
+        if isinstance(bundle, str):
+            bundle = json.loads(bundle)
         for object in bundle.get("objects", []):
             self.objects.append(object)
+            self.manifests.append(
+                {
+                    "date_added": get_timestamp(),
+                    "id": object["id"],
+                    "media_type": "application/stix+json;version=2.0",
+                    "version": object.get("modified", object.get("created", get_timestamp())),
+                },
+            )
 
-    def get_objects(self, **filter_kwargs):
+    def get_objects(self, accept=MEDIA_TYPE_STIX_V20, start=0, per_request=0, **filter_kwargs):
         self._verify_can_read()
         query_params = _filter_kwargs_to_query_params(filter_kwargs)
         assert isinstance(query_params, dict)
@@ -37,10 +47,16 @@ class MockTAXIICollectionEndpoint(Collection):
         objs = full_filter.process_filter(
             self.objects,
             ("id", "type", "version"),
-            [],
-        )
+            self.manifests,
+            100,
+        )[0]
         if objs:
-            return stix2.v20.Bundle(objects=objs)
+            resp = Response()
+            resp.status_code = 200
+            resp.headers["Content-Range"] = f"items 0-{len(objs)}/{len(objs)}"
+            resp.encoding = "utf-8"
+            resp._content = bytes(stix2.v20.Bundle(objects=objs).serialize(ensure_ascii=False), resp.encoding)
+            return resp
         else:
             resp = Response()
             resp.status_code = 404
@@ -58,8 +74,9 @@ class MockTAXIICollectionEndpoint(Collection):
             filtered_objects = full_filter.process_filter(
                 objects,
                 ("version",),
-                [],
-            )
+                self.manifests,
+                100,
+            )[0]
         else:
             filtered_objects = []
         if filtered_objects:
@@ -71,7 +88,7 @@ class MockTAXIICollectionEndpoint(Collection):
 
 
 @pytest.fixture
-def collection(stix_objs1):
+def collection(stix_objs1, stix_objs1_manifests):
     mock = MockTAXIICollectionEndpoint(
         COLLECTION_URL, {
             "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
@@ -86,11 +103,12 @@ def collection(stix_objs1):
     )
 
     mock.objects.extend(stix_objs1)
+    mock.manifests.extend(stix_objs1_manifests)
     return mock
 
 
 @pytest.fixture
-def collection_no_rw_access(stix_objs1):
+def collection_no_rw_access(stix_objs1, stix_objs1_manifests):
     mock = MockTAXIICollectionEndpoint(
         COLLECTION_URL, {
             "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
@@ -105,6 +123,7 @@ def collection_no_rw_access(stix_objs1):
     )
 
     mock.objects.extend(stix_objs1)
+    mock.manifests.extend(stix_objs1_manifests)
     return mock
 
 

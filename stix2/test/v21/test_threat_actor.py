@@ -34,7 +34,7 @@ def test_threat_actor_example():
         threat_actor_types=["crime-syndicate"],
     )
 
-    assert str(threat_actor) == EXPECTED
+    assert threat_actor.serialize(pretty=True) == EXPECTED
 
 
 @pytest.mark.parametrize(
@@ -76,7 +76,7 @@ def test_seen_ordering_constraint():
     with pytest.raises(ValueError):
         stix2.v21.ThreatActor(
             name="Bad Person",
-            threat_actor_types=["bad person", "evil person"],
+            threat_actor_types=["hacker", "criminal"],
             first_seen="2010-04-21T09:31:11Z",
             last_seen="2009-02-06T03:39:31Z",
         )
@@ -84,7 +84,7 @@ def test_seen_ordering_constraint():
     # equal timestamps is okay.
     stix2.v21.ThreatActor(
         name="Bad Person",
-        threat_actor_types=["bad person", "evil person"],
+        threat_actor_types=["hacker", "criminal"],
         first_seen="2010-04-21T09:31:11Z",
         last_seen="2010-04-21T09:31:11Z",
     )

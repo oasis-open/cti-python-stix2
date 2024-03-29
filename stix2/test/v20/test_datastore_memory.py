@@ -19,7 +19,7 @@ IND1 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -31,7 +31,7 @@ IND2 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -43,7 +43,7 @@ IND3 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.936Z",
     "name": "Malicious site hosting downloader",
@@ -55,7 +55,7 @@ IND4 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -67,7 +67,7 @@ IND5 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -79,7 +79,7 @@ IND6 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000001",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-31T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -91,7 +91,7 @@ IND7 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -103,7 +103,7 @@ IND8 = {
     "created": "2017-01-27T13:49:53.935Z",
     "id": "indicator--00000000-0000-4000-8000-000000000002",
     "labels": [
-        "url-watchlist",
+        "malicious-activity",
     ],
     "modified": "2017-01-27T13:49:53.935Z",
     "name": "Malicious site hosting downloader",
@@ -175,12 +175,14 @@ def test_memory_source_get_nonexistant_object(mem_source):
 
 def test_memory_store_all_versions(mem_store):
     # Add bundle of items to sink
-    mem_store.add(dict(
-        id="bundle--%s" % make_id(),
-        objects=STIX_OBJS2,
-        spec_version="2.0",
-        type="bundle",
-    ))
+    mem_store.add(
+        dict(
+            id="bundle--%s" % make_id(),
+            objects=STIX_OBJS2,
+            spec_version="2.0",
+            type="bundle",
+        ),
+    )
 
     resp = mem_store.all_versions("indicator--00000000-0000-4000-8000-000000000001")
     assert len(resp) == 3
@@ -283,7 +285,7 @@ def test_memory_store_object_creator_of_present(mem_store):
     iden = Identity(
         id=IDENTITY_ID,
         name="Foo Corp.",
-        identity_class="corporation",
+        identity_class="organization",
     )
 
     mem_store.add(camp)
@@ -329,7 +331,7 @@ def test_memory_store_object_with_custom_property_in_bundle(mem_store):
 
 def test_memory_store_custom_object(mem_store):
     @CustomObject(
-        'x-new-obj', [
+        'x-new-obj-3', [
             ('property1', properties.StringProperty(required=True)),
         ],
     )
@@ -423,3 +425,24 @@ def test_object_family_internal_components(mem_source):
 
     assert "latest=2017-01-27 13:49:53.936000+00:00>>" in str_representation
     assert "latest=2017-01-27 13:49:53.936000+00:00>>" in repr_representation
+
+
+def test_unversioned_objects(mem_store):
+    marking = {
+        "type": "marking-definition",
+        "id": "marking-definition--48e83cde-e902-4404-85b3-6e81f75ccb62",
+        "created": "1988-01-02T16:44:04.000Z",
+        "definition_type": "statement",
+        "definition": {
+            "statement": "Copyright (C) ACME Corp.",
+        },
+    }
+
+    mem_store.add(marking)
+
+    obj = mem_store.get(marking["id"])
+    assert obj["id"] == marking["id"]
+
+    objs = mem_store.all_versions(marking["id"])
+    assert len(objs) == 1
+    assert objs[0]["id"] == marking["id"]

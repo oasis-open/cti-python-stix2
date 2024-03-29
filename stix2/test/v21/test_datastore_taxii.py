@@ -3,12 +3,13 @@ import json
 from medallion.filters.basic_filter import BasicFilter
 import pytest
 from requests.models import Response
-import six
-from taxii2client import Collection, _filter_kwargs_to_query_params
+from taxii2client.common import _filter_kwargs_to_query_params
+from taxii2client.v21 import Collection
 
 import stix2
 from stix2.datastore import DataSourceError
 from stix2.datastore.filters import Filter
+from stix2.utils import get_timestamp
 
 COLLECTION_URL = 'https://example.com/api1/collections/91a7b528-80eb-42ed-a74d-c6fbd5a26116/'
 
@@ -21,13 +22,22 @@ class MockTAXIICollectionEndpoint(Collection):
             url, collection_info=collection_info,
         )
         self.objects = []
+        self.manifests = []
 
     def add_objects(self, bundle):
         self._verify_can_write()
-        if isinstance(bundle, six.string_types):
-            bundle = json.loads(bundle, encoding='utf-8')
-        for object in bundle.get("objects", []):
-            self.objects.append(object)
+        if isinstance(bundle, str):
+            bundle = json.loads(bundle)
+        for obj in bundle.get("objects", []):
+            self.objects.append(obj)
+            self.manifests.append(
+                {
+                    "date_added": get_timestamp(),
+                    "id": obj["id"],
+                    "media_type": "application/stix+json;version=2.1",
+                    "version": obj.get("modified", obj.get("created", get_timestamp())),
+                },
+            )
 
     def get_objects(self, **filter_kwargs):
         self._verify_can_read()
@@ -37,10 +47,14 @@ class MockTAXIICollectionEndpoint(Collection):
         objs = full_filter.process_filter(
             self.objects,
             ("id", "type", "version"),
-            [],
-        )
+            self.manifests,
+            100,
+        )[0]
         if objs:
-            return stix2.v21.Bundle(objects=objs)
+            return {
+                "objects": objs,
+                "more": False,
+            }
         else:
             resp = Response()
             resp.status_code = 404
@@ -58,12 +72,16 @@ class MockTAXIICollectionEndpoint(Collection):
             filtered_objects = full_filter.process_filter(
                 objects,
                 ("version",),
-                [],
-            )
+                self.manifests,
+                100,
+            )[0]
         else:
             filtered_objects = []
         if filtered_objects:
-            return stix2.v21.Bundle(objects=filtered_objects)
+            return {
+                "objects": filtered_objects,
+                "more": False,
+            }
         else:
             resp = Response()
             resp.status_code = 404
@@ -71,7 +89,7 @@ class MockTAXIICollectionEndpoint(Collection):
 
 
 @pytest.fixture
-def collection(stix_objs1):
+def collection(stix_objs1, stix_objs1_manifests):
     mock = MockTAXIICollectionEndpoint(
         COLLECTION_URL, {
             "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
@@ -86,11 +104,12 @@ def collection(stix_objs1):
     )
 
     mock.objects.extend(stix_objs1)
+    mock.manifests.extend(stix_objs1_manifests)
     return mock
 
 
 @pytest.fixture
-def collection_no_rw_access(stix_objs1):
+def collection_no_rw_access(stix_objs1, stix_objs1_manifests):
     mock = MockTAXIICollectionEndpoint(
         COLLECTION_URL, {
             "id": "91a7b528-80eb-42ed-a74d-c6fbd5a26116",
@@ -105,6 +124,7 @@ def collection_no_rw_access(stix_objs1):
     )
 
     mock.objects.extend(stix_objs1)
+    mock.manifests.extend(stix_objs1_manifests)
     return mock
 
 

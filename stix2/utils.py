@@ -1,36 +1,102 @@
 """Utility functions and classes for the STIX2 library."""
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-import copy
+import collections.abc
 import datetime as dt
+import enum
 import json
+import re
 
-from dateutil import parser
 import pytz
 
-import stix2.base
-
-from .exceptions import (
-    InvalidValueError, RevokeError, UnmodifiablePropertyError,
-)
+import stix2.registry as mappings
+import stix2.version
 
 # Sentinel value for properties that should be set to the current time.
 # We can't use the standard 'default' approach, since if there are multiple
 # timestamps in a single object, the timestamps will vary by a few microseconds.
 NOW = object()
 
-# STIX object properties that cannot be modified
-STIX_UNMOD_PROPERTIES = ['created', 'created_by_ref', 'id', 'type']
+PREFIX_21_REGEX = re.compile(r'^[a-z].*')
 
-TYPE_REGEX = r'^\-?[a-z0-9]+(-[a-z0-9]+)*\-?$'
+_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+_TIMESTAMP_FORMAT_FRAC = "%Y-%m-%dT%H:%M:%S.%fZ"
+
+
+class Precision(enum.Enum):
+    """
+    Timestamp format precisions.
+    """
+    # auto() wasn't introduced until Python 3.6.
+    ANY = 1
+    SECOND = 2
+    MILLISECOND = 3
+
+
+class PrecisionConstraint(enum.Enum):
+    """
+    Timestamp precision constraints.  These affect how the Precision
+    values are applied when formatting a timestamp.
+
+    These constraints don't really make sense with the ANY precision, so they
+    have no effect in that case.
+    """
+    EXACT = 1  # format must have exactly the given precision
+    MIN = 2  # format must have at least the given precision
+    #  no need for a MAX constraint yet
+
+
+def to_enum(value, enum_type, enum_default=None):
+    """
+    Detect and convert strings to enums and None to a default enum.  This
+    allows use of strings and None in APIs, while enforcing the enum type: if
+    you use a string, it must name a valid enum value.  This implementation is
+    case-insensitive.
+
+    :param value: A value to be interpreted as an enum (string, Enum instance,
+        or None).  If an Enum instance, it must be an instance of enum_type.
+    :param enum_type: The enum type which strings will be interpreted against
+    :param enum_default: The default enum to use if value is None.  Must be
+        an instance of enum_type, or None.  If None, you are disallowing a
+        default and requiring that value be non-None.
+    :return: An instance of enum_type
+    :raises TypeError: If value was neither an instance of enum_type, None, nor
+        a string
+    :raises KeyError: If value was a string which couldn't be interpreted as an
+        enum value from enum_type
+    """
+    assert enum_default is None or isinstance(enum_default, enum_type)
+
+    if not isinstance(value, enum_type):
+        if value is None and enum_default is not None:
+            value = enum_default
+        elif isinstance(value, str):
+            value = enum_type[value.upper()]
+        else:
+            raise TypeError(
+                "Not a valid {}: {}".format(
+                    enum_type.__name__, value,
+                ),
+            )
+
+    return value
 
 
 class STIXdatetime(dt.datetime):
+    """
+    Bundle a datetime with some format-related metadata, so that JSON
+    serialization has the info it needs to produce compliant timestamps.
+    """
+
     def __new__(cls, *args, **kwargs):
-        precision = kwargs.pop('precision', None)
+        precision = to_enum(
+            kwargs.pop("precision", Precision.ANY),
+            Precision,
+        )
+        precision_constraint = to_enum(
+            kwargs.pop("precision_constraint", PrecisionConstraint.EXACT),
+            PrecisionConstraint,
+        )
+
         if isinstance(args[0], dt.datetime):  # Allow passing in a datetime object
             dttm = args[0]
             args = (
@@ -40,6 +106,7 @@ class STIXdatetime(dt.datetime):
         # self will be an instance of STIXdatetime, not dt.datetime
         self = dt.datetime.__new__(cls, *args, **kwargs)
         self.precision = precision
+        self.precision_constraint = precision_constraint
         return self
 
     def __repr__(self):
@@ -68,11 +135,12 @@ def deduplicate(stix_obj_list):
     unique_objs = {}
 
     for obj in stix_obj_list:
-        try:
-            unique_objs[(obj['id'], obj['modified'])] = obj
-        except KeyError:
-            # Handle objects with no `modified` property, e.g. marking-definition
-            unique_objs[(obj['id'], obj['created'])] = obj
+        ver = obj.get("modified") or obj.get("created")
+
+        if ver is None:
+            unique_objs[obj["id"]] = obj
+        else:
+            unique_objs[(obj['id'], ver)] = obj
 
     return list(unique_objs.values())
 
@@ -89,7 +157,7 @@ def format_datetime(dttm):
     2. Convert to UTC
     3. Format in ISO format
     4. Ensure correct precision
-       a. Add subsecond value if non-zero and precision not defined
+       a. Add subsecond value if warranted, according to precision settings
     5. Add "Z"
 
     """
@@ -100,20 +168,74 @@ def format_datetime(dttm):
     else:
         zoned = dttm.astimezone(pytz.utc)
     ts = zoned.strftime('%Y-%m-%dT%H:%M:%S')
-    ms = zoned.strftime('%f')
-    precision = getattr(dttm, 'precision', None)
-    if precision == 'second':
-        pass  # Already precise to the second
-    elif precision == 'millisecond':
-        ts = ts + '.' + ms[:3]
-    elif zoned.microsecond > 0:
-        ts = ts + '.' + ms.rstrip('0')
-    return ts + 'Z'
+    precision = getattr(dttm, 'precision', Precision.ANY)
+    precision_constraint = getattr(
+        dttm, 'precision_constraint', PrecisionConstraint.EXACT,
+    )
+
+    frac_seconds_str = ""
+    if precision == Precision.ANY:
+        # No need to truncate; ignore constraint
+        if zoned.microsecond:
+            frac_seconds_str = "{:06d}".format(zoned.microsecond).rstrip("0")
+
+    elif precision == Precision.SECOND:
+        if precision_constraint == PrecisionConstraint.MIN:
+            # second precision, or better.  Winds up being the same as ANY:
+            # just use all our digits
+            if zoned.microsecond:
+                frac_seconds_str = "{:06d}".format(zoned.microsecond)\
+                    .rstrip("0")
+        # exact: ignore microseconds entirely
+
+    else:
+        # precision == millisecond
+        if precision_constraint == PrecisionConstraint.EXACT:
+            # can't rstrip() here or we may lose precision
+            frac_seconds_str = "{:06d}".format(zoned.microsecond)[:3]
+
+        else:
+            # millisecond precision, or better.  So we can rstrip() zeros, but
+            # only to a length of at least 3 digits (ljust() adds zeros back,
+            # if it stripped too far.)
+            frac_seconds_str = "{:06d}"\
+                .format(zoned.microsecond)\
+                .rstrip("0")\
+                .ljust(3, "0")
+
+    ts = "{}{}{}Z".format(
+        ts,
+        "." if frac_seconds_str else "",
+        frac_seconds_str,
+    )
+
+    return ts
 
 
-def parse_into_datetime(value, precision=None):
-    """Parse a value into a valid STIX timestamp object.
+def parse_into_datetime(
+    value, precision=Precision.ANY,
+    precision_constraint=PrecisionConstraint.EXACT,
+):
     """
+    Parse a value into a valid STIX timestamp object.  Also, optionally adjust
+    precision of fractional seconds.  This allows alignment with JSON
+    serialization requirements, and helps ensure we're not using extra
+    precision which would be lost upon JSON serialization.  The precision
+    info will be embedded in the returned object, so that JSON serialization
+    will format it correctly.
+
+    :param value: A datetime.datetime or datetime.date instance, or a string
+    :param precision: A precision value: either an instance of the Precision
+        enum, or a string naming one of the enum values (case-insensitive)
+    :param precision_constraint: A precision constraint value: either an
+        instance of the PrecisionConstraint enum, or a string naming one of
+        the enum values (case-insensitive)
+    :return: A STIXdatetime instance, which is a datetime but also carries the
+        precision info necessary to properly JSON-serialize it.
+    """
+    precision = to_enum(precision, Precision)
+    precision_constraint = to_enum(precision_constraint, PrecisionConstraint)
+
     if isinstance(value, dt.date):
         if hasattr(value, 'hour'):
             ts = value
@@ -122,8 +244,9 @@ def parse_into_datetime(value, precision=None):
             ts = dt.datetime.combine(value, dt.time(0, 0, tzinfo=pytz.utc))
     else:
         # value isn't a date or datetime object so assume it's a string
+        fmt = _TIMESTAMP_FORMAT_FRAC if "." in value else _TIMESTAMP_FORMAT
         try:
-            parsed = parser.parse(value)
+            parsed = dt.datetime.strptime(value, fmt)
         except (TypeError, ValueError):
             # Unknown format
             raise ValueError(
@@ -137,20 +260,23 @@ def parse_into_datetime(value, precision=None):
             ts = pytz.utc.localize(parsed)
 
     # Ensure correct precision
-    if not precision:
-        return STIXdatetime(ts, precision=precision)
-    ms = ts.microsecond
-    if precision == 'second':
-        ts = ts.replace(microsecond=0)
-    elif precision == 'millisecond':
-        ms_len = len(str(ms))
-        if ms_len > 3:
-            # Truncate to millisecond precision
-            factor = 10 ** (ms_len - 3)
-            ts = ts.replace(microsecond=(ts.microsecond // factor) * factor)
-        else:
+    if precision == Precision.SECOND:
+        if precision_constraint == PrecisionConstraint.EXACT:
             ts = ts.replace(microsecond=0)
-    return STIXdatetime(ts, precision=precision)
+        # else, no need to modify fractional seconds
+
+    elif precision == Precision.MILLISECOND:
+        if precision_constraint == PrecisionConstraint.EXACT:
+            us = (ts.microsecond // 1000) * 1000
+            ts = ts.replace(microsecond=us)
+        # else: at least millisecond precision: the constraint will affect JSON
+        # formatting, but there's nothing we need to do here.
+
+    # else, precision == Precision.ANY: nothing for us to do.
+
+    return STIXdatetime(
+        ts, precision=precision, precision_constraint=precision_constraint,
+    )
 
 
 def _get_dict(data):
@@ -176,147 +302,6 @@ def _get_dict(data):
             raise ValueError("Cannot convert '%s' to dictionary." % str(data))
 
 
-def _find(seq, val):
-    """
-    Search sequence 'seq' for val.  This behaves like str.find(): if not found,
-    -1 is returned instead of throwing an exception.
-
-    Args:
-        seq: The sequence to search
-        val: The value to search for
-
-    Returns:
-        int: The index of the value if found, or -1 if not found
-    """
-    try:
-        return seq.index(val)
-    except ValueError:
-        return -1
-
-
-def _find_property_in_seq(seq, search_key, search_value):
-    """
-    Helper for find_property_index(): search for the property in all elements
-    of the given sequence.
-
-    Args:
-        seq: The sequence
-        search_key: Property name to find
-        search_value: Property value to find
-
-    Returns:
-        int: A property index, or -1 if the property was not found
-    """
-    idx = -1
-    for elem in seq:
-        idx = find_property_index(elem, search_key, search_value)
-        if idx >= 0:
-            break
-
-    return idx
-
-
-def find_property_index(obj, search_key, search_value):
-    """
-    Search (recursively) for the given key and value in the given object.
-    Return an index for the key, relative to whatever object it's found in.
-
-    Args:
-        obj: The object to search (list, dict, or stix object)
-        search_key: A search key
-        search_value: A search value
-
-    Returns:
-        int: An index; -1 if the key and value aren't found
-    """
-    from .base import _STIXBase
-
-    # Special-case keys which are numbers-as-strings, e.g. for cyber-observable
-    # mappings.  Use the int value of the key as the index.
-    if search_key.isdigit():
-        return int(search_key)
-
-    if isinstance(obj, _STIXBase):
-        if search_key in obj and obj[search_key] == search_value:
-            idx = _find(obj.object_properties(), search_key)
-        else:
-            idx = _find_property_in_seq(obj.values(), search_key, search_value)
-    elif isinstance(obj, dict):
-        if search_key in obj and obj[search_key] == search_value:
-            idx = _find(sorted(obj), search_key)
-        else:
-            idx = _find_property_in_seq(obj.values(), search_key, search_value)
-    elif isinstance(obj, list):
-        idx = _find_property_in_seq(obj, search_key, search_value)
-    else:
-        # Don't know how to search this type
-        idx = -1
-
-    return idx
-
-
-def new_version(data, **kwargs):
-    """Create a new version of a STIX object, by modifying properties and
-    updating the ``modified`` property.
-    """
-
-    if not isinstance(data, Mapping):
-        raise ValueError(
-            "cannot create new version of object of this type! "
-            "Try a dictionary or instance of an SDO or SRO class.",
-        )
-
-    unchangable_properties = []
-    if data.get('revoked'):
-        raise RevokeError("new_version")
-    try:
-        new_obj_inner = copy.deepcopy(data._inner)
-    except AttributeError:
-        new_obj_inner = copy.deepcopy(data)
-    properties_to_change = kwargs.keys()
-
-    # Make sure certain properties aren't trying to change
-    for prop in STIX_UNMOD_PROPERTIES:
-        if prop in properties_to_change:
-            unchangable_properties.append(prop)
-    if unchangable_properties:
-        raise UnmodifiablePropertyError(unchangable_properties)
-
-    cls = type(data)
-    if 'modified' not in kwargs:
-        kwargs['modified'] = get_timestamp()
-    elif 'modified' in data:
-        old_modified_property = parse_into_datetime(data.get('modified'), precision='millisecond')
-        new_modified_property = parse_into_datetime(kwargs['modified'], precision='millisecond')
-        if new_modified_property <= old_modified_property:
-            raise InvalidValueError(
-                cls, 'modified',
-                "The new modified datetime cannot be before than or equal to the current modified datetime."
-                "It cannot be equal, as according to STIX 2 specification, objects that are different "
-                "but have the same id and modified timestamp do not have defined consumer behavior.",
-            )
-    new_obj_inner.update(kwargs)
-    # Exclude properties with a value of 'None' in case data is not an instance of a _STIXBase subclass
-    return cls(**{k: v for k, v in new_obj_inner.items() if v is not None})
-
-
-def revoke(data):
-    """Revoke a STIX object.
-
-    Returns:
-        A new version of the object with ``revoked`` set to ``True``.
-    """
-    if not isinstance(data, Mapping):
-        raise ValueError(
-            "cannot revoke object of this type! Try a dictionary "
-            "or instance of an SDO or SRO class.",
-        )
-
-    if data.get('revoked'):
-        raise RevokeError("revoke")
-    return new_version(data, revoked=True, allow_custom=True)
-
-
 def get_class_hierarchy_names(obj):
     """Given an object, return the names of the class hierarchy."""
     names = []
@@ -325,85 +310,272 @@ def get_class_hierarchy_names(obj):
     return names
 
 
-def remove_custom_stix(stix_obj):
-    """Remove any custom STIX objects or properties.
-
-    Warnings:
-        This function is a best effort utility, in that it will remove custom
-        objects and properties based on the type names; i.e. if "x-" prefixes
-        object types, and "x\\_" prefixes property types. According to the
-        STIX2 spec, those naming conventions are a SHOULDs not MUSTs, meaning
-        that valid custom STIX content may ignore those conventions and in
-        effect render this utility function invalid when used on that STIX
-        content.
-
-    Args:
-        stix_obj (dict OR python-stix obj): a single python-stix object
-                                             or dict of a STIX object
-
-    Returns:
-        A new version of the object with any custom content removed
-    """
-
-    if stix_obj['type'].startswith('x-'):
-        # if entire object is custom, discard
-        return None
-
-    custom_props = []
-    for prop in stix_obj.items():
-        if prop[0].startswith('x_'):
-            # for every custom property, record it and set value to None
-            # (so we can pass it to new_version() and it will be dropped)
-            custom_props.append((prop[0], None))
-
-    if custom_props:
-        # obtain set of object properties that can be transferred
-        # to a new object version. This is 1)custom props with their
-        # values set to None, and 2)any properties left that are not
-        # unmodifiable STIX properties or the "modified" property
-
-        # set of properties that are not supplied to new_version()
-        # to be used for updating properties. This includes unmodifiable
-        # properties (properties that new_version() just re-uses from the
-        # existing STIX object) and the "modified" property. We dont supply the
-        # "modified" property so that new_version() creates a new datetime
-        # value for this property
-        non_supplied_props = STIX_UNMOD_PROPERTIES + ['modified']
-
-        props = [(prop, stix_obj[prop]) for prop in stix_obj if prop not in non_supplied_props]
-
-        # add to set the custom properties we want to get rid of (with their value=None)
-        props.extend(custom_props)
-
-        new_obj = new_version(stix_obj, **(dict(props)))
-
-        while parse_into_datetime(new_obj['modified']) == parse_into_datetime(stix_obj['modified']):
-            # Prevents bug when fast computation allows multiple STIX object
-            # versions to be created in single unit of time
-            new_obj = new_version(stix_obj, **(dict(props)))
-
-        return new_obj
-
-    else:
-        return stix_obj
-
-
 def get_type_from_id(stix_id):
     return stix_id.split('--', 1)[0]
 
 
-def is_marking(obj_or_id):
-    """Determines whether the given object or object ID is/is for a marking
-    definition.
+def detect_spec_version(stix_dict):
+    """
+    Given a dict representing a STIX object, try to detect what spec version
+    it is likely to comply with.
 
-    :param obj_or_id: A STIX object or object ID as a string.
-    :return: True if a marking definition, False otherwise.
+    :param stix_dict: A dict with some STIX content.  Must at least have a
+        "type" property.
+    :return: A STIX version in "X.Y" format
     """
 
-    if isinstance(obj_or_id, (stix2.base._STIXBase, dict)):
-        result = obj_or_id["type"] == "marking-definition"
+    obj_type = stix_dict["type"]
+
+    if 'spec_version' in stix_dict:
+        # For STIX 2.0, applies to bundles only.  Presence in a bundle implies
+        # STIX 2.0; the value applies to the content of the bundle, not the
+        # bundle itself, so we don't care here about the value.
+        #
+        # For STIX 2.1+, applies to non-bundles only.
+        if obj_type == "bundle":
+            v = "2.0"
+        else:
+            v = stix_dict['spec_version']
+    elif "id" not in stix_dict:
+        # Only 2.0 SCOs don't have ID properties
+        v = "2.0"
+    elif obj_type == 'bundle':
+        # Bundle without a spec_version property: must be 2.1.  But to
+        # future-proof, use max version over all contained SCOs, with 2.1
+        # minimum.
+        v = max(
+            "2.1",
+            max(
+                detect_spec_version(obj) for obj in stix_dict["objects"]
+            ),
+        )
+    elif obj_type in mappings.STIX2_OBJ_MAPS["2.1"]["observables"]:
+        # Non-bundle object with an ID and without spec_version.  Could be a
+        # 2.1 SCO or 2.0 SDO/SRO/marking.  Check for 2.1 SCO...
+        v = "2.1"
     else:
-        # it's a string ID
-        result = obj_or_id.startswith("marking-definition--")
+        # Not a 2.1 SCO; must be a 2.0 object.
+        v = "2.0"
+
+    return v
+
+
+def _stix_type_of(value):
+    """
+    Get a STIX type from the given value: if a STIX ID is passed, the type
+    prefix is extracted; if string which is not a STIX ID is passed, it is
+    assumed to be a STIX type and is returned; otherwise it is assumed to be a
+    mapping with a "type" property, and the value of that property is returned.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :return: A STIX type
+    """
+    if isinstance(value, str):
+        if "--" in value:
+            type_ = get_type_from_id(value)
+        else:
+            type_ = value
+    else:
+        type_ = value["type"]
+
+    return type_
+
+
+def is_sdo(value, stix_version=stix2.version.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an SDO of the
+    given STIX version.  If value is a type or ID, this just checks whether
+    the type was registered as an SDO in the given STIX version.  If a mapping,
+    *simple* STIX version inference is additionally done on the value, and the
+    result is checked against stix_version.  It does not attempt to fully
+    validate the value.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is an SDO type of the given
+        version; False if not
+    """
+
+    result = True
+    if isinstance(value, collections.abc.Mapping):
+        value_stix_version = detect_spec_version(value)
+        if value_stix_version != stix_version:
+            result = False
+
+    if result:
+        cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
+        type_ = _stix_type_of(value)
+        result = type_ in cls_maps["objects"] and type_ not in {
+            "relationship", "sighting", "marking-definition", "bundle",
+            "language-content",
+        }
+
+    return result
+
+
+def is_sco(value, stix_version=stix2.version.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an SCO of the
+    given STIX version.  If value is a type or ID, this just checks whether
+    the type was registered as an SCO in the given STIX version.  If a mapping,
+    *simple* STIX version inference is additionally done on the value, and the
+    result is checked against stix_version.  It does not attempt to fully
+    validate the value.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is an SCO type of the given
+        version; False if not
+    """
+
+    result = True
+    if isinstance(value, collections.abc.Mapping):
+        value_stix_version = detect_spec_version(value)
+        if value_stix_version != stix_version:
+            result = False
+
+    if result:
+        cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
+        type_ = _stix_type_of(value)
+        result = type_ in cls_maps["observables"]
+
+    return result
+
+
+def is_sro(value, stix_version=stix2.version.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an SRO of the
+    given STIX version.  If value is a type or ID, this just checks whether
+    the type is "sighting" or "relationship".  If a mapping, *simple* STIX
+    version inference is additionally done on the value, and the result is
+    checked against stix_version.  It does not attempt to fully validate the
+    value.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is an SRO type of the given
+        version; False if not
+    """
+
+    result = True
+    if isinstance(value, collections.abc.Mapping):
+        value_stix_version = detect_spec_version(value)
+        if value_stix_version != stix_version:
+            result = False
+
+    if result:
+        # No need to check registration in this case
+        type_ = _stix_type_of(value)
+        result = type_ in ("sighting", "relationship")
+
+    return result
+
+
+def is_object(value, stix_version=stix2.version.DEFAULT_VERSION):
+    """
+    Determine whether an object, type, or ID is/is for any STIX object.  This
+    includes all SDOs, SCOs, meta-objects, and bundle.  If value is a type or
+    ID, this just checks whether the type was registered in the given STIX
+    version.  If a mapping, *simple* STIX version inference is additionally
+    done on the value, and the result is checked against stix_version.  It does
+    not attempt to fully validate the value.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :return: True if the type of the given value is a valid STIX type with
+        respect to the given STIX version; False if not
+    """
+
+    result = True
+    if isinstance(value, collections.abc.Mapping):
+        value_stix_version = detect_spec_version(value)
+        if value_stix_version != stix_version:
+            result = False
+
+    if result:
+        cls_maps = mappings.STIX2_OBJ_MAPS[stix_version]
+        type_ = _stix_type_of(value)
+        result = type_ in cls_maps["observables"] \
+            or type_ in cls_maps["objects"]
+
+    return result
+
+
+def is_marking(value, stix_version=stix2.version.DEFAULT_VERSION):
+    """
+    Determine whether the given object, type, or ID is/is for an marking
+    definition of the given STIX version.  If value is a type or ID, this just
+    checks whether the type is "marking-definition".  If a mapping, *simple*
+    STIX version inference is additionally done on the value, and the result
+    is checked against stix_version.  It does not attempt to fully validate the
+    value.
+
+    :param value: A STIX object, object ID, or type as a string.
+    :param stix_version: A STIX version as a string
+    :return: True if the value is/is for a marking definition, False otherwise.
+    """
+
+    result = True
+    if isinstance(value, collections.abc.Mapping):
+        value_stix_version = detect_spec_version(value)
+        if value_stix_version != stix_version:
+            result = False
+
+    if result:
+        # No need to check registration in this case
+        type_ = _stix_type_of(value)
+        result = type_ == "marking-definition"
+
+    return result
+
+
+class STIXTypeClass(enum.Enum):
+    """
+    Represents different classes of STIX type.
+    """
+    SDO = 0
+    SCO = 1
+    SRO = 2
+
+
+def is_stix_type(value, stix_version=stix2.version.DEFAULT_VERSION, *types):
+    """
+    Determine whether the type of the given value satisfies the given
+    constraints.  'types' must contain STIX types as strings, and/or the
+    STIXTypeClass enum values.  STIX types imply an exact match constraint;
+    STIXTypeClass enum values imply a more general constraint, that the object
+    or type be in that class of STIX type.  These constraints are implicitly
+    OR'd together.
+
+    :param value: A mapping with a "type" property, or a STIX ID or type
+        as a string
+    :param stix_version: A STIX version as a string
+    :param types: A sequence of STIX type strings or STIXTypeClass enum values
+    :return: True if the object or type satisfies the constraints; False if not
+    """
+
+    for type_ in types:
+        if type_ is STIXTypeClass.SDO:
+            result = is_sdo(value, stix_version)
+        elif type_ is STIXTypeClass.SCO:
+            result = is_sco(value, stix_version)
+        elif type_ is STIXTypeClass.SRO:
+            result = is_sro(value, stix_version)
+        else:
+            # Assume a string STIX type is given instead of a class enum,
+            # and just check for exact match.
+            obj_type = _stix_type_of(value)
+            result = obj_type == type_ and is_object(value, stix_version)
+
+        if result:
+            break
+
+    else:
+        result = False
 
     return result

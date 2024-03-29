@@ -1,12 +1,19 @@
+import json
+import os
+
 import pytest
 
 import stix2
+import stix2.equivalence.graph
+import stix2.equivalence.object
 
 from .constants import (
     CAMPAIGN_ID, CAMPAIGN_KWARGS, FAKE_TIME, IDENTITY_ID, IDENTITY_KWARGS,
     INDICATOR_ID, INDICATOR_KWARGS, MALWARE_ID, MALWARE_KWARGS,
     RELATIONSHIP_IDS,
 )
+
+FS_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "stix2_data")
 
 
 @pytest.fixture
@@ -18,8 +25,52 @@ def ds():
     rel1 = stix2.v20.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
     rel2 = stix2.v20.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
     rel3 = stix2.v20.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
-    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3]
+    reprt = stix2.v20.Report(
+        name="Malware Report",
+        published="2021-05-09T08:22:22Z",
+        labels=["campaign"],
+        object_refs=[mal.id, rel1.id, ind.id],
+    )
+    stix_objs = [cam, idy, ind, mal, rel1, rel2, rel3, reprt]
     yield stix2.MemoryStore(stix_objs)
+
+
+@pytest.fixture
+def ds2():
+    cam = stix2.v20.Campaign(id=CAMPAIGN_ID, **CAMPAIGN_KWARGS)
+    idy = stix2.v20.Identity(id=IDENTITY_ID, **IDENTITY_KWARGS)
+    ind = stix2.v20.Indicator(id=INDICATOR_ID, created_by_ref=idy.id, **INDICATOR_KWARGS)
+    indv2 = ind.new_version(
+        external_references=[{
+            "source_name": "unknown",
+            "url": "https://examplewebsite.com/",
+        }],
+    )
+    mal = stix2.v20.Malware(id=MALWARE_ID, created_by_ref=idy.id, **MALWARE_KWARGS)
+    malv2 = mal.new_version(
+        external_references=[{
+            "source_name": "unknown",
+            "url": "https://examplewebsite2.com/",
+        }],
+    )
+    rel1 = stix2.v20.Relationship(ind, 'indicates', mal, id=RELATIONSHIP_IDS[0])
+    rel2 = stix2.v20.Relationship(mal, 'targets', idy, id=RELATIONSHIP_IDS[1])
+    rel3 = stix2.v20.Relationship(cam, 'uses', mal, id=RELATIONSHIP_IDS[2])
+    stix_objs = [cam, idy, ind, indv2, mal, malv2, rel1, rel2, rel3]
+    reprt = stix2.v20.Report(
+        created_by_ref=idy.id,
+        name="example",
+        labels=["campaign"],
+        published="2021-04-09T08:22:22Z",
+        object_refs=stix_objs,
+    )
+    stix_objs.append(reprt)
+    yield stix2.MemoryStore(stix_objs)
+
+
+@pytest.fixture
+def fs():
+    yield stix2.FileSystemSource(FS_PATH)
 
 
 def test_object_factory_created_by_ref_str():
@@ -370,3 +421,229 @@ def test_related_to_by_target(ds):
     assert len(resp) == 2
     assert any(x['id'] == CAMPAIGN_ID for x in resp)
     assert any(x['id'] == INDICATOR_ID for x in resp)
+
+
+def test_versioned_checks(ds, ds2):
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": True,
+            "versioning_checks": True,
+            "max_depth": 1,
+        },
+    })
+    score = stix2.equivalence.object._versioned_checks(INDICATOR_ID, INDICATOR_ID, ds, ds2, **weights)
+    assert round(score) == 100
+
+
+def test_semantic_check_with_versioning(ds, ds2):
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": True,
+            "ds1": ds,
+            "ds2": ds2,
+            "max_depth": 1,
+        },
+    })
+    ind = stix2.v20.Indicator(
+        **dict(
+            labels=["malicious-activity"],
+            pattern="[file:hashes.'SHA-256' = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855']",
+            valid_from="2017-01-01T12:34:56Z",
+            external_references=[
+                {
+                  "source_name": "unknown",
+                  "url": "https://examplewebsite2.com/",
+                },
+            ],
+            object_marking_refs=[stix2.v20.TLP_WHITE],
+        )
+    )
+    ds.add(ind)
+    score = stix2.equivalence.object.reference_check(ind.id, INDICATOR_ID, ds, ds2, **weights)
+    assert round(score) == 0  # Since pattern is different score is really low
+
+
+def test_list_semantic_check(ds, ds2):
+    weights = stix2.equivalence.graph.WEIGHTS.copy()
+    weights.update({
+        "_internal": {
+            "ignore_spec_version": False,
+            "versioning_checks": False,
+            "max_depth": 1,
+        },
+    })
+    object_refs1 = [
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "relationship--06520621-5352-4e6a-b976-e8fa3d437ffd",
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+    ]
+    object_refs2 = [
+        "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
+        "identity--311b2d2d-f010-4473-83ec-1edf84858f4c",
+        "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7",
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
+        "relationship--06520621-5352-4e6a-b976-e8fa3d437ffd",
+        "relationship--181c9c09-43e6-45dd-9374-3bec192f05ef",
+        "relationship--a0cbb21c-8daf-4a7f-96aa-7155a4ef8f70",
+    ]
+
+    score = stix2.equivalence.object.list_reference_check(
+        object_refs1,
+        object_refs2,
+        ds,
+        ds2,
+        **weights,
+    )
+    assert round(score) == 1
+
+
+def test_graph_similarity_raises_value_error(ds):
+    with pytest.raises(ValueError):
+        prop_scores1 = {}
+        stix2.Environment().graph_similarity(ds, ds2, prop_scores1, max_depth=-1)
+
+
+def test_graph_similarity_with_filesystem_source(ds, fs):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_similarity(fs, ds, prop_scores1, ignore_spec_version=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_similarity(ds, fs, prop_scores2, ignore_spec_version=True)
+
+    assert round(env1) == 19
+    assert round(prop_scores1["matching_score"]) == 334
+    assert round(prop_scores1["len_pairs"]) == 18
+
+    assert round(env2) == 19
+    assert round(prop_scores2["matching_score"]) == 334
+    assert round(prop_scores2["len_pairs"]) == 18
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_similarity_with_duplicate_graph(ds):
+    prop_scores = {}
+    env = stix2.Environment().graph_similarity(ds, ds, prop_scores)
+    assert round(env) == 100
+    assert round(prop_scores["matching_score"]) == 800
+    assert round(prop_scores["len_pairs"]) == 8
+
+
+def test_graph_similarity_with_versioning_check_on(ds2, ds):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_similarity(ds, ds2, prop_scores1, versioning_checks=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_similarity(ds2, ds, prop_scores2, versioning_checks=True)
+
+    assert round(env1) == 88
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert round(env2) == 88
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_similarity_with_versioning_check_off(ds2, ds):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_similarity(ds, ds2, prop_scores1)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_similarity(ds2, ds, prop_scores2)
+
+    assert round(env1) == 88
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert round(env2) == 88
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_equivalence_with_filesystem_source(ds, fs):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_equivalence(fs, ds, prop_scores1, ignore_spec_version=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_equivalence(ds, fs, prop_scores2, ignore_spec_version=True)
+
+    assert env1 is False
+    assert round(prop_scores1["matching_score"]) == 334
+    assert round(prop_scores1["len_pairs"]) == 18
+
+    assert env2 is False
+    assert round(prop_scores2["matching_score"]) == 334
+    assert round(prop_scores2["len_pairs"]) == 18
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_equivalence_with_duplicate_graph(ds):
+    prop_scores = {}
+    env = stix2.Environment().graph_equivalence(ds, ds, prop_scores)
+    assert env is True
+    assert round(prop_scores["matching_score"]) == 800
+    assert round(prop_scores["len_pairs"]) == 8
+
+
+def test_graph_equivalence_with_versioning_check_on(ds2, ds):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_equivalence(ds, ds2, prop_scores1, versioning_checks=True)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_equivalence(ds2, ds, prop_scores2, versioning_checks=True)
+
+    assert env1 is True
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert env2 is True
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)
+
+
+def test_graph_equivalence_with_versioning_check_off(ds2, ds):
+    prop_scores1 = {}
+    env1 = stix2.Environment().graph_equivalence(ds, ds2, prop_scores1)
+
+    # Switching parameters
+    prop_scores2 = {}
+    env2 = stix2.Environment().graph_equivalence(ds2, ds, prop_scores2)
+
+    assert env1 is True
+    assert round(prop_scores1["matching_score"]) == 789
+    assert round(prop_scores1["len_pairs"]) == 9
+
+    assert env2 is True
+    assert round(prop_scores2["matching_score"]) == 789
+    assert round(prop_scores2["len_pairs"]) == 9
+
+    prop_scores1["matching_score"] = round(prop_scores1["matching_score"], 3)
+    prop_scores2["matching_score"] = round(prop_scores2["matching_score"], 3)
+    assert json.dumps(prop_scores1, sort_keys=True, indent=4) == json.dumps(prop_scores2, sort_keys=True, indent=4)

@@ -9,11 +9,13 @@ CAMPAIGN_ID = "campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 COURSE_OF_ACTION_ID = "course-of-action--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 GROUPING_ID = "grouping--753abcde-3141-5926-ace5-0a810b1ff996"
 IDENTITY_ID = "identity--311b2d2d-f010-4473-83ec-1edf84858f4c"
+INCIDENT_ID = "incident--40fc3b35-0dc4-4afd-9927-288d44bfce20"
 INDICATOR_ID = "indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7"
 INFRASTRUCTURE_ID = "infrastructure--3000ae1b-784c-f03d-8abc-0a625b2ff018"
 INTRUSION_SET_ID = "intrusion-set--4e78f46f-a023-4e5f-bc24-71b3ca22ec29"
 LOCATION_ID = "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64"
 MALWARE_ID = "malware--9c4638ec-f1de-4ddb-abf4-1b760417654e"
+MALWARE_ANALYSIS_ID = "malware-analysis--b46ee0ad-9443-41c5-a8e3-0fa053262805"
 MARKING_DEFINITION_ID = "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
 NOTE_ID = "note--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 OBSERVED_DATA_ID = "observed-data--b67d30ff-02ac-498a-92f9-32f845f448cf"
@@ -25,6 +27,12 @@ TOOL_ID = "tool--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f"
 SIGHTING_ID = "sighting--bfbc19db-ec35-4e45-beed-f8bde2a772fb"
 VULNERABILITY_ID = "vulnerability--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061"
 
+EXTENSION_DEFINITION_IDS = [
+    "extension-definition--1f611280-fbe1-48e8-92ab-ff47ce02d5b7",  # new-sdo
+    "extension-definition--368f4787-5b43-467c-9693-0c9de4289c4b",  # property-extension
+    "extension-definition--dd73de4f-a7f3-49ea-8ec1-8e884196b7a8",  # top-level-property-extension
+    "extension-definition--150c1738-28c9-44d0-802d-70523218240b",  # new-sdo, new-sco, property-extension
+]
 MARKING_IDS = [
     "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "marking-definition--443eb5c3-a76c-4a0a-8caa-e93998e7bc09",
@@ -102,6 +110,10 @@ INTRUSION_SET_KWARGS = dict(
     name="Bobcat Breakin",
 )
 
+LOCATION_KWARGS = dict(
+    region="africa",
+)
+
 MALWARE_KWARGS = dict(
     malware_types=['ransomware'],
     name="Cryptolocker",
@@ -119,6 +131,16 @@ MALWARE_MORE_KWARGS = dict(
     is_family=False,
 )
 
+MALWARE_ANALYSIS_KWARGS = dict(
+    product="microsoft",
+    result="malicious",
+)
+
+NOTE_KWARGS = dict(
+    content="Heartbleed",
+    object_refs=[CAMPAIGN_ID],
+)
+
 OBSERVED_DATA_KWARGS = dict(
     first_observed=FAKE_TIME,
     last_observed=FAKE_TIME,
@@ -129,6 +151,11 @@ OBSERVED_DATA_KWARGS = dict(
             "key": "HKEY_LOCAL_MACHINE\\System\\Foo\\Bar",
         },
     },
+)
+
+OPINION_KWARGS = dict(
+    opinion="agree",
+    object_refs=[CAMPAIGN_ID],
 )
 
 REPORT_KWARGS = dict(

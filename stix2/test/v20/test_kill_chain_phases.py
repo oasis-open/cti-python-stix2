@@ -16,7 +16,7 @@ def test_lockheed_martin_cyber_kill_chain():
         phase_name="reconnaissance",
     )
 
-    assert str(recon) == LMCO_RECON
+    assert recon.serialize(pretty=True) == LMCO_RECON
 
 
 FOO_PRE_ATTACK = """{
@@ -31,7 +31,7 @@ def test_kill_chain_example():
         phase_name="pre-attack",
     )
 
-    assert str(preattack) == FOO_PRE_ATTACK
+    assert preattack.serialize(pretty=True) == FOO_PRE_ATTACK
 
 
 def test_kill_chain_required_properties():

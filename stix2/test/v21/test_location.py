@@ -19,14 +19,17 @@ EXPECTED_LOCATION_1 = """{
     "longitude": 2.3522
 }"""
 
-EXPECTED_LOCATION_1_REPR = "Location(" + " ".join("""
+EXPECTED_LOCATION_1_REPR = "Location(" + " ".join(
+    """
     type='location',
     spec_version='2.1',
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
     latitude=48.8566,
-    longitude=2.3522""".split()) + ")"
+    longitude=2.3522,
+    revoked=False""".split(),
+) + ")"
 
 EXPECTED_LOCATION_2 = """{
     "type": "location",
@@ -34,23 +37,26 @@ EXPECTED_LOCATION_2 = """{
     "id": "location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64",
     "created": "2016-04-06T20:03:00.000Z",
     "modified": "2016-04-06T20:03:00.000Z",
-    "region": "north-america"
+    "region": "northern-america"
 }
 """
 
-EXPECTED_LOCATION_2_REPR = "Location(" + " ".join("""
+EXPECTED_LOCATION_2_REPR = "Location(" + " ".join(
+    """
     type='location',
     spec_version='2.1',
     id='location--a6e9345f-5a15-4c29-8bb3-7dcc5d168d64',
     created='2016-04-06T20:03:00.000Z',
     modified='2016-04-06T20:03:00.000Z',
-    region='north-america'""".split()) + ")"
+    region='northern-america',
+    revoked=False""".split(),
+) + ")"
 
 
 def test_location_with_some_required_properties():
     now = dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
 
-    loc = stix2.v21.Location(
+    location = stix2.v21.Location(
         id=LOCATION_ID,
         created=now,
         modified=now,
@@ -58,8 +64,8 @@ def test_location_with_some_required_properties():
         longitude=2.3522,
     )
 
-    assert str(loc) == EXPECTED_LOCATION_1
-    rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(loc))
+    assert location.serialize(pretty=True) == EXPECTED_LOCATION_1
+    rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(location))
     assert rep == EXPECTED_LOCATION_1_REPR
 
 
@@ -72,7 +78,7 @@ def test_location_with_some_required_properties():
             "id": LOCATION_ID,
             "created": "2016-04-06T20:03:00.000Z",
             "modified": "2016-04-06T20:03:00.000Z",
-            "region": "north-america",
+            "region": "northern-america",
         },
     ],
 )
@@ -84,7 +90,7 @@ def test_parse_location(data):
     assert location.id == LOCATION_ID
     assert location.created == dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
     assert location.modified == dt.datetime(2016, 4, 6, 20, 3, 0, tzinfo=pytz.utc)
-    assert location.region == 'north-america'
+    assert location.region == 'northern-america'
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(location))
     assert rep == EXPECTED_LOCATION_2_REPR
 
@@ -298,6 +304,7 @@ def test_google_map_url_multiple_props_no_long_lat_provided():
         region="North America",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+        allow_custom=True,
     )
 
     loc_url = loc.to_maps_url()
@@ -308,7 +315,7 @@ def test_google_map_url_multiple_props_and_long_lat_provided():
     expected_url = "https://www.google.com/maps/search/?api=1&query=41.862401%2C-87.616001"
 
     loc = stix2.v21.Location(
-        region="North America",
+        region="northern-america",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
         latitude=41.862401,
@@ -350,6 +357,7 @@ def test_bing_map_url_multiple_props_no_long_lat_provided():
         region="North America",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+        allow_custom=True,
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
@@ -360,7 +368,7 @@ def test_bing_map_url_multiple_props_and_long_lat_provided():
     expected_url = "https://bing.com/maps/default.aspx?where1=41.862401%2C-87.616001&lvl=16"
 
     loc = stix2.v21.Location(
-        region="North America",
+        region="northern-america",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
         latitude=41.862401,

@@ -13,7 +13,7 @@ def test_pickling():
         id=IDENTITY_ID,
         name="alice",
         description="this is a pickle test",
-        identity_class="some_class",
+        identity_class="individual",
     )
 
     pickle.loads(pickle.dumps(identity))

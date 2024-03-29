@@ -2,31 +2,31 @@
 
 from collections import OrderedDict
 
-from ..core import STIXRelationshipObject
 from ..properties import (
-    BooleanProperty, IDProperty, IntegerProperty, ListProperty,
-    ReferenceProperty, StringProperty, TimestampProperty, TypeProperty,
+    BooleanProperty, ExtensionsProperty, IDProperty, IntegerProperty,
+    ListProperty, ReferenceProperty, StringProperty, TimestampProperty,
+    TypeProperty,
 )
 from ..utils import NOW
+from .base import _RelationshipObject
 from .common import ExternalReference, GranularMarking
 
 
-class Relationship(STIXRelationshipObject):
-    # TODO: Add link
+class Relationship(_RelationshipObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_e2e1szrqfoan>`__.
     """
 
     _invalid_source_target_types = ['bundle', 'language-content', 'marking-definition', 'relationship', 'sighting']
 
     _type = 'relationship'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('relationship_type', StringProperty(required=True)),
         ('description', StringProperty()),
         ('source_ref', ReferenceProperty(invalid_types=_invalid_source_target_types, spec_version='2.1', required=True)),
@@ -40,6 +40,7 @@ class Relationship(STIXRelationshipObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     # Explicitly define the first three kwargs to make readable Relationship declarations.
@@ -68,28 +69,27 @@ class Relationship(STIXRelationshipObject):
             raise ValueError(msg.format(self))
 
 
-class Sighting(STIXRelationshipObject):
-    # TODO: Add link
+class Sighting(_RelationshipObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_a795guqsap3r>`__.
     """
 
     _type = 'sighting'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('description', StringProperty()),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('count', IntegerProperty(min=0, max=999999999)),
         ('sighting_of_ref', ReferenceProperty(valid_types="SDO", spec_version='2.1', required=True)),
         ('observed_data_refs', ListProperty(ReferenceProperty(valid_types='observed-data', spec_version='2.1'))),
-        ('where_sighted_refs', ListProperty(ReferenceProperty(valid_types='identity', spec_version='2.1'))),
-        ('summary', BooleanProperty()),
+        ('where_sighted_refs', ListProperty(ReferenceProperty(valid_types=['identity', 'location'], spec_version='2.1'))),
+        ('summary', BooleanProperty(default=lambda: False)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -97,6 +97,7 @@ class Sighting(STIXRelationshipObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     # Explicitly define the first kwargs to make readable Sighting declarations.
@@ -113,6 +114,6 @@ class Sighting(STIXRelationshipObject):
         first_seen = self.get('first_seen')
         last_seen = self.get('last_seen')
 
-        if first_seen and last_seen and last_seen <= first_seen:
-            msg = "{0.id} 'last_seen' must be later than 'first_seen'"
+        if first_seen and last_seen and last_seen < first_seen:
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))

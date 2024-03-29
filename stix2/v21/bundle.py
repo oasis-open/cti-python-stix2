@@ -2,21 +2,20 @@
 
 from collections import OrderedDict
 
-from ..base import _STIXBase
 from ..properties import (
     IDProperty, ListProperty, STIXObjectProperty, TypeProperty,
 )
+from .base import _STIXBase21
 
 
-class Bundle(_STIXBase):
-    # TODO: Add link
+class Bundle(_STIXBase21):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_gms872kuzdmg>`__.
     """
 
     _type = 'bundle'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('objects', ListProperty(STIXObjectProperty(spec_version='2.1'))),
     ])
@@ -24,20 +23,21 @@ class Bundle(_STIXBase):
     def __init__(self, *args, **kwargs):
         # Add any positional arguments to the 'objects' kwarg.
         if args:
-            if isinstance(args[0], list):
-                kwargs['objects'] = args[0] + list(args[1:]) + kwargs.get('objects', [])
-            else:
-                kwargs['objects'] = list(args) + kwargs.get('objects', [])
+            obj_list = []
+            for arg in args:
+                if isinstance(arg, list):
+                    obj_list = obj_list + arg
+                else:
+                    obj_list.append(arg)
 
-        self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].contained.allow_custom = kwargs.get('allow_custom', False)
+            kwargs['objects'] = obj_list + kwargs.get('objects', [])
 
         super(Bundle, self).__init__(**kwargs)
 
     def get_obj(self, obj_uuid):
         if "objects" in self._inner:
             found_objs = [elem for elem in self.objects if elem['id'] == obj_uuid]
-            if found_objs == []:
+            if not found_objs:
                 raise KeyError("'%s' does not match the id property of any of the bundle's objects" % obj_uuid)
             return found_objs
         else:

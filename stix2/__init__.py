@@ -4,26 +4,27 @@
    :toctree: api
 
    confidence
-   core
    datastore
    environment
+   equivalence
    exceptions
    markings
+   parsing
+   pattern_visitor
    patterns
    properties
+   serialization
    utils
    v20
    v21
+   versioning
    workbench
 
 """
 
 # flake8: noqa
 
-DEFAULT_VERSION = '2.0'  # Default version will always be the latest STIX 2.X version
-
 from .confidence import scales
-from .core import _collect_stix2_mappings, parse, parse_observable
 from .datastore import CompositeDataSource
 from .datastore.filesystem import (
     FileSystemSink, FileSystemSource, FileSystemStore,
@@ -38,6 +39,7 @@ from .markings import (
     add_markings, clear_markings, get_markings, is_marked, remove_markings,
     set_markings,
 )
+from .parsing import parse, parse_observable
 from .patterns import (
     AndBooleanExpression, AndObservationExpression, BasicObjectPathComponent,
     BinaryConstant, BooleanConstant, EqualityComparisonExpression,
@@ -53,8 +55,9 @@ from .patterns import (
     RepeatQualifier, StartStopQualifier, StringConstant, TimestampConstant,
     WithinQualifier,
 )
-from .utils import new_version, revoke
-from .v20 import *  # This import will always be the latest STIX 2.X version
-from .version import __version__
+from .registry import _collect_stix2_mappings
+from .v21 import *  # This import will always be the latest STIX 2.X version
+from .version import DEFAULT_VERSION, __version__
+from .versioning import new_version, revoke
 
 _collect_stix2_mappings()

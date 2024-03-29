@@ -24,7 +24,7 @@ stix_objs = [
         "created": "2014-05-08T09:00:00.000Z",
         "id": "indicator--a932fcc6-e032-476c-826f-cb970a5a1ade",
         "indicator_types": [
-            "file-hash-watchlist",
+            "compromised",
         ],
         "modified": "2014-05-08T09:00:00.000Z",
         "name": "File hash for Poison Ivy variant",
@@ -146,18 +146,17 @@ def test_filter_value_type_check():
 
     with pytest.raises(TypeError) as excinfo:
         Filter('created', '=', object())
-    # On Python 2, the type of object() is `<type 'object'>` On Python 3, it's `<class 'object'>`.
-    assert any([s in str(excinfo.value) for s in ["<type 'object'>", "'<class 'object'>'"]])
+    assert "'<class 'object'>'" in str(excinfo.value)
     assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
 
     with pytest.raises(TypeError) as excinfo:
         Filter("type", "=", complex(2, -1))
-    assert any([s in str(excinfo.value) for s in ["<type 'complex'>", "'<class 'complex'>'"]])
+    assert "'<class 'complex'>'" in str(excinfo.value)
     assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
 
     with pytest.raises(TypeError) as excinfo:
         Filter("type", "=", set([16, 23]))
-    assert any([s in str(excinfo.value) for s in ["<type 'set'>", "'<class 'set'>'"]])
+    assert "'<class 'set'>'" in str(excinfo.value)
     assert "is not supported. The type must be a Python immutable type or dictionary" in str(excinfo.value)
 
 

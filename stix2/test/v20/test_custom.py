@@ -1,9 +1,12 @@
 import pytest
 
 import stix2
+import stix2.parsing
+import stix2.registration
+import stix2.registry
 import stix2.v20
 
-from ...exceptions import InvalidValueError
+from ...exceptions import DuplicateRegistrationError, InvalidValueError
 from .constants import FAKE_TIME, IDENTITY_ID, MARKING_DEFINITION_ID
 
 IDENTITY_CUSTOM_PROP = stix2.v20.Identity(
@@ -154,10 +157,11 @@ def test_custom_properties_dict_in_bundled_object():
             'x_foo': 'bar',
         },
     }
-    bundle = stix2.v20.Bundle(custom_identity)
 
-    assert bundle.objects[0].x_foo == "bar"
-    assert '"x_foo": "bar"' in str(bundle)
+    # must not succeed: allow_custom was not set to True when creating
+    # the bundle, so it must reject the customized identity object.
+    with pytest.raises(InvalidValueError):
+        stix2.v20.Bundle(custom_identity)
 
 
 def test_custom_property_in_observed_data():
@@ -185,6 +189,7 @@ def test_custom_property_object_in_observable_extension():
         x_foo='bar',
     )
     artifact = stix2.v20.File(
+        allow_custom=True,
         name='test',
         extensions={'ntfs-ext': ntfs},
     )
@@ -217,7 +222,6 @@ def test_custom_property_dict_in_observable_extension():
         name='test',
         extensions={
             'ntfs-ext': {
-                'allow_custom': True,
                 'sid': 1,
                 'x_foo': 'bar',
             },
@@ -285,6 +289,18 @@ def test_custom_marking_no_init_2():
 
     no2 = NewObj2(property1='something')
     assert no2.property1 == 'something'
+
+
+def test_register_duplicate_marking():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomMarking(
+            'x-new-obj2', [
+                ('property1', stix2.properties.StringProperty(required=True)),
+            ],
+        )
+        class NewObj2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
 
 
 @stix2.v20.CustomObject(
@@ -369,6 +385,125 @@ def test_custom_object_invalid_type_name():
     assert "Invalid type name 'x_new_object':" in str(excinfo.value)
 
 
+def test_custom_object_ref_property_as_identifier():
+    @stix2.v20.CustomObject(
+        'x-new-obj-with-ref', [
+            ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_object_refs_property_containing_identifiers():
+    @stix2.v20.CustomObject(
+        'x-new-obj-with-refs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_object_ref_property_as_objectref():
+    with pytest.raises(ValueError, match=r"not a subclass of 'ReferenceProperty"):
+        @stix2.v20.CustomObject(
+            'x-new-obj-with-objref', [
+                ('property_ref', stix2.properties.ObjectReferenceProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_object_refs_property_containing_objectrefs():
+    with pytest.raises(ValueError, match=r"not a 'ListProperty' containing a subclass of 'ReferenceProperty"):
+        @stix2.v20.CustomObject(
+            'x-new-obj-with-objrefs', [
+                ('property_refs', stix2.properties.ListProperty(stix2.properties.ObjectReferenceProperty())),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_object_invalid_ref_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v20.CustomObject(
+            'x-new-obj', [
+                ('property_ref', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+    assert "is named like a reference property but is not" in str(excinfo.value)
+
+
+def test_custom_object_invalid_refs_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v20.CustomObject(
+            'x-new-obj', [
+                ('property_refs', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObs():
+            pass
+    assert "is named like a reference list property but is not" in str(excinfo.value)
+
+
+def test_custom_object_invalid_refs_list_property():
+    with pytest.raises(ValueError) as excinfo:
+        @stix2.v20.CustomObject(
+            'x-new-obj', [
+                ('property_refs', stix2.properties.ListProperty(stix2.properties.StringProperty)),
+            ],
+        )
+        class NewObs():
+            pass
+    assert "is named like a reference list property but is not" in str(excinfo.value)
+
+
+def test_custom_subobject_dict():
+    obj_dict = {
+        "type": "bundle",
+        "spec_version": "2.0",
+        "objects": [
+            {
+                "type": "identity",
+                "name": "alice",
+                "identity_class": "individual",
+                "x_foo": 123,
+            },
+        ],
+    }
+
+    obj = stix2.parse(obj_dict, allow_custom=True)
+    assert obj["objects"][0]["x_foo"] == 123
+    assert obj.has_custom
+
+    with pytest.raises(InvalidValueError):
+        stix2.parse(obj_dict, allow_custom=False)
+
+
+def test_custom_subobject_obj():
+    ident = stix2.v20.Identity(
+        name="alice", identity_class=123, x_foo=123, allow_custom=True,
+    )
+
+    obj_dict = {
+        "type": "bundle",
+        "spec_version": "2.0",
+        "objects": [ident],
+    }
+
+    obj = stix2.parse(obj_dict, allow_custom=True)
+    assert obj["objects"][0]["x_foo"] == 123
+    assert obj.has_custom
+
+    with pytest.raises(InvalidValueError):
+        stix2.parse(obj_dict, allow_custom=False)
+
+
 def test_parse_custom_object_type():
     nt_string = """{
         "type": "x-new-type",
@@ -423,8 +558,18 @@ class NewObservable():
 
 
 def test_custom_observable_object_1():
-    no = NewObservable(property1='something')
+    no = NewObservable(
+        property1='something',
+        extensions={
+            'archive-ext': stix2.v20.observables.ArchiveExt(
+                contains_refs=['file--e277603e-1060-5ad4-9937-c26c97f1ca68'],
+                version='2.0',
+                comment='for real',
+            ),
+        },
+    )
     assert no.property1 == 'something'
+    assert no.extensions['archive-ext'].comment == 'for real'
 
 
 def test_custom_observable_object_2():
@@ -449,7 +594,7 @@ def test_custom_observable_raises_exception():
 
 def test_custom_observable_object_no_init_1():
     @stix2.v20.CustomObservable(
-        'x-new-observable', [
+        'x-new-observable-1', [
             ('property1', stix2.properties.StringProperty()),
         ],
     )
@@ -482,7 +627,7 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomObservable(
@@ -492,7 +637,49 @@ def test_custom_observable_object_invalid_type_name():
         )
         class NewObs2(object):
             pass  # pragma: no cover
-    assert "Invalid observable type name 'x_new_obs':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_obs':" in str(excinfo.value)
+
+
+def test_custom_observable_object_ref_property_as_identifier():
+    with pytest.raises(ValueError, match=r"not a subclass of 'ObjectReferenceProperty"):
+        @stix2.v20.CustomObservable(
+            'x-new-obs-with-ref', [
+                ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_observable_object_refs_property_containing_identifiers():
+    with pytest.raises(ValueError, match=r"not a 'ListProperty' containing a subclass of 'ObjectReferenceProperty"):
+        @stix2.v20.CustomObservable(
+            'x-new-obs-with-refs', [
+                ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
+            ],
+        )
+        class NewObs():
+            pass
+
+
+def test_custom_observable_object_ref_property_as_objectref():
+    @stix2.v20.CustomObservable(
+        'x-new-obs-with-objref', [
+            ('property_ref', stix2.properties.ObjectReferenceProperty()),
+        ],
+    )
+    class NewObs():
+        pass
+
+
+def test_custom_observable_object_refs_property_containing_objectrefs():
+    @stix2.v20.CustomObservable(
+        'x-new-obs-with-objrefs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.ObjectReferenceProperty())),
+        ],
+    )
+    class NewObs():
+        pass
 
 
 def test_custom_observable_object_invalid_ref_property():
@@ -504,7 +691,7 @@ def test_custom_observable_object_invalid_ref_property():
         )
         class NewObs():
             pass
-    assert "is named like an object reference property but is not an ObjectReferenceProperty" in str(excinfo.value)
+    assert "is named like a reference property but is not" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_refs_property():
@@ -516,7 +703,7 @@ def test_custom_observable_object_invalid_refs_property():
         )
         class NewObs():
             pass
-    assert "is named like an object reference list property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
+    assert "is named like a reference list property but is not" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_refs_list_property():
@@ -528,7 +715,7 @@ def test_custom_observable_object_invalid_refs_list_property():
         )
         class NewObs():
             pass
-    assert "is named like an object reference list property but is not a ListProperty containing ObjectReferenceProperty" in str(excinfo.value)
+    assert "is named like a reference list property but is not" in str(excinfo.value)
 
 
 def test_custom_observable_object_invalid_valid_refs():
@@ -683,7 +870,7 @@ def test_observed_data_with_custom_observable_object():
 
 
 @stix2.v20.CustomExtension(
-    stix2.v20.DomainName, 'x-new-ext', [
+    'x-new-ext', [
         ('property1', stix2.properties.StringProperty(required=True)),
         ('property2', stix2.properties.IntegerProperty()),
     ],
@@ -710,7 +897,7 @@ def test_custom_extension():
     with pytest.raises(stix2.exceptions.MissingPropertiesError) as excinfo:
         NewExtension(property2=42)
     assert excinfo.value.properties == ['property1']
-    assert str(excinfo.value) == "No values for required properties for _CustomExtension: (property1)."
+    assert str(excinfo.value) == "No values for required properties for NewExtension: (property1)."
 
     with pytest.raises(ValueError) as excinfo:
         NewExtension(property1='something', property2=4)
@@ -728,7 +915,7 @@ def test_custom_extension_wrong_observable_type():
             },
         )
 
-    assert 'Cannot determine extension type' in excinfo.value.reason
+    assert "Can't create extension 'ntfs-ext' from" in excinfo.value.reason
 
 
 @pytest.mark.parametrize(
@@ -745,109 +932,64 @@ def test_custom_extension_wrong_observable_type():
 )
 def test_custom_extension_with_list_and_dict_properties_observable_type(data):
     @stix2.v20.CustomExtension(
-        stix2.v20.UserAccount, 'some-extension', [
-            ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
+        'some-extension', [
+                ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
         ],
     )
     class SomeCustomExtension:
         pass
 
     example = SomeCustomExtension(keys=[{'test123': 123, 'test345': 'aaaa'}])
-    assert data == str(example)
-
-
-def test_custom_extension_invalid_observable():
-    # These extensions are being applied to improperly-created Observables.
-    # The Observable classes should have been created with the CustomObservable decorator.
-    class Foo(object):
-        pass
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v20.CustomExtension(
-            Foo, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class FooExtension():
-            pass  # pragma: no cover
-    assert str(excinfo.value) == "'observable' must be a valid Observable class!"
-
-    class Bar(stix2.v20.observables._Observable):
-        pass
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v20.CustomExtension(
-            Bar, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class BarExtension():
-            pass
-    assert "Unknown observable type" in str(excinfo.value)
-    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
-
-    class Baz(stix2.v20.observables._Observable):
-        _type = 'Baz'
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v20.CustomExtension(
-            Baz, 'x-new-ext', [
-                ('property1', stix2.properties.StringProperty(required=True)),
-            ],
-        )
-        class BazExtension():
-            pass
-    assert "Unknown observable type" in str(excinfo.value)
-    assert "Custom observables must be created with the @CustomObservable decorator." in str(excinfo.value)
+    assert data == example.serialize(pretty=True)
 
 
 def test_custom_extension_invalid_type_name():
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomExtension(
-            stix2.v20.File, 'x', {
-                'property1': stix2.properties.StringProperty(required=True),
+            'x', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class FooExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x':" in str(excinfo.value)
+    assert "Invalid type name 'x':" in str(excinfo.value)
 
     with pytest.raises(ValueError) as excinfo:
         @stix2.v20.CustomExtension(
-            stix2.File, 'x_new_ext', {
-                'property1': stix2.properties.StringProperty(required=True),
+            'x_new_ext', {
+                    'property1': stix2.properties.StringProperty(required=True),
             },
         )
         class BlaExtension():
             pass  # pragma: no cover
-    assert "Invalid extension type name 'x_new_ext':" in str(excinfo.value)
+    assert "Invalid type name 'x_new_ext':" in str(excinfo.value)
 
 
 def test_custom_extension_no_properties():
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v20.CustomExtension(stix2.v20.DomainName, 'x-new-ext2', None)
+    with pytest.raises(ValueError):
+        @stix2.v20.CustomExtension('x-new-ext2', None)
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_empty_properties():
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v20.CustomExtension(stix2.v20.DomainName, 'x-new-ext2', [])
+    with pytest.raises(ValueError):
+        @stix2.v20.CustomExtension('x-new-ext2', [])
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_dict_properties():
-    with pytest.raises(ValueError) as excinfo:
-        @stix2.v20.CustomExtension(stix2.v20.DomainName, 'x-new-ext2', {})
+    with pytest.raises(ValueError):
+        @stix2.v20.CustomExtension('x-new-ext2', {})
         class BarExtension():
             pass
-    assert "Must supply a list, containing tuples." in str(excinfo.value)
 
 
 def test_custom_extension_no_init_1():
     @stix2.v20.CustomExtension(
-        stix2.v20.DomainName, 'x-new-extension', [
-            ('property1', stix2.properties.StringProperty(required=True)),
+        'x-new-extension', [
+                ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
     class NewExt():
@@ -859,8 +1001,8 @@ def test_custom_extension_no_init_1():
 
 def test_custom_extension_no_init_2():
     @stix2.v20.CustomExtension(
-        stix2.v20.DomainName, 'x-new-ext2', [
-            ('property1', stix2.properties.StringProperty(required=True)),
+        'x-new-ext2', [
+                ('property1', stix2.properties.StringProperty(required=True)),
         ],
     )
     class NewExt2(object):
@@ -884,6 +1026,35 @@ def test_parse_observable_with_custom_extension():
 
     parsed = stix2.parse_observable(input_str, version='2.0')
     assert parsed.extensions['x-new-ext'].property2 == 12
+
+
+def test_parse_observable_with_custom_extension_property():
+    input_str = """{
+        "type": "observed-data",
+        "first_observed": "1976-09-09T01:50:24.000Z",
+        "last_observed": "1988-01-18T15:22:10.000Z",
+        "number_observed": 5,
+        "objects": {
+            "0": {
+                "type": "file",
+                "name": "cats.png",
+                "extensions": {
+                    "raster-image-ext": {
+                        "image_height": 1024,
+                        "image_width": 768,
+                        "x-foo": false
+                    }
+                }
+            }
+        }
+    }"""
+
+    parsed = stix2.parse(input_str, version='2.0', allow_custom=True)
+    assert parsed.has_custom
+    assert parsed["objects"]["0"]["extensions"]["raster-image-ext"]["x-foo"] is False
+
+    with pytest.raises(InvalidValueError):
+        stix2.parse(input_str, version="2.0", allow_custom=False)
 
 
 def test_custom_and_spec_extension_mix():
@@ -970,14 +1141,13 @@ def test_register_custom_object():
     class CustomObject2(object):
         _type = 'awesome-object'
 
-    stix2.core._register_object(CustomObject2, version="2.0")
-    # Note that we will always check against newest OBJ_MAP.
-    assert (CustomObject2._type, CustomObject2) in stix2.v20.OBJ_MAP.items()
+    with pytest.raises(ValueError):
+        stix2.registration._register_object(CustomObject2, version="2.0")
 
 
 def test_extension_property_location():
     assert 'extensions' in stix2.v20.OBJ_MAP_OBSERVABLE['x-new-observable']._properties
-    assert 'extensions' not in stix2.v20.EXT_MAP['domain-name']['x-new-ext']._properties
+    assert 'extensions' not in stix2.v20.EXT_MAP['x-new-ext']._properties
 
 
 @pytest.mark.parametrize(
@@ -1013,4 +1183,108 @@ def test_custom_object_nested_dictionary(data):
         dictionary={'key': {'key_b': 'value', 'key_a': 'value'}},
     )
 
-    assert data == str(example)
+    assert data == example.serialize(pretty=True)
+
+
+@stix2.v20.CustomObject(
+    'x-new-type-2', [
+        ('property1', stix2.properties.StringProperty()),
+        ('property2', stix2.properties.IntegerProperty()),
+    ],
+)
+class NewType2(object):
+    pass
+
+
+def test_register_custom_object_with_version():
+    custom_obj_1 = {
+        "type": "x-new-type-2",
+        "id": "x-new-type-2--00000000-0000-4000-8000-000000000007",
+    }
+
+    cust_obj_1 = stix2.parsing.dict_to_stix2(custom_obj_1, version='2.0')
+
+    assert cust_obj_1.type in stix2.registry.STIX2_OBJ_MAPS['2.0']['objects']
+    # spec_version is not in STIX 2.0, and is required in 2.1, so this
+    # suffices as a test for a STIX 2.0 object.
+    assert "spec_version" not in cust_obj_1
+
+
+def test_register_duplicate_object_with_version():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomObject(
+            'x-new-type-2', [
+                ('property1', stix2.properties.StringProperty()),
+                ('property2', stix2.properties.IntegerProperty()),
+            ],
+        )
+        class NewType2(object):
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+@stix2.v20.CustomObservable(
+    'x-new-observable-2', [
+        ('property1', stix2.properties.StringProperty()),
+    ],
+)
+class NewObservable2(object):
+    pass
+
+
+def test_register_observable_with_version():
+    custom_obs = NewObservable2(property1="Test Observable")
+
+    assert custom_obs.type in stix2.registry.STIX2_OBJ_MAPS['2.0']['observables']
+
+
+def test_register_duplicate_observable_with_version():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomObservable(
+            'x-new-observable-2', [
+                ('property1', stix2.properties.StringProperty()),
+            ],
+        )
+        class NewObservable2(object):
+            pass
+    assert "cannot be registered again" in str(excinfo.value)
+
+
+def test_register_marking_with_version():
+    @stix2.v20.CustomMarking(
+        'x-new-obj-2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    )
+    class NewObj2():
+        pass
+
+    no = NewObj2(property1='something')
+    assert no._type in stix2.registry.STIX2_OBJ_MAPS['2.0']['markings']
+
+
+def test_register_observable_extension_with_version():
+    @stix2.v20.CustomExtension(
+        'some-extension-2', [
+                ('keys', stix2.properties.StringProperty(required=True)),
+        ],
+    )
+    class SomeCustomExtension2:
+        pass
+
+    example = SomeCustomExtension2(keys='test123')
+
+    assert example._type in stix2.registry.STIX2_OBJ_MAPS['2.0']['extensions']
+
+
+def test_register_duplicate_observable_extension():
+    with pytest.raises(DuplicateRegistrationError) as excinfo:
+        @stix2.v20.CustomExtension(
+            'some-extension-2', [
+                    ('property1', stix2.properties.StringProperty(required=True)),
+                    ('property2', stix2.properties.IntegerProperty()),
+            ],
+        )
+        class NewExtension2():
+            pass
+    assert "cannot be registered again" in str(excinfo.value)

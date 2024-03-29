@@ -47,7 +47,7 @@ def test_observed_data_example():
         },
     )
 
-    assert str(observed_data) == EXPECTED
+    assert observed_data.serialize(pretty=True) == EXPECTED
 
 
 EXPECTED_WITH_REF = """{
@@ -97,7 +97,7 @@ def test_observed_data_example_with_refs():
         },
     )
 
-    assert str(observed_data) == EXPECTED_WITH_REF
+    assert observed_data.serialize(pretty=True) == EXPECTED_WITH_REF
 
 
 def test_observed_data_example_with_bad_refs():
@@ -714,6 +714,22 @@ def test_file_example():
     assert f.decryption_key == "fred"   # does the key have a format we can test for?
 
 
+def test_file_ssdeep_example():
+    f = stix2.v20.File(
+        name="example.dll",
+        hashes={
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a",
+            "ssdeep": "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV",
+        },
+        size=1024,
+    )
+
+    assert f.name == "example.dll"
+    assert f.size == 1024
+    assert f.hashes["SHA-256"] == "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+    assert f.hashes["ssdeep"] == "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV"
+
+
 def test_file_example_with_NTFSExt():
     f = stix2.v20.File(
         name="abc.txt",
@@ -1101,6 +1117,7 @@ def test_process_example_empty_error():
     assert excinfo.value.cls == stix2.v20.Process
     properties_of_process = list(stix2.v20.Process._properties.keys())
     properties_of_process.remove("type")
+    properties_of_process.remove("extensions")
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
     msg = msg.format(
@@ -1164,50 +1181,56 @@ def test_process_example_extensions_empty():
 
 
 def test_process_example_with_WindowsProcessExt_Object():
-    p = stix2.v20.Process(extensions={
-        "windows-process-ext": stix2.v20.WindowsProcessExt(
-            aslr_enabled=True,
-            dep_enabled=True,
-            priority="HIGH_PRIORITY_CLASS",
-            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
-        ),   # noqa
-    })
+    p = stix2.v20.Process(
+        extensions={
+            "windows-process-ext": stix2.v20.WindowsProcessExt(
+                aslr_enabled=True,
+                dep_enabled=True,
+                priority="HIGH_PRIORITY_CLASS",
+                owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
+            ),   # noqa
+        },
+    )
 
     assert p.extensions["windows-process-ext"].dep_enabled
     assert p.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_process_example_with_WindowsServiceExt():
-    p = stix2.v20.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v20.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
         },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
 
 
 def test_process_example_with_WindowsProcessServiceExt():
-    p = stix2.v20.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v20.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
+            "windows-process-ext": {
+                "aslr_enabled": True,
+                "dep_enabled": True,
+                "priority": "HIGH_PRIORITY_CLASS",
+                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
+            },
         },
-        "windows-process-ext": {
-            "aslr_enabled": True,
-            "dep_enabled": True,
-            "priority": "HIGH_PRIORITY_CLASS",
-            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
-        },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
@@ -1301,9 +1324,9 @@ def test_windows_registry_key_example():
         values=[v],
     )
     assert w.key == "hkey_local_machine\\system\\bar\\foo"
-    assert w.values[0].name == "Foo"
-    assert w.values[0].data == "qwerty"
-    assert w.values[0].data_type == "REG_SZ"
+    assert w["values"][0].name == "Foo"
+    assert w["values"][0].data == "qwerty"
+    assert w["values"][0].data_type == "REG_SZ"
     # ensure no errors in serialization because of 'values'
     assert "Foo" in str(w)
 

@@ -20,15 +20,18 @@ EXPECTED_INDICATOR = """{
     ]
 }"""
 
-EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join("""
+EXPECTED_INDICATOR_REPR = "Indicator(" + " ".join(
+    """
     type='indicator',
     id='indicator--a740531e-63ff-4e49-a9e1-a0a3eed0e3e7',
     created='2017-01-01T00:00:01.000Z',
     modified='2017-01-01T00:00:01.000Z',
     pattern="[file:hashes.MD5 = 'd41d8cd98f00b204e9800998ecf8427e']",
     valid_from='1970-01-01T00:00:01Z',
+    revoked=False,
     labels=['malicious-activity']
-""".split()) + ")"
+""".split(),
+) + ")"
 
 
 def test_indicator_with_all_required_properties():
@@ -46,7 +49,7 @@ def test_indicator_with_all_required_properties():
     )
 
     assert ind.revoked is False
-    assert str(ind) == EXPECTED_INDICATOR
+    assert ind.serialize(pretty=True) == EXPECTED_INDICATOR
     rep = re.sub(r"(\[|=| )u('|\"|\\\'|\\\")", r"\g<1>\g<2>", repr(ind))
     assert rep == EXPECTED_INDICATOR_REPR
 
@@ -192,3 +195,23 @@ def test_invalid_indicator_pattern():
     assert excinfo.value.cls == stix2.v20.Indicator
     assert excinfo.value.prop_name == 'pattern'
     assert 'mismatched input' in excinfo.value.reason
+
+
+def test_indicator_stix21_invalid_pattern():
+    now = dt.datetime(2017, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    epoch = dt.datetime(1970, 1, 1, 0, 0, 1, tzinfo=pytz.utc)
+    patrn = "[EXISTS windows-registry-key:values]"
+
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v20.Indicator(
+            type="indicator",
+            id=INDICATOR_ID,
+            created=now,
+            modified=now,
+            pattern=patrn,
+            valid_from=epoch,
+            labels=["malicious-activity"],
+        )
+
+    assert excinfo.value.cls == stix2.v20.Indicator
+    assert "FAIL: Error found at line 1:8. no viable alternative at input 'EXISTS" in str(excinfo.value)

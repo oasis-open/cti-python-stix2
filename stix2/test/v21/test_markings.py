@@ -16,6 +16,7 @@ EXPECTED_TLP_MARKING_DEFINITION = """{
     "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
     "created": "2017-01-20T00:00:00.000Z",
     "definition_type": "tlp",
+    "name": "TLP:WHITE",
     "definition": {
         "tlp": "white"
     }
@@ -98,7 +99,7 @@ EXPECTED_CAMPAIGN_WITH_GRANULAR_LANG_MARKINGS = u"""{
 
 
 def test_marking_def_example_with_tlp():
-    assert str(TLP_WHITE) == EXPECTED_TLP_MARKING_DEFINITION
+    assert TLP_WHITE.serialize(pretty=True) == EXPECTED_TLP_MARKING_DEFINITION
 
 
 def test_marking_def_example_with_statement_positional_argument():
@@ -109,7 +110,7 @@ def test_marking_def_example_with_statement_positional_argument():
         definition=stix2.StatementMarking(statement="Copyright 2016, Example Corp"),
     )
 
-    assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
+    assert marking_definition.serialize(pretty=True) == EXPECTED_STATEMENT_MARKING_DEFINITION
 
 
 def test_marking_def_example_with_kwargs_statement():
@@ -121,7 +122,7 @@ def test_marking_def_example_with_kwargs_statement():
         definition=stix2.StatementMarking(**kwargs),
     )
 
-    assert str(marking_definition) == EXPECTED_STATEMENT_MARKING_DEFINITION
+    assert marking_definition.serialize(pretty=True) == EXPECTED_STATEMENT_MARKING_DEFINITION
 
 
 def test_marking_def_invalid_type():
@@ -144,7 +145,7 @@ def test_campaign_with_markings_example():
         description="Campaign by Green Group against a series of targets in the financial services sector.",
         object_marking_refs=TLP_WHITE,
     )
-    assert str(campaign) == EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING
+    assert campaign.serialize(pretty=True) == EXPECTED_CAMPAIGN_WITH_OBJECT_MARKING
 
 
 def test_granular_example():
@@ -153,7 +154,7 @@ def test_granular_example():
         selectors=["abc", "abc.[23]", "abc.def", "abc.[2].efg"],
     )
 
-    assert str(granular_marking) == EXPECTED_GRANULAR_MARKING
+    assert granular_marking.serialize(pretty=True) == EXPECTED_GRANULAR_MARKING
 
 
 def test_granular_example_with_bad_selector():
@@ -184,7 +185,7 @@ def test_campaign_with_granular_markings_example():
             ),
         ],
     )
-    assert str(campaign) == EXPECTED_CAMPAIGN_WITH_GRANULAR_REF_MARKINGS
+    assert campaign.serialize(pretty=True) == EXPECTED_CAMPAIGN_WITH_GRANULAR_REF_MARKINGS
 
 
 @pytest.mark.parametrize(
@@ -276,13 +277,11 @@ def test_not_registered_marking_raises_exception():
 
 
 def test_marking_wrong_type_construction():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(ValueError):
         # Test passing wrong type for properties.
         @stix2.v21.CustomMarking('x-new-marking-type2', ("a", "b"))
         class NewObject3(object):
             pass
-
-    assert str(excinfo.value) == "Must supply a list, containing tuples. For example, [('property1', IntegerProperty())]"
 
 
 def test_campaign_add_markings():

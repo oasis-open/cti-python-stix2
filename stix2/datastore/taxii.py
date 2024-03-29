@@ -4,15 +4,17 @@ from requests.exceptions import HTTPError
 
 from stix2 import v20, v21
 from stix2.base import _STIXBase
-from stix2.core import parse
 from stix2.datastore import (
     DataSink, DataSource, DataSourceError, DataStoreMixin,
 )
 from stix2.datastore.filters import Filter, FilterSet, apply_common_filters
+from stix2.parsing import parse
 from stix2.utils import deduplicate
 
 try:
-    from taxii2client import ValidationError
+    from taxii2client import v20 as tcv20
+    from taxii2client import v21 as tcv21
+    from taxii2client.exceptions import ValidationError
     _taxii2_client = True
 except ImportError:
     _taxii2_client = False
@@ -33,9 +35,12 @@ class TAXIICollectionStore(DataStoreMixin):
             side(retrieving data) and False for TAXIICollectionSink
             side(pushing data). However, when parameter is supplied, it will
             be applied to both TAXIICollectionSource/Sink.
+        items_per_page (int): How many STIX objects to request per call
+            to TAXII Server. The value can be tuned, but servers may override
+            if their internal limit is surpassed. Used by TAXIICollectionSource
 
     """
-    def __init__(self, collection, allow_custom=None):
+    def __init__(self, collection, allow_custom=None, items_per_page=5000):
         if allow_custom is None:
             allow_custom_source = True
             allow_custom_sink = False
@@ -43,7 +48,7 @@ class TAXIICollectionStore(DataStoreMixin):
             allow_custom_sink = allow_custom_source = allow_custom
 
         super(TAXIICollectionStore, self).__init__(
-            source=TAXIICollectionSource(collection, allow_custom=allow_custom_source),
+            source=TAXIICollectionSource(collection, allow_custom=allow_custom_source, items_per_page=items_per_page),
             sink=TAXIICollectionSink(collection, allow_custom=allow_custom_sink),
         )
 
@@ -144,9 +149,12 @@ class TAXIICollectionSource(DataSource):
         collection (taxii2.Collection): TAXII Collection instance
         allow_custom (bool): Whether to allow custom STIX content to be
             added to the FileSystemSink. Default: True
+        items_per_page (int): How many STIX objects to request per call
+            to TAXII Server. The value can be tuned, but servers may override
+            if their internal limit is surpassed.
 
     """
-    def __init__(self, collection, allow_custom=True):
+    def __init__(self, collection, allow_custom=True, items_per_page=5000):
         super(TAXIICollectionSource, self).__init__()
         if not _taxii2_client:
             raise ImportError("taxii2client library is required for usage of TAXIICollectionSource")
@@ -167,6 +175,7 @@ class TAXIICollectionSource(DataSource):
             )
 
         self.allow_custom = allow_custom
+        self.items_per_page = items_per_page
 
     def get(self, stix_id, version=None, _composite_filters=None):
         """Retrieve STIX object from local/remote STIX Collection
@@ -210,7 +219,7 @@ class TAXIICollectionSource(DataSource):
 
         if len(stix_obj):
             stix_obj = parse(stix_obj[0], allow_custom=self.allow_custom, version=version)
-            if stix_obj.id != stix_id:
+            if stix_obj['id'] != stix_id:
                 # check - was added to handle erroneous TAXII servers
                 stix_obj = None
         else:
@@ -246,7 +255,7 @@ class TAXIICollectionSource(DataSource):
         all_data = [parse(stix_obj, allow_custom=self.allow_custom, version=version) for stix_obj in all_data]
 
         # check - was added to handle erroneous TAXII servers
-        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj.id == stix_id]
+        all_data_clean = [stix_obj for stix_obj in all_data if stix_obj['id'] == stix_id]
 
         return all_data_clean
 
@@ -286,16 +295,11 @@ class TAXIICollectionSource(DataSource):
         taxii_filters_dict = dict((f.property, f.value) for f in taxii_filters)
 
         # query TAXII collection
+        all_data = []
+        paged_request = tcv21.as_pages if isinstance(self.collection, tcv21.Collection) else tcv20.as_pages
         try:
-            all_data = self.collection.get_objects(**taxii_filters_dict)['objects']
-
-            # deduplicate data (before filtering as reduces wasted filtering)
-            all_data = deduplicate(all_data)
-
-            # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
-            query.remove(taxii_filters)
-            all_data = list(apply_common_filters(all_data, query))
-
+            for resource in paged_request(self.collection.get_objects, per_request=self.items_per_page, **taxii_filters_dict):
+                all_data.extend(resource.get("objects", []))
         except HTTPError as e:
             # if resources not found or access is denied from TAXII server, return empty list
             if e.response.status_code == 404:
@@ -304,6 +308,21 @@ class TAXIICollectionSource(DataSource):
                     " the supplied TAXII Collection object are either not found or access is"
                     " denied. Received error: ", e,
                 )
+
+            # TAXII 2.0 paging can result in a 416 (Range Not Satisfiable) if
+            # the server isn't sending Content-Range headers, so the pager just
+            # goes until it runs out of pages.  So 416 can't be treated as a
+            # real error, just an end-of-pages condition.  For other codes,
+            # propagate the exception.
+            elif e.response.status_code != 416:
+                raise
+
+        # deduplicate data (before filtering as reduces wasted filtering)
+        all_data = deduplicate(all_data)
+
+        # apply local (CompositeDataSource, TAXIICollectionSource and query) filters
+        query.remove(taxii_filters)
+        all_data = list(apply_common_filters(all_data, query))
 
         # parse python STIX objects from the STIX object dicts
         stix_objs = [parse(stix_obj_dict, allow_custom=self.allow_custom, version=version) for stix_obj_dict in all_data]
@@ -324,8 +343,8 @@ class TAXIICollectionSource(DataSource):
             For instance - "?match[type]=indicator,sighting" can be in a
             filter in any of these formats:
 
-            Filter("type", "<any op>", "indicator,sighting")
-            Filter("type", "<any op>", ["indicator", "sighting"])
+            Filter("type", "=", "indicator,sighting")
+            Filter("type", "=", ["indicator", "sighting"])
 
         Args:
             query (list): list of filters to extract which ones are TAXII
@@ -338,7 +357,7 @@ class TAXIICollectionSource(DataSource):
         taxii_filters = []
 
         for filter_ in query:
-            if filter_.property in TAXII_FILTERS:
+            if filter_.property in TAXII_FILTERS and filter_.op == "=":
                 taxii_filters.append(filter_)
 
         return taxii_filters

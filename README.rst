@@ -21,6 +21,8 @@ Install with `pip <https://pip.pypa.io/en/stable/>`__:
 
   $ pip install stix2
 
+Note: The library requires Python 3.6+.
+
 Usage
 -----
 
@@ -33,10 +35,11 @@ be set automatically if not provided as keyword arguments.
     from stix2 import Indicator
 
     indicator = Indicator(name="File hash for malware variant",
-                          labels=["malicious-activity"],
+                          indicator_types=["malicious-activity"],
+                          pattern_type="stix",
                           pattern="[file:hashes.md5 = 'd41d8cd98f00b204e9800998ecf8427e']")
 
-To parse a STIX JSON string into a Python STIX object, use ``parse()``:
+To parse a STIX JSON string into a Python STIX object, use ``parse()``. To serialize a STIX object, use ``serialize()``:
 
 .. code-block:: python
 
@@ -53,26 +56,29 @@ To parse a STIX JSON string into a Python STIX object, use ``parse()``:
             "malicious-activity"
         ],
         "pattern_type": "stix",
+        "pattern_version": "2.1",
         "pattern": "[file:hashes.md5 ='d41d8cd98f00b204e9800998ecf8427e']",
         "valid_from": "2017-09-26T23:33:39.829952Z"
     }""")
 
-    print(indicator)
+    print(indicator.serialize(pretty=True))
 
 For more in-depth documentation, please see `https://stix2.readthedocs.io/ <https://stix2.readthedocs.io/>`__.
 
-STIX 2.X Technical Specification Support
-----------------------------------------
+STIX 2 Technical Specification Support
+--------------------------------------
 
-This version of python-stix2 brings initial support to STIX 2.1 currently at the
-CSD level. The intention is to help debug components of the library and also
-check for problems that should be fixed in the specification.
+This version of cti-python-stix2 brings support to `STIX Version 2.1 <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html>`__
+published on 10 June 2021 currently at the Committee Specification (CS) 03 level, also know as the "OASIS Standard".
 
-The `stix2` Python library is built to support multiple versions of the STIX
-Technical Specification. With every major release of stix2 the ``import stix2``
-statement will automatically load the SDO/SROs equivalent to the most recent
-supported 2.X Committee Specification. Please see the library documentation for
-more details.
+The stix2 Python library supports multiple versions of the STIX 2 Technical
+Specification. The library will be updated to support new Committee
+Specification Drafts (CSDs) as they are released, but modules for these
+versions must be imported manually until the CSD reaches CS level. In new
+major releases of stix2 the ``import stix2`` implicit import statement
+will be updated to automatically load the STIX Objects equivalent to the most
+recently supported CS. Please see the `library documentation <https://stix2.readthedocs.io/en/latest/guide/ts_support.html>`__
+for details.
 
 Governance
 ----------
@@ -129,15 +135,14 @@ select additional or substitute Maintainers, per `consensus agreements
 
 **Current Maintainers of this TC Open Repository**
 
--  `Chris Lenk <mailto:clenk@mitre.org>`__; GitHub ID:
-   https://github.com/clenk/; WWW: `MITRE Corporation <http://www.mitre.org/>`__
-
--  `Emmanuelle Vargas-Gonzalez <mailto:emmanuelle@mitre.org>`__; GitHub ID:
-   https://github.com/emmanvg/; WWW: `MITRE
-   Corporation <https://www.mitre.org/>`__
-
 -  `Jason Keirstead <mailto:Jason.Keirstead@ca.ibm.com>`__; GitHub ID:
    https://github.com/JasonKeirstead; WWW: `IBM <http://www.ibm.com/>`__
+
+-  `Emily Ratliff <mailto:Emily.Ratliff@ibm.com>`__; GitHub ID:
+   https://github.com/ejratl; WWW: `IBM <http://www.ibm.com/>`__
+
+-  `Rich Piazza <mailto:rpiazza@mitre.org>`__; GitHub ID:
+   https://github.com/rpiazza; WWW: `MITRE <http://www.mitre.org/>`__
 
 About OASIS TC Open Repositories
 --------------------------------
@@ -159,8 +164,8 @@ questions about TC Open Repository participation to OASIS Staff at
 repository-admin@oasis-open.org and any specific CLA-related questions
 to repository-cla@oasis-open.org.
 
-.. |Build_Status| image:: https://travis-ci.org/oasis-open/cti-python-stix2.svg?branch=master
-   :target: https://travis-ci.org/oasis-open/cti-python-stix2
+.. |Build_Status| image:: https://github.com/oasis-open/cti-python-stix2/workflows/cti-python-stix2%20test%20harness/badge.svg
+   :target: https://github.com/oasis-open/cti-python-stix2/actions?query=workflow%3A%22cti-python-stix2+test+harness%22
    :alt: Build Status
 .. |Coverage| image:: https://codecov.io/gh/oasis-open/cti-python-stix2/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/oasis-open/cti-python-stix2

@@ -1,6 +1,5 @@
 import datetime as dt
 import re
-import uuid
 
 import pytest
 import pytz
@@ -46,7 +45,7 @@ def test_observed_data_example():
         objects={
             "0": {
                 "type": "file",
-                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "id": "file--7af1312c-4402-5d2f-b169-b118d73b85c4",
                 "name": "foo.exe",
             },
         },
@@ -102,12 +101,12 @@ def test_observed_data_example_with_refs():
         objects={
             "0": {
                 "type": "file",
-                "id": "file--5956efbb-a7b0-566d-a7f9-a202eb05c70f",
+                "id": "file--7af1312c-4402-5d2f-b169-b118d73b85c4",
                 "name": "foo.exe",
             },
             "1": {
                 "type": "directory",
-                "id": "directory--536a61a4-0934-516b-9aad-fcbb75e0583a",
+                "id": "directory--ee97f78e-7e2b-5b3d-bcbd-5692968cacea",
                 "path": "/usr/home",
                 "contains_refs": ["file--5956efbb-a7b0-566d-a7f9-a202eb05c70f"],
             },
@@ -156,7 +155,7 @@ def test_observed_data_example_with_object_refs():
         ],
     )
 
-    assert str(observed_data) == EXPECTED_OBJECT_REFS
+    assert observed_data.serialize(pretty=True) == EXPECTED_OBJECT_REFS
 
 
 def test_observed_data_object_constraint():
@@ -209,7 +208,7 @@ def test_observed_data_example_with_bad_refs():
 
     assert excinfo.value.cls == stix2.v21.Directory
     assert excinfo.value.prop_name == "contains_refs"
-    assert "The type-specifying prefix 'monkey' for this property is not valid" in excinfo.value.reason
+    assert "The type-specifying prefix 'monkey' for this property is not" in excinfo.value.reason
 
 
 def test_observed_data_example_with_non_dictionary():
@@ -497,12 +496,14 @@ def test_parse_email_message_not_multipart(data):
 def test_parse_file_archive(data):
     odata_str = OBJECTS_REGEX.sub('"objects": { %s }' % data, EXPECTED)
     odata = stix2.parse(odata_str, version="2.1")
-    assert all(x in odata.objects["3"].extensions['archive-ext'].contains_refs
-               for x in [
-                   "file--ecd47d73-15e4-5250-afda-ef8897b22340",
-                   "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
-                   "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
-               ])
+    assert all(
+        x in odata.objects["3"].extensions['archive-ext'].contains_refs
+        for x in [
+            "file--ecd47d73-15e4-5250-afda-ef8897b22340",
+            "file--65f2873d-38c2-56b4-bfa5-e3ef21e8a3c3",
+            "file--ef2d6dca-ec7d-5ab7-8dd9-ec9c0dee0eac",
+        ]
+    )
 
 
 @pytest.mark.parametrize(
@@ -719,7 +720,7 @@ def test_directory_example():
     assert dir1.ctime == dt.datetime(2015, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert dir1.mtime == dt.datetime(2015, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
     assert dir1.atime == dt.datetime(2015, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
-    assert dir1.contains_refs == ["file--9d050a3b-72cd-5b57-bf18-024e74e1e5eb"]
+    assert dir1.contains_refs == ["file--c6ae2cf8-92d3-56d0-a25f-713efad643a7"]
 
 
 def test_directory_example_ref_error():
@@ -747,7 +748,7 @@ def test_domain_name_example():
     )
 
     assert dn2.value == "example.com"
-    assert dn2.resolves_to_refs == ["domain-name--02af94ea-7e38-5718-87c3-5cc023e3d49d"]
+    assert dn2.resolves_to_refs == ["domain-name--5b5803bf-a7eb-5076-b799-96aa574c44eb"]
 
 
 def test_domain_name_example_invalid_ref_type():
@@ -783,6 +784,22 @@ def test_file_example():
     assert f.ctime == dt.datetime(2016, 12, 21, 19, 0, 0, tzinfo=pytz.utc)
     assert f.mtime == dt.datetime(2016, 12, 24, 19, 0, 0, tzinfo=pytz.utc)
     assert f.atime == dt.datetime(2016, 12, 21, 20, 0, 0, tzinfo=pytz.utc)
+
+
+def test_file_ssdeep_example():
+    f = stix2.v21.File(
+        name="example.dll",
+        hashes={
+            "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a",
+            "SSDEEP": "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV",
+        },
+        size=1024,
+    )
+
+    assert f.name == "example.dll"
+    assert f.size == 1024
+    assert f.hashes["SHA-256"] == "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+    assert f.hashes["SSDEEP"] == "96:gS/mFkCpXTWLr/PbKQHbr/S/mFkCpXTWLr/PbKQHbrB:Tu6SXTWGQHbeu6SXTWGQHbV"
 
 
 def test_file_example_with_NTFSExt():
@@ -882,6 +899,27 @@ def test_file_example_with_RasterImageExt_Object():
     assert f.name == "qwerty.jpeg"
     assert f.extensions["raster-image-ext"].bits_per_pixel == 123
     assert f.extensions["raster-image-ext"].exif_tags["XResolution"] == 4928
+
+
+def test_file_with_archive_ext_object():
+    ad = stix2.v21.Directory(path="archived/path")
+    f_obj = stix2.v21.File(
+        name="foo", extensions={
+            "archive-ext": {
+                "contains_refs": [ad],
+            },
+        },
+    )
+    f_ref = stix2.v21.File(
+        name="foo", extensions={
+            "archive-ext": {
+                "contains_refs": [ad.id],
+            },
+        },
+    )
+
+    assert f_obj["id"] == f_ref["id"]
+    assert f_obj["extensions"]["archive-ext"]["contains_refs"][0] == ad["id"]
 
 
 RASTER_IMAGE_EXT = """{
@@ -1032,7 +1070,7 @@ def test_ipv4_address_valid_refs():
     )
 
     assert ip4.value == "177.60.40.7"
-    assert ip4.resolves_to_refs == ["mac-addr--a85820f7-d9b7-567a-a3a6-dedc34139342", "mac-addr--9a59b496-fdeb-510f-97b5-7137210bc699"]
+    assert ip4.resolves_to_refs == ["mac-addr--f72d7d00-86bd-5cd2-8c86-52f7a83bef62", "mac-addr--875ad625-177b-5c2a-9101-d44b0ad55938"]
 
 
 def test_ipv4_address_example_cidr():
@@ -1103,7 +1141,6 @@ def test_network_traffic_socket_example():
     h = stix2.v21.SocketExt(
         is_listening=True,
         address_family="AF_INET",
-        protocol_family="PF_INET",
         socket_type="SOCK_STREAM",
     )
     nt = stix2.v21.NetworkTraffic(
@@ -1113,8 +1150,20 @@ def test_network_traffic_socket_example():
     )
     assert nt.extensions['socket-ext'].is_listening
     assert nt.extensions['socket-ext'].address_family == "AF_INET"
-    assert nt.extensions['socket-ext'].protocol_family == "PF_INET"
     assert nt.extensions['socket-ext'].socket_type == "SOCK_STREAM"
+
+
+def test_correct_socket_options():
+    se1 = stix2.v21.SocketExt(
+        is_listening=True,
+        address_family="AF_INET",
+        socket_type="SOCK_STREAM",
+        options={"ICMP6_RCVTIMEO": 100},
+    )
+
+    assert se1.address_family == "AF_INET"
+    assert se1.socket_type == "SOCK_STREAM"
+    assert se1.options == {"ICMP6_RCVTIMEO": 100}
 
 
 def test_incorrect_socket_options():
@@ -1122,7 +1171,6 @@ def test_incorrect_socket_options():
         stix2.v21.SocketExt(
             is_listening=True,
             address_family="AF_INET",
-            protocol_family="PF_INET",
             socket_type="SOCK_STREAM",
             options={"RCVTIMEO": 100},
         )
@@ -1132,7 +1180,6 @@ def test_incorrect_socket_options():
         stix2.v21.SocketExt(
             is_listening=True,
             address_family="AF_INET",
-            protocol_family="PF_INET",
             socket_type="SOCK_STREAM",
             options={"SO_RCVTIMEO": '100'},
         )
@@ -1171,8 +1218,8 @@ def test_process_example_empty_error():
         stix2.v21.Process()
 
     assert excinfo.value.cls == stix2.v21.Process
-    properties_of_process = list(stix2.v21.Process._properties.keys())
-    properties_of_process = [prop for prop in properties_of_process if prop not in ["type", "id", "defanged", "spec_version"]]
+    properties_of_process = stix2.v21.Process._properties.keys()
+    properties_of_process -= {"type", "id", "defanged", "spec_version", "extensions"}
     assert excinfo.value.properties == sorted(properties_of_process)
     msg = "At least one of the ({1}) properties for {0} must be populated."
     msg = msg.format(
@@ -1184,9 +1231,11 @@ def test_process_example_empty_error():
 
 def test_process_example_empty_with_extensions():
     with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
-        stix2.v21.Process(extensions={
-            "windows-process-ext": {},
-        })
+        stix2.v21.Process(
+            extensions={
+                "windows-process-ext": {},
+            },
+        )
 
     assert excinfo.value.cls == stix2.v21.Process
 
@@ -1231,50 +1280,56 @@ def test_process_example_extensions_empty():
 
 
 def test_process_example_with_WindowsProcessExt_Object():
-    p = stix2.v21.Process(extensions={
-        "windows-process-ext": stix2.v21.WindowsProcessExt(
-            aslr_enabled=True,
-            dep_enabled=True,
-            priority="HIGH_PRIORITY_CLASS",
-            owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
-        ),   # noqa
-    })
+    p = stix2.v21.Process(
+        extensions={
+            "windows-process-ext": stix2.v21.WindowsProcessExt(
+                aslr_enabled=True,
+                dep_enabled=True,
+                priority="HIGH_PRIORITY_CLASS",
+                owner_sid="S-1-5-21-186985262-1144665072-74031268-1309",
+            ),   # noqa
+        },
+    )
 
     assert p.extensions["windows-process-ext"].dep_enabled
     assert p.extensions["windows-process-ext"].owner_sid == "S-1-5-21-186985262-1144665072-74031268-1309"
 
 
 def test_process_example_with_WindowsServiceExt():
-    p = stix2.v21.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v21.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
         },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
 
 
 def test_process_example_with_WindowsProcessServiceExt():
-    p = stix2.v21.Process(extensions={
-        "windows-service-ext": {
-            "service_name": "sirvizio",
-            "display_name": "Sirvizio",
-            "start_type": "SERVICE_AUTO_START",
-            "service_type": "SERVICE_WIN32_OWN_PROCESS",
-            "service_status": "SERVICE_RUNNING",
+    p = stix2.v21.Process(
+        extensions={
+            "windows-service-ext": {
+                "service_name": "sirvizio",
+                "display_name": "Sirvizio",
+                "start_type": "SERVICE_AUTO_START",
+                "service_type": "SERVICE_WIN32_OWN_PROCESS",
+                "service_status": "SERVICE_RUNNING",
+            },
+            "windows-process-ext": {
+                "aslr_enabled": True,
+                "dep_enabled": True,
+                "priority": "HIGH_PRIORITY_CLASS",
+                "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
+            },
         },
-        "windows-process-ext": {
-            "aslr_enabled": True,
-            "dep_enabled": True,
-            "priority": "HIGH_PRIORITY_CLASS",
-            "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309",
-        },
-    })
+    )
 
     assert p.extensions["windows-service-ext"].service_name == "sirvizio"
     assert p.extensions["windows-service-ext"].service_type == "SERVICE_WIN32_OWN_PROCESS"
@@ -1286,6 +1341,7 @@ def test_software_example():
     s = stix2.v21.Software(
         name="Word",
         cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
+        swid="com.acme.rms-ce-v4-1-5-0",
         version="2002",
         vendor="Microsoft",
     )
@@ -1368,9 +1424,9 @@ def test_windows_registry_key_example():
         values=[v],
     )
     assert w.key == "hkey_local_machine\\system\\bar\\foo"
-    assert w.values[0].name == "Foo"
-    assert w.values[0].data == "qwerty"
-    assert w.values[0].data_type == "REG_SZ"
+    assert w["values"][0].name == "Foo"
+    assert w["values"][0].data == "qwerty"
+    assert w["values"][0].data_type == "REG_SZ"
     # ensure no errors in serialization because of 'values'
     assert "Foo" in str(w)
 
@@ -1437,126 +1493,4 @@ def test_objects_deprecation():
                     "name": "foo",
                 },
             },
-        )
-
-
-def test_deterministic_id_same_extra_prop_vals():
-    email_addr_1 = stix2.v21.EmailAddress(
-        value="john@example.com",
-        display_name="Johnny Doe",
-    )
-
-    email_addr_2 = stix2.v21.EmailAddress(
-        value="john@example.com",
-        display_name="Johnny Doe",
-    )
-
-    assert email_addr_1.id == email_addr_2.id
-
-    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
-    assert uuid_obj_1.variant == uuid.RFC_4122
-    assert uuid_obj_1.version == 5
-
-    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
-    assert uuid_obj_2.variant == uuid.RFC_4122
-    assert uuid_obj_2.version == 5
-
-
-def test_deterministic_id_diff_extra_prop_vals():
-    email_addr_1 = stix2.v21.EmailAddress(
-        value="john@example.com",
-        display_name="Johnny Doe",
-    )
-
-    email_addr_2 = stix2.v21.EmailAddress(
-        value="john@example.com",
-        display_name="Janey Doe",
-    )
-
-    assert email_addr_1.id == email_addr_2.id
-
-    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
-    assert uuid_obj_1.variant == uuid.RFC_4122
-    assert uuid_obj_1.version == 5
-
-    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
-    assert uuid_obj_2.variant == uuid.RFC_4122
-    assert uuid_obj_2.version == 5
-
-
-def test_deterministic_id_diff_contributing_prop_vals():
-    email_addr_1 = stix2.v21.EmailAddress(
-        value="john@example.com",
-        display_name="Johnny Doe",
-    )
-
-    email_addr_2 = stix2.v21.EmailAddress(
-        value="jane@example.com",
-        display_name="Janey Doe",
-    )
-
-    assert email_addr_1.id != email_addr_2.id
-
-    uuid_obj_1 = uuid.UUID(email_addr_1.id[-36:])
-    assert uuid_obj_1.variant == uuid.RFC_4122
-    assert uuid_obj_1.version == 5
-
-    uuid_obj_2 = uuid.UUID(email_addr_2.id[-36:])
-    assert uuid_obj_2.variant == uuid.RFC_4122
-    assert uuid_obj_2.version == 5
-
-
-def test_deterministic_id_no_contributing_props():
-    email_msg_1 = stix2.v21.EmailMessage(
-        is_multipart=False,
-    )
-
-    email_msg_2 = stix2.v21.EmailMessage(
-        is_multipart=False,
-    )
-
-    assert email_msg_1.id != email_msg_2.id
-
-    uuid_obj_1 = uuid.UUID(email_msg_1.id[-36:])
-    assert uuid_obj_1.variant == uuid.RFC_4122
-    assert uuid_obj_1.version == 4
-
-    uuid_obj_2 = uuid.UUID(email_msg_2.id[-36:])
-    assert uuid_obj_2.variant == uuid.RFC_4122
-    assert uuid_obj_2.version == 4
-
-
-def test_ipv4_resolves_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv4Address(
-            value="26.09.19.70",
-            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
-        )
-
-
-def test_ipv4_belongs_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv4Address(
-            value="21.12.19.64",
-            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
-        )
-
-
-def test_ipv6_resolves_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv6Address(
-            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-            resolves_to_refs=["mac-addr--08900593-0265-52fc-93c0-5b4a942f5887"],
-        )
-
-
-def test_ipv6_belongs_to_refs_deprecation():
-    with pytest.warns(stix2.exceptions.STIXDeprecationWarning):
-
-        stix2.v21.IPv6Address(
-            value="2001:0db8:85a3:0000:0000:8a2e:0370:7334",
-            belongs_to_refs=["autonomous-system--52e0a49d-d683-5801-a7b8-145765a1e116"],
         )

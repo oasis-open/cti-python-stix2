@@ -1,38 +1,49 @@
 """STIX 2.1 Domain Objects."""
 
 from collections import OrderedDict
-import itertools
+from urllib.parse import quote_plus
 import warnings
 
-from six.moves.urllib.parse import quote_plus
+from stix2patterns.validator import run_validator
 
-from ..core import STIXDomainObject
 from ..custom import _custom_object_builder
-from ..exceptions import PropertyPresenceError, STIXDeprecationWarning
+from ..exceptions import (
+    InvalidValueError, PropertyPresenceError, STIXDeprecationWarning,
+)
 from ..properties import (
-    BinaryProperty, BooleanProperty, EmbeddedObjectProperty, EnumProperty,
-    FloatProperty, IDProperty, IntegerProperty, ListProperty,
-    ObservableProperty, PatternProperty, ReferenceProperty, StringProperty,
+    BooleanProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+    IDProperty, IntegerProperty, ListProperty, ObservableProperty,
+    OpenVocabProperty, PatternProperty, ReferenceProperty, StringProperty,
     TimestampProperty, TypeProperty,
 )
 from ..utils import NOW
-from .common import ExternalReference, GranularMarking, KillChainPhase
+from .base import _DomainObject
+from .common import (
+    CustomExtension, ExternalReference, GranularMarking, KillChainPhase,
+)
+from .vocab import (
+    ATTACK_MOTIVATION, ATTACK_RESOURCE_LEVEL, GROUPING_CONTEXT, IDENTITY_CLASS,
+    IMPLEMENTATION_LANGUAGE, INDICATOR_TYPE, INDUSTRY_SECTOR,
+    INFRASTRUCTURE_TYPE, MALWARE_CAPABILITIES, MALWARE_RESULT, MALWARE_TYPE,
+    OPINION, PATTERN_TYPE, PROCESSOR_ARCHITECTURE, REGION, REPORT_TYPE,
+    THREAT_ACTOR_ROLE, THREAT_ACTOR_SOPHISTICATION, THREAT_ACTOR_TYPE,
+    TOOL_TYPE,
+)
 
 
-class AttackPattern(STIXDomainObject):
-    # TODO: Add link
+class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_axjijf603msy>`__.
     """
 
     _type = 'attack-pattern'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('aliases', ListProperty(StringProperty)),
@@ -44,23 +55,23 @@ class AttackPattern(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class Campaign(STIXDomainObject):
-    # TODO: Add link
+class Campaign(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_pcpvfz4ik6d6>`__.
     """
 
     _type = 'campaign'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('aliases', ListProperty(StringProperty)),
@@ -74,6 +85,7 @@ class Campaign(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -83,30 +95,25 @@ class Campaign(STIXDomainObject):
         last_seen = self.get('last_seen')
 
         if first_seen and last_seen and last_seen < first_seen:
-            msg = "{0.id} 'last_seen' must be greater than or equal 'first_seen'"
+            msg = "{0.id} 'last_seen' must be greater than or equal to 'first_seen'"
             raise ValueError(msg.format(self))
 
 
-class CourseOfAction(STIXDomainObject):
-    # TODO: Add link
+class CourseOfAction(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_a925mpw39txn>`__.
     """
 
     _type = 'course-of-action'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('action_type', StringProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
-        ('action_bin', BinaryProperty()),
-        ('action_reference', EmbeddedObjectProperty(ExternalReference)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -114,31 +121,27 @@ class CourseOfAction(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
-    def _check_object_constraints(self):
-        super(CourseOfAction, self)._check_object_constraints()
 
-        self._check_mutually_exclusive_properties(
-            ["action_bin", "action_reference"],
-            at_least_one=False,
-        )
-
-
-class Grouping(STIXDomainObject):
-    # TODO: Add link
+class Grouping(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_t56pn7elv6u7>`__.
     """
 
     _type = 'grouping'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('name', StringProperty()),
+        ('description', StringProperty()),
+        ('context', OpenVocabProperty(GROUPING_CONTEXT, required=True)),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -146,32 +149,28 @@ class Grouping(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
-        ('name', StringProperty()),
-        ('description', StringProperty()),
-        ('context', StringProperty(required=True)),
-        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class Identity(STIXDomainObject):
-    # TODO: Add link
+class Identity(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_wh296fiwpklp>`__.
     """
 
     _type = 'identity'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('roles', ListProperty(StringProperty)),
-        ('identity_class', StringProperty(required=True)),
-        ('sectors', ListProperty(StringProperty)),
+        ('identity_class', OpenVocabProperty(IDENTITY_CLASS)),
+        ('sectors', ListProperty(OpenVocabProperty(INDUSTRY_SECTOR))),
         ('contact_information', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -180,30 +179,57 @@ class Identity(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class Indicator(STIXDomainObject):
-    # TODO: Add link
+class Incident(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_sczfhw64pjxt>`__.
+    """
+
+    _type = 'incident'
+    _properties = OrderedDict([
+        ('type', TypeProperty(_type, spec_version='2.1')),
+        ('spec_version', StringProperty(fixed='2.1')),
+        ('id', IDProperty(_type, spec_version='2.1')),
+        ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
+    ])
+
+
+class Indicator(_DomainObject):
+    """For more detailed information on this object's properties, see
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_muftrcpnf89v>`__.
     """
 
     _type = 'indicator'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('indicator_types', ListProperty(StringProperty, required=True)),
+        ('indicator_types', ListProperty(OpenVocabProperty(INDICATOR_TYPE))),
         ('pattern', PatternProperty(required=True)),
-        ('pattern_type', StringProperty(required=True)),
+        ('pattern_type', OpenVocabProperty(PATTERN_TYPE, required=True)),
         ('pattern_version', StringProperty()),
-        ('valid_from', TimestampProperty(default=lambda: NOW, required=True)),
+        ('valid_from', TimestampProperty(default=lambda: NOW)),
         ('valid_until', TimestampProperty()),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -213,6 +239,7 @@ class Indicator(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, *args, **kwargs):
@@ -220,7 +247,7 @@ class Indicator(STIXDomainObject):
         if kwargs.get('pattern') and kwargs.get('pattern_type') == 'stix' and not kwargs.get('pattern_version'):
             kwargs['pattern_version'] = '2.1'
 
-        super(STIXDomainObject, self).__init__(*args, **kwargs)
+        super(Indicator, self).__init__(*args, **kwargs)
 
     def _check_object_constraints(self):
         super(Indicator, self)._check_object_constraints()
@@ -232,21 +259,37 @@ class Indicator(STIXDomainObject):
             msg = "{0.id} 'valid_until' must be greater than 'valid_from'"
             raise ValueError(msg.format(self))
 
+        if self.get('pattern_type') == "stix":
+            try:
+                pat_ver = self.get('pattern_version')
+            except AttributeError:
+                pat_ver = '2.1'
 
-class Infrastructure(STIXDomainObject):
-    # TODO: Add link
+            errors = run_validator(self.get('pattern'), pat_ver)
+            if errors:
+                raise InvalidValueError(self.__class__, 'pattern', str(errors[0]))
+
+
+class Infrastructure(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_jo3k1o6lr9>`__.
     """
 
     _type = 'infrastructure'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('name', StringProperty(required=True)),
+        ('description', StringProperty()),
+        ('infrastructure_types', ListProperty(OpenVocabProperty(INFRASTRUCTURE_TYPE))),
+        ('aliases', ListProperty(StringProperty)),
+        ('kill_chain_phases', ListProperty(KillChainPhase)),
+        ('first_seen', TimestampProperty()),
+        ('last_seen', TimestampProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -254,13 +297,7 @@ class Infrastructure(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
-        ('name', StringProperty(required=True)),
-        ('description', StringProperty()),
-        ('infrastructure_types', ListProperty(StringProperty, required=True)),
-        ('aliases', ListProperty(StringProperty)),
-        ('kill_chain_phases', ListProperty(KillChainPhase)),
-        ('first_seen', TimestampProperty()),
-        ('last_seen', TimestampProperty()),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -274,29 +311,28 @@ class Infrastructure(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class IntrusionSet(STIXDomainObject):
-    # TODO: Add link
+class IntrusionSet(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_5ol9xlbbnrdn>`__.
     """
 
     _type = 'intrusion-set'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('aliases', ListProperty(StringProperty)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
         ('goals', ListProperty(StringProperty)),
-        ('resource_level', StringProperty()),
-        ('primary_motivation', StringProperty()),
-        ('secondary_motivations', ListProperty(StringProperty)),
+        ('resource_level', OpenVocabProperty(ATTACK_RESOURCE_LEVEL)),
+        ('primary_motivation', OpenVocabProperty(ATTACK_MOTIVATION)),
+        ('secondary_motivations', ListProperty(OpenVocabProperty(ATTACK_MOTIVATION))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -304,6 +340,7 @@ class IntrusionSet(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -317,26 +354,25 @@ class IntrusionSet(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class Location(STIXDomainObject):
-    # TODO: Add link
+class Location(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_th8nitr8jb4k>`__.
     """
 
     _type = 'location'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty()),
         ('description', StringProperty()),
         ('latitude', FloatProperty(min=-90.0, max=90.0)),
         ('longitude', FloatProperty(min=-180.0, max=180.0)),
         ('precision', FloatProperty(min=0.0)),
-        ('region', StringProperty()),
+        ('region', OpenVocabProperty(REGION)),
         ('country', StringProperty()),
         ('administrative_area', StringProperty()),
         ('city', StringProperty()),
@@ -349,6 +385,7 @@ class Location(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -425,32 +462,31 @@ class Location(STIXDomainObject):
         return final_url
 
 
-class Malware(STIXDomainObject):
-    # TODO: Add link
+class Malware(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_s5l7katgbp09>`__.
     """
 
     _type = 'malware'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty()),
         ('description', StringProperty()),
-        ('malware_types', ListProperty(StringProperty, required=True)),
+        ('malware_types', ListProperty(OpenVocabProperty(MALWARE_TYPE))),
         ('is_family', BooleanProperty(required=True)),
         ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
-        ('os_execution_envs', ListProperty(StringProperty)),
-        ('architecture_execution_envs', ListProperty(StringProperty)),
-        ('implementation_languages', ListProperty(StringProperty)),
-        ('capabilities', ListProperty(StringProperty)),
+        ('operating_system_refs', ListProperty(ReferenceProperty(valid_types='software', spec_version='2.1'))),
+        ('architecture_execution_envs', ListProperty(OpenVocabProperty(PROCESSOR_ARCHITECTURE))),
+        ('implementation_languages', ListProperty(OpenVocabProperty(IMPLEMENTATION_LANGUAGE))),
+        ('capabilities', ListProperty(OpenVocabProperty(MALWARE_CAPABILITIES))),
         ('sample_refs', ListProperty(ReferenceProperty(valid_types=['artifact', 'file'], spec_version='2.1'))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -459,6 +495,7 @@ class Malware(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -478,27 +515,19 @@ class Malware(STIXDomainObject):
             )
 
 
-class MalwareAnalysis(STIXDomainObject):
-    # TODO: Add link
+class MalwareAnalysis(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_6hdrixb3ua4j>`__.
     """
 
     _type = 'malware-analysis'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('revoked', BooleanProperty(default=lambda: False)),
-        ('labels', ListProperty(StringProperty)),
-        ('confidence', IntegerProperty()),
-        ('lang', StringProperty()),
-        ('external_references', ListProperty(ExternalReference)),
-        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
-        ('granular_markings', ListProperty(GranularMarking)),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('product', StringProperty(required=True)),
         ('version', StringProperty()),
         ('host_vm_ref', ReferenceProperty(valid_types='software', spec_version='2.1')),
@@ -511,30 +540,39 @@ class MalwareAnalysis(STIXDomainObject):
         ('submitted', TimestampProperty()),
         ('analysis_started', TimestampProperty()),
         ('analysis_ended', TimestampProperty()),
-        ('av_result', StringProperty()),
+        ('result_name', StringProperty()),
+        ('result', OpenVocabProperty(MALWARE_RESULT)),
         ('analysis_sco_refs', ListProperty(ReferenceProperty(valid_types="SCO", spec_version='2.1'))),
+        ('sample_ref', ReferenceProperty(valid_types="SCO", spec_version='2.1')),
+        ('revoked', BooleanProperty(default=lambda: False)),
+        ('labels', ListProperty(StringProperty)),
+        ('confidence', IntegerProperty()),
+        ('lang', StringProperty()),
+        ('external_references', ListProperty(ExternalReference)),
+        ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
+        ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
         super(MalwareAnalysis, self)._check_object_constraints()
 
-        self._check_at_least_one_property(["av_result", "analysis_sco_refs"])
+        self._check_at_least_one_property(["result", "analysis_sco_refs"])
 
 
-class Note(STIXDomainObject):
-    # TODO: Add link
+class Note(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_gudodcg1sbb9>`__.
     """
 
     _type = 'note'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('abstract', StringProperty()),
         ('content', StringProperty(required=True)),
         ('authors', ListProperty(StringProperty)),
@@ -546,28 +584,28 @@ class Note(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class ObservedData(STIXDomainObject):
-    # TODO: Add link
+class ObservedData(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_p49j1fwoxldc>`__.
     """
 
     _type = 'observed-data'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('first_observed', TimestampProperty(required=True)),
         ('last_observed', TimestampProperty(required=True)),
         ('number_observed', IntegerProperty(min=1, max=999999999, required=True)),
         ('objects', ObservableProperty(spec_version='2.1')),
-        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SRO"], spec_version="2.1"))),
+        ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SRO"], spec_version='2.1'))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -575,11 +613,10 @@ class ObservedData(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def __init__(self, *args, **kwargs):
-        self.__allow_custom = kwargs.get('allow_custom', False)
-        self._properties['objects'].allow_custom = kwargs.get('allow_custom', False)
 
         if "objects" in kwargs:
             warnings.warn(
@@ -605,33 +642,22 @@ class ObservedData(STIXDomainObject):
         )
 
 
-class Opinion(STIXDomainObject):
-    # TODO: Add link
+class Opinion(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_ht1vtzfbtzda>`__.
     """
 
     _type = 'opinion'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('explanation', StringProperty()),
         ('authors', ListProperty(StringProperty)),
-        (
-            'opinion', EnumProperty(
-                allowed=[
-                    'strongly-disagree',
-                    'disagree',
-                    'neutral',
-                    'agree',
-                    'strongly-agree',
-                ], required=True,
-            ),
-        ),
+        ('opinion', EnumProperty(OPINION, required=True)),
         ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
@@ -640,26 +666,26 @@ class Opinion(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class Report(STIXDomainObject):
-    # TODO: Add link
+class Report(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_n8bjzg1ysgdq>`__.
     """
 
     _type = 'report'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('report_types', ListProperty(StringProperty, required=True)),
+        ('report_types', ListProperty(OpenVocabProperty(REPORT_TYPE))),
         ('published', TimestampProperty(required=True)),
         ('object_refs', ListProperty(ReferenceProperty(valid_types=["SCO", "SDO", "SRO"], spec_version='2.1'), required=True)),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -669,36 +695,36 @@ class Report(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class ThreatActor(STIXDomainObject):
-    # TODO: Add link
+class ThreatActor(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_k017w16zutw>`__.
     """
 
     _type = 'threat-actor'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('threat_actor_types', ListProperty(StringProperty, required=True)),
+        ('threat_actor_types', ListProperty(OpenVocabProperty(THREAT_ACTOR_TYPE))),
         ('aliases', ListProperty(StringProperty)),
         ('first_seen', TimestampProperty()),
         ('last_seen', TimestampProperty()),
-        ('roles', ListProperty(StringProperty)),
+        ('roles', ListProperty(OpenVocabProperty(THREAT_ACTOR_ROLE))),
         ('goals', ListProperty(StringProperty)),
-        ('sophistication', StringProperty()),
-        ('resource_level', StringProperty()),
-        ('primary_motivation', StringProperty()),
-        ('secondary_motivations', ListProperty(StringProperty)),
-        ('personal_motivations', ListProperty(StringProperty)),
+        ('sophistication', OpenVocabProperty(THREAT_ACTOR_SOPHISTICATION)),
+        ('resource_level', OpenVocabProperty(ATTACK_RESOURCE_LEVEL)),
+        ('primary_motivation', OpenVocabProperty(ATTACK_MOTIVATION)),
+        ('secondary_motivations', ListProperty(OpenVocabProperty(ATTACK_MOTIVATION))),
+        ('personal_motivations', ListProperty(OpenVocabProperty(ATTACK_MOTIVATION))),
         ('revoked', BooleanProperty(default=lambda: False)),
         ('labels', ListProperty(StringProperty)),
         ('confidence', IntegerProperty()),
@@ -706,6 +732,7 @@ class ThreatActor(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
     def _check_object_constraints(self):
@@ -719,23 +746,22 @@ class ThreatActor(STIXDomainObject):
             raise ValueError(msg.format(self))
 
 
-class Tool(STIXDomainObject):
-    # TODO: Add link
+class Tool(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_z4voa9ndw8v>`__.
     """
 
     _type = 'tool'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
-        ('tool_types', ListProperty(StringProperty, required=True)),
+        ('tool_types', ListProperty(OpenVocabProperty(TOOL_TYPE))),
         ('aliases', ListProperty(StringProperty)),
         ('kill_chain_phases', ListProperty(KillChainPhase)),
         ('tool_version', StringProperty()),
@@ -746,23 +772,23 @@ class Tool(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-class Vulnerability(STIXDomainObject):
-    # TODO: Add link
+class Vulnerability(_DomainObject):
     """For more detailed information on this object's properties, see
-    `the STIX 2.1 specification <link here>`__.
+    `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_q5ytzmajn6re>`__.
     """
 
     _type = 'vulnerability'
     _properties = OrderedDict([
-        ('type', TypeProperty(_type)),
+        ('type', TypeProperty(_type, spec_version='2.1')),
         ('spec_version', StringProperty(fixed='2.1')),
         ('id', IDProperty(_type, spec_version='2.1')),
         ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
+        ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+        ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
         ('name', StringProperty(required=True)),
         ('description', StringProperty()),
         ('revoked', BooleanProperty(default=lambda: False)),
@@ -772,10 +798,11 @@ class Vulnerability(STIXDomainObject):
         ('external_references', ListProperty(ExternalReference)),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
+        ('extensions', ExtensionsProperty(spec_version='2.1')),
     ])
 
 
-def CustomObject(type='x-custom-type', properties=None):
+def CustomObject(type='x-custom-type', properties=None, extension_name=None, is_sdo=True):
     """Custom STIX Object type decorator.
 
     Example:
@@ -805,17 +832,18 @@ def CustomObject(type='x-custom-type', properties=None):
 
     """
     def wrapper(cls):
-        _properties = list(itertools.chain.from_iterable([
+        extension_properties = [x for x in properties if not x[0].startswith('x_')]
+        _properties = (
             [
-                ('type', TypeProperty(type)),
+                ('type', TypeProperty(type, spec_version='2.1')),
                 ('spec_version', StringProperty(fixed='2.1')),
                 ('id', IDProperty(type, spec_version='2.1')),
                 ('created_by_ref', ReferenceProperty(valid_types='identity', spec_version='2.1')),
-                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond')),
-            ],
-            [x for x in properties if not x[0].startswith('x_')],
-            [
+                ('created', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+                ('modified', TimestampProperty(default=lambda: NOW, precision='millisecond', precision_constraint='min')),
+            ]
+            + extension_properties
+            + [
                 ('revoked', BooleanProperty(default=lambda: False)),
                 ('labels', ListProperty(StringProperty)),
                 ('confidence', IntegerProperty()),
@@ -823,9 +851,23 @@ def CustomObject(type='x-custom-type', properties=None):
                 ('external_references', ListProperty(ExternalReference)),
                 ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
                 ('granular_markings', ListProperty(GranularMarking)),
-            ],
-            sorted([x for x in properties if x[0].startswith('x_')], key=lambda x: x[0]),
-        ]))
-        return _custom_object_builder(cls, type, _properties, '2.1')
+                ('extensions', ExtensionsProperty(spec_version='2.1')),
+            ]
+            + sorted((x for x in properties if x[0].startswith('x_')), key=lambda x: x[0])
+        )
+
+        if extension_name:
+            @CustomExtension(type=extension_name, properties={})
+            class NameExtension:
+                if is_sdo:
+                    extension_type = 'new-sdo'
+                else:
+                    extension_type = 'new-sro'
+
+            extension = extension_name.split('--')[1]
+            extension = extension.replace('-', '')
+            NameExtension.__name__ = 'ExtensionDefinition' + extension
+            cls.with_extension = extension_name
+        return _custom_object_builder(cls, type, _properties, '2.1', _DomainObject)
 
     return wrapper

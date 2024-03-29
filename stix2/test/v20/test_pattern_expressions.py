@@ -1,9 +1,16 @@
 import datetime
 
 import pytest
+import pytz
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
+import stix2.patterns
+import stix2.utils
+
+# flake8 does not approve of star imports.
+# flake8: noqa: F405
+from .pattern_ast_overrides import *
 
 
 def test_create_comparison_expression():
@@ -304,16 +311,18 @@ def test_multiple_qualifiers():
 
 
 def test_set_op():
-    exp = stix2.ObservationExpression(stix2.IsSubsetComparisonExpression(
-        "network-traffic:dst_ref.value",
-        "2001:0db8:dead:beef:0000:0000:0000:0000/64",
-    ))
+    exp = stix2.ObservationExpression(
+        stix2.IsSubsetComparisonExpression(
+            "network-traffic:dst_ref.value",
+            "2001:0db8:dead:beef:0000:0000:0000:0000/64",
+        ),
+    )
     assert str(exp) == "[network-traffic:dst_ref.value ISSUBSET '2001:0db8:dead:beef:0000:0000:0000:0000/64']"
 
 
 def test_timestamp():
-    ts = stix2.TimestampConstant('2014-01-13T07:03:17Z')
-    assert str(ts) == "t'2014-01-13T07:03:17Z'"
+    ts = stix2.StringConstant('2014-01-13T07:03:17Z')
+    assert str(ts) == "'2014-01-13T07:03:17Z'"
 
 
 def test_boolean():
@@ -361,11 +370,6 @@ def test_invalid_constant_type():
 def test_invalid_integer_constant():
     with pytest.raises(ValueError):
         stix2.IntegerConstant('foo')
-
-
-def test_invalid_timestamp_constant():
-    with pytest.raises(ValueError):
-        stix2.TimestampConstant('foo')
 
 
 def test_invalid_float_constant():
@@ -461,23 +465,23 @@ def test_invalid_within_qualifier():
 
 def test_startstop_qualifier():
     qual = stix2.StartStopQualifier(
-        stix2.TimestampConstant('2016-06-01T00:00:00Z'),
-        datetime.datetime(2017, 3, 12, 8, 30, 0),
+        stix2.StringConstant('2016-06-01T00:00:00Z'),
+        stix2.StringConstant('2017-03-12T08:30:00Z'),
     )
-    assert str(qual) == "START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"
+    assert str(qual) == "START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'"
 
     qual2 = stix2.StartStopQualifier(
-        datetime.date(2016, 6, 1),
-        stix2.TimestampConstant('2016-07-01T00:00:00Z'),
+        stix2.StringConstant("2016-06-01T00:00:00Z"),
+        stix2.StringConstant('2016-07-01T00:00:00Z'),
     )
-    assert str(qual2) == "START t'2016-06-01T00:00:00Z' STOP t'2016-07-01T00:00:00Z'"
+    assert str(qual2) == "START '2016-06-01T00:00:00Z' STOP '2016-07-01T00:00:00Z'"
 
 
 def test_invalid_startstop_qualifier():
     with pytest.raises(ValueError):
         stix2.StartStopQualifier(
             'foo',
-            stix2.TimestampConstant('2016-06-01T00:00:00Z'),
+            stix2.StringConstant('2016-06-01T00:00:00Z'),
         )
 
     with pytest.raises(ValueError):
@@ -487,6 +491,44 @@ def test_invalid_startstop_qualifier():
         )
 
 
+@pytest.mark.parametrize(
+    "input_, expected_class, expected_value", [
+        (1, stix2.patterns.IntegerConstant, 1),
+        (1.5, stix2.patterns.FloatConstant, 1.5),
+        ("abc", stix2.patterns.StringConstant, "abc"),
+        (True, stix2.patterns.BooleanConstant, True),
+        (
+            "2001-02-10T21:36:15Z", stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+        (
+            datetime.datetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+            stix2.patterns.TimestampConstant,
+            stix2.utils.STIXdatetime(2001, 2, 10, 21, 36, 15, tzinfo=pytz.utc),
+        ),
+    ],
+)
+def test_make_constant_simple(input_, expected_class, expected_value):
+    const = stix2.patterns.make_constant(input_)
+
+    assert isinstance(const, expected_class)
+    assert const.value == expected_value
+
+
+def test_make_constant_list():
+    list_const = stix2.patterns.make_constant([1, 2, 3])
+
+    assert isinstance(list_const, stix2.patterns.ListConstant)
+    assert all(
+        isinstance(elt, stix2.patterns.IntegerConstant)
+        for elt in list_const.value
+    )
+    assert all(
+        int_const.value == test_elt
+        for int_const, test_elt in zip(list_const.value, [1, 2, 3])
+    )
+
+
 def test_make_constant_already_a_constant():
     str_const = stix2.StringConstant('Foo')
     result = stix2.patterns.make_constant(str_const)
@@ -494,19 +536,114 @@ def test_make_constant_already_a_constant():
 
 
 def test_parsing_comparison_expression():
-    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']")
+    patt_obj = create_pattern_object("[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']", version="2.0")
     assert str(patt_obj) == "[file:hashes.'SHA-256' = 'aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f']"
 
 
 def test_parsing_qualified_expression():
     patt_obj = create_pattern_object(
         "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS",
+        version="2.0",
     )
     assert str(
         patt_obj,
     ) == "[network-traffic:dst_ref.type = 'domain-name' AND network-traffic:dst_ref.value = 'example.com'] REPEATS 5 TIMES WITHIN 1800 SECONDS"
 
 
+def test_parsing_start_stop_qualified_expression():
+    patt_obj = create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'", version="2.0")
+
+    assert str(
+        patt_obj,
+    ) == "[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'"
+
+
+def test_parsing_mixed_boolean_expression_1():
+    patt_obj = create_pattern_object("[a:b = 1 AND a:b = 2 OR a:b = 3]")
+    assert str(patt_obj) == "[a:b = 1 AND a:b = 2 OR a:b = 3]"
+
+
+def test_parsing_mixed_boolean_expression_2():
+    patt_obj = create_pattern_object("[a:b = 1 OR a:b = 2 AND a:b = 3]")
+    assert str(patt_obj) == "[a:b = 1 OR a:b = 2 AND a:b = 3]"
+
+
+def test_parsing_integer_index():
+    patt_obj = create_pattern_object("[a:b[1]=2]")
+    assert str(patt_obj) == "[a:b[1] = 2]"
+
+
+# This should never occur, because the first component will always be a property_name, and they should not be quoted.
+def test_parsing_quoted_first_path_component():
+    patt_obj = create_pattern_object("[a:'b'[1]=2]")
+    assert str(patt_obj) == "[a:'b'[1] = 2]"
+
+
+def test_parsing_quoted_second_path_component():
+    patt_obj = create_pattern_object("[a:b.'b'[1]=2]")
+    assert str(patt_obj) == "[a:b.'b'[1] = 2]"
+
+
+def test_parsing_illegal_start_stop_qualified_expression():
+    with pytest.raises(ValueError):
+        create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01' STOP '2017-03-12T08:30:00Z'", version="2.0")
+
+
 def test_list_constant():
-    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]")
+    patt_obj = create_pattern_object("[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]", version="2.0")
     assert str(patt_obj) == "[network-traffic:src_ref.value IN ('10.0.0.0', '10.0.0.1', '10.0.0.2')]"
+
+
+def test_ast_class_override_comp_equals():
+    patt_ast = create_pattern_object(
+        "[a:b=1]", "Testing", "stix2.test.v20.pattern_ast_overrides",
+        version="2.0",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
+    assert isinstance(patt_ast.operand, EqualityComparisonExpressionForTesting)
+    assert str(patt_ast) == "[a:b = 1]"
+
+
+def test_ast_class_override_string_constant():
+    patt_ast = create_pattern_object(
+        "[a:'b'[1].'c' < 'foo']", "Testing",
+        "stix2.test.v20.pattern_ast_overrides",
+        version="2.0",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.ObservationExpression)
+    assert isinstance(
+        patt_ast.operand, stix2.patterns.LessThanComparisonExpression,
+    )
+    assert isinstance(
+        patt_ast.operand.lhs.property_path[0].property_name,
+        str,
+    )
+    assert isinstance(
+        patt_ast.operand.lhs.property_path[1].property_name,
+        str,
+    )
+    assert isinstance(patt_ast.operand.rhs, StringConstantForTesting)
+
+    assert str(patt_ast) == "[a:'b'[1].c < 'foo']"
+
+
+def test_ast_class_override_startstop_qualifier():
+    patt_ast = create_pattern_object(
+        "[a:b=1] START '1993-01-20T01:33:52.592Z' STOP '2001-08-19T23:50:23.129Z'",
+        "Testing", "stix2.test.v20.pattern_ast_overrides", version="2.0",
+    )
+
+    assert isinstance(patt_ast, stix2.patterns.QualifiedObservationExpression)
+    assert isinstance(
+        patt_ast.observation_expression, stix2.patterns.ObservationExpression,
+    )
+    assert isinstance(
+        patt_ast.observation_expression.operand,
+        EqualityComparisonExpressionForTesting,
+    )
+    assert isinstance(
+        patt_ast.qualifier, StartStopQualifierForTesting,
+    )
+    assert str(patt_ast) == "[a:b = 1] START '1993-01-20T01:33:52.592Z' STOP '2001-08-19T23:50:23.129Z'"

@@ -1,11 +1,9 @@
-"""Classes to aid in working with the STIX 2 patterning language."""
+"""Classes to aid in working with the STIX2 patterning language."""
 
 import base64
 import binascii
 import datetime
 import re
-
-import six
 
 from .utils import parse_into_datetime
 
@@ -15,7 +13,7 @@ def escape_quotes_and_backslashes(s):
 
 
 def quote_if_needed(x):
-    if isinstance(x, six.string_types):
+    if isinstance(x, str):
         if x.find("-") != -1:
             if not x.startswith("'"):
                 return "'" + x + "'"
@@ -58,7 +56,7 @@ class TimestampConstant(_Constant):
 
 
 class IntegerConstant(_Constant):
-    """Pattern interger constant
+    """Pattern integer constant
 
     Args:
         value (int): integer value
@@ -121,21 +119,21 @@ class BooleanConstant(_Constant):
 
 
 _HASH_REGEX = {
-    "MD5": ("^[a-fA-F0-9]{32}$", "MD5"),
-    "MD6": ("^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
-    "RIPEMD160": ("^[a-fA-F0-9]{40}$", "RIPEMD-160"),
-    "SHA1": ("^[a-fA-F0-9]{40}$", "SHA-1"),
-    "SHA224": ("^[a-fA-F0-9]{56}$", "SHA-224"),
-    "SHA256": ("^[a-fA-F0-9]{64}$", "SHA-256"),
-    "SHA384": ("^[a-fA-F0-9]{96}$", "SHA-384"),
-    "SHA512": ("^[a-fA-F0-9]{128}$", "SHA-512"),
-    "SHA3224": ("^[a-fA-F0-9]{56}$", "SHA3-224"),
-    "SHA3256": ("^[a-fA-F0-9]{64}$", "SHA3-256"),
-    "SHA3384": ("^[a-fA-F0-9]{96}$", "SHA3-384"),
-    "SHA3512": ("^[a-fA-F0-9]{128}$", "SHA3-512"),
-    "SSDEEP": ("^[a-zA-Z0-9/+:.]{1,128}$", "ssdeep"),
-    "WHIRLPOOL": ("^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
-    "TLSH": ("^[a-fA-F0-9]{70}$", "TLSH"),
+    "MD5": (r"^[a-fA-F0-9]{32}$", "MD5"),
+    "MD6": (r"^[a-fA-F0-9]{32}|[a-fA-F0-9]{40}|[a-fA-F0-9]{56}|[a-fA-F0-9]{64}|[a-fA-F0-9]{96}|[a-fA-F0-9]{128}$", "MD6"),
+    "RIPEMD160": (r"^[a-fA-F0-9]{40}$", "RIPEMD-160"),
+    "SHA1": (r"^[a-fA-F0-9]{40}$", "SHA-1"),
+    "SHA224": (r"^[a-fA-F0-9]{56}$", "SHA-224"),
+    "SHA256": (r"^[a-fA-F0-9]{64}$", "SHA-256"),
+    "SHA384": (r"^[a-fA-F0-9]{96}$", "SHA-384"),
+    "SHA512": (r"^[a-fA-F0-9]{128}$", "SHA-512"),
+    "SHA3224": (r"^[a-fA-F0-9]{56}$", "SHA3-224"),
+    "SHA3256": (r"^[a-fA-F0-9]{64}$", "SHA3-256"),
+    "SHA3384": (r"^[a-fA-F0-9]{96}$", "SHA3-384"),
+    "SHA3512": (r"^[a-fA-F0-9]{128}$", "SHA3-512"),
+    "SSDEEP": (r"^[a-zA-Z0-9/+:.]{1,128}$", "SSDEEP"),
+    "WHIRLPOOL": (r"^[a-fA-F0-9]{128}$", "WHIRLPOOL"),
+    "TLSH": (r"^[a-fA-F0-9]{70}$", "TLSH"),
 }
 
 
@@ -227,8 +225,8 @@ def make_constant(value):
         return value
 
     try:
-        return parse_into_datetime(value)
-    except ValueError:
+        return TimestampConstant(value)
+    except (ValueError, TypeError):
         pass
 
     if isinstance(value, str):
@@ -248,7 +246,10 @@ def make_constant(value):
 class _ObjectPathComponent(object):
     @staticmethod
     def create_ObjectPathComponent(component_name):
-        if component_name.endswith("_ref"):
+        # first case is to handle if component_name was quoted
+        if isinstance(component_name, StringConstant):
+            return BasicObjectPathComponent(component_name.value, False)
+        elif component_name.endswith("_ref"):
             return ReferenceObjectPathComponent(component_name)
         elif component_name.find("[") != -1:
             parse1 = component_name.split("[")
@@ -264,7 +265,7 @@ class BasicObjectPathComponent(_ObjectPathComponent):
     """Basic object path component (for an observation or expression)
 
     By "Basic", implies that the object path component is not a
-    list, object reference or futher referenced property, i.e. terminal
+    list, object reference or further referenced property, i.e. terminal
     component
 
     Args:
@@ -363,7 +364,7 @@ class _ComparisonExpression(_PatternExpression):
         else:
             self.rhs = make_constant(rhs)
         self.negated = negated
-        self.root_type = self.lhs.object_type_name
+        self.root_types = {self.lhs.object_type_name}
 
     def __str__(self):
         if self.negated:
@@ -503,15 +504,17 @@ class _BooleanExpression(_PatternExpression):
     """
     def __init__(self, operator, operands):
         self.operator = operator
-        self.operands = []
-        for arg in operands:
-            if not hasattr(self, "root_type"):
-                self.root_type = arg.root_type
-            elif self.root_type and (self.root_type != arg.root_type) and operator == "AND":
-                raise ValueError("All operands to an 'AND' expression must have the same object type")
-            elif self.root_type and (self.root_type != arg.root_type):
-                self.root_type = None
-            self.operands.append(arg)
+        self.operands = list(operands)
+        for arg in self.operands:
+            if not hasattr(self, "root_types"):
+                self.root_types = arg.root_types
+            elif operator == "AND":
+                self.root_types &= arg.root_types
+            else:
+                self.root_types |= arg.root_types
+
+            if not self.root_types:
+                raise ValueError("All operands to an 'AND' expression must be satisfiable with the same object type")
 
     def __str__(self):
         sub_exprs = []
@@ -551,7 +554,7 @@ class ObservationExpression(_PatternExpression):
         self.operand = operand
 
     def __str__(self):
-        return "[%s]" % self.operand
+        return "%s" % self.operand if isinstance(self.operand, (ObservationExpression, _CompoundObservationExpression)) else "[%s]" % self.operand
 
 
 class _CompoundObservationExpression(_PatternExpression):
@@ -610,8 +613,8 @@ class ParentheticalExpression(_PatternExpression):
     """
     def __init__(self, exp):
         self.expression = exp
-        if hasattr(exp, "root_type"):
-            self.root_type = exp.root_type
+        if hasattr(exp, "root_types"):
+            self.root_types = exp.root_types
 
     def __str__(self):
         return "(%s)" % self.expression
@@ -669,12 +672,16 @@ class StartStopQualifier(_ExpressionQualifier):
             self.start_time = start_time
         elif isinstance(start_time, datetime.date):
             self.start_time = TimestampConstant(start_time)
+        elif isinstance(start_time, StringConstant):
+            self.start_time = StringConstant(start_time.value)
         else:
             raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % start_time)
         if isinstance(stop_time, TimestampConstant):
             self.stop_time = stop_time
         elif isinstance(stop_time, datetime.date):
             self.stop_time = TimestampConstant(stop_time)
+        elif isinstance(stop_time, StringConstant):
+            self.stop_time = StringConstant(stop_time.value)
         else:
             raise ValueError("%s is not a valid argument for a Start/Stop Qualifier" % stop_time)
 

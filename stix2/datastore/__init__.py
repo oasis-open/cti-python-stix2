@@ -15,8 +15,6 @@ Python STIX2 DataStore API.
 from abc import ABCMeta, abstractmethod
 import uuid
 
-from six import with_metaclass
-
 from stix2.datastore.filters import Filter, FilterSet
 from stix2.utils import deduplicate
 
@@ -219,7 +217,7 @@ class DataStoreMixin(object):
             raise AttributeError(msg % self.__class__.__name__)
 
 
-class DataSink(with_metaclass(ABCMeta)):
+class DataSink(metaclass=ABCMeta):
     """An implementer will create a concrete subclass from
     this class for the specific DataSink.
 
@@ -245,7 +243,7 @@ class DataSink(with_metaclass(ABCMeta)):
         """
 
 
-class DataSource(with_metaclass(ABCMeta)):
+class DataSource(metaclass=ABCMeta):
     """An implementer will create a concrete subclass from
     this class for the specific DataSource.
 
@@ -481,14 +479,14 @@ class CompositeDataSource(DataSource):
             if data:
                 all_data.append(data)
 
-        # remove duplicate versions
-        if len(all_data) > 0:
-            all_data = deduplicate(all_data)
-        else:
-            return None
+        # Search for latest version
+        stix_obj = latest_ver = None
+        for obj in all_data:
+            ver = obj.get("modified") or obj.get("created")
 
-        # reduce to most recent version
-        stix_obj = sorted(all_data, key=lambda k: k['modified'], reverse=True)[0]
+            if stix_obj is None or ver is None or ver > latest_ver:
+                stix_obj = obj
+                latest_ver = ver
 
         return stix_obj
 
