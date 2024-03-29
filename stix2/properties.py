@@ -476,6 +476,7 @@ class DictionaryProperty(Property):
                 try:
                     type_instance.clean(dictified[k])
                     clean = True
+                    break
                 except ValueError:
                     continue
             
