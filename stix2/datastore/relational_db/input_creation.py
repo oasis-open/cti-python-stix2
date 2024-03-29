@@ -1,4 +1,3 @@
-from collections import OrderedDict
 
 from sqlalchemy import insert
 
@@ -7,32 +6,37 @@ from stix2.datastore.relational_db.utils import (
     SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
 )
 from stix2.properties import (
-    BinaryProperty, BooleanProperty, DictionaryProperty, EmbeddedObjectProperty, EnumProperty,
-    ExtensionsProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
+    BinaryProperty, BooleanProperty, DictionaryProperty,
+    EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+    HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
     Property, ReferenceProperty, StringProperty, TimestampProperty,
 )
 
 
 @add_method(Property)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     pass
 
 
 @add_method(BinaryProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(BooleanProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(DictionaryProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     bindings = {"id": stix_object["id"]}
-    table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name,
-                                                                schema_name)]
+    table = data_sink.tables_dictionary[
+        canonicalize_table_name(
+            table_name + "_" + name,
+            schema_name,
+        )
+    ]
     for idx, (name, value) in enumerate(stix_object.items()):
         name_binding = f"name{idx}"
         if len(self.value_types) == 1:
@@ -49,29 +53,38 @@ def generate_insert_information(self, data_sink, name, stix_object, table_name, 
 
 
 @add_method(EmbeddedObjectProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return generate_insert_for_embedded_object(data_sink, stix_object[name], name, schema_name)
 
 
 @add_method(EnumProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
+@add_method(ExtensionsProperty)
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+    pass
+
+
 @add_method(FloatProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(HexProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name):
     bindings = {"id": stix_object["id"]}
-    table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name,
-                                                                schema_name)]
+    table = data_sink.tables_dictionary[
+        canonicalize_table_name(
+            table_name + "_" + name,
+            schema_name,
+        )
+    ]
 
     for idx, (hash_name, hash_value) in enumerate(stix_object["hashes".items()]):
         hash_name_binding_name = "hash_name" + str(idx)
@@ -84,21 +97,22 @@ def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_
 
 
 @add_method(HashesProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name)
 
+
 @add_method(IDProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(IntegerProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(ListProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     if isinstance(self.contained, ReferenceProperty):
         insert_statements = list()
 
@@ -106,7 +120,7 @@ def generate_insert_information(self, data_sink, name, stix_object, table_name, 
         for idx, item in enumerate(stix_object[name]):
             bindings = {
                 "id": stix_object["id"],
-                "ref_id": item
+                "ref_id": item,
             }
             insert_statements.append(insert(table).values(bindings))
         return insert_statements
@@ -122,17 +136,17 @@ def generate_insert_information(self, data_sink, name, stix_object, table_name, 
 
 
 @add_method(ReferenceProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(StringProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(TimestampProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):
+def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
     return {name: stix_object[name]}
 
 
@@ -149,7 +163,7 @@ def generate_insert_for_array_in_table(table, values, foreign_key_value):
     for idx, item in enumerate(values):
         bindings = {
             "id": foreign_key_value,
-            "ref_id": item
+            "ref_id": item,
         }
         insert_statements.append(insert(table).values(bindings))
 
@@ -169,7 +183,8 @@ def generate_insert_for_external_references(data_sink, stix_object):
 
         if "hashes" in er:
             insert_statements.extend(
-                generate_insert_for_hashes(data_sink, "hashes", er["hashes"], "external_references_hashes", "sdo"))
+                generate_insert_for_hashes(data_sink, "hashes", er["hashes"], "external_references_hashes", "sdo"),
+            )
 
     return insert_statements
 
@@ -259,14 +274,14 @@ def generate_insert_for_embedded_object(data_sink, stix_object, type_name, schem
     object_table = data_sink.tables_dictionary[table_name]
     sub_insert_statements = list()
     for name, prop in stix_object._properties.items():
-            if name in stix_object:
-                result = prop.generate_insert_information(data_sink, name, stix_object, table_name, schema_name)
-                if isinstance(result,dict):
-                    bindings.update(result)
-                elif isinstance(result,list):
-                    sub_insert_statements.extend(result)
-                else:
-                    raise(ValueError(result))
+        if name in stix_object:
+            result = prop.generate_insert_information(data_sink, name, stix_object, table_name, schema_name)
+            if isinstance(result, dict):
+                bindings.update(result)
+            elif isinstance(result, list):
+                sub_insert_statements.extend(result)
+            else:
+                raise ValueError("wrong type" + result)
 
     insert_statements.append(insert(object_table).values(bindings))
     insert_statements.extend(sub_insert_statements)
@@ -288,15 +303,14 @@ def generate_insert_for_object(data_sink, stix_object, schema_name):
 
     sub_insert_statements = list()
     for name, prop in stix_object._properties.items():
-        if name == 'id' or name not in core_properties:
-            if name in stix_object:
-                result = prop.generate_insert_information(data_sink, name, stix_object, table_name, schema_name)
-                if isinstance(result,dict):
-                    bindings.update(result)
-                elif isinstance(result,list):
-                    sub_insert_statements.extend(result)
-                else:
-                    raise(ValueError(result))
+        if (name == 'id' or name not in core_properties) and name in stix_object:
+            result = prop.generate_insert_information(data_sink, name, stix_object, table_name, schema_name)
+            if isinstance(result, dict):
+                bindings.update(result)
+            elif isinstance(result, list):
+                sub_insert_statements.extend(result)
+            else:
+                raise ValueError("wrong type" + result)
 
     insert_statements.append(insert(object_table).values(bindings))
     insert_statements.extend(sub_insert_statements)

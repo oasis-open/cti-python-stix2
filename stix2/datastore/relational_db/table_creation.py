@@ -137,7 +137,7 @@ def create_external_references_tables(metadata):
             ForeignKey("common.core_sdo" + ".id", ondelete="CASCADE"),
             CheckConstraint(
                 "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
-            )
+            ),
         ),
         Column("source_name", Text),
         Column("description", Text),
@@ -160,7 +160,7 @@ def create_core_table(metadata, schema_name):
             ),
             primary_key=True,
         ),
-        Column("spec_version", Text, default="2.1")
+        Column("spec_version", Text, default="2.1"),
     ]
     if schema_name == "sdo":
         sdo_columns = [
@@ -176,7 +176,7 @@ def create_core_table(metadata, schema_name):
             Column("revoked", Boolean),
             Column("confidence", Integer),
             Column("lang", Text),
-            Column("labels", ARRAY(Text))
+            Column("labels", ARRAY(Text)),
         ]
         columns.extend(sdo_columns)
     else:
@@ -544,7 +544,7 @@ def generate_object_table(
         table_name = table_name[0:30]
     if parent_table_name:
         table_name = parent_table_name + "_" + table_name
-    core_properties = SDO_COMMON_PROPERTIES if schema_name=="sdo" else SCO_COMMON_PROPERTIES
+    core_properties = SDO_COMMON_PROPERTIES if schema_name == "sdo" else SCO_COMMON_PROPERTIES
     columns = list()
     tables = list()
     for name, prop in properties.items():
