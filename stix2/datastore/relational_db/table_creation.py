@@ -40,7 +40,7 @@ def derive_column_name(prop):
 def create_object_markings_refs_table(metadata, sco_or_sdo):
     return create_ref_table(
         metadata,
-        {"marking_definition"},
+        {"marking-definition"},
         "object_marking_refs_" + sco_or_sdo,
         "common.core_" + sco_or_sdo + ".id",
         "common",
@@ -137,8 +137,7 @@ def create_external_references_tables(metadata):
             ForeignKey("common.core_sdo" + ".id", ondelete="CASCADE"),
             CheckConstraint(
                 "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
-            ),
-            primary_key=True,
+            )
         ),
         Column("source_name", Text),
         Column("description", Text),
@@ -161,8 +160,7 @@ def create_core_table(metadata, schema_name):
             ),
             primary_key=True,
         ),
-        Column("spec_version", Text, default="2.1"),
-        Column("object_marking_ref", ARRAY(Text)),
+        Column("spec_version", Text, default="2.1")
     ]
     if schema_name == "sdo":
         sdo_columns = [
@@ -178,6 +176,7 @@ def create_core_table(metadata, schema_name):
             Column("revoked", Boolean),
             Column("confidence", Integer),
             Column("lang", Text),
+            Column("labels", ARRAY(Text))
         ]
         columns.extend(sdo_columns)
     else:
@@ -277,7 +276,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
 
 @add_method(IDProperty)
 def generate_table_information(self, name, **kwargs):  # noqa: F811
-    foreign_key_column = "common.core_sdo.id" if kwargs.get("schema") else "common.core_sco.id"
+    foreign_key_column = "common.core_sdo.id" if kwargs.get("schema_name") else "common.core_sco.id"
     table_name = kwargs.get("table_name")
     return Column(
         name,
@@ -472,13 +471,6 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     raise ValueError(f"Property {name} in {table_name} is of type ObjectReferenceProperty, which is for STIX 2.0 only")
 
 
-def sub_objects(prop_class):
-    for name, prop in prop_class.type._properties.items():
-        if isinstance(prop, (HashesProperty, EmbeddedObjectProperty)):
-            return True
-    return False
-
-
 @add_method(ListProperty)
 def generate_table_information(self, name, metadata, schema_name, table_name, **kwargs):  # noqa: F811
     is_extension = kwargs.get('is_extension')
@@ -547,11 +539,12 @@ def generate_object_table(
         table_name = stix_object_class._type
     else:
         table_name = stix_object_class.__name__
+    # avoid long table names
     if table_name.startswith("extension-definition"):
         table_name = table_name[0:30]
     if parent_table_name:
         table_name = parent_table_name + "_" + table_name
-    core_properties = SDO_COMMON_PROPERTIES if schema_name else SCO_COMMON_PROPERTIES
+    core_properties = SDO_COMMON_PROPERTIES if schema_name=="sdo" else SCO_COMMON_PROPERTIES
     columns = list()
     tables = list()
     for name, prop in properties.items():
