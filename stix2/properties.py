@@ -390,8 +390,17 @@ class DictionaryProperty(Property):
     def __init__(self, valid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
 
+        simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
         if not valid_types:
             valid_types = [StringProperty]
+        else:
+            for type_ in valid_types:
+                if isinstance(type_, ListProperty):
+                    if type_.contained not in simple_type:
+                        raise ValueError("Dictionary Property does not support lists of type: ", type_.contained)
+                elif type_ not in simple_type:
+                    raise ValueError("Dictionary Property does not support this value's type: ", type_)
+
         # elif not isinstance(valid_types, ListProperty):
         #     valid_types = [valid_types]
         
@@ -412,7 +421,6 @@ class DictionaryProperty(Property):
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
         
-        valid_types = self.specifics
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -443,24 +451,36 @@ class DictionaryProperty(Property):
             #     if not isinstance(dictified[k], StringProperty) or not isinstance(dictified[k], IntegerProperty):
             #         raise ValueError("The dictionary expects values of type str or int")
 
-            simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
-            clear = False
+            # simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
+            # clear = False
+            # for type in self.valid_types:
+            #     if type in simple_type:
+            #         try:
+            #             self.valid_types.clean(dict[k])
+            #         except ValueError:
+            #             continue
+            #         clear = True
+            #     elif isinstance(dictified[k], ListProperty()):
+            #         list_type = dictified[k].contained
+            #         if list_type in simple_type:
+            #             for x in dictified[k]:
+            #                 list_type.clean(x)
+            #         else:
+            #             raise ValueError("Dictionary Property does not support lists of type: ", list_type)
+            #     if not clear:
+            #         raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
+            
+            clean = False
             for type in self.valid_types:
-                if type in simple_type:
-                    try:
-                        self.valid_types.clean(dict[k])
-                    except ValueError:
-                        continue
-                    clear = True
-                elif isinstance(dictified[k], ListProperty()):
-                    list_type = dictified[k].contained
-                    if list_type in simple_type:
-                        for x in dictified[k]:
-                            list_type.clean(x)
-                    else:
-                        raise ValueError("Dictionary Property does not support lists of type: ", list_type)
-                if not clear:
-                    raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
+                type_instance = type()
+                try:
+                    type_instance.clean(dictified[k])
+                    clean = True
+                except ValueError:
+                    continue
+            
+            if not clean:
+                raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
