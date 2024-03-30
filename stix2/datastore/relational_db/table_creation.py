@@ -276,8 +276,36 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
 
 @add_method(IDProperty)
 def generate_table_information(self, name, **kwargs):  # noqa: F811
-    foreign_key_column = "common.core_sdo.id" if kwargs.get("schema_name") else "common.core_sco.id"
+    schema_name = kwargs.get('schema_name')
+    if schema_name == "sro":
+        # sro common properties are the same as sdo's
+        schema_name = "sdo"
     table_name = kwargs.get("table_name")
+    if schema_name == "common":
+        return Column(
+            name,
+            Text,
+            CheckConstraint(
+                f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                # noqa: E131
+            ),
+            primary_key=True,
+            nullable=not (self.required),
+        )
+    else:
+        foreign_key_column = f"common.core_{schema_name}.id"
+        return Column(
+            name,
+            Text,
+            ForeignKey(foreign_key_column, ondelete="CASCADE"),
+            CheckConstraint(
+                f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                # noqa: E131
+            ),
+            primary_key=True,
+            nullable=not (self.required),
+        )
+
     return Column(
         name,
         Text,
@@ -542,9 +570,15 @@ def generate_object_table(
     # avoid long table names
     if table_name.startswith("extension-definition"):
         table_name = table_name[0:30]
+        table_name = table_name.replace("extension-definition-", "ext_def")
     if parent_table_name:
         table_name = parent_table_name + "_" + table_name
-    core_properties = SDO_COMMON_PROPERTIES if schema_name == "sdo" else SCO_COMMON_PROPERTIES
+    if schema_name in ["sdo", "sro"]:
+        core_properties = SDO_COMMON_PROPERTIES
+    elif schema_name == "sco":
+        core_properties = SCO_COMMON_PROPERTIES
+    else:
+        core_properties = list()
     columns = list()
     tables = list()
     for name, prop in properties.items():
