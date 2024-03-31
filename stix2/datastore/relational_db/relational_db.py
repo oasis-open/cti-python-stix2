@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import MetaData, create_engine, select
 from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
 
 from stix2.base import _STIXBase
@@ -6,23 +6,13 @@ from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.relational_db.input_creation import (
     generate_insert_for_object,
 )
-from stix2.datastore.relational_db.table_creation import (
-    create_core_tables, generate_object_table,
+from stix2.datastore.relational_db.table_creation import create_table_objects
+from stix2.datastore.relational_db.utils import (
+    canonicalize_table_name, schema_for, table_name_for,
 )
-from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
-from stix2.v21.base import (
-    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
-)
-
-
-def _get_all_subclasses(cls):
-    all_subclasses = []
-
-    for subclass in cls.__subclasses__():
-        all_subclasses.append(subclass)
-        all_subclasses.extend(_get_all_subclasses(subclass))
-    return all_subclasses
+import stix2.registry
+import stix2.utils
 
 
 def _add(store, stix_data, allow_custom=True, version="2.1"):
@@ -124,21 +114,22 @@ class RelationalDBSink(DataSink):
     """
     def __init__(
         self, database_connection_url, allow_custom=True, version=None,
-        instantiate_database=True,
+        instantiate_database=True, *stix_object_classes
     ):
         super(RelationalDBSink, self).__init__()
         self.allow_custom = allow_custom
         self.metadata = MetaData()
         self.database_connection = create_engine(database_connection_url)
 
-        self._create_schemas()
-
-        self.tables = self._create_table_objects()
+        self.tables = create_table_objects(
+            self.metadata, stix_object_classes
+        )
         self.tables_dictionary = dict()
         for t in self.tables:
             self.tables_dictionary[canonicalize_table_name(t.name, t.schema)] = t
 
         if instantiate_database:
+            self._create_schemas()
             self._instantiate_database()
 
     def _create_schemas(self):
@@ -148,30 +139,8 @@ class RelationalDBSink(DataSink):
             trans.execute(CreateSchema("sco", if_not_exists=True))
             trans.execute(CreateSchema("sro", if_not_exists=True))
 
-    def _create_table_objects(self):
-        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
-        tables = create_core_tables(self.metadata)
-        for stix_class in _get_all_subclasses(_DomainObject):
-            new_tables = generate_object_table(stix_class, self.metadata, "sdo")
-            tables.extend(new_tables)
-        for stix_class in _get_all_subclasses(_RelationshipObject):
-            new_tables = generate_object_table(stix_class, self.metadata, "sro")
-            tables.extend(new_tables)
-        for stix_class in _get_all_subclasses(_Observable):
-            tables.extend(generate_object_table(stix_class, self.metadata, "sco"))
-        for stix_class in _get_all_subclasses(_MetaObject):
-            tables.extend(generate_object_table(stix_class, self.metadata, "common"))
-        for stix_class in _get_all_subclasses(_Extension):
-            if stix_class.extension_type not in ["new-sdo", "new-sco", "new-sro"]:
-                if hasattr(stix_class, "_applies_to"):
-                    schema_name = stix_class._applies_to
-                else:
-                    schema_name = "sco"
-                tables.extend(generate_object_table(stix_class, self.metadata, schema_name, is_extension=True))
-        return tables
-
     def _instantiate_database(self):
-        # self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
+        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
         self.metadata.create_all(self.database_connection)
 
     def generate_stix_schema(self):
@@ -194,11 +163,62 @@ class RelationalDBSink(DataSink):
 
 
 class RelationalDBSource(DataSource):
+
+    def __init__(
+        self, database_connection_url, *stix_object_classes
+    ):
+        self.metadata = MetaData()
+        self.database_connection = create_engine(database_connection_url)
+        create_table_objects(
+            self.metadata, stix_object_classes
+        )
+
     def get(self, stix_id, version=None, _composite_filters=None):
-        pass
+
+        stix_type = stix2.utils.get_type_from_id(stix_id)
+        stix_class = stix2.registry.class_for_type(
+            # TODO: give user control over STIX version used?
+            stix_type, stix_version=stix2.DEFAULT_VERSION
+        )
+
+        # Info about the type-specific table
+        type_table_name = table_name_for(stix_type)
+        type_schema_name = schema_for(stix_class)
+        type_table = self.metadata.tables[f"{type_schema_name}.{type_table_name}"]
+
+        # Some fixed info about core tables
+        if type_schema_name == "sco":
+            core_table_name = "common.core_sco"
+        else:
+            # for SROs and SMOs too?
+            core_table_name = "common.core_sdo"
+
+        core_table = self.metadata.tables[core_table_name]
+
+        # Both core and type-specific tables have "id"; let's not duplicate
+        # that in the result set columns.  Is there a better way to do this?
+        type_cols_except_id = (
+            col for col in type_table.c if col.key != "id"
+        )
+
+        core_type_select = select(core_table, *type_cols_except_id) \
+            .join(type_table) \
+            .where(core_table.c.id == stix_id)
+
+        obj_dict = {}
+        with self.database_connection.begin() as conn:
+            # Should be at most one matching row
+            sco_data = conn.execute(core_type_select).mappings().first()
+            obj_dict.update(sco_data)
+
+        return stix_class(**obj_dict)
 
     def all_versions(self, stix_id, version=None, _composite_filters=None):
         pass
 
     def query(self, query=None):
         pass
+
+    def generate_stix_schema(self):
+        for t in self.metadata.tables.values():
+            print(CreateTable(t).compile(self.database_connection.engine))

@@ -3,7 +3,10 @@ import datetime as dt
 import pytz
 
 import stix2
-from stix2.datastore.relational_db.relational_db import RelationalDBSink
+from stix2.datastore.relational_db.relational_db import (
+    RelationalDBSink, RelationalDBSource,
+)
+import stix2.properties
 
 directory_stix_object = stix2.Directory(
     path="/foo/bar/a",
@@ -21,6 +24,7 @@ directory_stix_object = stix2.Directory(
 )
 
 s = stix2.v21.Software(
+        id="software--28897173-7314-4eec-b1cf-2c625b635bf6",
         name="Word",
         cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
         swid="com.acme.rms-ce-v4-1-5-0",
@@ -94,8 +98,24 @@ def file_example_with_PDFExt_Object():
 
 
 def main():
-    store = RelationalDBSink("postgresql://localhost/stix-data-sink")
-    store.generate_stix_schema()
+    store = RelationalDBSink(
+        "postgresql://localhost/stix-data-sink",
+        False,
+        None,
+        True,
+        stix2.Directory
+    )
+    # store.generate_stix_schema()
+    store.add(directory_stix_object)
+
+    source = RelationalDBSource(
+        "postgresql://localhost/stix-data-sink",
+        stix2.Directory
+    )
+    source.generate_stix_schema()
+
+    read_obj = source.get(directory_stix_object.id)
+    print(read_obj)
 
 
 if __name__ == '__main__':
