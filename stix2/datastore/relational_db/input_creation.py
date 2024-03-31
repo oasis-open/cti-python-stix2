@@ -14,71 +14,114 @@ from stix2.properties import (
 
 
 @add_method(Property)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     pass
 
 
 @add_method(BinaryProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(BooleanProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(DictionaryProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
-    bindings = {"id": stix_object["id"]}
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
+    bindings = dict()
+    data_sink = kwargs.get("data_sink")
+    table_name = kwargs.get("table_name")
+    schema_name = kwargs.get("schema_name")
+    foreign_key_value = kwargs.get("foreign_key_value")
+    insert_statements = list()
+    if "id" in stix_object:
+        bindings["id"] = stix_object["id"]
+    elif foreign_key_value:
+        bindings["id"] = foreign_key_value
     table = data_sink.tables_dictionary[
         canonicalize_table_name(
             table_name + "_" + name,
             schema_name,
         )
     ]
-    for idx, (name, value) in enumerate(stix_object.items()):
-        name_binding = f"name{idx}"
-        if len(self.value_types) == 1:
-            value_binding = f"value{idx}"
+    for name, value in stix_object[name].items():
+
+        name_binding = "name"
+        if not hasattr(self, "value_types") or len(self.value_types) == 1:
+            value_binding = "value"
         elif isinstance(value, int):
-            value_binding = f"integer_value{idx}"
+            value_binding = "integer_value"
         else:
-            value_binding = f"string_value{idx}"
+            value_binding = "string_value"
 
         bindings[name_binding] = name
         bindings[value_binding] = value
 
-        return [insert(table).values(bindings)]
+        insert_statements.append(insert(table).values(bindings))
+
+    return insert_statements
 
 
 @add_method(EmbeddedObjectProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
-    return generate_insert_for_embedded_object(data_sink, stix_object[name], name, schema_name)
+def generate_insert_information(self, name, stix_object, is_list=False, foreign_key_value=None, **kwargs):  # noqa: F811
+    data_sink = kwargs.get("data_sink")
+    schema_name = kwargs.get("schema_name")
+    level = kwargs.get("level")
+    return generate_insert_for_sub_object(
+        data_sink, stix_object[name], self.type.__name__, schema_name,
+        level=level+1 if is_list else level,
+        is_embedded_object=True,
+        parent_table_name=kwargs.get("parent_table_name"),
+        foreign_key_value=foreign_key_value,
+    )
 
 
 @add_method(EnumProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(ExtensionsProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
-    pass
+def generate_insert_information(self, name, stix_object, data_sink=None, table_name=None, schema_name=None, parent_table_name=None, **kwargs):  # noqa: F811
+    input_statements = list()
+    for ex_name, ex in stix_object["extensions"].items():
+        bindings = {
+            "id": stix_object["id"],
+            "ext_table_name": canonicalize_table_name(ex_name, schema_name),
+        }
+        ex_table = data_sink.tables_dictionary[table_name + "_" + "extensions"]
+        input_statements.append(insert(ex_table).values(bindings))
+        input_statements.extend(
+            generate_insert_for_sub_object(
+                data_sink, ex, ex_name, schema_name, stix_object["id"],
+                parent_table_name=parent_table_name,
+                is_extension=True,
+            ),
+        )
+    return input_statements
 
 
 @add_method(FloatProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(HexProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
-    return {name: stix_object[name]}
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
+    v = bytes(stix_object[name], 'utf-8')
+    return {name: v}
 
 
-def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name):
-    bindings = {"id": stix_object["id"]}
+def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name, foreign_key_value=None, **kwargs):
+    if kwargs.get("is_embedded_object"):
+        if not kwargs.get("is_list") or kwargs.get("level") == 0:
+            bindings = {"id": stix_object["id"]}
+            # querky case where a property of an object is a single embedded objects
+            table_name = kwargs.get("parent_table_name")
+    else:
+        bindings = {"id": stix_object["id"]}
     table = data_sink.tables_dictionary[
         canonicalize_table_name(
             table_name + "_" + name,
@@ -97,22 +140,27 @@ def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_
 
 
 @add_method(HashesProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
+    data_sink = kwargs.get("data_sink")
+    table_name = kwargs.get("table_name")
+    schema_name = kwargs.get("schema_name")
     return generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name)
 
 
 @add_method(IDProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(IntegerProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(ListProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, level=0, is_extension=False, foreign_key_value=None, **kwargs):  # noqa: F811
+    data_sink = kwargs.get("data_sink")
+    table_name = kwargs.get("table_name")
     if isinstance(self.contained, ReferenceProperty):
         insert_statements = list()
 
@@ -127,26 +175,43 @@ def generate_insert_information(self, data_sink, name, stix_object, table_name, 
     elif isinstance(self.contained, EmbeddedObjectProperty):
         insert_statements = list()
         for value in stix_object[name]:
-            insert_statements.extend(generate_insert_for_embedded_object(data_sink, value, table_name + "_" + name, None))
-            table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name, None)]
-            insert_statements.append(insert(table).values({"id": stix_object["id"], "ref_id": 1}))
+            with data_sink.database_connection.begin() as trans:
+                next_id = trans.execute(data_sink.sequence)
+            table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name)]
+            bindings = {
+                "id": foreign_key_value,
+                "ref_id": next_id,
+            }
+            insert_statements.append(insert(table).values(bindings))
+            insert_statements.extend(
+                generate_insert_for_sub_object(
+                    data_sink,
+                    value,
+                    table_name + "_" + name + "_" + self.contained.type.__name__,
+                    None,
+                    next_id,
+                    level,
+                    True,
+                    is_extension=is_extension,
+                ),
+            )
         return insert_statements
     else:
         return {name: stix_object[name]}
 
 
 @add_method(ReferenceProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(StringProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
 @add_method(TimestampProperty)
-def generate_insert_information(self, data_sink, name, stix_object, table_name, schema_name):  # noqa: F811
+def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
 
 
@@ -166,7 +231,6 @@ def generate_insert_for_array_in_table(table, values, foreign_key_value):
             "ref_id": item,
         }
         insert_statements.append(insert(table).values(bindings))
-
     return insert_statements
 
 
@@ -267,31 +331,53 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, schema_nam
     return insert_statements
 
 
-def generate_insert_for_embedded_object(data_sink, stix_object, type_name, schema_name):
+def generate_insert_for_sub_object(
+    data_sink, stix_object, type_name, schema_name, foreign_key_value=None,
+    is_embedded_object=False, is_list=False, parent_table_name=None, level=0,
+    is_extension=False,
+):
     insert_statements = list()
     bindings = dict()
+    if "id" in stix_object:
+        bindings["id"] = stix_object["id"]
+    elif foreign_key_value:
+        bindings["id"] = foreign_key_value
+    if parent_table_name and not is_extension:
+        type_name = parent_table_name + "_" + type_name
     table_name = canonicalize_table_name(type_name, schema_name)
     object_table = data_sink.tables_dictionary[table_name]
     sub_insert_statements = list()
     for name, prop in stix_object._properties.items():
         if name in stix_object:
-            result = prop.generate_insert_information(data_sink, name, stix_object, table_name, schema_name)
+            result = prop.generate_insert_information(
+                name,
+                stix_object,
+                data_sink=data_sink,
+                table_name=table_name,
+                schema_name=None,
+                foreign_key_value=foreign_key_value,
+                is_embedded_object=is_embedded_object,
+                is_list=is_list,
+                level=level,
+                is_extension=is_extension,
+                parent_table_name=table_name,
+            )
             if isinstance(result, dict):
                 bindings.update(result)
             elif isinstance(result, list):
                 sub_insert_statements.extend(result)
             else:
                 raise ValueError("wrong type" + result)
-
+    if foreign_key_value:
+        bindings["id"] = foreign_key_value
     insert_statements.append(insert(object_table).values(bindings))
     insert_statements.extend(sub_insert_statements)
     return insert_statements
 
 
-def generate_insert_for_object(data_sink, stix_object, schema_name):
+def generate_insert_for_object(data_sink, stix_object, schema_name, level=0):
     insert_statements = list()
     bindings = dict()
-    stix_id = stix_object["id"]
     if schema_name == "sco":
         core_properties = SCO_COMMON_PROPERTIES
     else:
@@ -300,11 +386,22 @@ def generate_insert_for_object(data_sink, stix_object, schema_name):
     table_name = canonicalize_table_name(type_name, schema_name)
     object_table = data_sink.tables_dictionary[table_name]
     insert_statements.extend(generate_insert_for_core(data_sink, stix_object, core_properties, schema_name))
-
+    if "id" in stix_object:
+        foreign_key_value = stix_object["id"]
+    else:
+        foreign_key_value = None
     sub_insert_statements = list()
     for name, prop in stix_object._properties.items():
         if (name == 'id' or name not in core_properties) and name in stix_object:
-            result = prop.generate_insert_information(data_sink, name, stix_object, table_name, schema_name)
+            result = prop.generate_insert_information(
+                name, stix_object,
+                data_sink=data_sink,
+                table_name=table_name,
+                schema_name=schema_name,
+                parent_table_name=type_name,
+                level=level,
+                foreign_key_value=foreign_key_value,
+            )
             if isinstance(result, dict):
                 bindings.update(result)
             elif isinstance(result, list):
@@ -317,9 +414,5 @@ def generate_insert_for_object(data_sink, stix_object, schema_name):
 
     if "external_references" in stix_object:
         insert_statements.extend(generate_insert_for_external_references(data_sink, stix_object))
-
-    if "extensions" in stix_object:
-        for ex in stix_object["extensions"]:
-            insert_statements.extend(generate_insert_for_object(data_sink, ex, schema_name, stix_id))
 
     return insert_statements

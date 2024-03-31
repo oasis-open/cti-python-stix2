@@ -1,5 +1,5 @@
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.schema import CreateSchema, CreateTable
+from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
@@ -149,6 +149,9 @@ class RelationalDBSink(DataSink):
             trans.execute(CreateSchema("sro", if_not_exists=True))
 
     def _create_table_objects(self):
+        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
+        with self.database_connection.begin() as trans:
+            print(trans.execute(self.sequence))
         tables = create_core_tables(self.metadata)
         for stix_class in _get_all_subclasses(_DomainObject):
             new_tables = generate_object_table(stix_class, self.metadata, "sdo")
@@ -170,11 +173,13 @@ class RelationalDBSink(DataSink):
         return tables
 
     def _instantiate_database(self):
-        self.metadata.create_all(self.database_connection.engine)
+        # self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
+        self.metadata.create_all(self.database_connection)
 
     def generate_stix_schema(self):
         for t in self.tables:
-            print(CreateTable(t).compile(self.database_connection.engine))
+            print(CreateTable(t).compile(self.database_connection))
+            print()
 
     def add(self, stix_data, version=None):
         _add(self, stix_data)

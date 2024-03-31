@@ -194,9 +194,9 @@ def determine_sql_type(self):
     return None
 
 
-@add_method(Property)
-def generate_table_information(self, name, **kwargs):
-    pass
+@add_method(BooleanProperty)
+def determine_sql_type(self):  # noqa: F811
+    return Boolean
 
 
 @add_method(Property)
@@ -204,29 +204,9 @@ def determine_sql_type(self):  # noqa: F811
     pass
 
 
-@add_method(StringProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    return Column(
-        name,
-        Text,
-        nullable=not self.required,
-        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
-    )
-
-
-@add_method(StringProperty)
+@add_method(FloatProperty)
 def determine_sql_type(self):  # noqa: F811
-    return Text
-
-
-@add_method(IntegerProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    return Column(
-        name,
-        Integer,
-        nullable=not self.required,
-        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
-    )
+    return Float
 
 
 @add_method(IntegerProperty)
@@ -234,19 +214,22 @@ def determine_sql_type(self):  # noqa: F811
     return Integer
 
 
-@add_method(FloatProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    return Column(
-        name,
-        Float,
-        nullable=not self.required,
-        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
-    )
-
-
-@add_method(FloatProperty)
+@add_method(StringProperty)
 def determine_sql_type(self):  # noqa: F811
-    return Float
+    return Text
+
+# ----------------------------- generate_table_information methods ----------------------------
+
+
+@add_method(Property)
+def generate_table_information(self, name, **kwargs):
+    pass
+
+
+@add_method(BinaryProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    print("BinaryProperty not handled, yet")
+    return None
 
 
 @add_method(BooleanProperty)
@@ -256,90 +239,6 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
         Boolean,
         nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
-    )
-
-
-@add_method(BooleanProperty)
-def determine_sql_type(self):  # noqa: F811
-    return Boolean
-
-
-@add_method(TypeProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    return Column(
-        name,
-        Text,
-        nullable=not self.required,
-        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
-    )
-
-
-@add_method(IDProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    schema_name = kwargs.get('schema_name')
-    if schema_name == "sro":
-        # sro common properties are the same as sdo's
-        schema_name = "sdo"
-    table_name = kwargs.get("table_name")
-    if schema_name == "common":
-        return Column(
-            name,
-            Text,
-            CheckConstraint(
-                f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
-                # noqa: E131
-            ),
-            primary_key=True,
-            nullable=not (self.required),
-        )
-    else:
-        foreign_key_column = f"common.core_{schema_name}.id"
-        return Column(
-            name,
-            Text,
-            ForeignKey(foreign_key_column, ondelete="CASCADE"),
-            CheckConstraint(
-                f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
-                # noqa: E131
-            ),
-            primary_key=True,
-            nullable=not (self.required),
-        )
-
-    return Column(
-        name,
-        Text,
-        ForeignKey(foreign_key_column, ondelete="CASCADE"),
-        CheckConstraint(
-            f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
-        ),
-        primary_key=True,
-        nullable=not (self.required),
-    )
-
-
-@add_method(EnumProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    enum_re = "|".join(self.allowed)
-    return Column(
-        name,
-        Text,
-        CheckConstraint(
-            f"{name} ~ '^{enum_re}$'",
-        ),
-        nullable=not (self.required),
-    )
-
-
-@add_method(TimestampProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    return Column(
-        name,
-        TIMESTAMP(timezone=True),
-        # CheckConstraint(
-        #     f"{name} ~ '^{enum_re}$'"
-        # ),
-        nullable=not (self.required),
     )
 
 
@@ -394,6 +293,59 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
     return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
 
 
+@add_method(EmbeddedObjectProperty)
+def generate_table_information(self, name, metadata, schema_name, table_name, is_extension=False, is_list=False, **kwargs):  # noqa: F811
+    level = kwargs.get("level")
+    return generate_object_table(
+        self.type, metadata, schema_name, table_name, is_extension, True, is_list,
+        parent_table_name=table_name, level=level+1 if is_list else level,
+    )
+
+
+@add_method(EnumProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    enum_re = "|".join(self.allowed)
+    return Column(
+        name,
+        Text,
+        CheckConstraint(
+            f"{name} ~ '^{enum_re}$'",
+        ),
+        nullable=not (self.required),
+    )
+
+
+@add_method(ExtensionsProperty)
+def generate_table_information(self, name, metadata, schema_name, table_name, **kwargs):  # noqa: F811
+    columns = list()
+    columns.append(
+        Column(
+            "id",
+            Text,
+            ForeignKey(canonicalize_table_name(table_name, schema_name) + ".id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+    )
+    columns.append(
+        Column(
+            "ext_table_name",
+            Text,
+            nullable=False,
+        ),
+    )
+    return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
+
+
+@add_method(FloatProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    return Column(
+        name,
+        Float,
+        nullable=not self.required,
+        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
+    )
+
+
 @add_method(HashesProperty)
 def generate_table_information(self, name, metadata, schema_name, table_name, is_extension=False, **kwargs):  # noqa: F811
     level = kwargs.get("level")
@@ -428,75 +380,58 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
     )
 
 
-@add_method(BinaryProperty)
+@add_method(IDProperty)
 def generate_table_information(self, name, **kwargs):  # noqa: F811
-    print("BinaryProperty not handled, yet")
-    return None
-
-
-@add_method(ExtensionsProperty)
-def generate_table_information(self, name, metadata, schema_name, table_name, **kwargs):  # noqa: F811
-    columns = list()
-    columns.append(
-        Column(
-            "id",
-            Text,
-            ForeignKey(canonicalize_table_name(table_name, schema_name) + ".id", ondelete="CASCADE"),
-            nullable=False,
-        ),
-    )
-    columns.append(
-        Column(
-            "ext_table_name",
-            Text,
-            nullable=False,
-        ),
-    )
-    return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
-
-
-def ref_column(name, specifics, auth_type=0):
-    if specifics:
-        types = "|".join(specifics)
-        if auth_type == 0:
-            constraint = \
-                CheckConstraint(
-                    f"{name} ~ '^({types})" +
-                    "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
-                )
-        else:
-            constraint = \
-                CheckConstraint(
-                    f"(NOT({name} ~ '^({types})')) AND ({name} ~ " +
-                    "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')",
-                )
-        return Column(name, Text, constraint)
-    else:
+    schema_name = kwargs.get('schema_name')
+    if schema_name == "sro":
+        # sro common properties are the same as sdo's
+        schema_name = "sdo"
+    table_name = kwargs.get("table_name")
+    if schema_name == "common":
         return Column(
             name,
             Text,
-            nullable=False,
+            CheckConstraint(
+                f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                # noqa: E131
+            ),
+            primary_key=True,
+            nullable=not (self.required),
+        )
+    else:
+        foreign_key_column = f"common.core_{schema_name}.id"
+        return Column(
+            name,
+            Text,
+            ForeignKey(foreign_key_column, ondelete="CASCADE"),
+            CheckConstraint(
+                f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                # noqa: E131
+            ),
+            primary_key=True,
+            nullable=not (self.required),
         )
 
-
-@add_method(ReferenceProperty)
-def generate_table_information(self, name, **kwargs):  # noqa: F811
-    return ref_column(name, self.specifics, self.auth_type)
-
-
-@add_method(EmbeddedObjectProperty)
-def generate_table_information(self, name, metadata, schema_name, table_name, is_extension=False, is_list=False, **kwargs):  # noqa: F811
-    level = kwargs.get("level")
-    return generate_object_table(
-        self.type, metadata, schema_name, table_name, is_extension, True, is_list,
-        parent_table_name=table_name, level=level+1 if is_list else level,
+    return Column(
+        name,
+        Text,
+        ForeignKey(foreign_key_column, ondelete="CASCADE"),
+        CheckConstraint(
+            f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
+        ),
+        primary_key=True,
+        nullable=not (self.required),
     )
 
 
-@add_method(ObjectReferenceProperty)
+@add_method(IntegerProperty)
 def generate_table_information(self, name, **kwargs):  # noqa: F811
-    table_name = kwargs.get('table_name')
-    raise ValueError(f"Property {name} in {table_name} is of type ObjectReferenceProperty, which is for STIX 2.0 only")
+    return Column(
+        name,
+        Integer,
+        nullable=not self.required,
+        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
+    )
 
 
 @add_method(ListProperty)
@@ -556,6 +491,73 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                     ARRAY(sql_type),
                     nullable=not (self.required),
                 )
+
+
+def ref_column(name, specifics, auth_type=0):
+    if specifics:
+        types = "|".join(specifics)
+        if auth_type == 0:
+            constraint = \
+                CheckConstraint(
+                    f"{name} ~ '^({types})" +
+                    "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                )
+        else:
+            constraint = \
+                CheckConstraint(
+                    f"(NOT({name} ~ '^({types})')) AND ({name} ~ " +
+                    "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')",
+                )
+        return Column(name, Text, constraint)
+    else:
+        return Column(
+            name,
+            Text,
+            nullable=False,
+        )
+
+
+@add_method(ObjectReferenceProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    table_name = kwargs.get('table_name')
+    raise ValueError(f"Property {name} in {table_name} is of type ObjectReferenceProperty, which is for STIX 2.0 only")
+
+
+@add_method(ReferenceProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    return ref_column(name, self.specifics, self.auth_type)
+
+
+@add_method(StringProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    return Column(
+        name,
+        Text,
+        nullable=not self.required,
+        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
+    )
+
+
+@add_method(TimestampProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    return Column(
+        name,
+        TIMESTAMP(timezone=True),
+        # CheckConstraint(
+        #     f"{name} ~ '^{enum_re}$'"
+        # ),
+        nullable=not (self.required),
+    )
+
+
+@add_method(TypeProperty)
+def generate_table_information(self, name, **kwargs):  # noqa: F811
+    return Column(
+        name,
+        Text,
+        nullable=not self.required,
+        default=self._fixed_value if hasattr(self, "_fixed_value") else None,
+    )
 
 
 def generate_object_table(
@@ -636,6 +638,7 @@ def generate_object_table(
                     ondelete="CASCADE",
                 ),
                 primary_key=True,
+                nullable=False,
             )
         else:
             column = Column(
