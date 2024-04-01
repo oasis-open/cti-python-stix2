@@ -114,14 +114,9 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
     return {name: v}
 
 
-def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name, foreign_key_value=None, **kwargs):
-    if kwargs.get("is_embedded_object"):
-        if not kwargs.get("is_list") or kwargs.get("level") == 0:
-            bindings = {"id": stix_object["id"]}
-            # querky case where a property of an object is a single embedded objects
-            table_name = kwargs.get("parent_table_name")
-    else:
-        bindings = {"id": stix_object["id"]}
+def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name, foreign_key_value=None,
+                               is_embedded_object=False, **kwargs):
+    bindings = {"id": foreign_key_value}
     table = data_sink.tables_dictionary[
         canonicalize_table_name(
             table_name + "_" + name,
@@ -140,11 +135,10 @@ def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_
 
 
 @add_method(HashesProperty)
-def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
-    data_sink = kwargs.get("data_sink")
-    table_name = kwargs.get("table_name")
-    schema_name = kwargs.get("schema_name")
-    return generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name)
+def generate_insert_information(self, name, stix_object, data_sink=None, table_name=None, schema_name=None,
+                                is_embedded_object=False, foreign_key_value=None, **kwargs):  # noqa: F811
+    return generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name,
+                                      is_embedded_object=is_embedded_object, foreign_key_value=foreign_key_value)
 
 
 @add_method(IDProperty)
