@@ -150,7 +150,7 @@ class Property(object):
           for a property.  In that case, allow_custom can be ignored, and
           has_custom must be returned as False. strict is a True/False flag
           that is used in the dictionary property. if strict is True,
-          properties like StringProperty will be lenient in their clean method.
+          properties like StringProperty will not be lenient in their clean method.
 
     - ``def default(self):``
         - provide a default value for this property.
