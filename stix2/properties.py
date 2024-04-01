@@ -133,7 +133,7 @@ class Property(object):
 
     Subclasses can also define the following functions:
 
-    - ``def clean(self, value, allow_custom) -> (any, has_custom):``
+    - ``def clean(self, value, allow_custom, strict) -> (any, has_custom):``
         - Return a value that is valid for this property, and enforce and
           detect value customization.  If ``value`` is not valid for this
           property, you may attempt to transform it first.  If ``value`` is not
@@ -148,7 +148,9 @@ class Property(object):
           mean there actually are any).  The method must return an appropriate
           value for has_custom.  Customization may not be applicable/possible
           for a property.  In that case, allow_custom can be ignored, and
-          has_custom must be returned as False.
+          has_custom must be returned as False. strict is a True/False flag 
+          that is used in the dictionary property. if strict is True, 
+          properties like StringProperty will be lenient in their clean method.
 
     - ``def default(self):``
         - provide a default value for this property.
@@ -191,7 +193,7 @@ class Property(object):
         if default:
             self.default = default
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         return value, False
 
 
@@ -237,7 +239,10 @@ class ListProperty(Property):
         has_custom = False
         if isinstance(self.contained, Property):
             for item in value:
-                valid, temp_custom = self.contained.clean(item, allow_custom)
+                try:
+                    valid, temp_custom = self.contained.clean(item, allow_custom, strict=True)
+                except TypeError:
+                    valid, temp_custom = self.contained.clean(item, allow_custom)
                 result.append(valid)
                 has_custom = has_custom or temp_custom
 
@@ -275,8 +280,11 @@ class StringProperty(Property):
     def __init__(self, **kwargs):
         super(StringProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         if not isinstance(value, str):
+            if strict is True:
+                raise ValueError("Must be a string.")
+
             value = str(value)
         return value, False
 
@@ -296,7 +304,7 @@ class IDProperty(Property):
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         _validate_id(value, self.spec_version, self.required_prefix)
         return value, False
 
@@ -311,7 +319,10 @@ class IntegerProperty(Property):
         self.max = max
         super(IntegerProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
+        if strict is True and not isinstance(value, int):
+            raise ValueError("must be an integer.")
+        
         try:
             value = int(value)
         except Exception:
@@ -335,7 +346,10 @@ class FloatProperty(Property):
         self.max = max
         super(FloatProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
+        if strict is True and not isinstance(value, float):
+            raise ValueError("must be a float.")
+        
         try:
             value = float(value)
         except Exception:
@@ -356,7 +370,7 @@ class BooleanProperty(Property):
     _trues = ['true', 't', '1', 1, True]
     _falses = ['false', 'f', '0', 0, False]
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
 
         if isinstance(value, str):
             value = value.lower()
@@ -379,7 +393,7 @@ class TimestampProperty(Property):
 
         super(TimestampProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         return parse_into_datetime(
             value, self.precision, self.precision_constraint,
         ), False
@@ -390,26 +404,20 @@ class DictionaryProperty(Property):
     def __init__(self, valid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
 
-        simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
+        simple_types = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
         if not valid_types:
-            valid_types = [StringProperty]
+            valid_types = [Property]
         else:
             for type_ in valid_types:
                 if isinstance(type_, ListProperty):
-                    if type_.contained not in simple_type:
-                        raise ValueError("Dictionary Property does not support lists of type: ", type_.contained)
-                elif type_ not in simple_type:
+                    found = False
+                    for simple_type in simple_types:
+                        if isinstance(type_.contained, simple_type):
+                            found = True
+                    if not found:
+                        raise ValueError("Dictionary Property does not support lists of type: ", type_.contained, type(type_.contained))
+                elif type_ not in simple_types:
                     raise ValueError("Dictionary Property does not support this value's type: ", type_)
-
-        # elif not isinstance(valid_types, ListProperty):
-        #     valid_types = [valid_types]
-        
-        # if 'string_list' in valid_types and len(valid_types) > 1:
-        #     raise ValueError("'string_list' cannot be combined with other types in a list.")
-
-        # for type_ in valid_types:
-        #     if type_ not in ("string", "integer", "string_list"):
-        #         raise ValueError("The value of a dictionary key cannot be ", type_)
 
         self.valid_types = valid_types
 
@@ -420,7 +428,7 @@ class DictionaryProperty(Property):
             dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
-        
+
         for k in dictified.keys():
             if self.spec_version == '2.0':
                 if len(k) < 3:
@@ -437,51 +445,22 @@ class DictionaryProperty(Property):
                     "underscore (_)"
                 )
                 raise DictionaryKeyError(k, msg)
-            
-            # if "string" in valid_types:
-            #     if not isinstance(dictified[k], StringProperty):
-            #         raise ValueError("The dictionary expects values of type str")
-            # elif "integer" in valid_types:
-            #     if not isinstance(dictified[k], IntegerProperty):
-            #         raise ValueError("The dictionary expects values of type int")
-            # elif "string_list" in valid_types:
-            #     if not isinstance(dictified[k], ListProperty(StringProperty)):
-            #         raise ValueError("The dictionary expects values of type list[str]")
-            # else:
-            #     if not isinstance(dictified[k], StringProperty) or not isinstance(dictified[k], IntegerProperty):
-            #         raise ValueError("The dictionary expects values of type str or int")
 
-            # simple_type = [BinaryProperty, BooleanProperty, FloatProperty, HashesProperty, HexProperty, IDProperty, IntegerProperty, StringProperty, TimestampProperty]
-            # clear = False
-            # for type in self.valid_types:
-            #     if type in simple_type:
-            #         try:
-            #             self.valid_types.clean(dict[k])
-            #         except ValueError:
-            #             continue
-            #         clear = True
-            #     elif isinstance(dictified[k], ListProperty()):
-            #         list_type = dictified[k].contained
-            #         if list_type in simple_type:
-            #             for x in dictified[k]:
-            #                 list_type.clean(x)
-            #         else:
-            #             raise ValueError("Dictionary Property does not support lists of type: ", list_type)
-            #     if not clear:
-            #         raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
-            
             clean = False
-            for type in self.valid_types:
-                type_instance = type()
-                try:
-                    type_instance.clean(dictified[k])
+            for type_ in self.valid_types:
+                if isinstance(type_, ListProperty):
+                    type_.clean(value=dictified[k], allow_custom=False)
                     clean = True
-                    break
-                except ValueError:
-                    continue
-            
+                else:
+                    type_instance = type_()
+                    try:
+                        type_instance.clean(value=dictified[k], allow_custom=False, strict=True)
+                        clean = True
+                        break
+                    except ValueError:
+                        continue
             if not clean:
-                raise ValueError("Dictionary Property does not support this value's type: ", self.valid_types)
+                raise ValueError("Dictionary Property does not support this value's type: ", type(dictified[k]))
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
@@ -504,7 +483,7 @@ class HashesProperty(DictionaryProperty):
             if alg:
                 self.__alg_to_spec_name[alg] = spec_hash_name
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, strict=False):
         # ignore the has_custom return value here; there is no customization
         # of DictionaryProperties.
         clean_dict, _ = super().clean(value, allow_custom)
@@ -552,7 +531,7 @@ class HashesProperty(DictionaryProperty):
 
 class BinaryProperty(Property):
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         try:
             base64.b64decode(value)
         except (binascii.Error, TypeError):
@@ -562,7 +541,7 @@ class BinaryProperty(Property):
 
 class HexProperty(Property):
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         if not re.match(r"^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
         return value, False
