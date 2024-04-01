@@ -148,8 +148,8 @@ class Property(object):
           mean there actually are any).  The method must return an appropriate
           value for has_custom.  Customization may not be applicable/possible
           for a property.  In that case, allow_custom can be ignored, and
-          has_custom must be returned as False. strict is a True/False flag 
-          that is used in the dictionary property. if strict is True, 
+          has_custom must be returned as False. strict is a True/False flag
+          that is used in the dictionary property. if strict is True,
           properties like StringProperty will be lenient in their clean method.
 
     - ``def default(self):``
@@ -322,7 +322,7 @@ class IntegerProperty(Property):
     def clean(self, value, allow_custom=False, strict=False):
         if strict is True and not isinstance(value, int):
             raise ValueError("must be an integer.")
-        
+
         try:
             value = int(value)
         except Exception:
@@ -349,7 +349,7 @@ class FloatProperty(Property):
     def clean(self, value, allow_custom=False, strict=False):
         if strict is True and not isinstance(value, float):
             raise ValueError("must be a float.")
-        
+
         try:
             value = float(value)
         except Exception:
