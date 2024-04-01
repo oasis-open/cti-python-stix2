@@ -150,8 +150,6 @@ class RelationalDBSink(DataSink):
 
     def _create_table_objects(self):
         self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
-        with self.database_connection.begin() as trans:
-            print(trans.execute(self.sequence))
         tables = create_core_tables(self.metadata)
         for stix_class in _get_all_subclasses(_DomainObject):
             new_tables = generate_object_table(stix_class, self.metadata, "sdo")
