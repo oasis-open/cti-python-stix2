@@ -4,7 +4,7 @@ import pytz
 
 import stix2
 from stix2.datastore.relational_db.relational_db import (
-    RelationalDBSink, RelationalDBSource,
+    RelationalDBSink, RelationalDBSource, RelationalDBStore
 )
 import stix2.properties
 
@@ -98,23 +98,18 @@ def file_example_with_PDFExt_Object():
 
 
 def main():
-    store = RelationalDBSink(
+    store = RelationalDBStore(
         "postgresql://localhost/stix-data-sink",
         False,
         None,
         True,
         stix2.Directory
     )
-    # store.generate_stix_schema()
+    store.sink.generate_stix_schema()
+
     store.add(directory_stix_object)
 
-    source = RelationalDBSource(
-        "postgresql://localhost/stix-data-sink",
-        stix2.Directory
-    )
-    source.generate_stix_schema()
-
-    read_obj = source.get(directory_stix_object.id)
+    read_obj = store.get(directory_stix_object.id)
     print(read_obj)
 
 

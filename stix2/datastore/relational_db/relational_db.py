@@ -53,79 +53,97 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
 
 
 class RelationalDBStore(DataStoreMixin):
-    """Interface to a file directory of STIX objects.
-
-    FileSystemStore is a wrapper around a paired FileSystemSink
-    and FileSystemSource.
-
-    Args:
-        stix_dir (str): path to directory of STIX objects
-        allow_custom (bool): whether to allow custom STIX content to be
-            pushed/retrieved. Defaults to True for FileSystemSource side
-            (retrieving data) and False for FileSystemSink
-            side(pushing data). However, when parameter is supplied, it
-            will be applied to both FileSystemSource and FileSystemSink.
-        bundlify (bool): whether to wrap objects in bundles when saving
-            them. Default: False.
-        encoding (str): The encoding to use when reading a file from the
-            filesystem.
-
-    Attributes:
-        source (FileSystemSource): FileSystemSource
-        sink (FileSystemSink): FileSystemSink
-
-    """
-    def __init__(self, database_connection_url, allow_custom=None, encoding='utf-8'):
-        if allow_custom is None:
-            allow_custom_source = True
-            allow_custom_sink = False
-        else:
-            allow_custom_sink = allow_custom_source = allow_custom
-
-        super(RelationalDBStore, self).__init__(
-            source=RelationalDBSource(database_connection_url, allow_custom=allow_custom_source, encoding=encoding),
-            sink=RelationalDBSink(database_connection_url, allow_custom=allow_custom_sink),
-        )
-
-
-class RelationalDBSink(DataSink):
-    """Interface for adding/pushing STIX objects to an in-memory dictionary.
-
-    Designed to be paired with a MemorySource, together as the two
-    components of a MemoryStore.
-
-    Args:
-        stix_data (dict OR list): valid STIX 2.0 content in
-            bundle or a list.
-        _store (bool): whether the MemorySink is a part of a MemoryStore,
-            in which case "stix_data" is a direct reference to
-            shared memory with DataSource. Not user supplied
-        allow_custom (bool): whether to allow custom objects/properties
-            when exporting STIX content to file.
-            Default: True.
-        version (str): If present, it forces the parser to use the version
-            provided. Otherwise, the library will make the best effort based
-            on checking the "spec_version" property.
-
-    Attributes:
-        _data (dict): the in-memory dict that holds STIX objects.
-            If part of a MemoryStore, the dict is shared with a MemorySource
-
-    """
     def __init__(
         self, database_connection_url, allow_custom=True, version=None,
         instantiate_database=True, *stix_object_classes
     ):
-        super(RelationalDBSink, self).__init__()
-        self.allow_custom = allow_custom
-        self.metadata = MetaData()
-        self.database_connection = create_engine(database_connection_url)
+        """
+        Initialize this store.
 
-        self.tables = create_table_objects(
+        Args:
+            database_connection_url: An SQLAlchemy URL referring to a database
+            allow_custom: Whether custom content is allowed when processing
+                dict content to be added to the store
+            version: TODO: unused so far
+            instantiate_database: Whether tables, etc should be created in the
+                database (only necessary the first time)
+            *stix_object_classes: STIX object classes to map into table schemas
+                (and ultimately database tables, if instantiation is desired).
+                This can be used to limit which table schemas are created, if
+                one is only working with a subset of STIX types.  If not given,
+                auto-detect all classes and create table schemas for all of
+                them.
+        """
+        database_connection = create_engine(database_connection_url)
+
+        self.metadata = MetaData()
+        create_table_objects(
             self.metadata, stix_object_classes
         )
+
+        super().__init__(
+            source=RelationalDBSource(
+                database_connection,
+                metadata=self.metadata
+            ),
+            sink=RelationalDBSink(
+                database_connection,
+                allow_custom=allow_custom,
+                version=version,
+                instantiate_database=instantiate_database,
+                metadata=self.metadata
+            ),
+        )
+
+
+class RelationalDBSink(DataSink):
+    def __init__(
+        self, database_connection_or_url, allow_custom=True, version=None,
+        instantiate_database=True, *stix_object_classes, metadata=None
+    ):
+        """
+        Initialize this sink.  Only one of stix_object_classes and metadata
+        should be given: if the latter is given, assume table schemas are
+        already created.
+
+        Args:
+            database_connection_or_url: An SQLAlchemy engine object, or URL
+            allow_custom: Whether custom content is allowed when processing
+                dict content to be added to the sink
+            version: TODO: unused so far
+            instantiate_database: Whether tables, etc should be created in the
+                database (only necessary the first time)
+            *stix_object_classes: STIX object classes to map into table schemas
+                (and ultimately database tables, if instantiation is desired).
+                This can be used to limit which table schemas are created, if
+                one is only working with a subset of STIX types.  If not given,
+                auto-detect all classes and create table schemas for all of
+                them.  If metadata is given, the table data therein is used and
+                this argument is ignored.
+            metadata: SQLAlchemy MetaData object containing table information.
+                Only applicable when this class is instantiated via a store,
+                so that table information can be constructed once and shared
+                between source and sink.
+        """
+        super(RelationalDBSink, self).__init__()
+
+        if isinstance(database_connection_or_url, str):
+            self.database_connection = create_engine(database_connection_or_url)
+        else:
+            self.database_connection = database_connection_or_url
+
+        if metadata:
+            self.metadata = metadata
+        else:
+            self.metadata = MetaData()
+            create_table_objects(
+                self.metadata, stix_object_classes
+            )
+
+        self.allow_custom = allow_custom
+
         self.tables_dictionary = dict()
-        for t in self.tables:
+        for t in self.metadata.tables.values():
             self.tables_dictionary[canonicalize_table_name(t.name, t.schema)] = t
 
         if instantiate_database:
@@ -144,7 +162,7 @@ class RelationalDBSink(DataSink):
         self.metadata.create_all(self.database_connection)
 
     def generate_stix_schema(self):
-        for t in self.tables:
+        for t in self.metadata.tables.values():
             print(CreateTable(t).compile(self.database_connection))
             print()
 
@@ -163,15 +181,42 @@ class RelationalDBSink(DataSink):
 
 
 class RelationalDBSource(DataSource):
-
     def __init__(
-        self, database_connection_url, *stix_object_classes
+        self, database_connection_or_url, *stix_object_classes, metadata=None
     ):
-        self.metadata = MetaData()
-        self.database_connection = create_engine(database_connection_url)
-        create_table_objects(
-            self.metadata, stix_object_classes
-        )
+        """
+        Initialize this source.  Only one of stix_object_classes and metadata
+        should be given: if the latter is given, assume table schemas are
+        already created.  Instances of this class do not create the actual
+        database tables; see the source/sink for that.
+
+        Args:
+            database_connection_or_url: An SQLAlchemy engine object, or URL
+            *stix_object_classes: STIX object classes to map into table schemas.
+                This can be used to limit which schemas are created, if one is
+                only working with a subset of STIX types.  If not given,
+                auto-detect all classes and create schemas for all of them.
+                If metadata is given, the table data therein is used and this
+                argument is ignored.
+            metadata: SQLAlchemy MetaData object containing table information.
+                Only applicable when this class is instantiated via a store,
+                so that table information can be constructed once and shared
+                between source and sink.
+        """
+        super().__init__()
+
+        if isinstance(database_connection_or_url, str):
+            self.database_connection = create_engine(database_connection_or_url)
+        else:
+            self.database_connection = database_connection_or_url
+
+        if metadata:
+            self.metadata = metadata
+        else:
+            self.metadata = MetaData()
+            create_table_objects(
+                self.metadata, stix_object_classes
+            )
 
     def get(self, stix_id, version=None, _composite_filters=None):
 
@@ -211,14 +256,10 @@ class RelationalDBSource(DataSource):
             sco_data = conn.execute(core_type_select).mappings().first()
             obj_dict.update(sco_data)
 
-        return stix_class(**obj_dict)
+        return stix_class(**obj_dict, allow_custom=True)
 
     def all_versions(self, stix_id, version=None, _composite_filters=None):
         pass
 
     def query(self, query=None):
         pass
-
-    def generate_stix_schema(self):
-        for t in self.metadata.tables.values():
-            print(CreateTable(t).compile(self.database_connection.engine))
