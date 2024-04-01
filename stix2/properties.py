@@ -226,7 +226,7 @@ class ListProperty(Property):
 
         super(ListProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, strict_flag=False):
         try:
             iter(value)
         except TypeError:
@@ -240,7 +240,7 @@ class ListProperty(Property):
         if isinstance(self.contained, Property):
             for item in value:
                 try:
-                    valid, temp_custom = self.contained.clean(item, allow_custom, strict=True)
+                    valid, temp_custom = self.contained.clean(item, allow_custom, strict=strict_flag)
                 except TypeError:
                     valid, temp_custom = self.contained.clean(item, allow_custom)
                 result.append(valid)
@@ -451,7 +451,7 @@ class DictionaryProperty(Property):
             clean = False
             for type_ in self.valid_types:
                 if isinstance(type_, ListProperty):
-                    type_.clean(value=dictified[k], allow_custom=False)
+                    type_.clean(value=dictified[k], allow_custom=False, strict_flag=True)
                     clean = True
                 else:
                     type_instance = type_()
