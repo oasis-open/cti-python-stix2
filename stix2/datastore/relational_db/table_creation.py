@@ -638,7 +638,7 @@ def generate_object_table(
                     ondelete="CASCADE",
                 ),
                 primary_key=True,
-                nullable = False,
+                nullable=False,
             )
         else:
             column = Column(

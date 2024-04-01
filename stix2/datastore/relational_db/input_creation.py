@@ -65,7 +65,7 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 
 @add_method(EmbeddedObjectProperty)
-def generate_insert_information(self, name, stix_object, is_list=False, foreign_key_value=None, **kwargs):  # noqa: F811
+def generate_insert_information(self, name, stix_object, is_list=False, foreign_key_value=None, is_extension=False, **kwargs):  # noqa: F811
     data_sink = kwargs.get("data_sink")
     schema_name = kwargs.get("schema_name")
     level = kwargs.get("level")
@@ -73,6 +73,7 @@ def generate_insert_information(self, name, stix_object, is_list=False, foreign_
         data_sink, stix_object[name], self.type.__name__, schema_name,
         level=level+1 if is_list else level,
         is_embedded_object=True,
+        is_extension=is_extension,
         parent_table_name=kwargs.get("parent_table_name"),
         foreign_key_value=foreign_key_value,
     )
@@ -114,31 +115,31 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
     return {name: v}
 
 
-def generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name, foreign_key_value=None,
-                               is_embedded_object=False, **kwargs):
+def generate_insert_for_hashes(
+    data_sink, name, stix_object, table_name, schema_name, foreign_key_value=None,
+    is_embedded_object=False, **kwargs,
+):
     bindings = {"id": foreign_key_value}
-    table = data_sink.tables_dictionary[
-        canonicalize_table_name(
-            table_name + "_" + name,
-            schema_name,
-        )
-    ]
+    table_name = canonicalize_table_name(table_name + "_" + name, schema_name)
+    table = data_sink.tables_dictionary[table_name]
+    insert_statements = list()
+    for hash_name, hash_value in stix_object["hashes"].items():
 
-    for idx, (hash_name, hash_value) in enumerate(stix_object["hashes".items()]):
-        hash_name_binding_name = "hash_name" + str(idx)
-        hash_value_binding_name = "hash_value" + str(idx)
-
-        bindings[hash_name_binding_name] = hash_name
-        bindings[hash_value_binding_name] = hash_value
-
-    return [insert(table).values(bindings)]
+        bindings["hash_name"] = hash_name
+        bindings["hash_value"] = hash_value
+        insert_statements.append(insert(table).values(bindings))
+    return insert_statements
 
 
 @add_method(HashesProperty)
-def generate_insert_information(self, name, stix_object, data_sink=None, table_name=None, schema_name=None,
-                                is_embedded_object=False, foreign_key_value=None, **kwargs):  # noqa: F811
-    return generate_insert_for_hashes(data_sink, name, stix_object, table_name, schema_name,
-                                      is_embedded_object=is_embedded_object, foreign_key_value=foreign_key_value)
+def generate_insert_information(   # noqa: F811
+    self, name, stix_object, data_sink=None, table_name=None, schema_name=None,
+    is_embedded_object=False, foreign_key_value=None, is_list=False, **kwargs,
+):
+    return generate_insert_for_hashes(
+        data_sink, name, stix_object, table_name, schema_name,
+        is_embedded_object=is_embedded_object, is_list=is_list, foreign_key_value=foreign_key_value,
+    )
 
 
 @add_method(IDProperty)
@@ -336,7 +337,7 @@ def generate_insert_for_sub_object(
         bindings["id"] = stix_object["id"]
     elif foreign_key_value:
         bindings["id"] = foreign_key_value
-    if parent_table_name and not is_extension:
+    if parent_table_name and (not is_extension or level > 0):
         type_name = parent_table_name + "_" + type_name
     table_name = canonicalize_table_name(type_name, schema_name)
     object_table = data_sink.tables_dictionary[table_name]
@@ -347,12 +348,12 @@ def generate_insert_for_sub_object(
                 name,
                 stix_object,
                 data_sink=data_sink,
-                table_name=table_name,
+                table_name=table_name if isinstance(prop, ListProperty) else parent_table_name,
                 schema_name=None,
                 foreign_key_value=foreign_key_value,
                 is_embedded_object=is_embedded_object,
                 is_list=is_list,
-                level=level,
+                level=level+1,
                 is_extension=is_extension,
                 parent_table_name=table_name,
             )
