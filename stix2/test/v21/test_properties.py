@@ -7,8 +7,8 @@ from stix2.exceptions import (
 )
 from stix2.properties import (
     DictionaryProperty, EmbeddedObjectProperty, ExtensionsProperty,
-    HashesProperty, IDProperty, ListProperty, ObservableProperty,
-    ReferenceProperty, STIXObjectProperty,
+    HashesProperty, IDProperty, IntegerProperty, ListProperty,
+    ObservableProperty, ReferenceProperty, STIXObjectProperty, StringProperty,
 )
 from stix2.v21.common import MarkingProperty
 
@@ -20,8 +20,51 @@ def test_dictionary_property():
 
     assert p.clean({'spec_version': '2.1'})
     with pytest.raises(ValueError):
-        p.clean({})
+        p.clean({}, False)
 
+def test_dictionary_property_values_str():
+    p = DictionaryProperty(valid_types=[StringProperty], spec_version='2.1')
+    result = p.clean({'x': '123'}, False)
+    assert result == ({'x': '123'}, False)
+
+    q = DictionaryProperty(valid_types=[StringProperty], spec_version='2.1')
+    with pytest.raises(ValueError):
+        assert q.clean({'x': [123]}, False)
+
+def test_dictionary_property_values_int():
+    p = DictionaryProperty(valid_types=[IntegerProperty], spec_version='2.1')
+    result = p.clean({'x': 123}, False)
+    assert result == ({'x': 123}, False)
+
+    q = DictionaryProperty(valid_types=[IntegerProperty], spec_version='2.1')
+    with pytest.raises(ValueError):
+        assert q.clean({'x': [123]}, False)
+
+def test_dictionary_property_values_stringlist():
+    p = DictionaryProperty(valid_types=[ListProperty(StringProperty)], spec_version='2.1')
+    result = p.clean({'x': ['abc', 'def']}, False)
+    assert result == ({'x': ['abc', 'def']}, False)
+
+    q = DictionaryProperty(valid_types=[ListProperty(StringProperty)], spec_version='2.1')
+    with pytest.raises(ValueError):
+        assert q.clean({'x': [123]})
+
+    r = DictionaryProperty(valid_types=[StringProperty, IntegerProperty], spec_version='2.1')
+    with pytest.raises(ValueError):
+        assert r.clean({'x': [123, 456]})
+
+def test_dictionary_property_values_list():
+    p = DictionaryProperty(valid_types=[StringProperty, IntegerProperty], spec_version='2.1')
+    result = p.clean({'x': 123}, False)
+    assert result == ({'x': 123}, False)
+
+    q = DictionaryProperty(valid_types=[StringProperty, IntegerProperty], spec_version='2.1')
+    result = q.clean({'x': '123'}, False)
+    assert result == ({'x': '123'}, False)
+
+    r = DictionaryProperty(valid_types=[StringProperty, IntegerProperty], spec_version='2.1')
+    with pytest.raises(ValueError):
+        assert r.clean({'x': ['abc', 'def']}, False)
 
 ID_PROP = IDProperty('my-type', spec_version="2.1")
 MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
