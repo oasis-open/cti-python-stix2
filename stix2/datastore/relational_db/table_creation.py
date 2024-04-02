@@ -146,11 +146,11 @@ def create_external_references_tables(metadata):
         Column("url", Text),
         Column("external_id", Text),
         # all such keys are generated using the global sequence.
-        Column("hash_ref_id", Integer, primary_key=True, autoincrement = False)
+        Column("hash_ref_id", Integer, primary_key=True, autoincrement=False),
     ]
     return [
         Table("external_references", metadata, *columns, schema="common"),
-        create_hashes_table("hashes", metadata, "common", "external_references", Integer)
+        create_hashes_table("hashes", metadata, "common", "external_references", Integer),
     ]
 
 
@@ -471,7 +471,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 primary_key=True,
                 nullable=False,
                 # all such keys are generated using the global sequence.
-                autoincrement = False
+                autoincrement=False,
             ),
         )
         tables.append(Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name))
