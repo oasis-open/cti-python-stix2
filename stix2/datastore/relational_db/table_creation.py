@@ -8,6 +8,7 @@ from sqlalchemy import (  # create_engine,; insert,
 from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
     SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
+    flat_classes, get_stix_object_classes, schema_for,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -16,6 +17,7 @@ from stix2.properties import (
     ObjectReferenceProperty, Property, ReferenceProperty, StringProperty,
     TimestampProperty, TypeProperty,
 )
+from stix2.v21.base import _Extension
 from stix2.v21.common import KillChainPhase
 
 
@@ -666,4 +668,33 @@ def create_core_tables(metadata):
         create_object_markings_refs_table(metadata, "sco"),
     ]
     tables.extend(create_external_references_tables(metadata))
+    return tables
+
+
+def create_table_objects(metadata, stix_object_classes):
+    if stix_object_classes:
+        # If classes are given, allow some flexibility regarding lists of
+        # classes vs single classes
+        stix_object_classes = flat_classes(stix_object_classes)
+
+    else:
+        # If no classes given explicitly, discover them automatically
+        stix_object_classes = get_stix_object_classes()
+
+    tables = create_core_tables(metadata)
+
+    for stix_class in stix_object_classes:
+
+        schema_name = schema_for(stix_class)
+        is_extension = issubclass(stix_class, _Extension)
+
+        tables.extend(
+            generate_object_table(
+                stix_class,
+                metadata,
+                schema_name,
+                is_extension=is_extension
+            )
+        )
+
     return tables
