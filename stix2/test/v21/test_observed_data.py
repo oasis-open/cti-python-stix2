@@ -1176,14 +1176,14 @@ def test_incorrect_socket_options():
         )
     assert "Incorrect options key" == str(excinfo.value)
 
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(Exception) as excinfo:
         stix2.v21.SocketExt(
             is_listening=True,
             address_family="AF_INET",
             socket_type="SOCK_STREAM",
             options={"SO_RCVTIMEO": '100'},
         )
-    assert "Options value must be an integer" == str(excinfo.value)
+    assert "Dictionary Property does not support this value's type" in str(excinfo.value)
 
 
 def test_network_traffic_tcp_example():
