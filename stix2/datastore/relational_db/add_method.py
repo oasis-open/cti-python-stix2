@@ -1,3 +1,5 @@
+import re
+
 # _ALLOWABLE_CLASSES = get_all_subclasses(_STIXBase21)
 #
 #
@@ -7,9 +9,8 @@
 def create_real_method_name(name, klass_name):
     # if klass_name not in _ALLOWABLE_CLASSES:
     #     raise NameError
-    # split_up_klass_name = re.findall('[A-Z][^A-Z]*', klass_name)
-    # split_up_klass_name.remove("Type")
-    return name + "_" + "_".join([x.lower() for x in klass_name])
+    split_up_klass_name = re.findall('[A-Z][^A-Z]*', klass_name)
+    return name + "_" + "_".join([x.lower() for x in split_up_klass_name])
 
 
 def add_method(cls):

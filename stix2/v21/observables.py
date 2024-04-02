@@ -181,7 +181,7 @@ class EmailMessage(_Observable):
         ('message_id', StringProperty()),
         ('subject', StringProperty()),
         ('received_lines', ListProperty(StringProperty)),
-        ('additional_header_fields', DictionaryProperty(valid_types="string_list", spec_version='2.1')),
+        ('additional_header_fields', DictionaryProperty(valid_types=[ListProperty(StringProperty)], spec_version='2.1')),
         ('body', StringProperty()),
         ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
         ('raw_email_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
@@ -245,7 +245,7 @@ class PDFExt(_Extension):
     _properties = OrderedDict([
         ('version', StringProperty()),
         ('is_optimized', BooleanProperty()),
-        ('document_info_dict', DictionaryProperty(valid_types="string", spec_version='2.1')),
+        ('document_info_dict', DictionaryProperty(valid_types=[StringProperty], spec_version='2.1')),
         ('pdfid0', StringProperty()),
         ('pdfid1', StringProperty()),
     ])
@@ -261,7 +261,7 @@ class RasterImageExt(_Extension):
         ('image_height', IntegerProperty()),
         ('image_width', IntegerProperty()),
         ('bits_per_pixel', IntegerProperty()),
-        ('exif_tags', DictionaryProperty(valid_types=["string", "integer"], spec_version='2.1')),
+        ('exif_tags', DictionaryProperty(valid_types=[StringProperty, IntegerProperty], spec_version='2.1')),
     ])
 
 
@@ -468,7 +468,7 @@ class HTTPRequestExt(_Extension):
         ('request_method', StringProperty(required=True)),
         ('request_value', StringProperty(required=True)),
         ('request_version', StringProperty()),
-        ('request_header', DictionaryProperty(valid_types="string_list", spec_version='2.1')),
+        ('request_header', DictionaryProperty(valid_types=[ListProperty(StringProperty)], spec_version='2.1')),
         ('message_body_length', IntegerProperty()),
         ('message_body_data_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
     ])
@@ -496,7 +496,7 @@ class SocketExt(_Extension):
         ('address_family', EnumProperty(NETWORK_SOCKET_ADDRESS_FAMILY, required=True)),
         ('is_blocking', BooleanProperty()),
         ('is_listening', BooleanProperty()),
-        ('options', DictionaryProperty(valid_types="integer", spec_version='2.1')),
+        ('options', DictionaryProperty(valid_types=[IntegerProperty], spec_version='2.1')),
         ('socket_type', EnumProperty(NETWORK_SOCKET_TYPE)),
         ('socket_descriptor', IntegerProperty(min=0)),
         ('socket_handle', IntegerProperty()),
@@ -550,7 +550,7 @@ class NetworkTraffic(_Observable):
         ('dst_byte_count', IntegerProperty(min=0)),
         ('src_packets', IntegerProperty(min=0)),
         ('dst_packets', IntegerProperty(min=0)),
-        ('ipfix', DictionaryProperty(valid_types=["string", "integer"], spec_version='2.1')),
+        ('ipfix', DictionaryProperty(valid_types=[StringProperty, IntegerProperty], spec_version='2.1')),
         ('src_payload_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('dst_payload_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('encapsulates_refs', ListProperty(ReferenceProperty(valid_types='network-traffic', spec_version='2.1'))),
@@ -634,7 +634,7 @@ class Process(_Observable):
         ('created_time', TimestampProperty()),
         ('cwd', StringProperty()),
         ('command_line', StringProperty()),
-        ('environment_variables', DictionaryProperty(valid_types="string", spec_version='2.1')),
+        ('environment_variables', DictionaryProperty(valid_types=[StringProperty], spec_version='2.1')),
         ('opened_connection_refs', ListProperty(ReferenceProperty(valid_types='network-traffic', spec_version='2.1'))),
         ('creator_user_ref', ReferenceProperty(valid_types='user-account', spec_version='2.1')),
         ('image_ref', ReferenceProperty(valid_types='file', spec_version='2.1')),

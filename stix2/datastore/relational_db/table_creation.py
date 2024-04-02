@@ -8,7 +8,8 @@ from sqlalchemy import (  # create_engine,; insert,
 from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
     SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
-    flat_classes, get_stix_object_classes, schema_for,
+    determine_column_name, determine_sql_type_from_class, flat_classes,
+    get_stix_object_classes, schema_for,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -193,9 +194,19 @@ def create_core_table(metadata, schema_name):
     )
 
 
+@add_method(Property)
+def determine_sql_type(self):  # noqa: F811
+    pass
+
+
 @add_method(KillChainPhase)
-def determine_sql_type(self):
+def determine_sql_type(self):  # noqa: F811
     return None
+
+
+@add_method(BinaryProperty)
+def determine_sql_type(self):  # noqa: F811
+    return Boolean
 
 
 @add_method(BooleanProperty)
@@ -203,14 +214,14 @@ def determine_sql_type(self):  # noqa: F811
     return Boolean
 
 
-@add_method(Property)
-def determine_sql_type(self):  # noqa: F811
-    pass
-
-
 @add_method(FloatProperty)
 def determine_sql_type(self):  # noqa: F811
     return Float
+
+
+@add_method(HexProperty)
+def determine_sql_type(self):  # noqa: F811
+    return LargeBinary
 
 
 @add_method(IntegerProperty)
@@ -218,9 +229,20 @@ def determine_sql_type(self):  # noqa: F811
     return Integer
 
 
+@add_method(ReferenceProperty)
+def determine_sql_type(self):  # noqa: F811
+    return Text
+
+
 @add_method(StringProperty)
 def determine_sql_type(self):  # noqa: F811
     return Text
+
+
+@add_method(TimestampProperty)
+def determine_sql_type(self):  # noqa: F811
+    return TIMESTAMP(timezone=True)
+
 
 # ----------------------------- generate_table_information methods ----------------------------
 
@@ -264,36 +286,35 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
             nullable=False,
         ),
     )
-    if len(self.specifics) == 1:
-        if self.specifics[0] != "string_list":
+    if len(self.valid_types) == 1:
+        if not isinstance(self.valid_types[0], ListProperty):
             columns.append(
                 Column(
                     "value",
-                    Text if self.specifics[0] == "string" else Integer,
+                    # its a class
+                    determine_sql_type_from_class(self.valid_types[0]),
                     nullable=False,
                 ),
             )
         else:
+            contained_class = self.valid_types[0].contained
             columns.append(
                 Column(
                     "value",
-                    ARRAY(Text),
+                    # its an instance, not a class
+                    ARRAY(contained_class.determine_sql_type()),
                     nullable=False,
                 ),
             )
     else:
-        columns.append(
-            Column(
-                "string_value",
-                Text,
-            ),
-        )
-        columns.append(
-            Column(
-                "integer_value",
-                Integer,
-            ),
-        )
+        for column_type in self.valid_types:
+            sql_type = determine_sql_type_from_class(column_type)
+            columns.append(
+                Column(
+                    determine_column_name(column_type),
+                    sql_type,
+                ),
+            )
     return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
 
 
@@ -315,7 +336,7 @@ def generate_table_information(self, name, **kwargs):  # noqa: F811
         CheckConstraint(
             f"{name} ~ '^{enum_re}$'",
         ),
-        nullable=not (self.required),
+        nullable=not self.required,
     )
 
 
@@ -452,6 +473,21 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 schema_name,
             ),
         ]
+    elif isinstance(self.contained, EnumProperty):
+        columns = list()
+        columns.append(
+            Column(
+                "id",
+                Text,
+                ForeignKey(
+                    canonicalize_table_name(table_name, schema_name) + ".id",
+                    ondelete="CASCADE",
+                ),
+                nullable=False,
+            ),
+        )
+        columns.append(self.contained.generate_table_information(name))
+        tables.append(Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name))
     elif isinstance(self.contained, EmbeddedObjectProperty):
         columns = list()
         columns.append(
