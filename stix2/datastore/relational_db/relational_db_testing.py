@@ -3,9 +3,7 @@ import datetime as dt
 import pytz
 
 import stix2
-from stix2.datastore.relational_db.relational_db import (
-    RelationalDBSink, RelationalDBSource, RelationalDBStore
-)
+from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
 directory_stix_object = stix2.Directory(
@@ -103,7 +101,7 @@ def main():
         False,
         None,
         True,
-        stix2.Directory
+        stix2.Directory,
     )
     store.sink.generate_stix_schema()
 

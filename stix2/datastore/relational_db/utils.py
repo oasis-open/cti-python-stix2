@@ -1,9 +1,10 @@
 from collections.abc import Iterable, Mapping
+
 import inflection
+
 from stix2.v21.base import (
     _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
 )
-
 
 # Helps us know which data goes in core, and which in a type-specific table.
 SCO_COMMON_PROPERTIES = {
@@ -59,8 +60,8 @@ def get_stix_object_classes():
     yield from _get_all_subclasses(_MetaObject)
     # Non-object extensions (property or toplevel-property only)
     for ext_cls in _get_all_subclasses(_Extension):
-        if ext_cls.extension_type in (
-            "property-extension", "toplevel-property-extension"
+        if ext_cls.extension_type not in (
+            "new_sdo", "new_sco", "new_sro",
         ):
             yield ext_cls
 
@@ -104,7 +105,7 @@ def flat_classes(class_or_classes):
     if isinstance(class_or_classes, Iterable) and not isinstance(
         # Try to generically detect STIX objects, which are iterable, but we
         # don't want to iterate through those.
-        class_or_classes, Mapping
+        class_or_classes, Mapping,
     ):
         for class_ in class_or_classes:
             yield from flat_classes(class_)

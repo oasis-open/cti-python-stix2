@@ -55,7 +55,7 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
 class RelationalDBStore(DataStoreMixin):
     def __init__(
         self, database_connection_url, allow_custom=True, version=None,
-        instantiate_database=True, *stix_object_classes
+        instantiate_database=True, *stix_object_classes,
     ):
         """
         Initialize this store.
@@ -78,20 +78,20 @@ class RelationalDBStore(DataStoreMixin):
 
         self.metadata = MetaData()
         create_table_objects(
-            self.metadata, stix_object_classes
+            self.metadata, stix_object_classes,
         )
 
         super().__init__(
             source=RelationalDBSource(
                 database_connection,
-                metadata=self.metadata
+                metadata=self.metadata,
             ),
             sink=RelationalDBSink(
                 database_connection,
                 allow_custom=allow_custom,
                 version=version,
                 instantiate_database=instantiate_database,
-                metadata=self.metadata
+                metadata=self.metadata,
             ),
         )
 
@@ -99,7 +99,7 @@ class RelationalDBStore(DataStoreMixin):
 class RelationalDBSink(DataSink):
     def __init__(
         self, database_connection_or_url, allow_custom=True, version=None,
-        instantiate_database=True, *stix_object_classes, metadata=None
+        instantiate_database=True, *stix_object_classes, metadata=None,
     ):
         """
         Initialize this sink.  Only one of stix_object_classes and metadata
@@ -137,7 +137,7 @@ class RelationalDBSink(DataSink):
         else:
             self.metadata = MetaData()
             create_table_objects(
-                self.metadata, stix_object_classes
+                self.metadata, stix_object_classes,
             )
 
         self.allow_custom = allow_custom
@@ -164,7 +164,6 @@ class RelationalDBSink(DataSink):
     def generate_stix_schema(self):
         for t in self.metadata.tables.values():
             print(CreateTable(t).compile(self.database_connection))
-            print()
 
     def add(self, stix_data, version=None):
         _add(self, stix_data)
@@ -182,7 +181,7 @@ class RelationalDBSink(DataSink):
 
 class RelationalDBSource(DataSource):
     def __init__(
-        self, database_connection_or_url, *stix_object_classes, metadata=None
+        self, database_connection_or_url, *stix_object_classes, metadata=None,
     ):
         """
         Initialize this source.  Only one of stix_object_classes and metadata
@@ -215,7 +214,7 @@ class RelationalDBSource(DataSource):
         else:
             self.metadata = MetaData()
             create_table_objects(
-                self.metadata, stix_object_classes
+                self.metadata, stix_object_classes,
             )
 
     def get(self, stix_id, version=None, _composite_filters=None):
@@ -223,7 +222,7 @@ class RelationalDBSource(DataSource):
         stix_type = stix2.utils.get_type_from_id(stix_id)
         stix_class = stix2.registry.class_for_type(
             # TODO: give user control over STIX version used?
-            stix_type, stix_version=stix2.DEFAULT_VERSION
+            stix_type, stix_version=stix2.DEFAULT_VERSION,
         )
 
         # Info about the type-specific table

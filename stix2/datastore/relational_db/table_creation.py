@@ -693,8 +693,8 @@ def create_table_objects(metadata, stix_object_classes):
                 stix_class,
                 metadata,
                 schema_name,
-                is_extension=is_extension
-            )
+                is_extension=is_extension,
+            ),
         )
 
     return tables
