@@ -452,6 +452,21 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 schema_name,
             ),
         ]
+    elif isinstance(self.contained, EnumProperty):
+        columns = list()
+        columns.append(
+            Column(
+                "id",
+                Text,
+                ForeignKey(
+                    canonicalize_table_name(table_name, schema_name) + ".id",
+                    ondelete="CASCADE",
+                ),
+                nullable=False,
+            ),
+        )
+        columns.append(self.contained.generate_table_information(name))
+        tables.append(Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name))
     elif isinstance(self.contained, EmbeddedObjectProperty):
         columns = list()
         columns.append(
