@@ -74,7 +74,7 @@ def create_hashes_table(name, metadata, schema_name, table_name, key_type=Text, 
             "id",
             key_type,
             ForeignKey(
-                canonicalize_table_name(table_name, schema_name) + ".id",
+                canonicalize_table_name(table_name, schema_name) + (".hash_ref_id" if table_name == "external_references" else ".id"),
                 ondelete="CASCADE",
             ),
 
@@ -145,10 +145,12 @@ def create_external_references_tables(metadata):
         Column("description", Text),
         Column("url", Text),
         Column("external_id", Text),
+        # all such keys are generated using the global sequence.
+        Column("hash_ref_id", Integer, primary_key=True, autoincrement = False)
     ]
     return [
         Table("external_references", metadata, *columns, schema="common"),
-        #  create_hashes_table("hashes", metadata, "common", "external_references")
+        create_hashes_table("hashes", metadata, "common", "external_references", Integer)
     ]
 
 
@@ -468,6 +470,8 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
                 Integer,
                 primary_key=True,
                 nullable=False,
+                # all such keys are generated using the global sequence.
+                autoincrement = False
             ),
         )
         tables.append(Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name))

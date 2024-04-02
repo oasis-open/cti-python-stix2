@@ -61,7 +61,7 @@ def get_stix_object_classes():
     # Non-object extensions (property or toplevel-property only)
     for ext_cls in _get_all_subclasses(_Extension):
         if ext_cls.extension_type not in (
-            "new_sdo", "new_sco", "new_sro",
+            "new-sdo", "new-sco", "new-sro",
         ):
             yield ext_cls
 
@@ -96,6 +96,7 @@ def table_name_for(stix_type_or_class):
     # rather than a STIX type.
     if table_name.startswith("extension-definition"):
         table_name = table_name[0:30]
+        table_name = table_name.replace("extension-definition-", "ext_def")
 
     table_name = canonicalize_table_name(table_name)
     return table_name

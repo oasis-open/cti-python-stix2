@@ -139,6 +139,7 @@ class RelationalDBSink(DataSink):
             create_table_objects(
                 self.metadata, stix_object_classes,
             )
+        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1, schema="common")
 
         self.allow_custom = allow_custom
 
@@ -158,7 +159,6 @@ class RelationalDBSink(DataSink):
             trans.execute(CreateSchema("sro", if_not_exists=True))
 
     def _instantiate_database(self):
-        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1)
         self.metadata.create_all(self.database_connection)
 
     def generate_stix_schema(self):

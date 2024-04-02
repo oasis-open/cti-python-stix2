@@ -231,18 +231,26 @@ def generate_insert_for_array_in_table(table, values, foreign_key_value):
 
 def generate_insert_for_external_references(data_sink, stix_object):
     insert_statements = list()
+    next_id = None
     object_table = data_sink.tables_dictionary["common.external_references"]
     for er in stix_object["external_references"]:
         bindings = {"id": stix_object["id"]}
         for prop in ["source_name", "description", "url", "external_id"]:
             if prop in er:
                 bindings[prop] = er[prop]
+        if "hashes" in er:
+            with data_sink.database_connection.begin() as trans:
+                next_id = trans.execute(data_sink.sequence)
+            bindings["hash_ref_id"] = next_id
+        else:
+            # hash_ref_id is non-NULL, so -1 means there are no hashes
+            bindings["hash_ref_id"] = -1
         er_insert_statement = insert(object_table).values(bindings)
         insert_statements.append(er_insert_statement)
 
         if "hashes" in er:
             insert_statements.extend(
-                generate_insert_for_hashes(data_sink, "hashes", er["hashes"], "external_references_hashes", "sdo"),
+                generate_insert_for_hashes(data_sink, "hashes", er, "external_references", "common", foreign_key_value=next_id),
             )
 
     return insert_statements
