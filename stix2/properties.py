@@ -404,7 +404,10 @@ class DictionaryProperty(Property):
     def __init__(self, valid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
 
-        simple_types = [BinaryProperty, BooleanProperty, FloatProperty, HexProperty, IntegerProperty, StringProperty, TimestampProperty, ReferenceProperty]
+        simple_types = [
+            BinaryProperty, BooleanProperty, FloatProperty, HexProperty, IntegerProperty, StringProperty,
+            TimestampProperty, ReferenceProperty,
+        ]
         if not valid_types:
             valid_types = [Property]
         else:
