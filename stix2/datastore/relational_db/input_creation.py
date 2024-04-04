@@ -167,7 +167,7 @@ def generate_insert_information(self, name, stix_object, level=0, is_extension=F
         table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name)]
         for idx, item in enumerate(stix_object[name]):
             bindings = {
-                "id": stix_object["id"],
+                "id": stix_object["id"] if id in stix_object else foreign_key_value,
                 "ref_id": item,
             }
             insert_statements.append(insert(table).values(bindings))
