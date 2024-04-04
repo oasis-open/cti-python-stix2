@@ -406,7 +406,7 @@ class DictionaryProperty(Property):
 
         simple_types = [
             BinaryProperty, BooleanProperty, FloatProperty, HexProperty, IntegerProperty, StringProperty,
-            TimestampProperty, ReferenceProperty,
+            TimestampProperty, ReferenceProperty, EnumProperty,
         ]
         if not valid_types:
             valid_types = [Property]
@@ -722,7 +722,11 @@ class EnumProperty(StringProperty):
         self.allowed = allowed
         super(EnumProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, strict=False):
+        if not isinstance(value, str):
+            if strict is True:
+                raise ValueError("Must be a string.")
+
         cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
 
         if cleaned_value not in self.allowed:
@@ -743,7 +747,7 @@ class OpenVocabProperty(StringProperty):
             allowed = [allowed]
         self.allowed = allowed
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, strict=False):
         cleaned_value, _ = super(OpenVocabProperty, self).clean(
             value, allow_custom,
         )
