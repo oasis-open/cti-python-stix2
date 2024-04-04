@@ -356,7 +356,7 @@ def generate_insert_for_sub_object(
                 name,
                 stix_object,
                 data_sink=data_sink,
-                table_name=table_name if isinstance(prop, ListProperty) else parent_table_name,
+                table_name=table_name if isinstance(prop, (DictionaryProperty, ListProperty)) else parent_table_name,
                 schema_name=None,
                 foreign_key_value=foreign_key_value,
                 is_embedded_object=is_embedded_object,
