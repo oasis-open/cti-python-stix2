@@ -89,7 +89,7 @@ def generate_insert_information(self, name, stix_object, data_sink=None, table_n
     input_statements = list()
     for ex_name, ex in stix_object["extensions"].items():
         # ignore new extensions - they have no properties
-        if ex.extension_type and not ex.extension_type.startswith("new"):
+        if ex.extension_type is None or not ex.extension_type.startswith("new"):
             if ex_name.startswith("extension-definition"):
                 ex_name = ex_name[0:30]
                 ex_name = ex_name.replace("extension-definition-", "ext_def")

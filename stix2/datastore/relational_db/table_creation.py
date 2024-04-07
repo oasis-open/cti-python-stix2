@@ -72,7 +72,7 @@ def create_hashes_table(name, metadata, schema_name, table_name, key_type=Text, 
     columns = list()
     # special case, perhaps because its a single embedded object with hashes, and not a list of embedded object
     # making the parent table's primary key does seem to worl
-    if table_name == "windows-pebinary-ext_WindowsPEOptionalHeaderType":
+    if False:  #  table_name == "windows-pebinary-ext_WindowsPEOptionalHeaderType":
         columns.append(
             Column(
                 "id",
@@ -737,7 +737,7 @@ def generate_object_table(
                         ondelete="CASCADE",
                     ),
                     # if it is a not list, then it is a single embedded object, and the primary key is unique
-                    # primary_key=not is_list
+                    primary_key=not is_list
                 )
         elif level > 0 and is_embedded_object:
             column = Column(
