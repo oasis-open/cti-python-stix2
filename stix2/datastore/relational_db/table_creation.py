@@ -72,32 +72,19 @@ def create_hashes_table(name, metadata, schema_name, table_name, key_type=Text, 
     columns = list()
     # special case, perhaps because its a single embedded object with hashes, and not a list of embedded object
     # making the parent table's primary key does seem to worl
-    if False:  #  table_name == "windows-pebinary-ext_WindowsPEOptionalHeaderType":
-        columns.append(
-            Column(
-                "id",
-                key_type,
-                # ForeignKey(
-                #     canonicalize_table_name(table_name, schema_name) + (".hash_ref_id" if table_name == "external_references" else ".id"),
-                #     ondelete="CASCADE",
-                # ),
 
-                nullable=False,
+    columns.append(
+        Column(
+            "id",
+            key_type,
+            ForeignKey(
+                canonicalize_table_name(table_name, schema_name) + (".hash_ref_id" if table_name == "external_references" else ".id"),
+                ondelete="CASCADE",
             ),
-        )
-    else:
-        columns.append(
-            Column(
-                "id",
-                key_type,
-                ForeignKey(
-                    canonicalize_table_name(table_name, schema_name) + (".hash_ref_id" if table_name == "external_references" else ".id"),
-                    ondelete="CASCADE",
-                ),
 
-                nullable=False,
-            ),
-        )
+            nullable=False,
+        ),
+    )
     columns.append(
         Column(
             "hash_name",
@@ -737,7 +724,7 @@ def generate_object_table(
                         ondelete="CASCADE",
                     ),
                     # if it is a not list, then it is a single embedded object, and the primary key is unique
-                    primary_key=not is_list
+                    primary_key=not is_list,
                 )
         elif level > 0 and is_embedded_object:
             column = Column(
