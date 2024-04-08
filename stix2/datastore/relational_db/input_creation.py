@@ -88,19 +88,24 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 def generate_insert_information(self, name, stix_object, data_sink=None, table_name=None, schema_name=None, parent_table_name=None, **kwargs):  # noqa: F811
     input_statements = list()
     for ex_name, ex in stix_object["extensions"].items():
-        bindings = {
-            "id": stix_object["id"],
-            "ext_table_name": canonicalize_table_name(ex_name, schema_name),
-        }
-        ex_table = data_sink.tables_dictionary[table_name + "_" + "extensions"]
-        input_statements.append(insert(ex_table).values(bindings))
-        input_statements.extend(
-            generate_insert_for_sub_object(
-                data_sink, ex, ex_name, schema_name, stix_object["id"],
-                parent_table_name=parent_table_name,
-                is_extension=True,
-            ),
-        )
+        # ignore new extensions - they have no properties
+        if ex.extension_type is None or not ex.extension_type.startswith("new"):
+            if ex_name.startswith("extension-definition"):
+                ex_name = ex_name[0:30]
+                ex_name = ex_name.replace("extension-definition-", "ext_def")
+            bindings = {
+                "id": stix_object["id"],
+                "ext_table_name": canonicalize_table_name(ex_name, schema_name),
+            }
+            ex_table = data_sink.tables_dictionary[table_name + "_" + "extensions"]
+            input_statements.append(insert(ex_table).values(bindings))
+            input_statements.extend(
+                generate_insert_for_sub_object(
+                    data_sink, ex, ex_name, schema_name, stix_object["id"],
+                    parent_table_name=parent_table_name,
+                    is_extension=True,
+                ),
+            )
     return input_statements
 
 
@@ -162,7 +167,7 @@ def generate_insert_information(self, name, stix_object, level=0, is_extension=F
         table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name)]
         for idx, item in enumerate(stix_object[name]):
             bindings = {
-                "id": stix_object["id"],
+                "id": stix_object["id"] if id in stix_object else foreign_key_value,
                 "ref_id": item,
             }
             insert_statements.append(insert(table).values(bindings))
@@ -347,6 +352,9 @@ def generate_insert_for_sub_object(
         bindings["id"] = foreign_key_value
     if parent_table_name and (not is_extension or level > 0):
         type_name = parent_table_name + "_" + type_name
+    if type_name.startswith("extension-definition"):
+        type_name = type_name[0:30]
+        type_name = type_name.replace("extension-definition-", "ext_def")
     table_name = canonicalize_table_name(type_name, schema_name)
     object_table = data_sink.tables_dictionary[table_name]
     sub_insert_statements = list()
@@ -356,7 +364,7 @@ def generate_insert_for_sub_object(
                 name,
                 stix_object,
                 data_sink=data_sink,
-                table_name=table_name if isinstance(prop, ListProperty) else parent_table_name,
+                table_name=table_name if isinstance(prop, (DictionaryProperty, ListProperty)) else parent_table_name,
                 schema_name=None,
                 foreign_key_value=foreign_key_value,
                 is_embedded_object=is_embedded_object,
