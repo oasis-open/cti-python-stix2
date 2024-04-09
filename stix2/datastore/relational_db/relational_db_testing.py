@@ -22,13 +22,13 @@ directory_stix_object = stix2.Directory(
 )
 
 s = stix2.v21.Software(
-        id="software--28897173-7314-4eec-b1cf-2c625b635bf6",
-        name="Word",
-        cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
-        swid="com.acme.rms-ce-v4-1-5-0",
-        version="2002",
-        languages=["c", "lisp"],
-        vendor="Microsoft",
+    id="software--28897173-7314-4eec-b1cf-2c625b635bf6",
+    name="Word",
+    cpe="cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
+    swid="com.acme.rms-ce-v4-1-5-0",
+    version="2002",
+    languages=["c", "lisp"],
+    vendor="Microsoft",
 )
 
 
@@ -103,12 +103,16 @@ def main():
         True,
         stix2.Directory,
     )
-    store.sink.generate_stix_schema()
+    if store.database_exists:
+        store.sink.generate_stix_schema()
+        store.sink.clear_tables()
 
-    store.add(directory_stix_object)
+        store.add(directory_stix_object)
 
-    read_obj = store.get(directory_stix_object.id)
-    print(read_obj)
+        read_obj = store.get(directory_stix_object.id)
+        print(read_obj)
+    else:
+        print("database does not exist")
 
 
 if __name__ == '__main__':

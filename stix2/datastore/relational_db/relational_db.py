@@ -1,5 +1,6 @@
-from sqlalchemy import MetaData, create_engine, select
+from sqlalchemy import MetaData, create_engine, select, delete
 from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
+from sqlalchemy_utils import database_exists, create_database
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
@@ -75,25 +76,30 @@ class RelationalDBStore(DataStoreMixin):
                 them.
         """
         database_connection = create_engine(database_connection_url)
+        self.database_exists = database_exists(database_connection.url)
+        if not self.database_exists and instantiate_database:
+            create_database(database_connection_url)
+            self.database_exists = database_exists(database_connection.url)
 
-        self.metadata = MetaData()
-        create_table_objects(
-            self.metadata, stix_object_classes,
-        )
+        if self.database_exists:
+            self.metadata = MetaData()
+            create_table_objects(
+                self.metadata, stix_object_classes,
+            )
 
-        super().__init__(
-            source=RelationalDBSource(
-                database_connection,
-                metadata=self.metadata,
-            ),
-            sink=RelationalDBSink(
-                database_connection,
-                allow_custom=allow_custom,
-                version=version,
-                instantiate_database=instantiate_database,
-                metadata=self.metadata,
-            ),
-        )
+            super().__init__(
+                source=RelationalDBSource(
+                    database_connection,
+                    metadata=self.metadata,
+                ),
+                sink=RelationalDBSink(
+                    database_connection,
+                    allow_custom=allow_custom,
+                    version=version,
+                    instantiate_database=instantiate_database,
+                    metadata=self.metadata,
+                ),
+            )
 
 
 class RelationalDBSink(DataSink):
@@ -177,6 +183,14 @@ class RelationalDBSink(DataSink):
                 print("executing: ", stmt)
                 trans.execute(stmt)
             trans.commit()
+
+    def clear_tables(self):
+        tables = list(reversed(self.metadata.sorted_tables))
+        with self.database_connection.begin() as trans:
+            for table in tables:
+                delete_stmt = delete(table)
+                print(f'delete_stmt: {delete_stmt}')
+                trans.execute(delete_stmt)
 
 
 class RelationalDBSource(DataSource):
