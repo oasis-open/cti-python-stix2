@@ -723,11 +723,8 @@ class EnumProperty(StringProperty):
         super(EnumProperty, self).__init__(**kwargs)
 
     def clean(self, value, allow_custom, strict=False):
-        if not isinstance(value, str):
-            if strict is True:
-                raise ValueError("Must be a string.")
 
-        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
+        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom, strict)
 
         if cleaned_value not in self.allowed:
             raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
@@ -749,19 +746,20 @@ class OpenVocabProperty(StringProperty):
 
     def clean(self, value, allow_custom, strict=False):
         cleaned_value, _ = super(OpenVocabProperty, self).clean(
-            value, allow_custom,
+            value, allow_custom, strict
         )
 
         # Disabled: it was decided that enforcing this is too strict (might
         # break too much user code).  Revisit when we have the capability for
         # more granular config settings when creating objects.
         #
-        # has_custom = cleaned_value not in self.allowed
-        #
-        # if not allow_custom and has_custom:
-        #     raise CustomContentError(
-        #         "custom value in open vocab: '{}'".format(cleaned_value),
-        #     )
+        if strict is True:
+            has_custom = cleaned_value not in self.allowed
+            
+            if not allow_custom and has_custom:
+                raise CustomContentError(
+                    "custom value in open vocab: '{}'".format(cleaned_value),
+                )
 
         has_custom = False
 
