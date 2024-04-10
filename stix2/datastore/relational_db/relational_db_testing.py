@@ -97,7 +97,7 @@ def file_example_with_PDFExt_Object():
 
 def main():
     store = RelationalDBStore(
-        "postgresql://localhost/stix-data-sink4",
+        "postgresql://localhost/stix-data-sink",
         False,
         None,
         True,
