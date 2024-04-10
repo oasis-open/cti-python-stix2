@@ -1,6 +1,6 @@
 from sqlalchemy import MetaData, create_engine, select, delete
 from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
-from sqlalchemy_utils import database_exists, create_database
+from sqlalchemy_utils import database_exists, create_database, drop_database
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
@@ -56,7 +56,7 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
 class RelationalDBStore(DataStoreMixin):
     def __init__(
         self, database_connection_url, allow_custom=True, version=None,
-        instantiate_database=True, *stix_object_classes,
+        create_db=True, instantiate_database=True, *stix_object_classes,
     ):
         """
         Initialize this store.
@@ -77,7 +77,9 @@ class RelationalDBStore(DataStoreMixin):
         """
         database_connection = create_engine(database_connection_url)
         self.database_exists = database_exists(database_connection.url)
-        if not self.database_exists and instantiate_database:
+        if create_db:
+            if self.database_exists:
+                drop_database(database_connection_url)
             create_database(database_connection_url)
             self.database_exists = database_exists(database_connection.url)
 
