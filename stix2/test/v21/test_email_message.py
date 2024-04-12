@@ -99,8 +99,6 @@ def test_email_msg():
         if attrib == "date":
             assert stix2.utils.parse_into_datetime(email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
-        print(email_msg_dict[attrib], type(email_msg_dict[attrib]))
-        print(read_obj[attrib], type(read_obj[attrib]))
         assert email_msg_dict[attrib] == read_obj[attrib]
 
 def test_multipart_email_msg():
@@ -116,7 +114,5 @@ def test_multipart_email_msg():
         if attrib == "date":
             assert stix2.utils.parse_into_datetime(multipart_email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
-        print(multipart_email_msg_dict[attrib], type(multipart_email_msg_dict[attrib]))
-        print(read_obj[attrib], type(read_obj[attrib]))
         assert multipart_email_msg_dict[attrib] == read_obj[attrib]
 
