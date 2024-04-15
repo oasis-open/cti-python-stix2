@@ -5,8 +5,6 @@ import json
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
-# errors when adding magic_number_hex to store, so ignoring for now
-
 process_dict = {
     "type": "process",
     "spec_version": "2.1",
