@@ -101,10 +101,11 @@ def main():
         False,
         None,
         True,
-        True,
+        False,
         stix2.Directory,
     )
-    if store.database_exists:
+
+    if store.sink.database_exists:
         store.sink.generate_stix_schema()
         store.sink.clear_tables()
 
