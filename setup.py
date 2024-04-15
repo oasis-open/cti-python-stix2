@@ -53,7 +53,8 @@ setup(
         'simplejson',
         'stix2-patterns>=1.2.0',
         'sqlalchemy',
-        'inflection'
+        'inflection',
+        'psycopg2'
     ],
     project_urls={
         'Documentation': 'https://stix2.readthedocs.io/',
