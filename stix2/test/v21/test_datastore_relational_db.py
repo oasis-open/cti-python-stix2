@@ -5,7 +5,7 @@ from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
 store = RelationalDBStore(
-    "postgresql://localhost/stix-data-sink",
+    "postgresql://localhost/postgres",
     True,
     None,
     False,
