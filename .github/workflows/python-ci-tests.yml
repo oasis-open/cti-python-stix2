@@ -40,6 +40,10 @@ jobs:
         pip install tox-gh-actions
         pip install codecov
     - name: Test with Tox
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: postgres
       run: |
         tox
     - name: Upload coverage information to Codecov
