@@ -1,11 +1,12 @@
 import json
+import os
 
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
 store = RelationalDBStore(
-    "postgresql://0.0.0.0:5432/postgres",
+    f"postgresql://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}@0.0.0.0:5432/postgres",
     True,
     None,
     False,
