@@ -1,7 +1,3 @@
-import json
-
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -27,6 +23,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_ipv4():
     store.sink.generate_stix_schema()
     ipv4_stix_object = stix2.parse(ipv4_dict)
@@ -45,4 +42,3 @@ def test_ipv6():
 
     for attrib in ipv6_dict.keys():
         assert ipv6_dict[attrib] == read_obj[attrib]
-

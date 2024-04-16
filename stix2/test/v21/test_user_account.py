@@ -1,7 +1,4 @@
-import datetime as dt
 import json
-
-import pytest
 
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
@@ -28,11 +25,12 @@ user_account_dict = {
 }
 
 store = RelationalDBStore(
-        "postgresql://postgres:admin@localhost/postgres",
-        False,
-        None,
-        True,
+    "postgresql://postgres:admin@localhost/postgres",
+    False,
+    None,
+    True,
 )
+
 
 def test_user_account():
     store.sink.generate_stix_schema()
@@ -42,9 +40,10 @@ def test_user_account():
 
     for attrib in user_account_dict.keys():
         if attrib == "account_created" or attrib == "account_expires" \
-            or attrib == "credential_last_changed" or attrib == "account_first_login" \
+                or attrib == "credential_last_changed" or attrib == "account_first_login" \
                 or attrib == "account_last_login":
-                    assert stix2.utils.parse_into_datetime(user_account_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
-                    continue
+            assert stix2.utils.parse_into_datetime(user_account_dict[attrib]) == stix2.utils.parse_into_datetime(
+                read_obj[attrib],
+            )
+            continue
         assert user_account_dict[attrib] == read_obj[attrib]
-

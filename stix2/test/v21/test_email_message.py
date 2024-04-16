@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -63,19 +61,19 @@ multipart_email_msg_dict = {
     },
     "body_multipart": [
         {
-        "content_type": "text/plain; charset=utf-8",
-        "content_disposition": "inline",
-        "body": "Cats are funny!",
+            "content_type": "text/plain; charset=utf-8",
+            "content_disposition": "inline",
+            "body": "Cats are funny!",
         },
         {
-        "content_type": "image/png",
-        "content_disposition": "attachment; filename=\"tabby.png\"",
-        "body_raw_ref": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5",
+            "content_type": "image/png",
+            "content_disposition": "attachment; filename=\"tabby.png\"",
+            "body_raw_ref": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5",
         },
         {
-        "content_type": "application/zip",
-        "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-        "body_raw_ref": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+            "content_type": "application/zip",
+            "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
+            "body_raw_ref": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
         },
     ],
 }
@@ -87,6 +85,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_email_msg():
     store.sink.generate_stix_schema()
     email_msg_stix_object = stix2.parse(email_msg_dict)
@@ -95,12 +94,15 @@ def test_email_msg():
 
     for attrib in email_msg_dict.keys():
         if attrib == "to_refs" or attrib == "cc_refs" or attrib == "bcc_refs" \
-            or attrib == "additional_header_fields": # join multiple tables not implemented yet
+                or attrib == "additional_header_fields":  # join multiple tables not implemented yet
             continue
         if attrib == "date":
-            assert stix2.utils.parse_into_datetime(email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
+            assert stix2.utils.parse_into_datetime(email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(
+                read_obj[attrib],
+            )
             continue
         assert email_msg_dict[attrib] == read_obj[attrib]
+
 
 def test_multipart_email_msg():
     store.sink.generate_stix_schema()
@@ -110,10 +112,11 @@ def test_multipart_email_msg():
 
     for attrib in multipart_email_msg_dict.keys():
         if attrib == "to_refs" or attrib == "cc_refs" or attrib == "bcc_refs" \
-            or attrib == "additional_header_fields" or attrib == "body_multipart": # join multiple tables not implemented yet
+                or attrib == "additional_header_fields" or attrib == "body_multipart":  # join multiple tables not implemented yet
             continue
         if attrib == "date":
-            assert stix2.utils.parse_into_datetime(multipart_email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
+            assert stix2.utils.parse_into_datetime(multipart_email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(
+                read_obj[attrib],
+            )
             continue
         assert multipart_email_msg_dict[attrib] == read_obj[attrib]
-

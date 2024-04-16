@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 
@@ -26,6 +24,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_directory():
     store.sink.generate_stix_schema()
     directory_obj = stix2.parse(directory_dict)
@@ -33,10 +32,9 @@ def test_directory():
     read_obj = json.loads(store.get(directory_obj['id']).serialize())
 
     for attrib in directory_dict.keys():
-        if attrib == "contains_refs": # TODO remove skip once we can pull from table join
+        if attrib == "contains_refs":  # TODO remove skip once we can pull from table join
             continue
-        if attrib == "ctime" or attrib == "mtime": # convert both into stix2 date format for consistency
+        if attrib == "ctime" or attrib == "mtime":  # convert both into stix2 date format for consistency
             assert stix2.utils.parse_into_datetime(directory_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert directory_dict[attrib] == read_obj[attrib]
-

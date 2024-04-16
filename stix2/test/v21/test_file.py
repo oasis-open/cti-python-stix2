@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -36,6 +34,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_file():
     store.sink.generate_stix_schema()
     file_stix_object = stix2.parse(file_dict)
@@ -44,10 +43,9 @@ def test_file():
     read_obj = json.loads(store.get(file_stix_object['id']).serialize())
 
     for attrib in file_dict.keys():
-        if attrib == "contains_refs" or attrib == "hashes": # join multiple tables not implemented yet
+        if attrib == "contains_refs" or attrib == "hashes":  # join multiple tables not implemented yet
             continue
         if attrib == "ctime" or attrib == "mtime" or attrib == "atime":
             assert stix2.utils.parse_into_datetime(file_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert file_dict[attrib] == read_obj[attrib]
-

@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -21,6 +19,7 @@ store = RelationalDBStore(
     None,
     True,
 )
+
 
 def test_email_addr():
     store.sink.generate_stix_schema()

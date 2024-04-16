@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -23,6 +21,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_software():
     store.sink.generate_stix_schema()
     software_stix_object = stix2.parse(software_dict)
@@ -32,4 +31,3 @@ def test_software():
 
     for attrib in software_dict.keys():
         assert software_dict[attrib] == read_obj[attrib]
-

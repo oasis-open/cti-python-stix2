@@ -1,7 +1,3 @@
-import json
-
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -20,6 +16,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_mutex():
     store.sink.generate_stix_schema()
     mutex_stix_object = stix2.parse(mutex_dict)
@@ -28,4 +25,3 @@ def test_mutex():
 
     for attrib in mutex_dict.keys():
         assert mutex_dict[attrib] == read_obj[attrib]
-

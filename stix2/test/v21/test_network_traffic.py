@@ -1,7 +1,3 @@
-import json
-
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -29,7 +25,7 @@ network_traffic_dict = {
     "dst_packets": 100,
     "src_payload_ref": "artifact--3857f78d-7d16-5092-99fe-ecff58408b02",
     "dst_payload_ref": "artifact--3857f78d-7d16-5092-99fe-ecff58408b03",
-    "encapsulates_refs" : [
+    "encapsulates_refs": [
         "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a3",
         "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a4",
     ],
@@ -43,6 +39,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_network_traffic():
     store.sink.generate_stix_schema()
     network_traffic_stix_object = stix2.parse(network_traffic_dict)
@@ -50,12 +47,9 @@ def test_network_traffic():
     read_obj = store.get(network_traffic_stix_object['id'])
 
     for attrib in network_traffic_dict.keys():
-        if attrib == "encapsulates_refs": # multiple table join not implemented
+        if attrib == "encapsulates_refs":  # multiple table join not implemented
             continue
         if attrib == "start" or attrib == "end":
             assert stix2.utils.parse_into_datetime(network_traffic_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert network_traffic_dict[attrib] == read_obj[attrib]
-
-
-

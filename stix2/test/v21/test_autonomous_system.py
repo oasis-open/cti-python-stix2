@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 
@@ -20,6 +18,7 @@ store = RelationalDBStore(
     None,
     True,
 )
+
 
 def test_autonomous_system():
     store.sink.generate_stix_schema()

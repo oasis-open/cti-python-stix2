@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -37,6 +35,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_process():
     store.sink.generate_stix_schema()
     process_stix_object = stix2.parse(process_dict)
@@ -45,10 +44,10 @@ def test_process():
     read_obj = json.loads(store.get(process_stix_object['id']).serialize())
 
     for attrib in process_dict.keys():
-        if attrib == "child_refs" or attrib == "opened_connection_refs" or attrib == "environment_variables": # join multiple tables not implemented yet
+        if attrib == "child_refs" or attrib == "opened_connection_refs" or attrib == "environment_variables":
+            # join multiple tables not implemented yet
             continue
         if attrib == "created_time":
             assert stix2.utils.parse_into_datetime(process_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert process_dict[attrib] == read_obj[attrib]
-

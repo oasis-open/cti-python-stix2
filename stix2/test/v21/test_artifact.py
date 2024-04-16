@@ -1,7 +1,5 @@
 import json
 
-import pytest
-
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
@@ -35,6 +33,7 @@ store = RelationalDBStore(
     True,
 )
 
+
 def test_basic_artifact():
     store.sink.generate_stix_schema()
     artifact_stix_object = stix2.parse(basic_artifact_dict)
@@ -44,6 +43,7 @@ def test_basic_artifact():
     for attrib in basic_artifact_dict.keys():
         assert basic_artifact_dict[attrib] == read_obj[attrib]
 
+
 def test_encrypted_artifact():
     store.sink.generate_stix_schema()
     artifact_stix_object = stix2.parse(encrypted_artifact_dict)
@@ -51,6 +51,6 @@ def test_encrypted_artifact():
     read_obj = json.loads(store.get(artifact_stix_object['id']).serialize())
 
     for attrib in encrypted_artifact_dict.keys():
-        if attrib == 'hashes': # TODO hashes are saved to separate table, functionality to retrieve is WIP
+        if attrib == 'hashes':  # TODO hashes are saved to separate table, functionality to retrieve is WIP
             continue
         assert encrypted_artifact_dict[attrib] == read_obj[attrib]
