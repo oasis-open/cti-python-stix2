@@ -3,6 +3,11 @@
 name: cti-python-stix2 test harness
 on: [push, pull_request]
 
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
+
 jobs:
   test-job:
     runs-on: ubuntu-latest
@@ -40,10 +45,6 @@ jobs:
         pip install tox-gh-actions
         pip install codecov
     - name: Test with Tox
-      env:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: postgres
       run: |
         tox
     - name: Upload coverage information to Codecov
