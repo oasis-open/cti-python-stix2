@@ -47,8 +47,9 @@ jobs:
         pip install -U pip setuptools
         pip install tox-gh-actions
         pip install codecov
-    - name: Test with Tox
+    - name: Connect to PostgreSQL
       uses: container-job
+    - name: Test with Tox
       run: |
         tox
     - name: Upload coverage information to Codecov
