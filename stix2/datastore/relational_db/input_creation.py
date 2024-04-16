@@ -89,7 +89,7 @@ def generate_insert_information(self, name, stix_object, data_sink=None, table_n
     input_statements = list()
     for ex_name, ex in stix_object["extensions"].items():
         # ignore new extensions - they have no properties
-        if ex.extension_type and not ex.extension_type.startswith("new"):
+        if ex.extension_type is None or not ex.extension_type.startswith("new"):
             if ex_name.startswith("extension-definition"):
                 ex_name = ex_name[0:30]
                 ex_name = ex_name.replace("extension-definition-", "ext_def")
@@ -97,7 +97,7 @@ def generate_insert_information(self, name, stix_object, data_sink=None, table_n
                 "id": stix_object["id"],
                 "ext_table_name": canonicalize_table_name(ex_name, schema_name),
             }
-            ex_table = data_sink.tables_dictionary[table_name + "_" + "extensions"]
+            ex_table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + "extensions", schema_name)]
             input_statements.append(insert(ex_table).values(bindings))
             input_statements.extend(
                 generate_insert_for_sub_object(
@@ -158,16 +158,19 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 
 @add_method(ListProperty)
-def generate_insert_information(self, name, stix_object, level=0, is_extension=False, foreign_key_value=None, **kwargs):  # noqa: F811
+def generate_insert_information(   # noqa: F811
+    self, name, stix_object, level=0, is_extension=False,
+    foreign_key_value=None, schema_name=None, **kwargs,
+):
     data_sink = kwargs.get("data_sink")
     table_name = kwargs.get("table_name")
     if isinstance(self.contained, ReferenceProperty):
         insert_statements = list()
 
-        table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name)]
+        table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name, schema_name)]
         for idx, item in enumerate(stix_object[name]):
             bindings = {
-                "id": stix_object["id"],
+                "id": stix_object["id"] if id in stix_object else foreign_key_value,
                 "ref_id": item,
             }
             insert_statements.append(insert(table).values(bindings))
@@ -177,7 +180,7 @@ def generate_insert_information(self, name, stix_object, level=0, is_extension=F
         for value in stix_object[name]:
             with data_sink.database_connection.begin() as trans:
                 next_id = trans.execute(data_sink.sequence)
-            table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name)]
+            table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name, schema_name)]
             bindings = {
                 "id": foreign_key_value,
                 "ref_id": next_id,
@@ -188,7 +191,7 @@ def generate_insert_information(self, name, stix_object, level=0, is_extension=F
                     data_sink,
                     value,
                     table_name + "_" + name + "_" + self.contained.type.__name__,
-                    None,
+                    schema_name,
                     next_id,
                     level,
                     True,
@@ -355,8 +358,6 @@ def generate_insert_for_sub_object(
     if type_name.startswith("extension-definition"):
         type_name = type_name[0:30]
         type_name = type_name.replace("extension-definition-", "ext_def")
-    table_name = canonicalize_table_name(type_name, schema_name)
-    object_table = data_sink.tables_dictionary[table_name]
     sub_insert_statements = list()
     for name, prop in stix_object._properties.items():
         if name in stix_object:
@@ -364,14 +365,14 @@ def generate_insert_for_sub_object(
                 name,
                 stix_object,
                 data_sink=data_sink,
-                table_name=table_name if isinstance(prop, (DictionaryProperty, ListProperty)) else parent_table_name,
-                schema_name=None,
+                table_name=type_name if isinstance(prop, (DictionaryProperty, ListProperty)) else parent_table_name,
+                schema_name=schema_name,
                 foreign_key_value=foreign_key_value,
                 is_embedded_object=is_embedded_object,
                 is_list=is_list,
                 level=level+1,
                 is_extension=is_extension,
-                parent_table_name=table_name,
+                parent_table_name=type_name,
             )
             if isinstance(result, dict):
                 bindings.update(result)
@@ -381,6 +382,7 @@ def generate_insert_for_sub_object(
                 raise ValueError("wrong type" + result)
     if foreign_key_value:
         bindings["id"] = foreign_key_value
+    object_table = data_sink.tables_dictionary[canonicalize_table_name(type_name, schema_name)]
     insert_statements.append(insert(object_table).values(bindings))
     insert_statements.extend(sub_insert_statements)
     return insert_statements
@@ -394,8 +396,6 @@ def generate_insert_for_object(data_sink, stix_object, schema_name, level=0):
     else:
         core_properties = SDO_COMMON_PROPERTIES
     type_name = stix_object["type"]
-    table_name = canonicalize_table_name(type_name, schema_name)
-    object_table = data_sink.tables_dictionary[table_name]
     insert_statements.extend(generate_insert_for_core(data_sink, stix_object, core_properties, schema_name))
     if "id" in stix_object:
         foreign_key_value = stix_object["id"]
@@ -407,7 +407,7 @@ def generate_insert_for_object(data_sink, stix_object, schema_name, level=0):
             result = prop.generate_insert_information(
                 name, stix_object,
                 data_sink=data_sink,
-                table_name=table_name,
+                table_name=type_name,
                 schema_name=schema_name,
                 parent_table_name=type_name,
                 level=level,
@@ -420,6 +420,7 @@ def generate_insert_for_object(data_sink, stix_object, schema_name, level=0):
             else:
                 raise ValueError("wrong type" + result)
 
+    object_table = data_sink.tables_dictionary[canonicalize_table_name(type_name, schema_name)]
     insert_statements.append(insert(object_table).values(bindings))
     insert_statements.extend(sub_insert_statements)
 
