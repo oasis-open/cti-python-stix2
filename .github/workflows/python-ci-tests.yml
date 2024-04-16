@@ -29,8 +29,6 @@ jobs:
         ports:
           # Maps tcp port 5432 on service container to the host
           - 5432:5432
-  build:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
