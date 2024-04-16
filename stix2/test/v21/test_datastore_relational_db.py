@@ -9,6 +9,7 @@ store = RelationalDBStore(
     True,
     None,
     False,
+    False
 )
 
 # Artifacts
@@ -280,7 +281,6 @@ file_dict = {
 def test_file():
     file_stix_object = stix2.parse(file_dict)
     store.add(file_stix_object)
-    read_obj = store.get(file_stix_object['id'])
     read_obj = json.loads(store.get(file_stix_object['id']).serialize())
 
     for attrib in file_dict.keys():
@@ -418,7 +418,6 @@ process_dict = {
 def test_process():
     process_stix_object = stix2.parse(process_dict)
     store.add(process_stix_object)
-    read_obj = store.get(process_stix_object['id'])
     read_obj = json.loads(store.get(process_stix_object['id']).serialize())
 
     for attrib in process_dict.keys():
@@ -446,7 +445,6 @@ software_dict = {
 def test_software():
     software_stix_object = stix2.parse(software_dict)
     store.add(software_stix_object)
-    read_obj = store.get(software_stix_object['id'])
     read_obj = json.loads(store.get(software_stix_object['id']).serialize())
 
     for attrib in software_dict.keys():
