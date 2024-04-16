@@ -62,9 +62,10 @@ setup(
     extras_require={
         'taxii': ['taxii2-client>=2.3.0'],
         'semantic': ['haversine', 'rapidfuzz'],
-        'relationaldb': [ 'sqlalchemy',
-                          'sqlalchemy_utils',
-                          'psycopg2',
+        'relationaldb': [
+            'sqlalchemy',
+            'sqlalchemy_utils',
+            'psycopg2',
         ],
     },
 )
