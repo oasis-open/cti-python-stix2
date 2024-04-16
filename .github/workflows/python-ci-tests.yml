@@ -46,7 +46,7 @@ jobs:
         pip install tox-gh-actions
         pip install codecov
     - name: Connect to PostgreSQL
-      uses: docker:postgres
+      uses: docker://postgres
     - name: Test with Tox
       run: |
         tox
