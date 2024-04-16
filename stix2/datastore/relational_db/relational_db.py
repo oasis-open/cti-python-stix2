@@ -78,11 +78,11 @@ class RelationalDBStore(DataStoreMixin):
                 them.
         """
         database_connection = create_engine(database_connection_url)
-
-        self.metadata = MetaData()
-        create_table_objects(
-            self.metadata, stix_object_classes,
-        )
+        print(database_connection)
+        # self.metadata = MetaData()
+        # create_table_objects(
+        #     self.metadata, stix_object_classes,
+        # )
 
         super().__init__(
             source=RelationalDBSource(
