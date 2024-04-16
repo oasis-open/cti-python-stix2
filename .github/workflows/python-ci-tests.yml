@@ -48,6 +48,7 @@ jobs:
         pip install tox-gh-actions
         pip install codecov
     - name: Test with Tox
+      uses: container-job
       run: |
         tox
     - name: Upload coverage information to Codecov
