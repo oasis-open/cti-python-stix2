@@ -2,7 +2,7 @@
 
 from sqlalchemy import (  # create_engine,; insert,
     ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, Float, ForeignKey,
-    Integer, LargeBinary, Table, Text,
+    Integer, LargeBinary, Table, Text, UniqueConstraint,
 )
 
 from stix2.datastore.relational_db.add_method import add_method
@@ -99,7 +99,12 @@ def create_hashes_table(name, metadata, schema_name, table_name, key_type=Text, 
             nullable=False,
         ),
     )
-    return Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)
+    return Table(
+        canonicalize_table_name(table_name + "_" + name),
+        metadata,
+        *columns,
+        UniqueConstraint("id", "hash_name"),
+        schema=schema_name)
 
 
 def create_kill_chain_phases_table(name, metadata, schema_name, table_name):
@@ -366,7 +371,13 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
                     sql_type,
                 ),
             )
-    return [Table(canonicalize_table_name(table_name + "_" + name), metadata, *columns, schema=schema_name)]
+    return [
+        Table(canonicalize_table_name(table_name + "_" + name),
+              metadata,
+              *columns,
+              UniqueConstraint("id", "name"),
+              schema=schema_name)
+        ]
 
 
 @add_method(EmbeddedObjectProperty)
