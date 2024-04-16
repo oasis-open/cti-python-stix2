@@ -4,6 +4,13 @@ import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
+store = RelationalDBStore(
+    "postgresql://postgres:admin@localhost/postgres",
+    False,
+    None,
+    True
+)
+
 # Artifacts
 basic_artifact_dict = {
     "type": "artifact",
@@ -26,14 +33,6 @@ encrypted_artifact_dict = {
     "encryption_algorithm": "mime-type-indicated",
     "decryption_key": "My voice is my passport",
 }
-
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
 
 
 def test_basic_artifact():
@@ -67,14 +66,6 @@ as_dict = {
     "rir": "ARIN",
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_autonomous_system():
     store.sink.generate_stix_schema()
@@ -100,14 +91,6 @@ directory_dict = {
     ],
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_directory():
     store.sink.generate_stix_schema()
@@ -131,14 +114,6 @@ domain_name_dict = {
     "value": "example.com",
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_autonomous_system():
     store.sink.generate_stix_schema()
@@ -158,14 +133,6 @@ email_addr_dict = {
     "display_name": "John Doe",
     "belongs_to_ref": "user-account--0d5b424b-93b8-5cd8-ac36-306e1789d63c",
 }
-
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
 
 
 def test_email_addr():
@@ -252,14 +219,6 @@ multipart_email_msg_dict = {
     ],
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_email_msg():
     store.sink.generate_stix_schema()
@@ -319,14 +278,6 @@ file_dict = {
     "content_ref": "artifact--cb37bcf8-9846-5ab4-8662-75c1bf6e63ee",
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_file():
     store.sink.generate_stix_schema()
@@ -358,14 +309,6 @@ ipv6_dict = {
     "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_ipv4():
     store.sink.generate_stix_schema()
@@ -393,14 +336,6 @@ mutex_dict = {
     "id": "mutex--fba44954-d4e4-5d3b-814c-2b17dd8de300",
     "name": "__CLEANSWEEP__",
 }
-
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
 
 
 def test_mutex():
@@ -442,14 +377,6 @@ network_traffic_dict = {
     "encapsulated_by_ref": "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a5",
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_network_traffic():
     store.sink.generate_stix_schema()
@@ -490,14 +417,6 @@ process_dict = {
     ],
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_process():
     store.sink.generate_stix_schema()
@@ -525,14 +444,6 @@ software_dict = {
     "version": "2002",
     "vendor": "Microsoft",
 }
-
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
 
 
 def test_software():
@@ -591,14 +502,6 @@ user_account_dict = {
     "account_last_login": "2016-07-22T16:08:28Z",
 }
 
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
-
 
 def test_user_account():
     store.sink.generate_stix_schema()
@@ -638,14 +541,6 @@ windows_registry_dict = {
     "creator_user_ref": "user-account--0d5b424b-93b8-5cd8-ac36-306e1789d63c",
     "number_of_subkeys": 2,
 }
-
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
 
 
 def test_windows_registry():
@@ -706,14 +601,6 @@ extensions_x509_certificate_dict = {
         "certificate_policies": "1.2.4.5, 1.1.3.4",
     },
 }
-
-store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
-    True,
-    force_recreate=True
-)
 
 
 def test_basic_x509_certificate():
