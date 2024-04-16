@@ -52,22 +52,22 @@ def canonicalize_table_name(table_name, schema_name=None):
     return inflection.underscore(full_name)
 
 
-def _get_all_subclasses(cls):
+def get_all_subclasses(cls):
     all_subclasses = []
 
     for subclass in cls.__subclasses__():
         all_subclasses.append(subclass)
-        all_subclasses.extend(_get_all_subclasses(subclass))
+        all_subclasses.extend(get_all_subclasses(subclass))
     return all_subclasses
 
 
 def get_stix_object_classes():
-    yield from _get_all_subclasses(_DomainObject)
-    yield from _get_all_subclasses(_RelationshipObject)
-    yield from _get_all_subclasses(_Observable)
-    yield from _get_all_subclasses(_MetaObject)
+    yield from get_all_subclasses(_DomainObject)
+    yield from get_all_subclasses(_RelationshipObject)
+    yield from get_all_subclasses(_Observable)
+    yield from get_all_subclasses(_MetaObject)
     # Non-object extensions (property or toplevel-property only)
-    for ext_cls in _get_all_subclasses(_Extension):
+    for ext_cls in get_all_subclasses(_Extension):
         if ext_cls.extension_type not in (
             "new-sdo", "new-sco", "new-sro",
         ):
