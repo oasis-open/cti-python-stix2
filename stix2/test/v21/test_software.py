@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -10,16 +11,16 @@ software_dict = {
     "spec_version": "2.1",
     "id": "software--a1827f6d-ca53-5605-9e93-4316cd22a00a",
     "name": "Word",
-    "cpe": "cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*", 
+    "cpe": "cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
     "version": "2002",
-    "vendor": "Microsoft"
+    "vendor": "Microsoft",
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_software():

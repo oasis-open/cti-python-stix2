@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -14,11 +15,11 @@ email_msg_dict = {
     "to_refs": ["email-addr--d1b3bf0c-f02a-51a1-8102-11aba7959868"],
     "cc_refs": [
         "email-addr--d2b3bf0c-f02a-51a1-8102-11aba7959868",
-        "email-addr--d3b3bf0c-f02a-51a1-8102-11aba7959868"
+        "email-addr--d3b3bf0c-f02a-51a1-8102-11aba7959868",
     ],
     "bcc_refs": [
         "email-addr--d4b3bf0c-f02a-51a1-8102-11aba7959868",
-        "email-addr--d5b3bf0c-f02a-51a1-8102-11aba7959868"
+        "email-addr--d5b3bf0c-f02a-51a1-8102-11aba7959868",
     ],
     "message_id": "message01",
     "is_multipart": False,
@@ -27,16 +28,16 @@ email_msg_dict = {
     "received_lines": [
         "from mail.example.com ([198.51.100.3]) by smtp.gmail.com with ESMTPSA id \
         q23sm23309939wme.17.2016.07.19.07.20.32 (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 \
-        bits=128/128); Tue, 19 Jul 2016 07:20:40 -0700 (PDT)"
+        bits=128/128); Tue, 19 Jul 2016 07:20:40 -0700 (PDT)",
     ],
     "additional_header_fields": {
         "Reply-To": [
             "steve@example.com",
-            "jane@example.com"
-        ]
+            "jane@example.com",
+        ],
     },
     "body": "message body",
-    "raw_email_ref": "artifact--cb37bcf8-9846-5ab4-8662-75c1bf6e63ee"
+    "raw_email_ref": "artifact--cb37bcf8-9846-5ab4-8662-75c1bf6e63ee",
 }
 
 multipart_email_msg_dict = {
@@ -47,7 +48,7 @@ multipart_email_msg_dict = {
     "received_lines": [
         "from mail.example.com ([198.51.100.3]) by smtp.gmail.com with ESMTPSA id \
         q23sm23309939wme.17.2016.07.19.07.20.32 (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 \
-        bits=128/128); Tue, 19 Jul 2016 07:20:40 -0700 (PDT)"
+        bits=128/128); Tue, 19 Jul 2016 07:20:40 -0700 (PDT)",
     ],
     "content_type": "multipart/mixed",
     "date": "2016-06-19T14:20:40.000Z",
@@ -58,32 +59,32 @@ multipart_email_msg_dict = {
     "additional_header_fields": {
         "Content-Disposition": "inline",
         "X-Mailer": "Mutt/1.5.23",
-        "X-Originating-IP": "198.51.100.3"
+        "X-Originating-IP": "198.51.100.3",
     },
     "body_multipart": [
         {
         "content_type": "text/plain; charset=utf-8",
         "content_disposition": "inline",
-        "body": "Cats are funny!"
+        "body": "Cats are funny!",
         },
         {
         "content_type": "image/png",
         "content_disposition": "attachment; filename=\"tabby.png\"",
-        "body_raw_ref": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5"
+        "body_raw_ref": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5",
         },
         {
         "content_type": "application/zip",
         "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
-        "body_raw_ref": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
-        }
-    ]
+        "body_raw_ref": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+        },
+    ],
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_email_msg():

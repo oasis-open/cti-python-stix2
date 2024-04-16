@@ -52,9 +52,7 @@ setup(
         'requests',
         'simplejson',
         'stix2-patterns>=1.2.0',
-        'sqlalchemy',
         'inflection',
-        'psycopg2'
     ],
     project_urls={
         'Documentation': 'https://stix2.readthedocs.io/',
@@ -64,5 +62,9 @@ setup(
     extras_require={
         'taxii': ['taxii2-client>=2.3.0'],
         'semantic': ['haversine', 'rapidfuzz'],
+        'relationaldb': [ 'sqlalchemy',
+                          'sqlalchemy_utils',
+                          'psycopg2',
+        ],
     },
 )

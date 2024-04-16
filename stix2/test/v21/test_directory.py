@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 
 directory_dict = {
@@ -14,15 +15,15 @@ directory_dict = {
     "path_enc": "cGF0aF9lbmM",
     "contains_refs": [
         "directory--94c0a9b0-520d-545d-9094-1a08ddf46b05",
-        "file--95c0a9b0-520d-545d-9094-1a08ddf46b05"
-    ]
+        "file--95c0a9b0-520d-545d-9094-1a08ddf46b05",
+    ],
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_directory():

@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -14,26 +15,26 @@ process_dict = {
     "created_time": "2016-01-20T14:11:25.55Z",
     "cwd": "/tmp/",
     "environment_variables": {
-        "ENVTEST": "/path/to/bin"
+        "ENVTEST": "/path/to/bin",
     },
     "command_line": "./gedit-bin --new-window",
     "opened_connection_refs": [
-        "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a3"
+        "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a3",
     ],
     "creator_user_ref": "user-account--cb37bcf8-9846-5ab4-8662-75c1bf6e63ee",
-    "image_ref": "file--e04f22d1-be2c-59de-add8-10f61d15fe20", 
-    "parent_ref": "process--f52a906a-1dfc-40bd-92f1-e7778ead38a9", 
+    "image_ref": "file--e04f22d1-be2c-59de-add8-10f61d15fe20",
+    "parent_ref": "process--f52a906a-1dfc-40bd-92f1-e7778ead38a9",
     "child_refs": [
         "process--ff2a906a-1dfc-40bd-92f1-e7778ead38a9",
-        "process--fe2a906a-1dfc-40bd-92f1-e7778ead38a9"
-    ]
+        "process--fe2a906a-1dfc-40bd-92f1-e7778ead38a9",
+    ],
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_process():

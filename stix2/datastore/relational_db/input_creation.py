@@ -158,8 +158,10 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 
 @add_method(ListProperty)
-def generate_insert_information(self, name, stix_object, level=0, is_extension=False,
-                                foreign_key_value=None, schema_name=None, **kwargs):  # noqa: F811
+def generate_insert_information(
+    self, name, stix_object, level=0, is_extension=False,
+    foreign_key_value=None, schema_name=None, **kwargs,
+):  # noqa: F811
     data_sink = kwargs.get("data_sink")
     table_name = kwargs.get("table_name")
     if isinstance(self.contained, ReferenceProperty):

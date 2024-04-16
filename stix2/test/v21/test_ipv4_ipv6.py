@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -9,21 +10,21 @@ ipv4_dict = {
     "type": "ipv4-addr",
     "spec_version": "2.1",
     "id": "ipv4-addr--ff26c255-6336-5bc5-b98d-13d6226742dd",
-    "value": "198.51.100.3"
+    "value": "198.51.100.3",
 }
 
-ipv6_dict = { 
+ipv6_dict = {
     "type": "ipv6-addr",
     "spec_version": "2.1",
     "id": "ipv6-addr--1e61d36c-a26c-53b7-a80f-2a00161c96b1",
-    "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+    "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_ipv4():

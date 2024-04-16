@@ -1,8 +1,9 @@
 import datetime as dt
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -23,14 +24,14 @@ user_account_dict = {
     "account_expires": "2018-01-20T12:31:12Z",
     "credential_last_changed": "2016-01-20T14:27:43Z",
     "account_first_login": "2016-01-20T14:26:07Z",
-    "account_last_login": "2016-07-22T16:08:28Z"
+    "account_last_login": "2016-07-22T16:08:28Z",
 }
 
 store = RelationalDBStore(
         "postgresql://postgres:admin@localhost/postgres",
         False,
         None,
-        True
+        True,
 )
 
 def test_user_account():

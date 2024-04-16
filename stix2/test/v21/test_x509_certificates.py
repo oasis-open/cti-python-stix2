@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -15,7 +16,7 @@ basic_x509_certificate_dict = {
     "validity_not_after": "2016-08-21T12:00:00Z",
     "subject": "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, \
     CN=www.freesoft.org/emailAddress=baccala@freesoft.org",
-    "serial_number": "36:f7:d4:32:f4:ab:70:ea:d3:ce:98:6e:ea:99:93:49:32:0a:b7:06"
+    "serial_number": "36:f7:d4:32:f4:ab:70:ea:d3:ce:98:6e:ea:99:93:49:32:0a:b7:06",
 }
 
 extensions_x509_certificate_dict = {
@@ -43,15 +44,15 @@ extensions_x509_certificate_dict = {
         "inhibit_any_policy":"2",
         "private_key_usage_period_not_before":"2016-03-12T12:00:00Z",
         "private_key_usage_period_not_after":"2018-03-12T12:00:00Z",
-        "certificate_policies":"1.2.4.5, 1.1.3.4"
-    }
+        "certificate_policies":"1.2.4.5, 1.1.3.4",
+    },
 }
 
 store = RelationalDBStore(
         "postgresql://postgres:admin@localhost/postgres",
         False,
         None,
-        True
+        True,
 )
 
 def test_basic_x509_certificate():
@@ -65,7 +66,7 @@ def test_basic_x509_certificate():
             assert stix2.utils.parse_into_datetime(basic_x509_certificate_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert basic_x509_certificate_dict[attrib] == read_obj[attrib]
-    
+
 def test_x509_certificate_with_extensions():
     store.sink.generate_stix_schema()
     extensions_x509_certificate_stix_object = stix2.parse(extensions_x509_certificate_dict)

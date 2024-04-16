@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -10,7 +11,7 @@ basic_artifact_dict = {
     "spec_version": "2.1",
     "id": "artifact--cb37bcf8-9846-5ab4-8662-75c1bf6e63ee",
     "mime_type": "image/jpeg",
-    "payload_bin": "VGhpcyBpcyBhIHBsYWNlaG9sZGVyIGZvciBhIHNhZmUgbWFsd2FyZSBiaW5hcnkh"
+    "payload_bin": "VGhpcyBpcyBhIHBsYWNlaG9sZGVyIGZvciBhIHNhZmUgbWFsd2FyZSBiaW5hcnkh",
 }
 
 encrypted_artifact_dict = {
@@ -21,17 +22,17 @@ encrypted_artifact_dict = {
     "payload_bin": "VGhpcyBpcyBhIHBsYWNlaG9sZGVyIGZvciBhbiB1bnNhZmUgbWFsd2FyZSBiaW5hcnkh",
     "hashes": {
         "MD5": "6b885a1e1d42c0ca66e5f8a17e5a5d29",
-        "SHA-256": "3eea3c4819e9d387ff6809f13dde5426b9466285b7d923016b2842a13eb2888b"
+        "SHA-256": "3eea3c4819e9d387ff6809f13dde5426b9466285b7d923016b2842a13eb2888b",
     },
     "encryption_algorithm": "mime-type-indicated",
-    "decryption_key": "My voice is my passport"
+    "decryption_key": "My voice is my passport",
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_basic_artifact():

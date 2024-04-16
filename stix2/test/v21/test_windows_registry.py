@@ -1,8 +1,9 @@
 import datetime as dt
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
@@ -15,24 +16,24 @@ windows_registry_dict = {
         {
         "name": "Foo",
         "data": "qwerty",
-        "data_type": "REG_SZ"
+        "data_type": "REG_SZ",
         },
         {
         "name": "Bar",
         "data": "42",
-        "data_type": "REG_DWORD"
-        }
+        "data_type": "REG_DWORD",
+        },
     ],
     "modified_time": "2018-01-20T12:31:12Z",
     "creator_user_ref": "user-account--0d5b424b-93b8-5cd8-ac36-306e1789d63c",
-    "number_of_subkeys": 2
+    "number_of_subkeys": 2,
 }
 
 store = RelationalDBStore(
         "postgresql://postgres:admin@localhost/postgres",
         False,
         None,
-        True
+        True,
 )
 
 def test_windows_registry():

@@ -1,7 +1,8 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 
 as_dict = {
@@ -10,14 +11,14 @@ as_dict = {
     "id": "autonomous-system--f822c34b-98ae-597f-ade5-27dc241e8c74",
     "number": 15139,
     "name": "Slime Industries",
-    "rir": "ARIN"
+    "rir": "ARIN",
 }
 
 store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_autonomous_system():

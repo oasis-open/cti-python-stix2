@@ -1,10 +1,11 @@
-import pytest
-import stix2
 import json
 
+import pytest
+
+import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 
-domain_name_dict = {    
+domain_name_dict = {
     "type": "domain-name",
     "spec_version": "2.1",
     "id": "domain-name--3c10e93f-798e-5a26-a0c1-08156efab7f5",
@@ -15,7 +16,7 @@ store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 def test_autonomous_system():

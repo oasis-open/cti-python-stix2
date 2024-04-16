@@ -104,7 +104,8 @@ def create_hashes_table(name, metadata, schema_name, table_name, key_type=Text, 
         metadata,
         *columns,
         UniqueConstraint("id", "hash_name"),
-        schema=schema_name)
+        schema=schema_name,
+    )
 
 
 def create_kill_chain_phases_table(name, metadata, schema_name, table_name):
@@ -372,12 +373,14 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
                 ),
             )
     return [
-        Table(canonicalize_table_name(table_name + "_" + name),
-              metadata,
-              *columns,
-              UniqueConstraint("id", "name"),
-              schema=schema_name)
-        ]
+        Table(
+            canonicalize_table_name(table_name + "_" + name),
+            metadata,
+            *columns,
+            UniqueConstraint("id", "name"),
+            schema=schema_name,
+        ),
+    ]
 
 
 @add_method(EmbeddedObjectProperty)
