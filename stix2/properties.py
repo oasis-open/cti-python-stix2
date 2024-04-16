@@ -746,7 +746,7 @@ class OpenVocabProperty(StringProperty):
 
     def clean(self, value, allow_custom, strict=False):
         cleaned_value, _ = super(OpenVocabProperty, self).clean(
-            value, allow_custom, strict
+            value, allow_custom, strict,
         )
 
         # Disabled: it was decided that enforcing this is too strict (might
@@ -755,7 +755,7 @@ class OpenVocabProperty(StringProperty):
         #
         if strict is True:
             has_custom = cleaned_value not in self.allowed
-            
+
             if not allow_custom and has_custom:
                 raise CustomContentError(
                     "custom value in open vocab: '{}'".format(cleaned_value),

@@ -8,7 +8,7 @@ store = RelationalDBStore(
     "postgresql://postgres:admin@localhost/postgres",
     False,
     None,
-    True
+    True,
 )
 
 # Artifacts
@@ -56,6 +56,7 @@ def test_encrypted_artifact():
             continue
         assert encrypted_artifact_dict[attrib] == read_obj[attrib]
 
+
 # Autonomous System
 as_dict = {
     "type": "autonomous-system",
@@ -75,6 +76,7 @@ def test_autonomous_system():
 
     for attrib in as_dict.keys():
         assert as_dict[attrib] == read_obj[attrib]
+
 
 # Directory
 directory_dict = {
@@ -106,6 +108,7 @@ def test_directory():
             continue
         assert directory_dict[attrib] == read_obj[attrib]
 
+
 # Domain Name
 domain_name_dict = {
     "type": "domain-name",
@@ -115,7 +118,7 @@ domain_name_dict = {
 }
 
 
-def test_autonomous_system():
+def test_domain_name():
     store.sink.generate_stix_schema()
     domain_name_obj = stix2.parse(domain_name_dict)
     store.add(domain_name_obj)
@@ -123,6 +126,7 @@ def test_autonomous_system():
 
     for attrib in domain_name_dict.keys():
         assert domain_name_dict[attrib] == read_obj[attrib]
+
 
 # Email Address
 email_addr_dict = {
@@ -143,6 +147,7 @@ def test_email_addr():
 
     for attrib in email_addr_dict.keys():
         assert email_addr_dict[attrib] == read_obj[attrib]
+
 
 # Email Message
 email_msg_dict = {
@@ -255,6 +260,7 @@ def test_multipart_email_msg():
             continue
         assert multipart_email_msg_dict[attrib] == read_obj[attrib]
 
+
 # File
 # errors when adding magic_number_hex to store, so ignoring for now
 file_dict = {
@@ -294,6 +300,7 @@ def test_file():
             continue
         assert file_dict[attrib] == read_obj[attrib]
 
+
 # ipv4 ipv6
 ipv4_dict = {
     "type": "ipv4-addr",
@@ -329,6 +336,7 @@ def test_ipv6():
     for attrib in ipv6_dict.keys():
         assert ipv6_dict[attrib] == read_obj[attrib]
 
+
 # Mutex
 mutex_dict = {
     "type": "mutex",
@@ -346,6 +354,7 @@ def test_mutex():
 
     for attrib in mutex_dict.keys():
         assert mutex_dict[attrib] == read_obj[attrib]
+
 
 # Network Traffic
 # ipfix property results in a unconsumed value error with the store add
@@ -392,6 +401,7 @@ def test_network_traffic():
             continue
         assert network_traffic_dict[attrib] == read_obj[attrib]
 
+
 # Process
 process_dict = {
     "type": "process",
@@ -433,6 +443,7 @@ def test_process():
             assert stix2.utils.parse_into_datetime(process_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert process_dict[attrib] == read_obj[attrib]
+
 
 # Software
 software_dict = {
@@ -481,6 +492,7 @@ def test_url():
     for attrib in url_dict.keys():
         assert url_dict[attrib] == read_obj[attrib]
 
+
 # User Account
 user_account_dict = {
     "type": "user-account",
@@ -518,6 +530,7 @@ def test_user_account():
             )
             continue
         assert user_account_dict[attrib] == read_obj[attrib]
+
 
 # Windows Registry
 windows_registry_dict = {
@@ -558,6 +571,7 @@ def test_windows_registry():
             )
             continue
         assert windows_registry_dict[attrib] == read_obj[attrib]
+
 
 # x509 Certificate
 basic_x509_certificate_dict = {
