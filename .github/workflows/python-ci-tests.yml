@@ -4,31 +4,25 @@ name: cti-python-stix2 test harness
 on: [push, pull_request]
 
 jobs:
-  # Label of the container job
-  container-job:
-    # Containers must run in Linux based operating systems
+  test-job:
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
-    container: node:10.18-jessie
 
-    # Service containers to run with `container-job`
     services:
-      # Label used to access the service container
       postgres:
-        # Docker Hub image
-        image: postgres
+        image: postgres:11
         # Provide the password for postgres
         env:
+          POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: [ '5432:5432' ]
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-        ports:
-          # Maps tcp port 5432 on service container to the host
-          - 5432:5432
+
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
@@ -45,8 +39,6 @@ jobs:
         pip install -U pip setuptools
         pip install tox-gh-actions
         pip install codecov
-    - name: Connect to PostgreSQL
-      uses: docker://postgres
     - name: Test with Tox
       run: |
         tox
