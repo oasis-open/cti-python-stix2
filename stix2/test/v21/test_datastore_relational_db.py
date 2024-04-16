@@ -5,10 +5,10 @@ from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
 store = RelationalDBStore(
-    "postgresql://postgres:admin@localhost/postgres",
-    False,
-    None,
+    "postgresql://localhost/stix-data-sink",
     True,
+    None,
+    False,
 )
 
 # Artifacts
@@ -36,7 +36,6 @@ encrypted_artifact_dict = {
 
 
 def test_basic_artifact():
-    store.sink.generate_stix_schema()
     artifact_stix_object = stix2.parse(basic_artifact_dict)
     store.add(artifact_stix_object)
     read_obj = json.loads(store.get(artifact_stix_object['id']).serialize())
@@ -46,7 +45,6 @@ def test_basic_artifact():
 
 
 def test_encrypted_artifact():
-    store.sink.generate_stix_schema()
     artifact_stix_object = stix2.parse(encrypted_artifact_dict)
     store.add(artifact_stix_object)
     read_obj = json.loads(store.get(artifact_stix_object['id']).serialize())
@@ -69,7 +67,6 @@ as_dict = {
 
 
 def test_autonomous_system():
-    store.sink.generate_stix_schema()
     as_obj = stix2.parse(as_dict)
     store.add(as_obj)
     read_obj = json.loads(store.get(as_obj['id']).serialize())
@@ -95,7 +92,6 @@ directory_dict = {
 
 
 def test_directory():
-    store.sink.generate_stix_schema()
     directory_obj = stix2.parse(directory_dict)
     store.add(directory_obj)
     read_obj = json.loads(store.get(directory_obj['id']).serialize())
@@ -119,7 +115,6 @@ domain_name_dict = {
 
 
 def test_domain_name():
-    store.sink.generate_stix_schema()
     domain_name_obj = stix2.parse(domain_name_dict)
     store.add(domain_name_obj)
     read_obj = json.loads(store.get(domain_name_obj['id']).serialize())
@@ -140,7 +135,6 @@ email_addr_dict = {
 
 
 def test_email_addr():
-    store.sink.generate_stix_schema()
     email_addr_stix_object = stix2.parse(email_addr_dict)
     store.add(email_addr_stix_object)
     read_obj = json.loads(store.get(email_addr_stix_object['id']).serialize())
@@ -226,7 +220,6 @@ multipart_email_msg_dict = {
 
 
 def test_email_msg():
-    store.sink.generate_stix_schema()
     email_msg_stix_object = stix2.parse(email_msg_dict)
     store.add(email_msg_stix_object)
     read_obj = json.loads(store.get(email_msg_stix_object['id']).serialize())
@@ -244,7 +237,6 @@ def test_email_msg():
 
 
 def test_multipart_email_msg():
-    store.sink.generate_stix_schema()
     multipart_email_msg_stix_object = stix2.parse(multipart_email_msg_dict)
     store.add(multipart_email_msg_stix_object)
     read_obj = json.loads(store.get(multipart_email_msg_stix_object['id']).serialize())
@@ -286,7 +278,6 @@ file_dict = {
 
 
 def test_file():
-    store.sink.generate_stix_schema()
     file_stix_object = stix2.parse(file_dict)
     store.add(file_stix_object)
     read_obj = store.get(file_stix_object['id'])
@@ -318,7 +309,6 @@ ipv6_dict = {
 
 
 def test_ipv4():
-    store.sink.generate_stix_schema()
     ipv4_stix_object = stix2.parse(ipv4_dict)
     store.add(ipv4_stix_object)
     read_obj = store.get(ipv4_stix_object['id'])
@@ -328,7 +318,6 @@ def test_ipv4():
 
 
 def test_ipv6():
-    store.sink.generate_stix_schema()
     ipv6_stix_object = stix2.parse(ipv6_dict)
     store.add(ipv6_stix_object)
     read_obj = store.get(ipv6_stix_object['id'])
@@ -347,7 +336,6 @@ mutex_dict = {
 
 
 def test_mutex():
-    store.sink.generate_stix_schema()
     mutex_stix_object = stix2.parse(mutex_dict)
     store.add(mutex_stix_object)
     read_obj = store.get(mutex_stix_object['id'])
@@ -388,7 +376,6 @@ network_traffic_dict = {
 
 
 def test_network_traffic():
-    store.sink.generate_stix_schema()
     network_traffic_stix_object = stix2.parse(network_traffic_dict)
     store.add(network_traffic_stix_object)
     read_obj = store.get(network_traffic_stix_object['id'])
@@ -429,7 +416,6 @@ process_dict = {
 
 
 def test_process():
-    store.sink.generate_stix_schema()
     process_stix_object = stix2.parse(process_dict)
     store.add(process_stix_object)
     read_obj = store.get(process_stix_object['id'])
@@ -458,7 +444,6 @@ software_dict = {
 
 
 def test_software():
-    store.sink.generate_stix_schema()
     software_stix_object = stix2.parse(software_dict)
     store.add(software_stix_object)
     read_obj = store.get(software_stix_object['id'])
@@ -475,16 +460,8 @@ url_dict = {
     "value": "https://example.com/research/index.html",
 }
 
-store = RelationalDBStore(
-        "postgresql://postgres:admin@localhost/postgres",
-        False,
-        None,
-        True,
-)
-
 
 def test_url():
-    store.sink.generate_stix_schema()
     url_stix_object = stix2.parse(url_dict)
     store.add(url_stix_object)
     read_obj = json.loads(store.get(url_stix_object['id']).serialize())
@@ -516,7 +493,6 @@ user_account_dict = {
 
 
 def test_user_account():
-    store.sink.generate_stix_schema()
     user_account_stix_object = stix2.parse(user_account_dict)
     store.add(user_account_stix_object)
     read_obj = json.loads(store.get(user_account_stix_object['id']).serialize())
@@ -557,7 +533,6 @@ windows_registry_dict = {
 
 
 def test_windows_registry():
-    store.sink.generate_stix_schema()
     windows_registry_stix_object = stix2.parse(windows_registry_dict)
     store.add(windows_registry_stix_object)
     read_obj = json.loads(store.get(windows_registry_stix_object['id']).serialize())
@@ -618,7 +593,6 @@ extensions_x509_certificate_dict = {
 
 
 def test_basic_x509_certificate():
-    store.sink.generate_stix_schema()
     basic_x509_certificate_stix_object = stix2.parse(basic_x509_certificate_dict)
     store.add(basic_x509_certificate_stix_object)
     read_obj = json.loads(store.get(basic_x509_certificate_stix_object['id']).serialize())
@@ -633,7 +607,6 @@ def test_basic_x509_certificate():
 
 
 def test_x509_certificate_with_extensions():
-    store.sink.generate_stix_schema()
     extensions_x509_certificate_stix_object = stix2.parse(extensions_x509_certificate_dict)
     store.add(extensions_x509_certificate_stix_object)
     read_obj = json.loads(store.get(extensions_x509_certificate_stix_object['id']).serialize())
