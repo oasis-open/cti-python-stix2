@@ -1,6 +1,6 @@
-from sqlalchemy import MetaData, create_engine, select, delete
+from sqlalchemy import MetaData, create_engine, delete, select
 from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
-from sqlalchemy_utils import database_exists, create_database, drop_database
+from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
