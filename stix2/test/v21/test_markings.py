@@ -6,6 +6,7 @@ import pytest
 import pytz
 
 import stix2
+from stix2.exceptions import PropertyValueError
 from stix2.v21 import TLP_WHITE
 
 from .constants import IDENTITY_ID, MARKING_DEFINITION_ID
@@ -126,7 +127,7 @@ def test_marking_def_example_with_kwargs_statement():
 
 
 def test_marking_def_invalid_type():
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         stix2.v21.MarkingDefinition(
             id=MARKING_DEFINITION_ID,
             created="2017-01-20T00:00:00.000Z",
@@ -252,7 +253,7 @@ def test_registered_custom_marking_raises_exception():
 
 
 def test_not_registered_marking_raises_exception():
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.raises(PropertyValueError) as excinfo:
         # Used custom object on purpose to demonstrate a not-registered marking
         @stix2.v21.CustomObject(
             'x-new-marking-type2', [
