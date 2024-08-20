@@ -1,0 +1,917 @@
+[
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--b4e29b62-2053-47c4-bab4-bbce39e5ed67",
+    "value": "198.51.100.3"
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--84445275-e371-444b-baea-ac7d07a180fd",
+    "value": "198.52.200.4"
+  },
+  {
+    "type": "file",
+    "id": "file--1190f2c9-166f-55f1-9706-eea3971d8082",
+    "spec_version": "2.1",
+    "hashes": {
+      "MD5": "a92e5b2bae0b4b3a3d81c85610b95cd4",
+      "SHA-1": "5374e08903744ceeaedd8f5e1bfc06b2c4688e76"
+    },
+    "size": 77312,
+    "name": "a92e5b2bae.exe",
+    "parent_directory_ref": "directory--255cb0e4-8bdb-5d63-bb32-9c6f0b733ab2"
+  },
+  {
+    "type": "directory",
+    "id": "directory--255cb0e4-8bdb-5d63-bb32-9c6f0b733ab2",
+    "spec_version": "2.1",
+    "path": "C:\\"
+  },
+  {
+    "type": "domain-name",
+    "spec_version": "2.1",
+    "id": "domain-name--ecb120bf-2694-4902-a737-62b74539a41b",
+    "value": "example.com",
+    "resolves_to_refs": [
+      "ipv4-addr--efcd5e80-570d-4131-b213-62cb18eaa6a8"
+    ]
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--efcd5e80-570d-4131-b213-62cb18eaa6a8",
+    "value": "198.51.100.3"
+  },
+  {
+    "type": "artifact",
+    "spec_version": "2.1",
+    "id": "artifact--ca17bcf8-9846-5ab4-8662-75c1bf6e63ee",
+    "mime_type": "image/jpeg",
+    "payload_bin": "VBORw0KGgoAAAANSUhEUgAAADI== ..."
+  },
+  {
+    "type": "artifact",
+    "spec_version": "2.1",
+    "id": "artifact--6f437177-6e48-5cf8-9d9e-872a2bddd641",
+    "mime_type": "application/zip",
+    "payload_bin": "ZX7HIBWPQA99NSUhEUgAAADI== ...",
+    "encryption_algorithm": "mime-type-indicated",
+    "decryption_key": "My voice is my passport"
+  },
+  {
+    "type": "autonomous-system",
+    "spec_version": "2.1",
+    "id": "autonomous-system--f720c34b-98ae-597f-ade5-27dc241e8c74",
+    "number": 15139,
+    "name": "Slime Industries",
+    "rir": "ARIN"
+  },
+  {
+    "type": "directory",
+    "spec_version": "2.1",
+    "id": "directory--93c0a9b0-520d-545d-9094-1a08ddf46b05",
+    "path": "C:\\Windows\\System32"
+  },
+  {
+    "type": "domain-name",
+    "spec_version": "2.1",
+    "id": "domain-name--3c10e93f-798e-5a26-a0c1-08156efab7f5",
+    "value": "example.com",
+    "resolves_to_refs": [
+      "ipv4-addr--ff26c055-6336-5bc5-b98d-13d6226742dd"
+    ]
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--ff26c055-6336-5bc5-b98d-13d6226742dd",
+    "value": "198.51.100.3"
+  },
+  {
+    "type": "email-addr",
+    "spec_version": "2.1",
+    "id": "email-addr--2d77a846-6264-5d51-b586-e43822ea1ea3",
+    "value": "john@example.com",
+    "display_name": "John Doe"
+  },
+  {
+    "type": "email-message",
+    "spec_version": "2.1",
+    "id": "email-message--72b7698f-10c2-565a-a2a6-b4996a2f2265",
+    "from_ref": "email-addr--89f52ea8-d6ef-51e9-8fce-6a29236436ed",
+    "to_refs": [
+      "email-addr--e4ee5301-b52d-59cd-a8fa-8036738c7194"
+    ],
+    "is_multipart": false,
+    "date": "1997-11-21T15:55:06.000Z",
+    "subject": "Saying Hello"
+  },
+  {
+    "type": "email-addr",
+    "spec_version": "2.1",
+    "id": "email-addr--89f52ea8-d6ef-51e9-8fce-6a29236436ed",
+    "value": "jdoe@example.com",
+    "display_name": "John Doe"
+  },
+  {
+    "type": "email-addr",
+    "spec_version": "2.1",
+    "id": "email-addr--e4ee5301-b52d-59cd-a8fa-8036738c7194",
+    "value": "mary@example.com",
+    "display_name": "Mary Smith"
+  },
+  {
+    "type": "email-message",
+    "spec_version": "2.1",
+    "id": "email-message--cf9b4b7f-14c8-5955-8065-020e0316b559",
+    "is_multipart": true,
+    "received_lines": [
+      "from mail.example.com ([198.51.100.3]) by smtp.gmail.com with ESMTPSA id q23sm23309939wme.17.2016.07.19.07.20.32 (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128); Tue, 19 Jul 2016 07:20:40 -0700 (PDT)"
+    ],
+    "content_type": "multipart/mixed",
+    "date": "2016-06-19T14:20:40.000Z",
+    "from_ref": "email-addr--89f52ea8-d6ef-51e9-8fce-6a29236436ed",
+    "to_refs": [
+      "email-addr--d1b3bf0c-f02a-51a1-8102-11aba7959868"
+    ],
+    "cc_refs": [
+      "email-addr--e4ee5301-b52d-59cd-a8fa-8036738c7194"
+    ],
+    "subject": "Check out this picture of a cat!",
+    "additional_header_fields": {
+      "Content-Disposition": "inline",
+      "X-Mailer": "Mutt/1.5.23",
+      "X-Originating-IP": "198.51.100.3"
+    },
+    "body_multipart": [
+      {
+        "content_type": "text/plain; charset=utf-8",
+        "content_disposition": "inline",
+        "body": "Cats are funny!"
+      },
+      {
+        "content_type": "image/png",
+        "content_disposition": "attachment; filename=\"tabby.png\"",
+        "body_raw_ref": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5"
+      },
+      {
+        "content_type": "application/zip",
+        "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
+        "body_raw_ref": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5"
+      }
+    ]
+  },
+  {
+    "type": "email-addr",
+    "spec_version": "2.1",
+    "id": "email-addr--89f52ea8-d6ef-51e9-8fce-6a29236436ed",
+    "value": "jdoe@example.com",
+    "display_name": "John Doe"
+  },
+  {
+    "type": "email-addr",
+    "spec_version": "2.1",
+    "id": "email-addr--d1b3bf0c-f02a-51a1-8102-11aba7959868",
+    "value": "bob@example.com",
+    "display_name": "Bob Smith"
+  },
+  {
+    "type": "email-addr",
+    "spec_version": "2.1",
+    "id": "email-addr--e4ee5301-b52d-59cd-a8fa-8036738c7194",
+    "value": "mary@example.com",
+    "display_name": "Mary Smith"
+  },
+  {
+    "type": "artifact",
+    "spec_version": "2.1",
+    "id": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5",
+    "mime_type": "image/jpeg",
+    "payload_bin": "VBORw0KGgoAAAANSUhEUgAAADI== ...",
+    "hashes": {
+      "SHA-256": "effb46bba03f6c8aea5c653f9cf984f170dcdd3bbbe2ff6843c3e5da0e698766"
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+    "name": "tabby_pics.zip",
+    "magic_number_hex": "504B0304",
+    "hashes": {
+      "SHA-256": "fe90a7e910cb3a4739bed9180e807e93fa70c90f25a8915476f5e4bfbac681db"
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--e277603e-1060-5ad4-9937-c26c97f1ca68",
+    "hashes": {
+      "SHA-256": "fe90a7e910cb3a4739bed9180e807e93fa70c90f25a8915476f5e4bfbac681db"
+    },
+    "size": 25536,
+    "name": "foo.dll"
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--90bd400b-89a5-51a5-b17d-55bc7719723b",
+    "hashes": {
+      "SHA-256": "841a8921140aba50671ebb0770fecc4ee308c4952cfeff8de154ab14eeef4649"
+    },
+    "name": "quêry.dll",
+    "name_enc": "windows-1252"
+  },
+  {
+    "type": "directory",
+    "spec_version": "2.1",
+    "id": "directory--93c0a9b0-520d-545d-9094-1a08ddf46b05",
+    "path": "C:\\Windows\\System32"
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--5a27d487-c542-5f97-a131-a8866b477b46",
+    "hashes": {
+      "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+    },
+    "parent_directory_ref": "directory--93c0a9b0-520d-545d-9094-1a08ddf46b05",
+    "name": "qwerty.dll"
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--019fde1c-94ca-5967-8b3c-a906a51d87ac",
+    "hashes": {
+      "SHA-256": "ceafbfd424be2ca4a5f0402cae090dda2fb0526cf521b60b60077c0f622b285a"
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--94fc2163-dec3-5715-b824-6e689c4de865",
+    "hashes": {
+      "SHA-256": "19c549ec2628b989382f6b280cbd7bb836a0b461332c0fe53511ce7d584b89d3"
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--d07ff290-d7e0-545b-a2ff-04602a9e0b73",
+    "hashes": {
+      "SHA-256": "0969de02ecf8a5f003e3f6d063d848c8a193aada092623f8ce408c15bcb5f038"
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--9a1f834d-2506-5367-baec-7aa63996ac43",
+    "name": "foo.zip",
+    "hashes": {
+      "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+    },
+    "mime_type": "application/zip",
+    "extensions": {
+      "archive-ext": {
+        "contains_refs": [
+          "file--019fde1c-94ca-5967-8b3c-a906a51d87ac",
+          "file--94fc2163-dec3-5715-b824-6e689c4de865",
+          "file--d07ff290-d7e0-545b-a2ff-04602a9e0b73"
+        ]
+      }
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--73c4cd13-7206-5100-88ef-822c42d3f02c",
+    "hashes": {
+      "SHA-256": "35a01331e9ad96f751278b891b6ea09699806faedfa237d40513d92ad1b7100f"
+    },
+    "extensions": {
+      "ntfs-ext": {
+        "alternate_data_streams": [
+          {
+            "name": "second.stream",
+            "size": 25536
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--ec3415cc-5f4f-5ec8-bdb1-6f86996ae66d",
+    "name": "example.pdf",
+    "extensions": {
+      "pdf-ext": {
+        "version": "1.7",
+        "document_info_dict": {
+          "Title": "Sample document",
+          "Author": "Adobe Systems Incorporated",
+          "Creator": "Adobe FrameMaker 5.5.3 for Power Macintosh",
+          "Producer": "Acrobat Distiller 3.01 for Power Macintosh",
+          "CreationDate": "20070412090123-02"
+        },
+        "pdfid0": "DFCE52BD827ECF765649852119D",
+        "pdfid1": "57A1E0F9ED2AE523E313C"
+      }
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--c7d1e135-8b34-549a-bb47-302f5cf998ed",
+    "name": "picture.jpg",
+    "hashes": {
+      "SHA-256": "4bac27393bdd9777ce02453256c5577cd02275510b2227f473d03f533924f877"
+    },
+    "extensions": {
+      "raster-image-ext": {
+        "exif_tags": {
+          "Make": "Nikon",
+          "Model": "D7000",
+          "XResolution": 4928,
+          "YResolution": 3264
+        }
+      }
+    }
+  },
+  {
+    "type": "file",
+    "spec_version": "2.1",
+    "id": "file--fb0419a8-f09c-57f8-be64-71a80417591c",
+    "name": "example.exe",
+    "extensions": {
+      "windows-pebinary-ext": {
+        "pe_type": "exe",
+        "machine_hex": "014c",
+        "number_of_sections": 4,
+        "time_date_stamp": "2016-01-22T12:31:12Z",
+        "pointer_to_symbol_table_hex": "74726144",
+        "number_of_symbols": 4542568,
+        "size_of_optional_header": 224,
+        "characteristics_hex": "818f",
+        "optional_header": {
+          "magic_hex": "010b",
+          "major_linker_version": 2,
+          "minor_linker_version": 25,
+          "size_of_code": 512,
+          "size_of_initialized_data": 283648,
+          "size_of_uninitialized_data": 0,
+          "address_of_entry_point": 4096,
+          "base_of_code": 4096,
+          "base_of_data": 8192,
+          "image_base": 14548992,
+          "section_alignment": 4096,
+          "file_alignment": 4096,
+          "major_os_version": 1,
+          "minor_os_version": 0,
+          "major_image_version": 0,
+          "minor_image_version": 0,
+          "major_subsystem_version": 4,
+          "minor_subsystem_version": 0,
+          "win32_version_value_hex": "00",
+          "size_of_image": 299008,
+          "size_of_headers": 4096,
+          "checksum_hex": "00",
+          "subsystem_hex": "03",
+          "dll_characteristics_hex": "00",
+          "size_of_stack_reserve": 100000,
+          "size_of_stack_commit": 8192,
+          "size_of_heap_reserve": 100000,
+          "size_of_heap_commit": 4096,
+          "loader_flags_hex": "abdbffde",
+          "number_of_rva_and_sizes": 3758087646
+        },
+        "sections": [
+          {
+            "name": "CODE",
+            "entropy": 0.061089
+          },
+          {
+            "name": "DATA",
+            "entropy": 7.980693
+          },
+          {
+            "name": "NicolasB",
+            "entropy": 0.607433
+          },
+          {
+            "name": ".idata",
+            "entropy": 0.607433
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--ff26c055-6336-5bc5-b98d-13d6226742dd",
+    "value": "198.51.100.3"
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--5853f6a4-638f-5b4e-9b0f-ded361ae3812",
+    "value": "198.51.100.0/24"
+  },
+  {
+    "type": "ipv6-addr",
+    "spec_version": "2.1",
+    "id": "ipv6-addr--1e61d36c-a16c-53b7-a80f-2a00161c96b1",
+    "value": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+  },
+  {
+    "type": "ipv6-addr",
+    "spec_version": "2.1",
+    "id": "ipv6-addr--5daf7456-8863-5481-9d42-237d477697f4",
+    "value": "2001:0db8::/96"
+  },
+  {
+    "type": "mac-addr",
+    "spec_version": "2.1",
+    "id": "mac-addr--65cfcf98-8a6e-5a1b-8f61-379ac4f92d00",
+    "value": "d2:fb:49:24:37:18"
+  },
+  {
+    "type": "mutex",
+    "spec_version": "2.1",
+    "id": "mutex--eba44954-d4e4-5d3b-814c-2b17dd8de300",
+    "name": "__CLEANSWEEP__"
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+    "value": "198.51.100.2"
+  },
+  {
+    "type": "ipv4-addr",
+    "spec_version": "2.1",
+    "id": "ipv4-addr--ff26c055-6336-5bc5-b98d-13d6226742dd",
+    "value": "198.51.100.3"
+  },
+  {
+    "type": "network-traffic",
+    "spec_version": "2.1",
+    "id": "network-traffic--2568d22a-8998-58eb-99ec-3c8ca74f527d",
+    "src_ref": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+    "dst_ref": "ipv4-addr--ff26c055-6336-5bc5-b98d-13d6226742dd",
+    "protocols": [
+      "tcp"
+    ]
+  },
+  {
+    "type": "domain-name",
+    "spec_version": "2.1",
+    "id": "domain-name--3c10e93f-798e-5a26-a0c1-08156efab7f5",
+    "value": "example.com"
+  },
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--15a157a8-26e3-56e0-820b-0c2a8e553a2c",
+  "dst_ref": "domain-name--3c10e93f-798e-5a26-a0c1-08156efab7f5",
+  "protocols": [
+    "ipv4",
+    "tcp",
+    "http"
+  ]
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--e42c19c8-f9fe-5ae9-9fc8-22c398f78fb7",
+  "value": "203.0.113.1"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--03b708d9-7761-5523-ab75-5ea096294a68",
+  "value": "203.0.113.5"
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--630d7bb1-0bbc-53a6-a6d4-f3c2d35c2734",
+  "src_ref": "ipv4-addr--e42c19c8-f9fe-5ae9-9fc8-22c398f78fb7",
+  "dst_ref": "ipv4-addr--03b708d9-7761-5523-ab75-5ea096294a68",
+  "protocols": [
+    "ipv4",
+    "tcp"
+  ],
+  "src_byte_count": 147600,
+  "src_packets": 100,
+  "ipfix": {
+    "minimumIpTotalLength": 32,
+    "maximumIpTotalLength": 2556
+  }
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+  "value": "198.51.100.2"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--e42c19c8-f9fe-5ae9-9fc8-22c398f78fb7",
+  "value": "203.0.113.1"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--ffe65ce3-bf2a-577c-bb7e-947d39198637",
+  "value": "203.0.113.2"
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--ac267abc-1a41-536d-8e8d-98458d9bf491",
+  "src_ref": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+  "dst_ref": "ipv4-addr--e42c19c8-f9fe-5ae9-9fc8-22c398f78fb7",
+  "src_port": 2487,
+  "dst_port": 1723,
+  "protocols": [
+    "ipv4",
+    "pptp"
+  ],
+  "src_byte_count": 35779,
+  "dst_byte_count": 935750,
+  "encapsulates_refs": [
+    "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a3"
+  ]
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--53e0bf48-2eee-5c03-8bde-ed7049d2c0a3",
+  "src_ref": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+  "dst_ref": "ipv4-addr--ffe65ce3-bf2a-577c-bb7e-947d39198637",
+  "src_port": 24678,
+  "dst_port": 80,
+  "protocols": [
+    "ipv4",
+    "tcp",
+    "http"
+  ],
+  "src_packets": 14356,
+  "dst_packets": 14356,
+  "encapsulated_by_ref": "network-traffic--ac267abc-1a41-536d-8e8d-98458d9bf491"
+},
+    {
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--e42c19c8-f9fe-5ae9-9fc8-22c398f78fb7",
+  "value": "203.0.113.1"
+    },
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--f2d3c796-6c1a-5c4f-8516-d4db54727f89",
+  "value": "198.51.100.34"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--bb884ffe-f2e4-56bb-a0c3-21f6711cb649",
+  "value": "198.51.100.54"
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--b4a8c150-e214-57a3-9017-e85dfa345f46",
+  "src_ref": "ipv4-addr--e42c19c8-f9fe-5ae9-9fc8-22c398f78fb7",
+  "dst_ref": "ipv4-addr--f2d3c796-6c1a-5c4f-8516-d4db54727f89",
+  "src_port": 2487,
+  "dst_port": 53,
+  "protocols": [
+    "ipv4",
+    "udp",
+    "dns"
+  ],
+  "src_byte_count": 35779,
+  "dst_byte_count": 935750,
+  "encapsulates_refs": [
+    "network-traffic--65a6016d-a91c-5781-baad-178cd55f01d4"
+  ]
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--65a6016d-a91c-5781-baad-178cd55f01d4",
+  "src_ref": "ipv4-addr--f2d3c796-6c1a-5c4f-8516-d4db54727f89",
+  "dst_ref": "ipv4-addr--bb884ffe-f2e4-56bb-a0c3-21f6711cb649",
+  "src_port": 24678,
+  "dst_port": 443,
+  "protocols": [
+    "ipv4",
+    "tcp",
+    "ssl",
+    "http"
+  ],
+  "src_packets": 14356,
+  "dst_packets": 14356,
+  "encapsulated_by_ref": "network-traffic--b4a8c150-e214-57a3-9017-e85dfa345f46"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--6da8dad3-4de3-5f8e-ab23-45d0b8f12f16",
+  "value": "198.51.100.53"
+
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--f8ae967a-3dc3-5cdf-8f94-8505abff00c2",
+  "dst_ref": "ipv4-addr--6da8dad3-4de3-5f8e-ab23-45d0b8f12f16",
+  "protocols": [
+    "tcp",
+    "http"
+  ],
+  "extensions": {
+    "http-request-ext": {
+      "request_method": "get",
+      "request_value": "/download.html",
+      "request_version": "http/1.1",
+      "request_header": {
+        "Accept-Encoding": [
+          "gzip,deflate"
+        ],
+        "User-Agent": [
+          "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113"
+        ],
+        "Host": [
+          "www.example.com"
+        ]
+      }
+    }
+  }
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--d7177770-fc12-586b-9244-426596a7008e",
+  "value": "198.51.100.9"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--03b708d9-7761-5523-ab75-5ea096294a68",
+  "value": "203.0.113.5"
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--e7a939ca-78c6-5f27-8ae0-4ad112454626",
+  "src_ref": "ipv4-addr--d7177770-fc12-586b-9244-426596a7008e",
+  "dst_ref": "ipv4-addr--03b708d9-7761-5523-ab75-5ea096294a68",
+  "protocols": [
+    "icmp"
+  ],
+  "extensions": {
+    "icmp-ext": {
+      "icmp_type_hex": "08",
+      "icmp_code_hex": "00"
+    }
+  }
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+  "value": "198.51.100.2"
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--c95e972a-20a4-5307-b00d-b8393faf02c5",
+  "src_ref": "ipv4-addr--4d22aae0-2bf9-5427-8819-e4f6abf20a53",
+  "src_port": 223,
+  "protocols": [
+    "ip",
+    "tcp"
+  ],
+  "extensions": {
+    "socket-ext": {
+      "is_listening": true,
+      "address_family": "AF_INET",
+      "socket_type": "SOCK_STREAM"
+    }
+  }
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--89830c10-2e94-57fa-8ca6-e0537d2719d1",
+  "value": "198.51.100.5"
+},
+{
+  "type": "ipv4-addr",
+  "spec_version": "2.1",
+  "id": "ipv4-addr--45f4c6fb-2d7d-576a-a571-edc78d899a72",
+  "value": "198.51.100.6"
+},
+{
+  "type": "network-traffic",
+  "spec_version": "2.1",
+  "id": "network-traffic--09ca55c3-97e5-5966-bad0-1d41d557ae13",
+  "src_ref": "ipv4-addr--89830c10-2e94-57fa-8ca6-e0537d2719d1",
+  "dst_ref": "ipv4-addr--45f4c6fb-2d7d-576a-a571-edc78d899a72",
+  "src_port": 3372,
+  "dst_port": 80,
+  "protocols": [
+    "tcp"
+  ],
+  "extensions": {
+    "tcp-ext": {
+      "src_flags_hex": "00000002"
+    }
+  }
+},
+{
+  "type": "file",
+  "spec_version": "2.1",
+  "id": "file--edb1ebee-4387-41cc-943b-f94fd491118c",
+  "name": "gedit-bin",
+  "hashes": {
+    "SHA-256": "aec070645fe53ee3b3763059376134f058cc337247c978add178b6ccdfb0019f"
+  }
+},
+{
+  "type": "process",
+  "spec_version": "2.1",
+  "id": "process--d2ec5aab-808d-4492-890a-3c1a1e3cb06e",
+  "pid": 1221,
+  "created_time": "2016-01-20T14:11:25.55Z",
+  "command_line": "./gedit-bin --new-window",
+  "image_ref": "file--e04f22d1-be2c-59de-add8-10f61d15fe20"
+},
+{
+  "type": "process",
+  "spec_version": "2.1",
+  "id": "process--de02a3e4-4b96-460a-b799-684347004444",
+  "pid": 314,
+  "extensions": {
+    "windows-process-ext": {
+      "aslr_enabled": true,
+      "dep_enabled": true,
+      "priority": "HIGH_PRIORITY_CLASS",
+      "owner_sid": "S-1-5-21-186985262-1144665072-74031268-1309"
+    }
+  }
+},
+{
+  "type": "file",
+  "spec_version": "2.1",
+  "id": "file--4b9a516b-4974-4ff8-a50d-a8b8d552ce1f",
+  "hashes": {
+    "SHA-256": "bf07a7fbb825fc0aae7bf4a1177b2b31fcf8a3feeaf7092761e18c859ee52a9c"
+  },
+  "name": "sirvizio.exe"
+},
+{
+  "type": "process",
+  "spec_version": "2.1",
+  "id": "process--70b17c6c-93e5-4c80-8683-5a4d4e51f2c1",
+  "pid": 2217,
+  "command_line": "C:\\Windows\\System32\\sirvizio.exe /s",
+  "image_ref": "file--3916128d-69af-5525-be7a-99fac2383a59",
+  "extensions": {
+    "windows-service-ext": {
+      "service_name": "sirvizio",
+      "display_name": "Sirvizio",
+      "start_type": "SERVICE_AUTO_START",
+      "service_type": "SERVICE_WIN32_OWN_PROCESS",
+      "service_status": "SERVICE_RUNNING"
+    }
+  }
+},
+{
+  "type": "software",
+  "spec_version": "2.1",
+  "id": "software--a1827f6d-ca53-5605-9e93-4316cd22a00a",
+  "name": "Word",
+  "cpe": "cpe:2.3:a:microsoft:word:2000:*:*:*:*:*:*:*",
+  "version": "2002",
+  "vendor": "Microsoft"
+},
+{
+  "type": "url",
+  "spec_version": "2.1",
+  "id": "url--c1477287-23ac-5971-a010-5c287877fa60",
+  "value": "https://example.com/research/index.html"
+},
+{
+  "type": "user-account",
+  "spec_version": "2.1",
+  "id": "user-account--0d5b424b-93b8-5cd8-ac36-306e1789d63c",
+  "user_id": "1001",
+  "account_login": "jdoe",
+  "account_type": "unix",
+  "display_name": "John Doe",
+  "is_service_account": false,
+  "is_privileged": false,
+  "can_escalate_privs": true,
+  "account_created": "2016-01-20T12:31:12Z",
+  "credential_last_changed": "2016-01-20T14:27:43Z",
+  "account_first_login": "2016-01-20T14:26:07Z",
+  "account_last_login": "2016-07-22T16:08:28Z"
+},
+{
+  "type": "user-account",
+  "spec_version": "2.1",
+  "id": "user-account--9bd3afcf-deee-54f9-83e2-520653cb6bba",
+  "user_id": "thegrugq_ebooks",
+  "account_login": "thegrugq_ebooks",
+  "account_type": "twitter",
+  "display_name": "the grugq"
+    },
+    {
+  "type": "user-account",
+  "spec_version": "2.1",
+  "id": "user-account--0d5b424b-93b8-5cd8-ac36-306e1789d63c",
+  "user_id": "1001",
+  "account_login": "jdoe",
+  "account_type": "unix",
+  "display_name": "John Doe",
+  "is_service_account": false,
+  "is_privileged": false,
+  "can_escalate_privs": true,
+  "extensions": {
+    "unix-account-ext": {
+      "gid": 1001,
+      "groups": ["wheel"],
+      "home_dir": "/home/jdoe",
+      "shell": "/bin/bash"
+    }
+  }
+},
+{
+  "type": "windows-registry-key",
+  "spec_version": "2.1",
+  "id": "windows-registry-key--9d60798d-4e3e-5fe4-af8a-0e4986f0f90b",
+  "key": "HKEY_LOCAL_MACHINE\\System\\Foo\\Bar"
+    },
+    {
+  "type": "windows-registry-key",
+  "spec_version": "2.1",
+  "id": "windows-registry-key--2ba37ae7-2745-5082-9dfd-9486dad41016",
+  "key": "hkey_local_machine\\system\\bar\\foo",
+  "values": [
+    {
+      "name": "Foo",
+      "data": "qwerty",
+      "data_type": "REG_SZ"
+    },
+    {
+      "name": "Bar",
+      "data": "42",
+      "data_type": "REG_DWORD"
+    }
+  ]
+},
+{
+  "type": "x509-certificate",
+  "spec_version": "2.1",
+  "id": "x509-certificate--463d7b2a-8516-5a50-a3d7-6f801465d5de",
+  "issuer": "C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com",
+  "validity_not_before": "2016-03-12T12:00:00Z",
+  "validity_not_after": "2016-08-21T12:00:00Z",
+  "subject": "C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org",
+    "serial_number": "36:f7:d4:32:f4:ab:70:ea:d3:ce:98:6e:ea:99:93:49:32:0a:b7:06"
+},
+{
+  "type":"x509-certificate",
+  "spec_version": "2.1",
+  "id": "x509-certificate--b595eaf0-0b28-5dad-9e8e-0fab9c1facc9",
+  "issuer":"C=ZA, ST=Western Cape, L=Cape Town, O=Thawte Consulting cc, OU=Certification Services Division, CN=Thawte Server CA/emailAddress=server-certs@thawte.com",
+  "validity_not_before":"2016-03-12T12:00:00Z",
+  "validity_not_after":"2016-08-21T12:00:00Z",
+  "subject":"C=US, ST=Maryland, L=Pasadena, O=Brent Baccala, OU=FreeSoft, CN=www.freesoft.org/emailAddress=baccala@freesoft.org",
+  "serial_number": "02:08:87:83:f2:13:58:1f:79:52:1e:66:90:0a:02:24:c9:6b:c7:dc",
+  "x509_v3_extensions":{
+    "basic_constraints":"critical,CA:TRUE, pathlen:0",
+    "name_constraints":"permitted;IP:192.168.0.0/255.255.0.0",
+    "policy_constraints":"requireExplicitPolicy:3",
+    "key_usage":"critical, keyCertSign",
+    "extended_key_usage":"critical,codeSigning,1.2.3.4",
+    "subject_key_identifier":"hash",
+    "authority_key_identifier":"keyid,issuer",
+    "subject_alternative_name":"email:my@other.address,RID:1.2.3.4",
+    "issuer_alternative_name":"issuer:copy",
+    "crl_distribution_points":"URI:http://myhost.com/myca.crl",
+    "inhibit_any_policy":"2",
+    "private_key_usage_period_not_before":"2016-03-12T12:00:00Z",
+    "private_key_usage_period_not_after":"2018-03-12T12:00:00Z",
+    "certificate_policies":"1.2.4.5, 1.1.3.4"
+  }
+}
+]

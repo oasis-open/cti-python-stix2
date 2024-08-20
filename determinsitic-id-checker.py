@@ -1,5 +1,7 @@
 import json
+
 import stix2
+
 
 def main():
     with open("sco-examples-bundle.json", "r", encoding="utf-8") as examples:
