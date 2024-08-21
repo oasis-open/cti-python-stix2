@@ -9,6 +9,7 @@ store = RelationalDBStore(
     f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres",
     True,
     None,
+    False
 )
 
 # Artifacts
