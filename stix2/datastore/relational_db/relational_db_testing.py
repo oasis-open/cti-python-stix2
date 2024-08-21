@@ -77,6 +77,7 @@ def malware_with_all_required_properties():
 def file_example_with_PDFExt_Object():
     f = stix2.v21.File(
         name="qwerty.dll",
+        magic_number_hex="504B0304",
         extensions={
             "pdf-ext": stix2.v21.PDFExt(
                 version="1.7",
@@ -95,6 +96,66 @@ def file_example_with_PDFExt_Object():
     return f
 
 
+def extension_definition_insert():
+    return stix2.ExtensionDefinition(
+        created_by_ref="identity--8a5fb7e4-aabe-4635-8972-cbcde1fa4792",
+        name="test",
+        schema="a schema",
+        version="1.2.3",
+        extension_types=["property-extension", "new-sdo", "new-sro"],
+    )
+
+
+def dictionary_test():
+    return stix2.File(
+        spec_version="2.1",
+        name="picture.jpg",
+        defanged=True,
+        ctime="1980-02-23T05:43:28.2678Z",
+        extensions={
+          "raster-image-ext": {
+              "exif_tags": {
+                  "Make": "Nikon",
+                  "Model": "D7000",
+                  "XResolution": 4928,
+                  "YResolution": 3264,
+              },
+          },
+        },
+    )
+
+
+def kill_chain_test():
+    return stix2.AttackPattern(
+        spec_version="2.1",
+        id="attack-pattern--0c7b5b88-8ff7-4a4d-aa9d-feb398cd0061",
+        created="2016-05-12T08:17:27.000Z",
+        modified="2016-05-12T08:17:27.000Z",
+        name="Spear Phishing",
+        kill_chain_phases=[
+             {
+                 "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                 "phase_name": "reconnaissance",
+             },
+        ],
+        external_references=[
+             {
+                 "source_name": "capec",
+                 "external_id": "CAPEC-163",
+             },
+        ],
+        granular_markings=[
+             {
+                 "lang": "en_US",
+                 "selectors": ["kill_chain_phases"],
+             },
+             {
+                 "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
+                 "selectors": ["external_references"],
+             },
+        ], )
+
+
 def main():
     store = RelationalDBStore(
         "postgresql://localhost/stix-data-sink",
@@ -102,14 +163,26 @@ def main():
         None,
         True,
         False,
-        stix2.Directory,
     )
 
     if store.sink.database_exists:
         store.sink.generate_stix_schema()
         store.sink.clear_tables()
 
+        pdf_file = file_example_with_PDFExt_Object()
+        store.add(pdf_file)
+
+        ap = kill_chain_test()
+        store.add(ap)
+
         store.add(directory_stix_object)
+
+        store.add(s)
+
+        store.add(extension_definition_insert())
+
+        dict_example = dictionary_test()
+        store.add(dict_example)
 
         read_obj = store.get(directory_stix_object.id)
         print(read_obj)

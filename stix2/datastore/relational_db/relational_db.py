@@ -2,7 +2,9 @@ from sqlalchemy import MetaData, create_engine, delete, select
 from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
-from stix2.base import _STIXBase
+from stix2.base import (
+    _DomainObject, _MetaObject, _Observable, _RelationshipObject, _STIXBase,
+)
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.relational_db.input_creation import (
     generate_insert_for_object,
@@ -187,8 +189,19 @@ class RelationalDBSink(DataSink):
         _add(self, stix_data)
     add.__doc__ = _add.__doc__
 
+    @staticmethod
+    def _determine_schema_name(stix_object):
+        if isinstance(stix_object, _DomainObject):
+            return "sdo"
+        elif isinstance(stix_object, _Observable):
+            return "sco"
+        elif isinstance(stix_object, _RelationshipObject):
+            return "sro"
+        elif isinstance(stix_object, _MetaObject):
+            return "common"
+
     def insert_object(self, stix_object):
-        schema_name = "sdo" if "created" in stix_object else "sco"
+        schema_name = self._determine_schema_name(stix_object)
         with self.database_connection.begin() as trans:
             statements = generate_insert_for_object(self, stix_object, schema_name)
             for stmt in statements:

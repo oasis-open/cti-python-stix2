@@ -587,7 +587,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
         )
         return tables
     elif self.contained == KillChainPhase:
-        tables.append(create_kill_chain_phases_table("kill_chain_phase", metadata, schema_name, table_name))
+        tables.append(create_kill_chain_phases_table("kill_chain_phases", metadata, schema_name, table_name))
         return tables
     else:
         if isinstance(self.contained, Property):
@@ -693,7 +693,8 @@ def generate_object_table(
     columns = list()
     tables = list()
     for name, prop in properties.items():
-        if name == 'id' or name not in core_properties:
+        # type is never a column since it is implicit in the table
+        if (name == 'id' or name not in core_properties) and name != 'type':
             col = prop.generate_table_information(
                 name,
                 metadata=metadata,

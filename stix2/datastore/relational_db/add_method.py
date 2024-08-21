@@ -1,7 +1,8 @@
 import re
-from stix2.v21.base import _STIXBase21
+
 from stix2.datastore.relational_db.utils import get_all_subclasses
 from stix2.properties import Property
+from stix2.v21.base import _STIXBase21
 
 _ALLOWABLE_CLASSES = get_all_subclasses(_STIXBase21)
 _ALLOWABLE_CLASSES.extend(get_all_subclasses(Property))
