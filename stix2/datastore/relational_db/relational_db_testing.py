@@ -103,6 +103,10 @@ def extension_definition_insert():
         schema="a schema",
         version="1.2.3",
         extension_types=["property-extension", "new-sdo", "new-sro"],
+        object_marking_refs=[
+            "marking-definition--caa0d913-5db8-4424-aae0-43e770287d30",
+            "marking-definition--122a27a0-b96f-46bc-8fcd-f7a159757e77"
+        ],
         granular_markings=[
             {
                 "lang": "en_US",
@@ -168,7 +172,7 @@ def kill_chain_test():
 @stix2.CustomObject('x-custom-type',
         properties=[
             ("phases", stix2.properties.ListProperty(stix2.KillChainPhase)),
-            ("test", stix2.properties.IntegerProperty())
+            ("something_else", stix2.properties.IntegerProperty())
         ]
     )
 class CustomClass:
@@ -183,7 +187,7 @@ def custom_obj():
                 "phase_name": "the phase name"
             }
         ],
-        test=5
+        something_else=5
     )
     return obj
 

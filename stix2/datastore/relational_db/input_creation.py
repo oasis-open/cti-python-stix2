@@ -347,7 +347,7 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, schema_nam
     insert_statements.append(core_insert_statement)
 
     if "object_marking_refs" in stix_object:
-        if schema_name == "sdo":
+        if schema_name != "sco":
             object_markings_ref_table = data_sink.tables_dictionary["common.object_marking_refs_sdo"]
         else:
             object_markings_ref_table = data_sink.tables_dictionary["common.object_marking_refs_sco"]
