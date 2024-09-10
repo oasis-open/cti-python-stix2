@@ -329,7 +329,7 @@ def generate_insert_for_granular_markings(granular_markings_table, stix_object):
 
 
 def generate_insert_for_core(data_sink, stix_object, core_properties, schema_name):
-    if schema_name in ["sdo", "sro"]:
+    if schema_name in ["sdo", "sro", "common"]:
         core_table = data_sink.tables_dictionary["common.core_sdo"]
     else:
         core_table = data_sink.tables_dictionary["common.core_sco"]
@@ -361,7 +361,7 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, schema_nam
 
     # Granular markings
     if "granular_markings" in stix_object:
-        if schema_name == "sdo":
+        if schema_name != "sco":
             granular_marking_table = data_sink.tables_dictionary["common.granular_marking_sdo"]
         else:
             granular_marking_table = data_sink.tables_dictionary["common.granular_marking_sco"]
@@ -425,7 +425,7 @@ def generate_insert_for_object(data_sink, stix_object, schema_name, level=0):
     bindings = dict()
     if schema_name == "sco":
         core_properties = SCO_COMMON_PROPERTIES
-    elif schema_name in ["sdo", "sro"]:
+    elif schema_name in ["sdo", "sro", "common"]:
         core_properties = SDO_COMMON_PROPERTIES
     else:
         core_properties = list()

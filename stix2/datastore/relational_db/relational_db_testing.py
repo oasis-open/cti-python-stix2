@@ -103,6 +103,16 @@ def extension_definition_insert():
         schema="a schema",
         version="1.2.3",
         extension_types=["property-extension", "new-sdo", "new-sro"],
+        granular_markings=[
+            {
+                "lang": "en_US",
+                "selectors": ["name", "schema"]
+            },
+            {
+                "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
+                "selectors": ["name", "schema"]
+            }
+        ]
     )
 
 
@@ -155,6 +165,28 @@ def kill_chain_test():
              },
         ], )
 
+@stix2.CustomObject('x-custom-type',
+        properties=[
+            ("phases", stix2.properties.ListProperty(stix2.KillChainPhase)),
+            ("test", stix2.properties.IntegerProperty())
+        ]
+    )
+class CustomClass:
+    pass
+
+
+def custom_obj():
+    obj = CustomClass(
+        phases=[
+            {
+                "kill_chain_name": "chain name",
+                "phase_name": "the phase name"
+            }
+        ],
+        test=5
+    )
+    return obj
+
 
 def main():
     store = RelationalDBStore(
@@ -168,6 +200,10 @@ def main():
     if store.sink.database_exists:
         store.sink.generate_stix_schema()
         store.sink.clear_tables()
+
+        co = custom_obj()
+
+        store.add(co)
 
         pdf_file = file_example_with_PDFExt_Object()
         store.add(pdf_file)

@@ -587,7 +587,7 @@ def generate_table_information(self, name, metadata, schema_name, table_name, **
         )
         return tables
     elif self.contained == KillChainPhase:
-        tables.append(create_kill_chain_phases_table("kill_chain_phases", metadata, schema_name, table_name))
+        tables.append(create_kill_chain_phases_table(name, metadata, schema_name, table_name))
         return tables
     else:
         if isinstance(self.contained, Property):
