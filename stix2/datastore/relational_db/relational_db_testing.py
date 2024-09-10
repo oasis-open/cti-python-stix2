@@ -198,7 +198,7 @@ def main():
         False,
         None,
         True,
-        False,
+        True,
     )
 
     if store.sink.database_exists:
