@@ -12,7 +12,7 @@ import stix2.properties
 import stix2.registry
 import stix2.v21
 
-_DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres",
+_DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres"
 
 store = RelationalDBStore(
     _DB_CONNECT_URL,
