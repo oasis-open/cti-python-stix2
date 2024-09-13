@@ -547,7 +547,9 @@ class BinaryProperty(Property):
 class HexProperty(Property):
 
     def clean(self, value, allow_custom=False, strict=False):
-        if not re.match(r"^([a-fA-F0-9]{2})+$", value):
+        if isinstance(value, (bytes, bytearray)):
+            value = value.hex()
+        elif not re.match(r"^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
         return value, False
 

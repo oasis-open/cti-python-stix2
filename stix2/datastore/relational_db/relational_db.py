@@ -9,6 +9,7 @@ from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.relational_db.input_creation import (
     generate_insert_for_object,
 )
+from stix2.datastore.relational_db.query import read_object
 from stix2.datastore.relational_db.table_creation import create_table_objects
 from stix2.datastore.relational_db.utils import (
     canonicalize_table_name, schema_for, table_name_for,
@@ -80,7 +81,6 @@ class RelationalDBStore(DataStoreMixin):
                 them.
         """
         database_connection = create_engine(database_connection_url)
-        print(database_connection)
         self.metadata = MetaData()
         create_table_objects(
              self.metadata, stix_object_classes,
@@ -257,44 +257,14 @@ class RelationalDBSource(DataSource):
             )
 
     def get(self, stix_id, version=None, _composite_filters=None):
+        with self.database_connection.connect() as conn:
+            stix_obj = read_object(
+                stix_id,
+                self.metadata,
+                conn
+            )
 
-        stix_type = stix2.utils.get_type_from_id(stix_id)
-        stix_class = stix2.registry.class_for_type(
-            # TODO: give user control over STIX version used?
-            stix_type, stix_version=stix2.DEFAULT_VERSION,
-        )
-
-        # Info about the type-specific table
-        type_table_name = table_name_for(stix_type)
-        type_schema_name = schema_for(stix_class)
-        type_table = self.metadata.tables[f"{type_schema_name}.{type_table_name}"]
-
-        # Some fixed info about core tables
-        if type_schema_name == "sco":
-            core_table_name = "common.core_sco"
-        else:
-            # for SROs and SMOs too?
-            core_table_name = "common.core_sdo"
-
-        core_table = self.metadata.tables[core_table_name]
-
-        # Both core and type-specific tables have "id"; let's not duplicate
-        # that in the result set columns.  Is there a better way to do this?
-        type_cols_except_id = (
-            col for col in type_table.c if col.key != "id"
-        )
-
-        core_type_select = select(core_table, *type_cols_except_id) \
-            .join(type_table) \
-            .where(core_table.c.id == stix_id)
-
-        obj_dict = {}
-        with self.database_connection.begin() as conn:
-            # Should be at most one matching row
-            sco_data = conn.execute(core_type_select).mappings().first()
-            obj_dict.update(sco_data)
-
-        return stix_class(**obj_dict, allow_custom=True)
+        return stix_obj
 
     def all_versions(self, stix_id, version=None, _composite_filters=None):
         pass
