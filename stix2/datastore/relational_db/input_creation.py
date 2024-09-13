@@ -53,6 +53,7 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
     # integer, string, timestamp
     valid_types = stix_object._properties[dictionary_name].valid_types
     for name, value in stix_object[dictionary_name].items():
+        bindings = dict()
         if not valid_types or len(self.valid_types) == 1:
             value_binding = "value"
         elif isinstance(value, int) and IntegerProperty in valid_types:
@@ -61,6 +62,8 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
             value_binding = "string_value"
         elif isinstance(value, bool) and BooleanProperty in valid_types:
             value_binding = "boolean_value"
+        elif isinstance(value, float) and FloatProperty in valid_types:
+            value_binding = "float_value"
         elif isinstance(value, STIXdatetime) and TimestampProperty in valid_types:
             value_binding = "timestamp_value"
         else:

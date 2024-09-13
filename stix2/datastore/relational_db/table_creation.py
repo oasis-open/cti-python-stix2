@@ -245,7 +245,7 @@ def determine_sql_type(self):  # noqa: F811
 
 @add_method(BinaryProperty)
 def determine_sql_type(self):  # noqa: F811
-    return Boolean
+    return Text
 
 
 @add_method(BooleanProperty)
