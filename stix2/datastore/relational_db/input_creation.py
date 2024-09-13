@@ -129,7 +129,7 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 @add_method(HexProperty)
 def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
-    v = bytes(stix_object[name], 'utf-8')
+    v = bytes.fromhex(stix_object[name])
     return {name: v}
 
 

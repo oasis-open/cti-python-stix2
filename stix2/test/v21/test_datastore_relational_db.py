@@ -1,12 +1,21 @@
+import contextlib
+import datetime
 import json
 import os
 
+import pytest
+
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
+from stix2.datastore import DataSourceError
 import stix2.properties
+import stix2.registry
+import stix2.v21
+
+_DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres"
 
 store = RelationalDBStore(
-    f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres",
+    _DB_CONNECT_URL,
     True,
     None,
     False
@@ -51,8 +60,6 @@ def test_encrypted_artifact():
     read_obj = json.loads(store.get(artifact_stix_object['id']).serialize())
 
     for attrib in encrypted_artifact_dict.keys():
-        if attrib == 'hashes':  # TODO hashes are saved to separate table, functionality to retrieve is WIP
-            continue
         assert encrypted_artifact_dict[attrib] == read_obj[attrib]
 
 
@@ -98,8 +105,6 @@ def test_directory():
     read_obj = json.loads(store.get(directory_obj['id']).serialize())
 
     for attrib in directory_dict.keys():
-        if attrib == "contains_refs":  # TODO remove skip once we can pull from table join
-            continue
         if attrib == "ctime" or attrib == "mtime":  # convert both into stix2 date format for consistency
             assert stix2.utils.parse_into_datetime(directory_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
@@ -196,9 +201,9 @@ multipart_email_msg_dict = {
     "cc_refs": ["email-addr--e4ee5301-b52d-59cd-a8fa-8036738c7194"],
     "subject": "Check out this picture of a cat!",
     "additional_header_fields": {
-        "Content-Disposition": "inline",
-        "X-Mailer": "Mutt/1.5.23",
-        "X-Originating-IP": "198.51.100.3",
+        "Content-Disposition": ["inline"],
+        "X-Mailer": ["Mutt/1.5.23"],
+        "X-Originating-IP": ["198.51.100.3"],
     },
     "body_multipart": [
         {
@@ -226,9 +231,6 @@ def test_email_msg():
     read_obj = json.loads(store.get(email_msg_stix_object['id']).serialize())
 
     for attrib in email_msg_dict.keys():
-        if attrib == "to_refs" or attrib == "cc_refs" or attrib == "bcc_refs" \
-                or attrib == "additional_header_fields":  # join multiple tables not implemented yet
-            continue
         if attrib == "date":
             assert stix2.utils.parse_into_datetime(email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(
                 read_obj[attrib],
@@ -243,9 +245,6 @@ def test_multipart_email_msg():
     read_obj = json.loads(store.get(multipart_email_msg_stix_object['id']).serialize())
 
     for attrib in multipart_email_msg_dict.keys():
-        if attrib == "to_refs" or attrib == "cc_refs" or attrib == "bcc_refs" \
-                or attrib == "additional_header_fields" or attrib == "body_multipart":  # join multiple tables not implemented yet
-            continue
         if attrib == "date":
             assert stix2.utils.parse_into_datetime(multipart_email_msg_dict[attrib]) == stix2.utils.parse_into_datetime(
                 read_obj[attrib],
@@ -267,6 +266,7 @@ file_dict = {
     "name": "qwerty.dll",
     "size": 25536,
     "name_enc": "windows-1252",
+    "magic_number_hex": "a1b2c3",
     "mime_type": "application/msword",
     "ctime": "2018-11-23T08:17:27.000Z",
     "mtime": "2018-11-23T08:17:27.000Z",
@@ -284,8 +284,6 @@ def test_file():
     read_obj = json.loads(store.get(file_stix_object['id']).serialize())
 
     for attrib in file_dict.keys():
-        if attrib == "contains_refs" or attrib == "hashes":  # join multiple tables not implemented yet
-            continue
         if attrib == "ctime" or attrib == "mtime" or attrib == "atime":
             assert stix2.utils.parse_into_datetime(file_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
@@ -381,8 +379,6 @@ def test_network_traffic():
     read_obj = store.get(network_traffic_stix_object['id'])
 
     for attrib in network_traffic_dict.keys():
-        if attrib == "encapsulates_refs":  # multiple table join not implemented
-            continue
         if attrib == "start" or attrib == "end":
             assert stix2.utils.parse_into_datetime(network_traffic_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
@@ -421,9 +417,6 @@ def test_process():
     read_obj = json.loads(store.get(process_stix_object['id']).serialize())
 
     for attrib in process_dict.keys():
-        if attrib == "child_refs" or attrib == "opened_connection_refs" or attrib == "environment_variables":
-            # join multiple tables not implemented yet
-            continue
         if attrib == "created_time":
             assert stix2.utils.parse_into_datetime(process_dict[attrib]) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
@@ -536,8 +529,6 @@ def test_windows_registry():
     read_obj = json.loads(store.get(windows_registry_stix_object['id']).serialize())
 
     for attrib in windows_registry_dict.keys():
-        if attrib == "values":  # skip multiple table join
-            continue
         if attrib == "modified_time":
             assert stix2.utils.parse_into_datetime(windows_registry_dict[attrib]) == stix2.utils.parse_into_datetime(
                 read_obj[attrib],
@@ -610,11 +601,360 @@ def test_x509_certificate_with_extensions():
     read_obj = json.loads(store.get(extensions_x509_certificate_stix_object['id']).serialize())
 
     for attrib in extensions_x509_certificate_dict.keys():
-        if attrib == "x509_v3_extensions":  # skipping multi-table join
-            continue
         if attrib == "validity_not_before" or attrib == "validity_not_after":
             assert stix2.utils.parse_into_datetime(
                 extensions_x509_certificate_dict[attrib],
             ) == stix2.utils.parse_into_datetime(read_obj[attrib])
             continue
         assert extensions_x509_certificate_dict[attrib] == read_obj[attrib]
+
+
+def test_source_get_not_exists():
+    obj = store.get("identity--00000000-0000-0000-0000-000000000000")
+    assert obj is None
+
+
+def test_source_no_registration():
+    with pytest.raises(DataSourceError):
+        # error, since no registered class can be found
+        store.get("doesnt-exist--a9e52398-3312-4377-90c2-86d49446c0d0")
+
+
+def _unregister(reg_section, stix_type, ext_id=None):
+    """
+    Unregister a class from the stix2 library's registry.
+
+    :param reg_section: A registry section; depends on the kind of
+        class which was registered
+    :param stix_type: A STIX type
+    :param ext_id: An extension-definition ID, if applicable.  A second
+        unregistration will occur in the extensions section of the registry if
+        given.
+    """
+    # We ought to have a library function for this...
+    del stix2.registry.STIX2_OBJ_MAPS["2.1"][reg_section][stix_type]
+    if ext_id:
+        del stix2.registry.STIX2_OBJ_MAPS["2.1"]["extensions"][ext_id]
+
+
+@contextlib.contextmanager
+def _register_object(*args, **kwargs):
+    """
+    A contextmanager which can register a class for an SDO/SRO and ensure it is
+    unregistered afterword.
+
+    :param args: Positional args to a @CustomObject decorator
+    :param kwargs: Keyword args to a @CustomObject decorator
+    :return: The registered class
+    """
+    @stix2.CustomObject(*args, **kwargs)
+    class TestClass:
+        pass
+
+    try:
+        yield TestClass
+    except:
+        ext_id = kwargs.get("extension_name")
+        if not ext_id and len(args) >= 3:
+            ext_id = args[2]
+
+        _unregister("objects", TestClass._type, ext_id)
+
+        raise
+
+
+@contextlib.contextmanager
+def _register_observable(*args, **kwargs):
+    """
+    A contextmanager which can register a class for an SCO and ensure it is
+    unregistered afterword.
+
+    :param args: Positional args to a @CustomObservable decorator
+    :param kwargs: Keyword args to a @CustomObservable decorator
+    :return: The registered class
+    """
+    @stix2.CustomObservable(*args, **kwargs)
+    class TestClass:
+        pass
+
+    try:
+        yield TestClass
+    except:
+        ext_id = kwargs.get("extension_name")
+        if not ext_id and len(args) >= 4:
+            ext_id = args[3]
+
+        _unregister("observables", TestClass._type, ext_id)
+
+        raise
+
+
+# "Base" properties used to derive property variations for testing (e.g. in a
+# list, in a dictionary, in an embedded object, etc).  Also includes sample
+# values used to create test objects.  The keys here are used to parameterize a
+# fixture below.  Parameterizing fixtures via simple strings makes for more
+# understandable unit test output, although it can be kind of awkward in the
+# implementation (can require long if-then chains checking the parameter
+# strings).
+_TEST_PROPERTIES = {
+    "binary": (stix2.properties.BinaryProperty(), "Af9J"),
+    "boolean": (stix2.properties.BooleanProperty(), True),
+    "float": (stix2.properties.FloatProperty(), 1.23),
+    "hex": (stix2.properties.HexProperty(), "a1b2c3"),
+    "integer": (stix2.properties.IntegerProperty(), 1),
+    "string": (stix2.properties.StringProperty(), "test"),
+    "timestamp": (
+        stix2.properties.TimestampProperty(),
+        datetime.datetime.now(tz=datetime.timezone.utc)
+    ),
+    "ref": (
+        stix2.properties.ReferenceProperty("SDO"),
+        "identity--ec83b570-0743-4179-a5e3-66fd2fae4711"
+    ),
+    "enum": (
+        stix2.properties.EnumProperty(["value1", "value2"]),
+        "value1"
+    )
+}
+
+
+@pytest.fixture(params=_TEST_PROPERTIES.keys())
+def base_property_value(request):
+    """Produce basic property instances and test values."""
+
+    base = _TEST_PROPERTIES.get(request.param)
+    if not base:
+        pytest.fail("Unrecognized base property: " + request.param)
+
+    return base
+
+
+@pytest.fixture(
+    params=[
+        "base",
+        "list-of",
+        "dict-of",
+        # The following two test nesting lists inside dicts and vice versa
+        "dict-list-of",
+        "list-dict-of",
+        "subobject",
+        "list-of-subobject-prop",
+        "list-of-subobject-class"
+    ]
+)
+def property_variation_value(request, base_property_value):
+    """
+    Produce property variations (and corresponding value variations) based on a
+    base property instance and value.  E.g. in a list, in a sub-object, etc.
+    """
+    base_property, prop_value = base_property_value
+
+    class Embedded(stix2.v21._STIXBase21):
+        """
+        Used for property variations where the property is embedded in a
+        sub-object.
+        """
+        _properties = {
+            "embedded": base_property
+        }
+
+    if request.param == "base":
+        prop_variation = base_property
+        prop_variation_value = prop_value
+
+    elif request.param == "list-of":
+        prop_variation = stix2.properties.ListProperty(base_property)
+        prop_variation_value = [prop_value]
+
+    elif request.param == "dict-of":
+        prop_variation = stix2.properties.DictionaryProperty(
+            # DictionaryProperty.valid_types does not accept property
+            # instances (except ListProperty instances), only classes...
+            valid_types=type(base_property)
+        )
+        # key name doesn't matter here
+        prop_variation_value = {"key": prop_value}
+
+    elif request.param == "dict-list-of":
+        prop_variation = stix2.properties.DictionaryProperty(
+            valid_types=stix2.properties.ListProperty(base_property)
+        )
+        # key name doesn't matter here
+        prop_variation_value = {"key": [prop_value]}
+
+    elif request.param == "list-dict-of":
+        # These seem to all fail... perhaps there is no intent to support
+        # this?
+        pytest.xfail("ListProperty(DictionaryProperty) not supported?")
+
+        # prop_variation = stix2.properties.ListProperty(
+        #     stix2.properties.DictionaryProperty(valid_types=type(base_property))
+        # )
+        # key name doesn't matter here
+        # prop_variation_value = [{"key": prop_value}]
+
+    elif request.param == "subobject":
+        prop_variation = stix2.properties.EmbeddedObjectProperty(Embedded)
+        prop_variation_value = {"embedded": prop_value}
+
+    elif request.param == "list-of-subobject-prop":
+        # list-of-embedded values via EmbeddedObjectProperty
+        prop_variation = stix2.properties.ListProperty(
+            stix2.properties.EmbeddedObjectProperty(Embedded)
+        )
+        prop_variation_value = [{"embedded": prop_value}]
+
+    elif request.param == "list-of-subobject-class":
+        # Skip all of these since we know the data sink currently chokes on it
+        pytest.xfail("Data sink doesn't yet support ListProperty(<_STIXBase subclass>)")
+
+        # list-of-embedded values using the embedded class directly
+        # prop_variation = stix2.properties.ListProperty(Embedded)
+        # prop_variation_value = [{"embedded": prop_value}]
+
+    else:
+        pytest.fail("Unrecognized property variation: " + request.param)
+
+    return prop_variation, prop_variation_value
+
+
+@pytest.fixture(params=["sdo", "sco", "sro"])
+def object_variation(request, property_variation_value):
+    """
+    Create and register a custom class variation (SDO, SCO, etc), then
+    instantiate it and produce the resulting object.
+    """
+
+    property_instance, property_value = property_variation_value
+
+    # Fixed extension ID for everything
+    ext_id = "extension-definition--15de9cdb-3515-4271-8479-8141154c5647"
+
+    if request.param == "sdo":
+        @stix2.CustomObject(
+            "test-object", [
+                ("prop_name", property_instance)
+            ],
+            ext_id,
+            is_sdo=True
+        )
+        class TestClass:
+            pass
+
+    elif request.param == "sro":
+        @stix2.CustomObject(
+            "test-object", [
+                ("prop_name", property_instance)
+            ],
+            ext_id,
+            is_sdo=False
+        )
+        class TestClass:
+            pass
+
+    elif request.param == "sco":
+        @stix2.CustomObservable(
+            "test-object", [
+                ("prop_name", property_instance)
+            ],
+            ["prop_name"],
+            ext_id
+        )
+        class TestClass:
+            pass
+
+    else:
+        pytest.fail("Unrecognized object variation: " + request.param)
+
+    try:
+        instance = TestClass(prop_name=property_value)
+        yield instance
+    finally:
+        reg_section = "observables" if request.param == "sco" else "objects"
+        _unregister(reg_section, TestClass._type, ext_id)
+
+
+def test_property(object_variation):
+    """
+    Try to more exhaustively test many different property configurations:
+    ensure schemas can be created and values can be stored and retrieved.
+    """
+    rdb_store = RelationalDBStore(
+        _DB_CONNECT_URL,
+        True,
+        None,
+        True,
+        True,
+        type(object_variation)
+    )
+
+    rdb_store.add(object_variation)
+    read_obj = rdb_store.get(object_variation["id"])
+
+    assert read_obj == object_variation
+
+
+def test_dictionary_property_complex():
+    """
+    Test a dictionary property with multiple valid_types
+    """
+    with _register_object(
+        "test-object", [
+            ("prop_name",
+                 stix2.properties.DictionaryProperty(
+                     valid_types=[
+                         stix2.properties.IntegerProperty,
+                         stix2.properties.FloatProperty,
+                         stix2.properties.StringProperty
+                     ]
+                 )
+             )
+        ],
+        "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
+        is_sdo=True
+    ) as cls:
+
+        obj = cls(
+            prop_name={"a": 1, "b": 2.3, "c": "foo"}
+        )
+
+        rdb_store = RelationalDBStore(
+            _DB_CONNECT_URL,
+            True,
+            None,
+            True,
+            True,
+            cls
+        )
+
+        rdb_store.add(obj)
+        read_obj = rdb_store.get(obj["id"])
+        assert read_obj == obj
+
+
+def test_extension_definition():
+    obj = stix2.ExtensionDefinition(
+        created_by_ref="identity--8a5fb7e4-aabe-4635-8972-cbcde1fa4792",
+        name="test",
+        schema="a schema",
+        version="1.2.3",
+        extension_types=["property-extension", "new-sdo", "new-sro"],
+        object_marking_refs=[
+            "marking-definition--caa0d913-5db8-4424-aae0-43e770287d30",
+            "marking-definition--122a27a0-b96f-46bc-8fcd-f7a159757e77"
+        ],
+        granular_markings=[
+            {
+                "lang": "en_US",
+                "selectors": ["name", "schema"]
+            },
+            {
+                "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
+                "selectors": ["name", "schema"]
+            }
+        ]
+    )
+
+    store.add(obj)
+    read_obj = store.get(obj["id"])
+    assert read_obj == obj
