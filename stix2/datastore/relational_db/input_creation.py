@@ -38,10 +38,7 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
     schema_name = kwargs.get("schema_name")
     foreign_key_value = kwargs.get("foreign_key_value")
     insert_statements = list()
-    if "id" in stix_object:
-        bindings["id"] = stix_object["id"]
-    elif foreign_key_value:
-        bindings["id"] = foreign_key_value
+
     table = data_sink.tables_dictionary[
         canonicalize_table_name(
             table_name + "_" + dictionary_name,
@@ -54,6 +51,10 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
     valid_types = stix_object._properties[dictionary_name].valid_types
     for name, value in stix_object[dictionary_name].items():
         bindings = dict()
+        if "id" in stix_object:
+            bindings["id"] = stix_object["id"]
+        elif foreign_key_value:
+            bindings["id"] = foreign_key_value
         if not valid_types or len(self.valid_types) == 1:
             value_binding = "value"
         elif isinstance(value, int) and IntegerProperty in valid_types:
