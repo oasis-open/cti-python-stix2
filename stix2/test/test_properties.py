@@ -181,6 +181,12 @@ def test_string_property():
     assert prop.clean(1)
     assert prop.clean([1, 2, 3])
 
+    with pytest.raises(ValueError):
+        prop.clean(1, strict=True)
+
+    result = prop.clean("foo", strict=True)
+    assert result == ("foo", False)
+
 
 def test_type_property():
     prop = TypeProperty('my-type')
@@ -244,6 +250,15 @@ def test_integer_property_invalid(value):
         int_prop.clean(value)
 
 
+def test_integer_property_strict():
+    int_prop = IntegerProperty()
+    with pytest.raises(ValueError):
+        int_prop.clean("123", strict=True)
+
+    result = int_prop.clean(123, strict=True)
+    assert result == (123, False)
+
+
 @pytest.mark.parametrize(
     "value", [
         2,
@@ -253,8 +268,8 @@ def test_integer_property_invalid(value):
     ],
 )
 def test_float_property_valid(value):
-    int_prop = FloatProperty()
-    assert int_prop.clean(value) is not None
+    float_prop = FloatProperty()
+    assert float_prop.clean(value) is not None
 
 
 @pytest.mark.parametrize(
@@ -264,9 +279,18 @@ def test_float_property_valid(value):
     ],
 )
 def test_float_property_invalid(value):
-    int_prop = FloatProperty()
+    float_prop = FloatProperty()
     with pytest.raises(ValueError):
-        int_prop.clean(value)
+        float_prop.clean(value)
+
+
+def test_float_property_strict():
+    float_prop = FloatProperty()
+    with pytest.raises(ValueError):
+        float_prop.clean("1.323", strict=True)
+
+    result = float_prop.clean(1.323, strict=True)
+    assert result == (1.323, False)
 
 
 @pytest.mark.parametrize(
@@ -306,6 +330,15 @@ def test_boolean_property_invalid(value):
     bool_prop = BooleanProperty()
     with pytest.raises(ValueError):
         bool_prop.clean(value)
+
+
+def test_boolean_property_strict():
+    bool_prop = BooleanProperty()
+    with pytest.raises(ValueError):
+        bool_prop.clean("true", strict=True)
+
+    result = bool_prop.clean(True, strict=True)
+    assert result == (True, False)
 
 
 @pytest.mark.parametrize(
@@ -368,6 +401,16 @@ def test_enum_property_invalid():
         enum_prop.clean('z', True)
 
 
+def test_enum_property_strict():
+    enum_prop = EnumProperty(['1', '2', '3'])
+    with pytest.raises(ValueError):
+        enum_prop.clean(1, strict=True)
+
+    result = enum_prop.clean(1, strict=False)
+    assert result == ("1", False)
+
+
+
 @pytest.mark.xfail(
     reason="Temporarily disabled custom open vocab enforcement",
     strict=True,
@@ -389,6 +432,27 @@ def test_openvocab_property(vocab):
         ov_prop.clean("d", False)
 
     assert ov_prop.clean("d", True) == ("d", True)
+
+
+def test_openvocab_property_strict():
+    ov_prop = OpenVocabProperty(["1", "2", "3"])
+    with pytest.raises(ValueError):
+        ov_prop.clean(1, allow_custom=False, strict=True)
+
+    with pytest.raises(ValueError):
+        ov_prop.clean(1, allow_custom=True, strict=True)
+
+    result = ov_prop.clean("1", allow_custom=False, strict=True)
+    assert result == ("1", False)
+
+    result = ov_prop.clean(1, allow_custom=True, strict=False)
+    assert result == ("1", False)
+
+    result = ov_prop.clean(1, allow_custom=False, strict=False)
+    assert result == ("1", False)
+
+    result = ov_prop.clean("foo", allow_custom=False, strict=False)
+    assert result == ("foo", False)
 
 
 @pytest.mark.parametrize(
