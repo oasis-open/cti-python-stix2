@@ -768,9 +768,7 @@ def property_variation_value(request, base_property_value):
 
     elif request.param == "dict-of":
         prop_variation = stix2.properties.DictionaryProperty(
-            # DictionaryProperty.valid_types does not accept property
-            # instances (except ListProperty instances), only classes...
-            valid_types=type(base_property)
+            valid_types=base_property
         )
         # key name doesn't matter here
         prop_variation_value = {"key": prop_value}
