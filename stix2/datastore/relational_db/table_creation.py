@@ -343,35 +343,44 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
             nullable=False,
         ),
     )
-    if len(self.valid_types) == 1:
-        if not isinstance(self.valid_types[0], ListProperty):
-            columns.append(
-                Column(
-                    "value",
-                    # its a class
-                    determine_sql_type_from_class(self.valid_types[0]),
-                    nullable=False,
-                ),
-            )
+    if self.valid_types:
+        if len(self.valid_types) == 1:
+            if not isinstance(self.valid_types[0], ListProperty):
+                columns.append(
+                    Column(
+                        "value",
+                        # its a class
+                        determine_sql_type_from_class(self.valid_types[0]),
+                        nullable=False,
+                    ),
+                )
+            else:
+                contained_class = self.valid_types[0].contained
+                columns.append(
+                    Column(
+                        "value",
+                        # its an instance, not a class
+                        ARRAY(contained_class.determine_sql_type()),
+                        nullable=False,
+                    ),
+                )
         else:
-            contained_class = self.valid_types[0].contained
-            columns.append(
-                Column(
-                    "value",
-                    # its an instance, not a class
-                    ARRAY(contained_class.determine_sql_type()),
-                    nullable=False,
-                ),
-            )
+            for column_type in self.valid_types:
+                sql_type = determine_sql_type_from_class(column_type)
+                columns.append(
+                    Column(
+                        determine_column_name(column_type),
+                        sql_type,
+                    ),
+                )
     else:
-        for column_type in self.valid_types:
-            sql_type = determine_sql_type_from_class(column_type)
-            columns.append(
-                Column(
-                    determine_column_name(column_type),
-                    sql_type,
-                ),
-            )
+        columns.append(
+            Column(
+                "value",
+                Text,
+                nullable=False,
+            ),
+        )
     return [
         Table(
             canonicalize_table_name(table_name + "_" + name),
@@ -381,6 +390,9 @@ def generate_table_information(self, name, metadata, schema_name, table_name, is
             schema=schema_name,
         ),
     ]
+
+
+
 
 
 @add_method(EmbeddedObjectProperty)

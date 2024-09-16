@@ -52,10 +52,20 @@ def canonicalize_table_name(table_name, schema_name=None):
     return inflection.underscore(full_name)
 
 
+_IGNORE_OBJECTS = [ "language-content"]
+
+
 def get_all_subclasses(cls):
     all_subclasses = []
 
     for subclass in cls.__subclasses__():
+        # This code might be useful if we decide that some objects just cannot have there tables
+        # automatically generated
+        
+        # if hasattr(subclass, "_type") and subclass._type in _IGNORE_OBJECTS:
+        #     print(f'It is currently not possible to create a table for {subclass._type}')
+        #     return []
+        # else:
         all_subclasses.append(subclass)
         all_subclasses.extend(get_all_subclasses(subclass))
     return all_subclasses
@@ -122,37 +132,39 @@ def flat_classes(class_or_classes):
         yield class_or_classes
 
 
-def determine_sql_type_from_class(cls):  # noqa: F811
-    if cls == BinaryProperty:
+def determine_sql_type_from_class(cls_or_inst):  # noqa: F811
+    if cls_or_inst == BinaryProperty or isinstance(cls_or_inst, BinaryProperty):
         return LargeBinary
-    elif cls == BooleanProperty:
+    elif cls_or_inst == BooleanProperty or isinstance(cls_or_inst, BooleanProperty):
         return Boolean
-    elif cls == FloatProperty:
+    elif cls_or_inst == FloatProperty or isinstance(cls_or_inst, FloatProperty):
         return Float
-    elif cls == HexProperty:
+    elif cls_or_inst == HexProperty or isinstance(cls_or_inst, HexProperty):
         return LargeBinary
-    elif cls == IntegerProperty:
+    elif cls_or_inst == IntegerProperty or isinstance(cls_or_inst, IntegerProperty):
         return Integer
-    elif cls == StringProperty or cls == ReferenceProperty:
+    elif (cls_or_inst == StringProperty or cls_or_inst == ReferenceProperty or
+          isinstance(cls_or_inst, StringProperty)  or isinstance(cls_or_inst, ReferenceProperty)):
         return Text
-    elif cls == TimestampProperty:
+    elif cls_or_inst == TimestampProperty or isinstance(cls_or_inst, TimestampProperty):
         return TIMESTAMP(timezone=True)
-    elif cls == Property:
+    elif cls_or_inst == Property or isinstance(cls_or_inst, Property):
         return Text
 
 
-def determine_column_name(cls):  # noqa: F811
-    if cls == BinaryProperty:
+def determine_column_name(cls_or_inst):  # noqa: F811
+    if cls_or_inst == BinaryProperty or isinstance(cls_or_inst, BinaryProperty):
         return "binary_value"
-    elif cls == BooleanProperty:
+    elif cls_or_inst == BooleanProperty or isinstance(cls_or_inst, BooleanProperty):
         return "boolean_value"
-    elif cls == FloatProperty:
+    elif cls_or_inst == FloatProperty or isinstance(cls_or_inst, FloatProperty):
         return "float_value"
-    elif cls == HexProperty:
+    elif cls_or_inst == HexProperty or isinstance(cls_or_inst, HexProperty):
         return "hex_value"
-    elif cls == IntegerProperty:
+    elif cls_or_inst == IntegerProperty or isinstance(cls_or_inst, IntegerProperty):
         return "integer_value"
-    elif cls == StringProperty or cls == ReferenceProperty:
+    elif (cls_or_inst == StringProperty or cls_or_inst == ReferenceProperty or
+          isinstance(cls_or_inst, StringProperty)  or isinstance(cls_or_inst, ReferenceProperty)):
         return "string_value"
-    elif cls == TimestampProperty:
+    elif cls_or_inst == TimestampProperty or isinstance(cls_or_inst, TimestampProperty):
         return "timestamp_value"
