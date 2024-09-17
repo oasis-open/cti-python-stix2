@@ -504,7 +504,7 @@ class DictionaryProperty(Property):
                     except CustomContentError:
                         # Need to propagate these, not treat as a type error
                         raise
-                    except Exception as e:
+                    except Exception:
                         # clean failed; value must not conform to type_
                         # Should be a narrower exception type here, but I don't
                         # know if it's safe to assume any particular exception
