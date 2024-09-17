@@ -61,7 +61,7 @@ def get_all_subclasses(cls):
     for subclass in cls.__subclasses__():
         # This code might be useful if we decide that some objects just cannot have there tables
         # automatically generated
-        
+
         # if hasattr(subclass, "_type") and subclass._type in _IGNORE_OBJECTS:
         #     print(f'It is currently not possible to create a table for {subclass._type}')
         #     return []
@@ -132,39 +132,41 @@ def flat_classes(class_or_classes):
         yield class_or_classes
 
 
+def is_class_or_instance(cls_or_inst, cls):
+    return cls_or_inst == cls or isinstance(cls_or_inst, cls)
+
+
 def determine_sql_type_from_class(cls_or_inst):  # noqa: F811
-    if cls_or_inst == BinaryProperty or isinstance(cls_or_inst, BinaryProperty):
+    if is_class_or_instance(cls_or_inst, BinaryProperty):
         return LargeBinary
-    elif cls_or_inst == BooleanProperty or isinstance(cls_or_inst, BooleanProperty):
+    elif is_class_or_instance(cls_or_inst, BooleanProperty):
         return Boolean
-    elif cls_or_inst == FloatProperty or isinstance(cls_or_inst, FloatProperty):
+    elif is_class_or_instance(cls_or_inst, FloatProperty ):
         return Float
-    elif cls_or_inst == HexProperty or isinstance(cls_or_inst, HexProperty):
+    elif is_class_or_instance(cls_or_inst, HexProperty):
         return LargeBinary
-    elif cls_or_inst == IntegerProperty or isinstance(cls_or_inst, IntegerProperty):
+    elif is_class_or_instance(cls_or_inst, IntegerProperty):
         return Integer
-    elif (cls_or_inst == StringProperty or cls_or_inst == ReferenceProperty or
-          isinstance(cls_or_inst, StringProperty)  or isinstance(cls_or_inst, ReferenceProperty)):
+    elif is_class_or_instance(cls_or_inst, StringProperty) or is_class_or_instance(cls_or_inst, ReferenceProperty):
         return Text
-    elif cls_or_inst == TimestampProperty or isinstance(cls_or_inst, TimestampProperty):
+    elif is_class_or_instance(cls_or_inst, TimestampProperty):
         return TIMESTAMP(timezone=True)
-    elif cls_or_inst == Property or isinstance(cls_or_inst, Property):
+    elif is_class_or_instance(cls_or_inst, Property):
         return Text
 
 
 def determine_column_name(cls_or_inst):  # noqa: F811
-    if cls_or_inst == BinaryProperty or isinstance(cls_or_inst, BinaryProperty):
+    if is_class_or_instance(cls_or_inst, BinaryProperty):
         return "binary_value"
-    elif cls_or_inst == BooleanProperty or isinstance(cls_or_inst, BooleanProperty):
+    elif is_class_or_instance(cls_or_inst, BooleanProperty):
         return "boolean_value"
-    elif cls_or_inst == FloatProperty or isinstance(cls_or_inst, FloatProperty):
+    elif is_class_or_instance(cls_or_inst, FloatProperty):
         return "float_value"
-    elif cls_or_inst == HexProperty or isinstance(cls_or_inst, HexProperty):
+    elif is_class_or_instance(cls_or_inst, HexProperty):
         return "hex_value"
-    elif cls_or_inst == IntegerProperty or isinstance(cls_or_inst, IntegerProperty):
+    elif is_class_or_instance(cls_or_inst, IntegerProperty):
         return "integer_value"
-    elif (cls_or_inst == StringProperty or cls_or_inst == ReferenceProperty or
-          isinstance(cls_or_inst, StringProperty)  or isinstance(cls_or_inst, ReferenceProperty)):
+    elif is_class_or_instance(cls_or_inst, StringProperty) or is_class_or_instance(cls_or_inst, ReferenceProperty):
         return "string_value"
-    elif cls_or_inst == TimestampProperty or isinstance(cls_or_inst, TimestampProperty):
+    elif is_class_or_instance(cls_or_inst, TimestampProperty):
         return "timestamp_value"

@@ -30,6 +30,16 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
     return {name: stix_object[name]}
 
 
+
+def instance_in_valid_types(cls, valid_types):
+    for v in valid_types:
+        if isinstance(v, cls):
+            return True
+    return False
+
+def is_valid_type(cls, valid_types):
+    return cls in valid_types or instance_in_valid_types(cls, valid_types)
+
 @add_method(DictionaryProperty)
 def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  # noqa: F811
     bindings = dict()
@@ -57,15 +67,15 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
             bindings["id"] = foreign_key_value
         if not valid_types or len(self.valid_types) == 1:
             value_binding = "value"
-        elif isinstance(value, int) and IntegerProperty in valid_types:
+        elif isinstance(value, int) and is_valid_type(IntegerProperty, valid_types):
             value_binding = "integer_value"
-        elif isinstance(value, str) and StringProperty in valid_types:
+        elif isinstance(value, str) and is_valid_type(StringProperty, valid_types):
             value_binding = "string_value"
-        elif isinstance(value, bool) and BooleanProperty in valid_types:
+        elif isinstance(value, bool) and is_valid_type(BooleanProperty, valid_types):
             value_binding = "boolean_value"
-        elif isinstance(value, float) and FloatProperty in valid_types:
+        elif isinstance(value, float) and is_valid_type(FloatProperty, valid_types):
             value_binding = "float_value"
-        elif isinstance(value, STIXdatetime) and TimestampProperty in valid_types:
+        elif isinstance(value, STIXdatetime) and is_valid_type(TimestampProperty, valid_types):
             value_binding = "timestamp_value"
         else:
             value_binding = "string_value"
