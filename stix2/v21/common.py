@@ -77,7 +77,7 @@ class GranularMarking(_STIXBase21):
     def _check_object_constraints(self):
         super(GranularMarking, self)._check_object_constraints()
         self._check_at_least_one_property(['lang', 'marking_ref'])
-
+        self._check_mutually_exclusive_properties(['lang', 'marking_ref'])
 
 class LanguageContent(_STIXBase21):
     """For more detailed information on this object's properties, see
