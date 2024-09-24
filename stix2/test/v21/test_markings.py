@@ -175,7 +175,7 @@ def test_granular_marking_mutual_exclusion_error():
         stix2.v21.GranularMarking(
             lang="en",
             marking_ref=stix2.TLP_GREEN,
-            selectors=["foo"]
+            selectors=["foo"],
         )
     assert excinfo.value.cls == stix2.v21.GranularMarking
     assert excinfo.value.properties == ["lang", "marking_ref"]
