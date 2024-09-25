@@ -170,6 +170,18 @@ def test_granular_example_with_bad_selector():
     assert str(excinfo.value) == "Invalid value for GranularMarking 'selectors': must adhere to selector syntax."
 
 
+def test_granular_marking_mutual_exclusion_error():
+    with pytest.raises(stix2.exceptions.MutuallyExclusivePropertiesError) as excinfo:
+        stix2.v21.GranularMarking(
+            lang="en",
+            marking_ref=stix2.TLP_GREEN,
+            selectors=["foo"],
+        )
+    assert excinfo.value.cls == stix2.v21.GranularMarking
+    assert excinfo.value.properties == ["lang", "marking_ref"]
+    assert 'are mutually exclusive' in str(excinfo.value)
+
+
 def test_campaign_with_granular_markings_example():
     campaign = stix2.v21.Campaign(
         id="campaign--8e2e2d2b-17d4-4cbf-938f-98ee46b3cd3f",
