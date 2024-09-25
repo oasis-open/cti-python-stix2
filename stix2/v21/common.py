@@ -79,6 +79,7 @@ class GranularMarking(_STIXBase21):
         self._check_at_least_one_property(['lang', 'marking_ref'])
         self._check_mutually_exclusive_properties(['lang', 'marking_ref'])
 
+
 class LanguageContent(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_z9r1cwtu8jja>`__.
