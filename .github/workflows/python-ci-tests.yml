@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, '3.10']
+        python-version: [3.8, 3.9, '3.10', '3.11', '3.12']
 
     name: Python ${{ matrix.python-version }} Build
     steps:
@@ -27,7 +27,8 @@ jobs:
       run: |
         tox
     - name: Upload coverage information to Codecov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v4.2.0
       with:
-        fail_ci_if_error: true # optional (default = false)
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false # optional (default = false)
         verbose: true # optional (default = false)

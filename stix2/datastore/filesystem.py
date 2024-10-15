@@ -554,7 +554,7 @@ class FileSystemSink(DataSink):
     def stix_dir(self):
         return self._stix_dir
 
-    def _check_path_and_write(self, stix_obj, encoding='utf-8'):
+    def _check_path_and_write(self, stix_obj, encoding='utf-8', pretty=True):
         """Write the given STIX object to a file in the STIX file directory.
         """
         type_dir = os.path.join(self._stix_dir, stix_obj["type"])
@@ -585,9 +585,9 @@ class FileSystemSink(DataSink):
             raise DataSourceError("Attempted to overwrite file (!) at: {}".format(file_path))
 
         with io.open(file_path, mode='w', encoding=encoding) as f:
-            fp_serialize(stix_obj, f, pretty=True, encoding=encoding, ensure_ascii=False)
+            fp_serialize(stix_obj, f, pretty=pretty, encoding=encoding, ensure_ascii=False)
 
-    def add(self, stix_data=None, version=None):
+    def add(self, stix_data=None, version=None, pretty=True):
         """Add STIX objects to file directory.
 
         Args:
@@ -597,6 +597,7 @@ class FileSystemSink(DataSink):
             version (str): If present, it forces the parser to use the version
                 provided. Otherwise, the library will make the best effort based
                 on checking the "spec_version" property.
+            pretty (bool): If True, the resulting JSON will be "pretty printed"
 
         Note:
             ``stix_data`` can be a Bundle object, but each object in it will be
@@ -607,24 +608,24 @@ class FileSystemSink(DataSink):
         if isinstance(stix_data, (v20.Bundle, v21.Bundle)):
             # recursively add individual STIX objects
             for stix_obj in stix_data.get("objects", []):
-                self.add(stix_obj, version=version)
+                self.add(stix_obj, version=version, pretty=pretty)
 
         elif isinstance(stix_data, _STIXBase):
             # adding python STIX object
-            self._check_path_and_write(stix_data)
+            self._check_path_and_write(stix_data, pretty=pretty)
 
         elif isinstance(stix_data, (str, dict)):
             parsed_data = parse(stix_data, allow_custom=self.allow_custom, version=version)
             if isinstance(parsed_data, _STIXBase):
-                self.add(parsed_data, version=version)
+                self.add(parsed_data, version=version, pretty=pretty)
             else:
                 # custom unregistered object type
-                self._check_path_and_write(parsed_data)
+                self._check_path_and_write(parsed_data, pretty=pretty)
 
         elif isinstance(stix_data, list):
             # recursively add individual STIX objects
             for stix_obj in stix_data:
-                self.add(stix_obj)
+                self.add(stix_obj, version=version, pretty=pretty)
 
         else:
             raise TypeError(
