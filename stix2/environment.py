@@ -83,6 +83,13 @@ class ObjectFactory(object):
         # Use self.defaults as the base, but update with any explicit args
         # provided by the user.
         properties = copy.deepcopy(self._defaults)
+
+        # SCOs do not have these common properties provided by the factory
+        if "observables" in cls.__module__:
+            properties.pop("created", None)
+            properties.pop("created_by_ref", None)
+            properties.pop("external_references", None)
+
         if kwargs:
             if self._list_append:
                 # Append provided items to list properties instead of replacing them
