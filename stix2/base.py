@@ -103,7 +103,8 @@ class _STIXBase(collections.abc.Mapping):
         failed_dependency_pairs = []
         for p in list_of_properties:
             for dp in list_of_dependent_properties:
-                if not self.get(p) and self.get(dp):
+                if self.get(p) is None and self.get(dp) is not None:
+                # if not self.get(p) and self.get(dp):
                     failed_dependency_pairs.append((p, dp))
         if failed_dependency_pairs:
             raise DependentPropertiesError(self.__class__, failed_dependency_pairs)
