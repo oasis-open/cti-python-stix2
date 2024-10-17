@@ -385,8 +385,8 @@ def test_bing_map_url_for_0_long_lat():
         region="northern-america",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
-        latitude=0,
-        longitude=-0,
+        latitude=0.0,
+        longitude=-0.0,
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
@@ -399,7 +399,7 @@ def test_bing_map_url_for_0_long():
         region="northern-america",
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
-        latitude=0,
+        latitude=0.0,
         longitude=-348.2,
     )
 
@@ -414,7 +414,7 @@ def test_bing_map_url_for_0_lat():
         country="United States of America",
         street_address="1410 Museum Campus Drive, Chicago, IL 60605",
         latitude=84.2,
-        longitude=-0,
+        longitude=-0.0,
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
