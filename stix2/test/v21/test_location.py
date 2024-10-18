@@ -382,38 +382,38 @@ def test_bing_map_url_for_0_long_lat():
     expected_url = "https://bing.com/maps/default.aspx?where1=0.0%2C0.0&lvl=16"
 
     loc = stix2.v21.Location(
-        region="northern-america",
-        country="United States of America",
-        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+        region="Gulf of Guinea",
+        country="International waters",
+        street_address="0°N, 0°E – Null Island",
         latitude=0.0,
-        longitude=-0.0,
+        longitude=0.0,
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
     assert loc_url == expected_url
 
 def test_bing_map_url_for_0_long():
-    expected_url = "https://bing.com/maps/default.aspx?where1=0.0%2C-348.2&lvl=16"
+    expected_url = "https://bing.com/maps/default.aspx?where1=0.0%2C39.668&lvl=16"
 
     loc = stix2.v21.Location(
-        region="northern-america",
-        country="United States of America",
-        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
+        region="Eastern Africa",
+        country="Kenya",
+        street_address="0°N, 39.668°E",
         latitude=0.0,
-        longitude=-348.2,
+        longitude=39.668,
     )
 
     loc_url = loc.to_maps_url("Bing Maps")
     assert loc_url == expected_url
 
 def test_bing_map_url_for_0_lat():
-    expected_url = "https://bing.com/maps/default.aspx?where1=84.2%2C0.0&lvl=16"
+    expected_url = "https://bing.com/maps/default.aspx?where1=51.477%2C0.0&lvl=16"
 
     loc = stix2.v21.Location(
-        region="northern-america",
-        country="United States of America",
-        street_address="1410 Museum Campus Drive, Chicago, IL 60605",
-        latitude=84.2,
+        region="Western Europe",
+        country="United Kingdom",
+        street_address="Royal Observatory, Blackheath Ave, Greenwich, London SE10 8XJ, United Kingdom",
+        latitude=51.477,
         longitude=0.0,
     )
 
