@@ -378,6 +378,7 @@ def test_bing_map_url_multiple_props_and_long_lat_provided():
     loc_url = loc.to_maps_url("Bing Maps")
     assert loc_url == expected_url
 
+
 def test_bing_map_url_for_0_long_lat():
     expected_url = "https://bing.com/maps/default.aspx?where1=0.0%2C0.0&lvl=16"
 
@@ -392,6 +393,7 @@ def test_bing_map_url_for_0_long_lat():
     loc_url = loc.to_maps_url("Bing Maps")
     assert loc_url == expected_url
 
+
 def test_bing_map_url_for_0_long():
     expected_url = "https://bing.com/maps/default.aspx?where1=0.0%2C39.668&lvl=16"
 
@@ -405,6 +407,7 @@ def test_bing_map_url_for_0_long():
 
     loc_url = loc.to_maps_url("Bing Maps")
     assert loc_url == expected_url
+
 
 def test_bing_map_url_for_0_lat():
     expected_url = "https://bing.com/maps/default.aspx?where1=51.477%2C0.0&lvl=16"
