@@ -6,6 +6,8 @@ import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
+from database_backends.postgres_backend import PostgresBackend
+
 directory_stix_object = stix2.Directory(
     path="/foo/bar/a",
     path_enc="latin1",
@@ -251,14 +253,13 @@ def test_dictionary():
 
 def main():
     store = RelationalDBStore(
-        "postgresql://localhost/stix-data-sink",
+        PostgresBackend("postgresql://localhost/stix-data-sink"),
         False,
         None,
         True,
-        True,
     )
 
-    if store.sink.database_exists:
+    if store.sink.db_backend.database_exists:
         store.sink.generate_stix_schema()
         store.sink.clear_tables()
 
