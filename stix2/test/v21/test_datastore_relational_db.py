@@ -12,13 +12,27 @@ import stix2.properties
 import stix2.registry
 import stix2.v21
 
-_DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres"
+# PostgreSQL
+#_DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@127.0.0.1:5432/postgres"
+
+# SQLite
+_DB_CONNECT_URL = f"sqlite:///sqlite_rdb.db"
+
+# MariaDB
+#_DB_CONNECT_URL = f"mariadb+pymysql://{os.getenv('MARIADB_USER')}:{os.getenv('MARIADB_PASSWORD')}@127.0.0.1:3306/rdb"
+
+# MySQL
+#_DB_CONNECT_URL = f"mysql+pymysql://os.getenv('MYSQL_USER'):os.getenv('MYSQL_PASSWORD')@127.0.0.1/rdb"
+
+# MS-SQL (TBD)
+# import pymssql
+# cn = pymssql.connect('127.0.0.1:1433', os.getenv("PYMSSQL_USERNAME"), os.getenv("PYMSSQL_PASSWORD"), 'rdb')
 
 store = RelationalDBStore(
     _DB_CONNECT_URL,
     True,
     None,
-    False
+    True
 )
 
 # Artifacts
