@@ -136,23 +136,25 @@ def is_class_or_instance(cls_or_inst, cls):
     return cls_or_inst == cls or isinstance(cls_or_inst, cls)
 
 
-def determine_sql_type_from_class(cls_or_inst):  # noqa: F811
+def determine_sql_type_from_stix(cls_or_inst, db_backend):  # noqa: F811
     if is_class_or_instance(cls_or_inst, BinaryProperty):
-        return LargeBinary
+        return db_backend.determine_sql_type_for_binary_property()
     elif is_class_or_instance(cls_or_inst, BooleanProperty):
-        return Boolean
-    elif is_class_or_instance(cls_or_inst, FloatProperty ):
-        return Float
+        return db_backend.determine_sql_type_for_boolean_property()
+    elif is_class_or_instance(cls_or_inst, FloatProperty):
+        return db_backend.determine_sql_type_for_float_property()
     elif is_class_or_instance(cls_or_inst, HexProperty):
-        return LargeBinary
+        return db_backend.determine_sql_type_for_hex_property()
     elif is_class_or_instance(cls_or_inst, IntegerProperty):
-        return Integer
-    elif is_class_or_instance(cls_or_inst, StringProperty) or is_class_or_instance(cls_or_inst, ReferenceProperty):
-        return Text
+        return db_backend.determine_sql_type_for_integer_property()
+    elif is_class_or_instance(cls_or_inst, StringProperty):
+        return db_backend.determine_sql_type_for_integer_property()
+    elif is_class_or_instance(cls_or_inst, ReferenceProperty):
+        db_backend.determine_sql_type_for_reference_property()
     elif is_class_or_instance(cls_or_inst, TimestampProperty):
-        return TIMESTAMP(timezone=True)
+        return db_backend.determine_sql_type_for_timestamp_property()
     elif is_class_or_instance(cls_or_inst, Property):
-        return Text
+        return db_backend.determine_sql_type_for_integer_property()
 
 
 def determine_column_name(cls_or_inst):  # noqa: F811

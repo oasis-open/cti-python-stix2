@@ -194,61 +194,61 @@ def custom_obj():
     return obj
 
 
-@stix2.CustomObject(
-    "test-object", [
-        ("prop_name", stix2.properties.ListProperty(stix2.properties.BinaryProperty()))
-    ],
-    "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
-    is_sdo=True
-)
-class TestClass:
-    pass
-
-
-def test_binary_list():
-    return TestClass(prop_name=["AREi", "7t3M"])
-
-@stix2.CustomObject(
-        "test2-object", [
-            ("prop_name", stix2.properties.ListProperty(
-                stix2.properties.HexProperty()
-            ))
-        ],
-        "extension-definition--15de9cdb-4567-4271-8479-8141154c5647",
-        is_sdo=True
-    )
-
-class Test2Class:
-        pass
-
-def test_hex_list():
-    return Test2Class(
-        prop_name=["1122", "fedc"]
-    )
-
-@stix2.CustomObject(
-        "test3-object", [
-            ("prop_name",
-                 stix2.properties.DictionaryProperty(
-                     valid_types=[
-                         stix2.properties.IntegerProperty,
-                         stix2.properties.FloatProperty,
-                         stix2.properties.StringProperty
-                     ]
-                 )
-             )
-        ],
-        "extension-definition--15de9cdb-1234-4271-8479-8141154c5647",
-        is_sdo=True
-    )
-class Test3Class:
-    pass
-
-
-def test_dictionary():
-    return Test3Class(
-        prop_name={"a": 1, "b": 2.3, "c": "foo"}
-    )
+# @stix2.CustomObject(
+#     "test-object", [
+#         ("prop_name", stix2.properties.ListProperty(stix2.properties.BinaryProperty()))
+#     ],
+#     "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
+#     is_sdo=True
+# )
+# class TestClass:
+#     pass
+#
+#
+# def test_binary_list():
+#     return TestClass(prop_name=["AREi", "7t3M"])
+#
+# @stix2.CustomObject(
+#         "test2-object", [
+#             ("prop_name", stix2.properties.ListProperty(
+#                 stix2.properties.HexProperty()
+#             ))
+#         ],
+#         "extension-definition--15de9cdb-4567-4271-8479-8141154c5647",
+#         is_sdo=True
+#     )
+#
+# class Test2Class:
+#         pass
+#
+# def test_hex_list():
+#     return Test2Class(
+#         prop_name=["1122", "fedc"]
+#     )
+#
+# @stix2.CustomObject(
+#         "test3-object", [
+#             ("prop_name",
+#                  stix2.properties.DictionaryProperty(
+#                      valid_types=[
+#                          stix2.properties.IntegerProperty,
+#                          stix2.properties.FloatProperty,
+#                          stix2.properties.StringProperty
+#                      ]
+#                  )
+#              )
+#         ],
+#         "extension-definition--15de9cdb-1234-4271-8479-8141154c5647",
+#         is_sdo=True
+#     )
+# class Test3Class:
+#     pass
+#
+#
+# def test_dictionary():
+#     return Test3Class(
+#         prop_name={"a": 1, "b": 2.3, "c": "foo"}
+#     )
 
 
 def main():
@@ -263,17 +263,17 @@ def main():
         store.sink.generate_stix_schema()
         store.sink.clear_tables()
 
-        td = test_dictionary()
+        # td = test_dictionary()
 
-        store.add(td)
+        # store.add(td)
 
-        th = test_hex_list()
+        # th = test_hex_list()
 
         # store.add(th)
 
-        tb = test_binary_list()
+        # tb = test_binary_list()
 
-        store.add(tb)
+        # store.add(tb)
 
 
 

@@ -83,7 +83,7 @@ class RelationalDBStore(DataStoreMixin):
 
         self.metadata = MetaData()
         create_table_objects(
-             self.metadata, stix_object_classes,
+             self.metadata, db_backend, stix_object_classes,
         )
 
         super().__init__(
@@ -251,11 +251,11 @@ class RelationalDBSource(DataSource):
         else:
             self.metadata = MetaData()
             create_table_objects(
-                self.metadata, stix_object_classes,
+                self.metadata, db_backend, stix_object_classes,
             )
 
     def get(self, stix_id, version=None, _composite_filters=None):
-        with self.db_backend.connect() as conn:
+        with self.db_backend.database_connection.connect() as conn:
             stix_obj = read_object(
                 stix_id,
                 self.metadata,

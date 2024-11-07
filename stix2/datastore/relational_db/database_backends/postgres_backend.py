@@ -1,13 +1,26 @@
 import os
 from typing import Any
 from sqlalchemy.schema import CreateSchema
-
-from .database_backend_base import DatabaseBackend
-
-from stix2.base import (
-    _DomainObject, _MetaObject, _Observable, _RelationshipObject, _STIXBase,
+from sqlalchemy import (  # create_engine,; insert,
+    ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, Float, ForeignKey,
+    Integer, LargeBinary, Table, Text, UniqueConstraint,
 )
 
+from stix2.datastore.relational_db.utils import schema_for
+
+from stix2.base import (
+    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject, _STIXBase,
+)
+
+from stix2.properties import (
+    BinaryProperty, BooleanProperty, DictionaryProperty,
+    EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
+    HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
+    ObjectReferenceProperty, Property, ReferenceProperty, StringProperty,
+    TimestampProperty, TypeProperty,
+)
+
+from .database_backend_base import DatabaseBackend
 
 class PostgresBackend(DatabaseBackend):
     default_database_connection_url = \
@@ -36,3 +49,14 @@ class PostgresBackend(DatabaseBackend):
             return "sro"
         elif isinstance(stix_object, _MetaObject):
             return "common"
+
+    def schema_for(self, stix_class):
+        return schema_for(stix_class)
+
+
+    @staticmethod
+    def array_allowed():
+        return True
+
+
+
