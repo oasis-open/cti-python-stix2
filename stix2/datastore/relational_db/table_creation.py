@@ -32,6 +32,33 @@ def aux_table_property(prop, name, core_properties):
         return False
 
 
+def create_array_column(property_name, contained_sql_type):
+    return Column(property_name,
+                  ARRAY(contained_sql_type),
+                  CheckConstraint(f"array_length({property_name}, 1) IS NOT NULL"),
+                  nullable=False)
+
+
+def create_array_child_table(metadata, db_backend, table_name, property_name, contained_sql_type):
+        schema_name = determine_sql_type_from_stix(GranularMarking, db_backend)
+        columns = [
+            Column(
+                "id",
+                db_backend.determine_sql_type_for_key_as_id(),
+                ForeignKey(
+                    canonicalize_table_name(table_name, schema_name) + ".id",
+                    ondelete="CASCADE",
+                ),
+                nullable=False,
+            ),
+            Column(
+                property_name,
+                contained_sql_type,
+                nullable=False,
+            )
+        ]
+        return Table(canonicalize_table_name(table_name + "_" + "selector"), metadata, *columns, schema=schema_name)
+
 def derive_column_name(prop):
     contained_property = prop.contained
     if isinstance(contained_property, ReferenceProperty):
@@ -159,33 +186,14 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
         )
     ]
     if db_backend.array_allowed():
-        columns.append(
-            Column(
-                "selectors",
-                ARRAY(Text),
-                CheckConstraint("array_length(selectors, 1) IS NOT NULL"),
-                nullable=False,
-            ))
+        columns.append(create_array_column("selectors", db_backend.determine_sql_type_for_string_property()))
     else:
-        table_name = "granular_marking_" + sco_or_sdo
-        schema_name = determine_sql_type_from_stix(GranularMarking, db_backend)
-        columns = [
-            Column(
-                "id",
-                db_backend.determine_sql_type_for_key_as_id(),
-                ForeignKey(
-                    canonicalize_table_name(table_name, schema_name) + ".id",
-                    ondelete="CASCADE",
-                ),
-                nullable=False,
-            ),
-            Column(
-                "selector",
-                db_backend.determine_sql_type_for_string_property(),
-                nullable=False,
-            )
-        ]
-        tables.append(Table(canonicalize_table_name(table_name + "_" + "selector"), metadata, *columns, schema=schema_name))
+        tables.append(create_array_child_table(metadata,
+                                               db_backend,
+                                               "granular_marking_" + sco_or_sdo,
+                                               "selector",
+                                               db_backend.determine_sql_type_for_string_property()))
+
     tables.append(Table(
                     "granular_marking_" + sco_or_sdo,
                     metadata,
@@ -223,6 +231,7 @@ def create_external_references_tables(metadata, db_backend):
 
 
 def create_core_table(metadata, db_backend, schema_name):
+    tables = list()
     columns = [
         Column(
             "id",
@@ -248,18 +257,20 @@ def create_core_table(metadata, db_backend, schema_name):
             Column("revoked", Boolean),
             Column("confidence", Integer),
             Column("lang", db_backend.determine_sql_type_for_string_property()),
-            Column("labels", ARRAY(Text)),
         ]
         columns.extend(sdo_columns)
+        if db_backend.array_allowed():
+            columns.append(create_array_column("labels", db_backend.determine_sql_type_for_string_property())),
     else:
         columns.append(Column("defanged", db_backend.determine_sql_type_for_boolean_property(), default=False))
 
-    return Table(
-        "core_" + schema_name,
-        metadata,
-        *columns,
-        schema="common",
-    )
+    tables = [
+        Table("core_" + schema_name,
+              metadata,
+              *columns,
+              schema=db_backend.schema_for_core())
+    ]
+    return tables
 
 
 @add_method(Property)
@@ -604,8 +615,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                 schema_name,
             ),
         ]
-    elif ((isinstance(self.contained,
-                    (StringProperty, IntegerProperty, FloatProperty)) and not db_backend.array_allowed()) or
+    elif ((isinstance(self.contained, (StringProperty, IntegerProperty, FloatProperty)) and not db_backend.array_allowed()) or
           isinstance(self.contained, EnumProperty)):
         columns = list()
         columns.append(

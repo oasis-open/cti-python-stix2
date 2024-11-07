@@ -50,9 +50,25 @@ class PostgresBackend(DatabaseBackend):
         elif isinstance(stix_object, _MetaObject):
             return "common"
 
-    def schema_for(self, stix_class):
+    @staticmethod
+    def schema_for(stix_class):
         return schema_for(stix_class)
 
+    @staticmethod
+    def schema_for_core():
+        return "common"
+
+    @staticmethod
+    def determine_sql_type_for_binary_property():  # noqa: F811
+        return Text
+
+    @staticmethod
+    def determine_sql_type_for_hex_property():  # noqa: F811
+        return LargeBinary
+
+    @staticmethod
+    def determine_sql_type_for_timestamp_property():  # noqa: F811
+        return TIMESTAMP(timezone=True)
 
     @staticmethod
     def array_allowed():

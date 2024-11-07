@@ -23,7 +23,7 @@ class DatabaseBackend:
         self.database_connection = create_engine(database_connection_url)
 
     def _create_schemas(self):
-        return
+        pass
 
     @staticmethod
     def _determine_schema_name(stix_object):
@@ -35,7 +35,11 @@ class DatabaseBackend:
         create_database(self.database_connection.url)
         self.database_exists = database_exists(self.database_connection.url)
 
-    def schema_for(self, stix_class):
+    def schema_for(stix_class):
+        return ""
+
+    @staticmethod
+    def schema_for_core():
         return ""
 
     @staticmethod
@@ -47,20 +51,12 @@ class DatabaseBackend:
         return None
 
     @staticmethod
-    def determine_sql_type_for_binary_property():  # noqa: F811
-        return Text
-
-    @staticmethod
     def determine_sql_type_for_boolean_property():  # noqa: F811
         return Boolean
 
     @staticmethod
     def determine_sql_type_for_float_property():  # noqa: F811
         return Float
-
-    @staticmethod
-    def determine_sql_type_for_hex_property():  # noqa: F811
-        return LargeBinary
 
     @staticmethod
     def determine_sql_type_for_integer_property():  # noqa: F811
@@ -75,13 +71,8 @@ class DatabaseBackend:
         return Text
 
     @staticmethod
-    def determine_sql_type_for_timestamp_property():  # noqa: F811
-        return TIMESTAMP(timezone=True)
-
-    @staticmethod
     def determine_sql_type_for_key_as_int():  # noqa: F811
         return Integer
-
 
     @staticmethod
     def determine_sql_type_for_key_as_id():  # noqa: F811
