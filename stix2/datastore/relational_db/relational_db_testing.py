@@ -1,12 +1,11 @@
 import datetime as dt
 
+from database_backends.postgres_backend import PostgresBackend
 import pytz
 
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
-
-from database_backends.postgres_backend import PostgresBackend
 
 directory_stix_object = stix2.Directory(
     path="/foo/bar/a",
@@ -107,18 +106,18 @@ def extension_definition_insert():
         extension_types=["property-extension", "new-sdo", "new-sro"],
         object_marking_refs=[
             "marking-definition--caa0d913-5db8-4424-aae0-43e770287d30",
-            "marking-definition--122a27a0-b96f-46bc-8fcd-f7a159757e77"
+            "marking-definition--122a27a0-b96f-46bc-8fcd-f7a159757e77",
         ],
         granular_markings=[
             {
                 "lang": "en_US",
-                "selectors": ["name", "schema"]
+                "selectors": ["name", "schema"],
             },
             {
                 "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
-                "selectors": ["name", "schema"]
-            }
-        ]
+                "selectors": ["name", "schema"],
+            },
+        ],
     )
 
 
@@ -171,12 +170,13 @@ def kill_chain_test():
              },
         ], )
 
-@stix2.CustomObject('x-custom-type',
+@stix2.CustomObject(
+    'x-custom-type',
         properties=[
             ("phases", stix2.properties.ListProperty(stix2.KillChainPhase)),
-            ("something_else", stix2.properties.IntegerProperty())
-        ]
-    )
+            ("something_else", stix2.properties.IntegerProperty()),
+        ],
+)
 class CustomClass:
     pass
 
@@ -186,10 +186,10 @@ def custom_obj():
         phases=[
             {
                 "kill_chain_name": "chain name",
-                "phase_name": "the phase name"
-            }
+                "phase_name": "the phase name",
+            },
         ],
-        something_else=5
+        something_else=5,
     )
     return obj
 

@@ -109,7 +109,7 @@ def _read_hashes(fk_id, hashes_table, conn):
     :return: The hashes as a dict, or None if no hashes were found
     """
     stmt = sa.select(hashes_table.c.hash_name, hashes_table.c.hash_value).where(
-        hashes_table.c.id == fk_id
+        hashes_table.c.id == fk_id,
     )
 
     results = conn.execute(stmt)
@@ -242,7 +242,7 @@ def _read_kill_chain_phases(stix_id, type_table, metadata, conn):
     kill_chain_phases_table = metadata.tables[type_table.fullname + "_kill_chain_phase"]
     stmt = sa.select(
         kill_chain_phases_table.c.kill_chain_name,
-        kill_chain_phases_table.c.phase_name
+        kill_chain_phases_table.c.phase_name,
     ).where(kill_chain_phases_table.c.id == stix_id)
 
     kill_chain_phases = conn.execute(stmt).mappings().all()
@@ -268,9 +268,9 @@ def _read_dictionary_property(stix_id, type_table, prop_name, prop_instance, met
 
     if len(prop_instance.valid_types) == 1:
         stmt = sa.select(
-            dict_table.c.name, dict_table.c.value
+            dict_table.c.name, dict_table.c.value,
         ).where(
-            dict_table.c.id == stix_id
+            dict_table.c.id == stix_id,
         )
 
         results = conn.execute(stmt)
@@ -291,7 +291,7 @@ def _read_dictionary_property(stix_id, type_table, prop_name, prop_instance, met
             if first_non_null_value is None:
                 raise DataSourceError(
                     f'In dictionary table {dict_table.fullname}, key "{key}"'
-                    " did not map to a non-null value"
+                    " did not map to a non-null value",
                 )
 
             dict_value[key] = first_non_null_value
@@ -320,7 +320,7 @@ def _read_embedded_object(obj_id, parent_table, embedded_type, metadata, conn):
 
     embedded_table_name = canonicalize_table_name(
         f"{parent_table.name}_{embedded_type.__name__}",
-        parent_table.schema
+        parent_table.schema,
     )
     embedded_table = metadata.tables[embedded_table_name]
 
@@ -346,7 +346,7 @@ def _read_embedded_object(obj_id, parent_table, embedded_type, metadata, conn):
                     prop_instance,
                     embedded_table,
                     metadata,
-                    conn
+                    conn,
                 )
 
                 if prop_value is not None:
@@ -375,7 +375,7 @@ def _read_embedded_object_list(fk_id, join_table, embedded_type, metadata, conn)
 
     embedded_table_name = canonicalize_table_name(
         f"{join_table.name}_{embedded_type.__name__}",
-        join_table.schema
+        join_table.schema,
     )
     embedded_table = metadata.tables[embedded_table_name]
 
@@ -394,7 +394,7 @@ def _read_embedded_object_list(fk_id, join_table, embedded_type, metadata, conn)
                     prop_instance,
                     embedded_table,
                     metadata,
-                    conn
+                    conn,
                 )
 
                 if prop_value is not None:
@@ -450,7 +450,7 @@ def _read_complex_property_value(obj_id, prop_name, prop_instance, obj_table, me
                 join_table,
                 prop_instance.contained.type,
                 metadata,
-                conn
+                conn,
             )
 
         elif inspect.isclass(prop_instance.contained) and issubclass(prop_instance.contained, stix2.KillChainPhase):
@@ -459,7 +459,7 @@ def _read_complex_property_value(obj_id, prop_name, prop_instance, obj_table, me
         else:
             raise DataSourceError(
                 f'Not implemented: read "{prop_name}" property value'
-                f" of type list-of {prop_instance.contained}"
+                f" of type list-of {prop_instance.contained}",
             )
 
     elif isinstance(prop_instance, stix2.properties.HashesProperty):
@@ -482,13 +482,13 @@ def _read_complex_property_value(obj_id, prop_name, prop_instance, obj_table, me
             obj_table,
             prop_instance.type,
             metadata,
-            conn
+            conn,
         )
 
     else:
         raise DataSourceError(
             f'Not implemented: read "{prop_name}" property value'
-            f" of type {prop_instance.__class__}"
+            f" of type {prop_instance.__class__}",
         )
 
     return prop_value
@@ -577,7 +577,7 @@ def read_object(stix_id, metadata, conn):
                 prop_instance,
                 type_table,
                 metadata,
-                conn
+                conn,
             )
 
             if prop_value is not None:

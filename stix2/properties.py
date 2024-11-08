@@ -447,13 +447,13 @@ class DictionaryProperty(Property):
                 if not isinstance(prop_instance.contained, simple_types):
                     raise ValueError(
                         "DictionaryProperty does not support lists of type: "
-                        + type(prop_instance.contained).__name__
+                        + type(prop_instance.contained).__name__,
                     )
 
             elif not isinstance(prop_instance, simple_types):
                 raise ValueError(
                     "DictionaryProperty does not support value type: "
-                    + type(prop_instance).__name__
+                    + type(prop_instance).__name__,
                 )
 
             prop_instances.append(prop_instance)
@@ -499,7 +499,7 @@ class DictionaryProperty(Property):
                             # Ignore the passed-in value and fix this to True;
                             # we need strict cleaning to disambiguate value
                             # types here.
-                            strict=True
+                            strict=True,
                         )
                     except CustomContentError:
                         # Need to propagate these, not treat as a type error
@@ -524,7 +524,7 @@ class DictionaryProperty(Property):
                 else:
                     # clean failed for all properties!
                     raise ValueError(
-                        f"Invalid value: {v!r}"
+                        f"Invalid value: {v!r}",
                     )
 
             # else: no valid types given, so we skip the validity check

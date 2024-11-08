@@ -6,8 +6,8 @@ import os
 import pytest
 
 import stix2
-from stix2.datastore.relational_db.relational_db import RelationalDBStore
 from stix2.datastore import DataSourceError
+from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 import stix2.registry
 import stix2.v21
@@ -18,7 +18,7 @@ store = RelationalDBStore(
     _DB_CONNECT_URL,
     True,
     None,
-    False
+    False,
 )
 
 # Artifacts
@@ -705,16 +705,16 @@ _TEST_PROPERTIES = {
     "string": (stix2.properties.StringProperty(), "test"),
     "timestamp": (
         stix2.properties.TimestampProperty(),
-        datetime.datetime.now(tz=datetime.timezone.utc)
+        datetime.datetime.now(tz=datetime.timezone.utc),
     ),
     "ref": (
         stix2.properties.ReferenceProperty("SDO"),
-        "identity--ec83b570-0743-4179-a5e3-66fd2fae4711"
+        "identity--ec83b570-0743-4179-a5e3-66fd2fae4711",
     ),
     "enum": (
         stix2.properties.EnumProperty(["value1", "value2"]),
-        "value1"
-    )
+        "value1",
+    ),
 }
 
 
@@ -739,8 +739,8 @@ def base_property_value(request):
         "list-dict-of",
         "subobject",
         "list-of-subobject-prop",
-        "list-of-subobject-class"
-    ]
+        "list-of-subobject-class",
+    ],
 )
 def property_variation_value(request, base_property_value):
     """
@@ -755,7 +755,7 @@ def property_variation_value(request, base_property_value):
         sub-object.
         """
         _properties = {
-            "embedded": base_property
+            "embedded": base_property,
         }
 
     if request.param == "base":
@@ -768,14 +768,14 @@ def property_variation_value(request, base_property_value):
 
     elif request.param == "dict-of":
         prop_variation = stix2.properties.DictionaryProperty(
-            valid_types=base_property
+            valid_types=base_property,
         )
         # key name doesn't matter here
         prop_variation_value = {"key": prop_value}
 
     elif request.param == "dict-list-of":
         prop_variation = stix2.properties.DictionaryProperty(
-            valid_types=stix2.properties.ListProperty(base_property)
+            valid_types=stix2.properties.ListProperty(base_property),
         )
         # key name doesn't matter here
         prop_variation_value = {"key": [prop_value]}
@@ -798,7 +798,7 @@ def property_variation_value(request, base_property_value):
     elif request.param == "list-of-subobject-prop":
         # list-of-embedded values via EmbeddedObjectProperty
         prop_variation = stix2.properties.ListProperty(
-            stix2.properties.EmbeddedObjectProperty(Embedded)
+            stix2.properties.EmbeddedObjectProperty(Embedded),
         )
         prop_variation_value = [{"embedded": prop_value}]
 
@@ -831,10 +831,10 @@ def object_variation(request, property_variation_value):
     if request.param == "sdo":
         @stix2.CustomObject(
             "test-object", [
-                ("prop_name", property_instance)
+                ("prop_name", property_instance),
             ],
             ext_id,
-            is_sdo=True
+            is_sdo=True,
         )
         class TestClass:
             pass
@@ -842,10 +842,10 @@ def object_variation(request, property_variation_value):
     elif request.param == "sro":
         @stix2.CustomObject(
             "test-object", [
-                ("prop_name", property_instance)
+                ("prop_name", property_instance),
             ],
             ext_id,
-            is_sdo=False
+            is_sdo=False,
         )
         class TestClass:
             pass
@@ -853,10 +853,10 @@ def object_variation(request, property_variation_value):
     elif request.param == "sco":
         @stix2.CustomObservable(
             "test-object", [
-                ("prop_name", property_instance)
+                ("prop_name", property_instance),
             ],
             ["prop_name"],
-            ext_id
+            ext_id,
         )
         class TestClass:
             pass
@@ -883,7 +883,7 @@ def test_property(object_variation):
         None,
         True,
         True,
-        type(object_variation)
+        type(object_variation),
     )
 
     rdb_store.add(object_variation)
@@ -898,22 +898,23 @@ def test_dictionary_property_complex():
     """
     with _register_object(
         "test-object", [
-            ("prop_name",
-                 stix2.properties.DictionaryProperty(
-                     valid_types=[
-                         stix2.properties.IntegerProperty,
-                         stix2.properties.FloatProperty,
-                         stix2.properties.StringProperty
-                     ]
-                 )
-             )
+            (
+                "prop_name",
+                    stix2.properties.DictionaryProperty(
+                        valid_types=[
+                            stix2.properties.IntegerProperty,
+                            stix2.properties.FloatProperty,
+                            stix2.properties.StringProperty,
+                        ],
+                    ),
+            ),
         ],
         "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
-        is_sdo=True
+        is_sdo=True,
     ) as cls:
 
         obj = cls(
-            prop_name={"a": 1, "b": 2.3, "c": "foo"}
+            prop_name={"a": 1, "b": 2.3, "c": "foo"},
         )
 
         rdb_store = RelationalDBStore(
@@ -922,7 +923,7 @@ def test_dictionary_property_complex():
             None,
             True,
             True,
-            cls
+            cls,
         )
 
         rdb_store.add(obj)
@@ -939,18 +940,18 @@ def test_extension_definition():
         extension_types=["property-extension", "new-sdo", "new-sro"],
         object_marking_refs=[
             "marking-definition--caa0d913-5db8-4424-aae0-43e770287d30",
-            "marking-definition--122a27a0-b96f-46bc-8fcd-f7a159757e77"
+            "marking-definition--122a27a0-b96f-46bc-8fcd-f7a159757e77",
         ],
         granular_markings=[
             {
                 "lang": "en_US",
-                "selectors": ["name", "schema"]
+                "selectors": ["name", "schema"],
             },
             {
                 "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
-                "selectors": ["name", "schema"]
-            }
-        ]
+                "selectors": ["name", "schema"],
+            },
+        ],
     )
 
     store.add(obj)

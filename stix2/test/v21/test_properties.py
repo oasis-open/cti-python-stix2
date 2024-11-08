@@ -15,7 +15,6 @@ from stix2.v21.common import MarkingProperty
 
 from . import constants
 
-
 ID_PROP = IDProperty('my-type', spec_version="2.1")
 MY_ID = 'my-type--232c9d3f-49fc-4440-bb01-607f638778e7'
 
@@ -451,7 +450,7 @@ def test_dictionary_property_values_list():
 
 def test_dictionary_property_ref_custom():
     p = DictionaryProperty(
-        valid_types=ReferenceProperty(valid_types="SDO"), spec_version="2.1"
+        valid_types=ReferenceProperty(valid_types="SDO"), spec_version="2.1",
     )
 
     result = p.clean({"key": "identity--a2ac7670-f88f-424a-b3be-28f612f943f9"}, allow_custom=False)
@@ -464,7 +463,7 @@ def test_dictionary_property_ref_custom():
         p.clean({"key": "software--a2ac7670-f88f-424a-b3be-28f612f943f9"}, allow_custom=True)
 
     pfoo = DictionaryProperty(
-        valid_types=ReferenceProperty(valid_types=["SDO", "foo"]), spec_version="2.1"
+        valid_types=ReferenceProperty(valid_types=["SDO", "foo"]), spec_version="2.1",
     )
 
     with pytest.raises(CustomContentError):
@@ -476,7 +475,7 @@ def test_dictionary_property_ref_custom():
 
 def test_dictionary_property_values_strict_clean():
     prop = DictionaryProperty(
-        valid_types=[EnumProperty(["value1", "value2"]), IntegerProperty]
+        valid_types=[EnumProperty(["value1", "value2"]), IntegerProperty],
     )
 
     result = prop.clean({"key": "value1"}, allow_custom=False)
