@@ -80,7 +80,36 @@ class RelationalDBStore(DataStoreMixin):
                 auto-detect all classes and create table schemas for all of
                 them.
         """
+
+        # The typical usage of SQLAlchemy's create_engine() function is once per
+        # particular database connection url and held globally for the lifetime of
+        # a single application process. Among the various databases/dialects supported
+        # by SQLAlchemy, this function call appears to work well for the following
+        # three variants using a single url argument as below:
+        #
+        # PostgreSQL:
+        #   url = f"postgresql://{os.getenv('POSTGRES_USER')}:{os.getenv('POSTGRES_PASSWORD')}@127.0.0.1:5432/rdb"
+        # SQLite:
+        #   url = f"sqlite:///sqlite_rdb.db"
+        # MariaDB:
+        #   url = f"mariadb+pymysql://{os.getenv('MARIADB_USER')}:{os.getenv('MARIADB_PASSWORD')}@127.0.0.1:3306/rdb"
+        # MS-SQL:
+        #   url = f"mssql+pymssql://{os.getenv('MSSQL_USERNAME'):{os.getenv('MSSQL_PASSWORD')}@127.0.0.1:1433/tempdb")
         database_connection = create_engine(database_connection_url)
+
+        # For MySQL, which happens to use the same default port 3306 as for MariaDB,
+        # we can use a different port so multiple SQL service instances can be running
+        # on the same machine. Below is a workaround for connecting to the MySQL server
+        # at port 3307 using the connect_args dictionary parameter:
+        #
+        # MySQL:
+        #    url = f"mysql+pymysql://os.getenv('MYSQL_USER'):os.getenv('MYSQL_PASSWORD')@127.0.0.1/rdb"
+        #    connect_args = dict(unix_socket="/var/mysql/mysql.sock", port=3307)
+        #
+        # database_connection = create_engine(database_connection_url,
+        #                                    connect_args=dict(unix_socket="/var/mysql/mysql.sock", port=3307))
+
+
         self.metadata = MetaData()
         create_table_objects(
              self.metadata, stix_object_classes,
@@ -261,7 +290,7 @@ class RelationalDBSource(DataSource):
             stix_obj = read_object(
                 stix_id,
                 self.metadata,
-                conn
+                conn,
             )
 
         return stix_obj
