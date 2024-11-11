@@ -93,7 +93,8 @@ class RelationalDBStore(DataStoreMixin):
         #   url = f"sqlite:///sqlite_rdb.db"
         # MariaDB:
         #   url = f"mariadb+pymysql://{os.getenv('MARIADB_USER')}:{os.getenv('MARIADB_PASSWORD')}@127.0.0.1:3306/rdb"
-        #
+        # MS-SQL:
+        #   url = f"mssql+pymssql://{os.getenv('MSSQL_USERNAME'):{os.getenv('MSSQL_PASSWORD')}@127.0.0.1:1433/tempdb")
         database_connection = create_engine(database_connection_url)
 
         # For MySQL, which happens to use the same default port 3306 as for MariaDB,
@@ -108,12 +109,6 @@ class RelationalDBStore(DataStoreMixin):
         # database_connection = create_engine(database_connection_url,
         #                                    connect_args=dict(unix_socket="/var/mysql/mysql.sock", port=3307))
 
-        # For MS-SQL (TBD):
-        #   server = '127.0.0.1:1433'
-        #   user = os.getenv("PYMSSQL_USERNAME")
-        #   password = os.getenv("PYMSSQL_PASSWORD")
-        #   database = 'rdb'
-        #   database_connection = pymssql.connect(server, user, password, database)
 
         self.metadata = MetaData()
         create_table_objects(
@@ -295,7 +290,7 @@ class RelationalDBSource(DataSource):
             stix_obj = read_object(
                 stix_id,
                 self.metadata,
-                conn
+                conn,
             )
 
         return stix_obj
