@@ -52,7 +52,7 @@ def canonicalize_table_name(table_name, schema_name=None):
     return inflection.underscore(full_name)
 
 
-_IGNORE_OBJECTS = [ "language-content"]
+_IGNORE_OBJECTS = ["language-content"]
 
 
 def get_all_subclasses(cls):

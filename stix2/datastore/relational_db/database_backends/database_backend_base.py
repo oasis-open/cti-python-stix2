@@ -1,13 +1,11 @@
-
 from typing import Any
-import os
 
-from sqlalchemy import create_engine
-from sqlalchemy_utils import create_database, database_exists, drop_database
 from sqlalchemy import (  # create_engine,; insert,
     ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, Float, ForeignKey,
-    Integer, LargeBinary, Table, Text, UniqueConstraint,
+    Integer, LargeBinary, Table, Text, UniqueConstraint, create_engine,
 )
+from sqlalchemy_utils import create_database, database_exists, drop_database
+
 
 class DatabaseBackend:
     def __init__(self, database_connection_url, force_recreate=False, **kwargs: Any):
@@ -26,7 +24,7 @@ class DatabaseBackend:
         pass
 
     @staticmethod
-    def _determine_schema_name(stix_object):
+    def determine_schema_name(stix_object):
         return ""
 
     def _create_database(self):
@@ -81,6 +79,3 @@ class DatabaseBackend:
     @staticmethod
     def array_allowed():
         return False
-
-
-

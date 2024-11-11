@@ -30,15 +30,16 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
     return {name: stix_object[name]}
 
 
-
 def instance_in_valid_types(cls, valid_types):
     for v in valid_types:
         if isinstance(v, cls):
             return True
     return False
 
+
 def is_valid_type(cls, valid_types):
     return cls in valid_types or instance_in_valid_types(cls, valid_types)
+
 
 @add_method(DictionaryProperty)
 def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  # noqa: F811
@@ -311,7 +312,8 @@ def generate_insert_for_external_references(data_sink, stix_object):
     return insert_statements
 
 
-def generate_insert_for_granular_markings(granular_markings_table, stix_object):
+def generate_insert_for_granular_markings(data_sink, granular_markings_table, stix_object):
+    db_backend = data_sink.db_backend
     insert_statements = list()
     granular_markings = stix_object["granular_markings"]
     for idx, granular_marking in enumerate(granular_markings):
@@ -322,7 +324,18 @@ def generate_insert_for_granular_markings(granular_markings_table, stix_object):
         marking_ref_value = granular_marking.get("marking_ref")
         if marking_ref_value:
             bindings["marking_ref"] = marking_ref_value
-        bindings["selectors"] = granular_marking.get("selectors")
+        if db_backend.array_allowed():
+            bindings["selectors"] = granular_marking.get("selectors")
+        else:
+            table = data_sink.tables_dictionary[
+                canonicalize_table_name(
+                    granular_markings_table + "_selector",
+                    db_backend.schema_for_core(),
+                )
+            ]
+            for sel in granular_marking.get("selectors"):
+                selector_bindings = {"id": stix_object["id"], "selector": sel}
+                insert_statements.append(insert(table).values(selector_bindings))
         insert_statements.append(insert(granular_markings_table).values(bindings))
     return insert_statements
 
@@ -359,12 +372,13 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, schema_nam
 
     core_insert_statement = insert(core_table).values(core_bindings)
     insert_statements.append(core_insert_statement)
+    object_marking_table_name = canonicalize_table_name("object_marking_refs", data_sink.db_backend.schema_for_core())
 
     if "object_marking_refs" in stix_object:
         if schema_name != "sco":
-            object_markings_ref_table = data_sink.tables_dictionary["common.object_marking_refs_sdo"]
+            object_markings_ref_table = data_sink.tables_dictionary[object_marking_table_name + "_sdo"]
         else:
-            object_markings_ref_table = data_sink.tables_dictionary["common.object_marking_refs_sco"]
+            object_markings_ref_table = data_sink.tables_dictionary[object_marking_table_name + "_sco"]
         insert_statements.extend(
             generate_insert_for_array_in_table(
                 object_markings_ref_table,
@@ -375,11 +389,16 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, schema_nam
 
     # Granular markings
     if "granular_markings" in stix_object:
+        granular_marking_table_name = canonicalize_table_name(
+            "granular_marking",
+            data_sink.db_backend.schema_for_core(),
+        )
         if schema_name != "sco":
-            granular_marking_table = data_sink.tables_dictionary["common.granular_marking_sdo"]
+            granular_marking_table = data_sink.tables_dictionary[granular_marking_table_name + "_sdo"]
         else:
-            granular_marking_table = data_sink.tables_dictionary["common.granular_marking_sco"]
+            granular_marking_table = data_sink.tables_dictionary[granular_marking_table_name + "_sco"]
         granular_input_statements = generate_insert_for_granular_markings(
+            data_sink,
             granular_marking_table,
             stix_object,
         )

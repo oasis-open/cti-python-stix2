@@ -15,8 +15,6 @@ from stix2.datastore.relational_db.utils import (
     canonicalize_table_name, schema_for, table_name_for,
 )
 from stix2.parsing import parse
-import stix2.registry
-import stix2.utils
 
 
 def _add(store, stix_data, allow_custom=True, version="2.1"):
@@ -202,7 +200,7 @@ class RelationalDBSink(DataSink):
     #         return "common"
 
     def insert_object(self, stix_object):
-        schema_name = self.db_backend._determine_schema_name(stix_object)
+        schema_name = self.db_backend.determine_schema_name(stix_object)
         with self.db_backend.database_connection.begin() as trans:
             statements = generate_insert_for_object(self, stix_object, schema_name)
             for stmt in statements:
@@ -259,7 +257,7 @@ class RelationalDBSource(DataSource):
             stix_obj = read_object(
                 stix_id,
                 self.metadata,
-                conn
+                conn,
             )
 
         return stix_obj

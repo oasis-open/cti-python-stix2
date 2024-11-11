@@ -19,7 +19,7 @@ from stix2.properties import (
     TimestampProperty, TypeProperty,
 )
 from stix2.v21.base import _Extension
-from stix2.v21.common import KillChainPhase, GranularMarking
+from stix2.v21.common import KillChainPhase
 
 
 def aux_table_property(prop, name, core_properties):
@@ -33,31 +33,35 @@ def aux_table_property(prop, name, core_properties):
 
 
 def create_array_column(property_name, contained_sql_type):
-    return Column(property_name,
-                  ARRAY(contained_sql_type),
-                  CheckConstraint(f"array_length({property_name}, 1) IS NOT NULL"),
-                  nullable=False)
+    return Column(
+        property_name,
+        ARRAY(contained_sql_type),
+        CheckConstraint(f"array_length({property_name}, 1) IS NOT NULL"),
+        nullable=False,
+    )
 
 
 def create_array_child_table(metadata, db_backend, table_name, property_name, contained_sql_type):
-        schema_name = determine_sql_type_from_stix(GranularMarking, db_backend)
-        columns = [
-            Column(
-                "id",
-                db_backend.determine_sql_type_for_key_as_id(),
-                ForeignKey(
-                    canonicalize_table_name(table_name, schema_name) + ".id",
-                    ondelete="CASCADE",
-                ),
-                nullable=False,
+    schema_name = db_backend.schema_for_core()
+    columns = [
+        Column(
+            "id",
+            db_backend.determine_sql_type_for_key_as_id(),
+            ForeignKey(
+                canonicalize_table_name(table_name, schema_name) + ".id",
+                ondelete="CASCADE",
             ),
-            Column(
-                property_name,
-                contained_sql_type,
-                nullable=False,
-            )
-        ]
-        return Table(canonicalize_table_name(table_name + "_" + "selector"), metadata, *columns, schema=schema_name)
+            nullable=False,
+            primary_key=True,
+        ),
+        Column(
+            property_name,
+            contained_sql_type,
+            nullable=False,
+        ),
+    ]
+    return Table(canonicalize_table_name(table_name + "_" + "selector", schema_name), metadata, *columns)
+
 
 def derive_column_name(prop):
     contained_property = prop.contained
@@ -167,13 +171,13 @@ def create_kill_chain_phases_table(name, metadata, db_backend, schema_name, tabl
 
 
 def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
-    tables = list()
     columns = [
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
             ForeignKey("common.core_" + sco_or_sdo + ".id", ondelete="CASCADE"),
             nullable=False,
+            primary_key=True,
         ),
         Column("lang", db_backend.determine_sql_type_for_string_property()),
         Column(
@@ -183,27 +187,36 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
                 "marking_ref ~ '^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
                 # noqa: E131
             ),
-        )
+        ),
     ]
     if db_backend.array_allowed():
+        child_table = False
         columns.append(create_array_column("selectors", db_backend.determine_sql_type_for_string_property()))
     else:
-        tables.append(create_array_child_table(metadata,
-                                               db_backend,
-                                               "granular_marking_" + sco_or_sdo,
-                                               "selector",
-                                               db_backend.determine_sql_type_for_string_property()))
+        child_table = True
 
-    tables.append(Table(
-                    "granular_marking_" + sco_or_sdo,
-                    metadata,
-                    *columns,
-                    CheckConstraint(
-                        """(lang IS NULL AND marking_ref IS NOT NULL)
-                           OR
-                           (lang IS NOT NULL AND marking_ref IS NULL)""",
-                    ),
-                    schema="common"))
+    tables = [
+        Table(
+            canonicalize_table_name("granular_marking_" + sco_or_sdo, db_backend.schema_for_core()),
+            metadata,
+            *columns,
+            CheckConstraint(
+            """(lang IS NULL AND marking_ref IS NOT NULL)
+                  OR
+                  (lang IS NOT NULL AND marking_ref IS NULL)""",
+            ),
+        ),
+    ]
+    if child_table:
+        tables.append(
+            create_array_child_table(
+                metadata,
+                db_backend,
+                "granular_marking_" + sco_or_sdo,
+                "selector",
+                db_backend.determine_sql_type_for_string_property(),
+            ),
+        )
     return tables
 
 
@@ -265,10 +278,12 @@ def create_core_table(metadata, db_backend, schema_name):
         columns.append(Column("defanged", db_backend.determine_sql_type_for_boolean_property(), default=False))
 
     tables = [
-        Table("core_" + schema_name,
-              metadata,
-              *columns,
-              schema=db_backend.schema_for_core())
+        Table(
+            "core_" + schema_name,
+            metadata,
+            *columns,
+            schema=db_backend.schema_for_core(),
+        ),
     ]
     return tables
 
@@ -565,7 +580,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
 def generate_table_information(self, name, db_backend, metadata, schema_name, table_name, **kwargs):  # noqa: F811
     is_extension = kwargs.get('is_extension')
     tables = list()
-    # handle more complext embedded object before deciding if the ARRAY type is usable
+    # handle more complex embedded object before deciding if the ARRAY type is usable
     if isinstance(self.contained, EmbeddedObjectProperty):
         columns = list()
         columns.append(
@@ -636,6 +651,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
         tables.append(create_kill_chain_phases_table(name, metadata, db_backend, schema_name, table_name))
         return tables
     else:
+        # if ARRAY is not allowed, it is handled by a previous if clause
         if isinstance(self.contained, Property):
             sql_type = self.contained.determine_sql_type(db_backend)
             if sql_type:
@@ -824,15 +840,21 @@ def generate_object_table(
     return tables
 
 
+def add_tables(new_tables, tables):
+    if isinstance(new_tables, list):
+        tables.extend(new_tables)
+    else:
+        tables.append(new_tables)
+
+
 def create_core_tables(metadata, db_backend):
-    tables = [
-        create_core_table(metadata, db_backend, "sdo"),
-        create_granular_markings_table(metadata, db_backend, "sdo"),
-        create_core_table(metadata, db_backend, "sco"),
-        create_granular_markings_table(metadata, db_backend, "sco"),
-        create_object_markings_refs_table(metadata, db_backend, "sdo"),
-        create_object_markings_refs_table(metadata, db_backend, "sco"),
-    ]
+    tables = list()
+    add_tables(create_core_table(metadata, db_backend, "sdo"), tables)
+    add_tables(create_granular_markings_table(metadata, db_backend, "sdo"), tables)
+    add_tables(create_core_table(metadata, db_backend, "sco"), tables)
+    add_tables(create_granular_markings_table(metadata, db_backend, "sco"), tables)
+    add_tables(create_object_markings_refs_table(metadata, db_backend, "sdo"), tables)
+    add_tables(create_object_markings_refs_table(metadata, db_backend, "sco"), tables)
     tables.extend(create_external_references_tables(metadata, db_backend))
     return tables
 

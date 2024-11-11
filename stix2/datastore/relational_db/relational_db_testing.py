@@ -128,14 +128,14 @@ def dictionary_test():
         defanged=True,
         ctime="1980-02-23T05:43:28.2678Z",
         extensions={
-          "raster-image-ext": {
-              "exif_tags": {
-                  "Make": "Nikon",
-                  "Model": "D7000",
-                  "XResolution": 4928,
-                  "YResolution": 3264,
-              },
-          },
+            "raster-image-ext": {
+                "exif_tags": {
+                    "Make": "Nikon",
+                    "Model": "D7000",
+                    "XResolution": 4928,
+                    "YResolution": 3264,
+                },
+            },
         },
     )
 
@@ -148,34 +148,35 @@ def kill_chain_test():
         modified="2016-05-12T08:17:27.000Z",
         name="Spear Phishing",
         kill_chain_phases=[
-             {
-                 "kill_chain_name": "lockheed-martin-cyber-kill-chain",
-                 "phase_name": "reconnaissance",
-             },
+            {
+                "kill_chain_name": "lockheed-martin-cyber-kill-chain",
+                "phase_name": "reconnaissance",
+            },
         ],
         external_references=[
-             {
-                 "source_name": "capec",
-                 "external_id": "CAPEC-163",
-             },
+            {
+                "source_name": "capec",
+                "external_id": "CAPEC-163",
+            },
         ],
         granular_markings=[
-             {
-                 "lang": "en_US",
-                 "selectors": ["kill_chain_phases"],
-             },
-             {
-                 "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
-                 "selectors": ["external_references"],
-             },
+            {
+                "lang": "en_US",
+                "selectors": ["kill_chain_phases"],
+            },
+            {
+                "marking_ref": "marking-definition--50902d70-37ae-4f85-af68-3f4095493b42",
+                "selectors": ["external_references"],
+            },
         ], )
+
 
 @stix2.CustomObject(
     'x-custom-type',
-        properties=[
-            ("phases", stix2.properties.ListProperty(stix2.KillChainPhase)),
-            ("something_else", stix2.properties.IntegerProperty()),
-        ],
+    properties=[
+        ("phases", stix2.properties.ListProperty(stix2.KillChainPhase)),
+        ("something_else", stix2.properties.IntegerProperty()),
+    ],
 )
 class CustomClass:
     pass
@@ -274,8 +275,6 @@ def main():
         # tb = test_binary_list()
 
         # store.add(tb)
-
-
 
         co = custom_obj()
 
