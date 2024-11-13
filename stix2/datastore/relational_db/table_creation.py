@@ -1,8 +1,8 @@
 # from collections import OrderedDict
 
 from sqlalchemy import (  # create_engine,; insert,
-    ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, Float, ForeignKey,
-    Integer, LargeBinary, Table, Text, UniqueConstraint,
+    ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey,
+    Integer, Table, Text, UniqueConstraint
 )
 
 from stix2.datastore.relational_db.add_method import add_method
@@ -60,7 +60,7 @@ def create_array_child_table(metadata, db_backend, table_name, property_name, co
             nullable=False,
         ),
     ]
-    return Table(canonicalize_table_name(table_name + "_" + "selector", schema_name), metadata, *columns)
+    return Table(canonicalize_table_name(table_name + "_" + "selector"), metadata, *columns, schema=schema_name)
 
 
 def derive_column_name(prop):
@@ -171,11 +171,12 @@ def create_kill_chain_phases_table(name, metadata, db_backend, schema_name, tabl
 
 
 def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
+    schema_name = db_backend.schema_for_core()
     columns = [
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
-            ForeignKey("common.core_" + sco_or_sdo + ".id", ondelete="CASCADE"),
+            ForeignKey(canonicalize_table_name("core_" + sco_or_sdo, schema_name) + ".id", ondelete="CASCADE"),
             nullable=False,
             primary_key=True,
         ),
@@ -197,7 +198,7 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
 
     tables = [
         Table(
-            canonicalize_table_name("granular_marking_" + sco_or_sdo, db_backend.schema_for_core()),
+            canonicalize_table_name("granular_marking_" + sco_or_sdo),
             metadata,
             *columns,
             CheckConstraint(
@@ -205,6 +206,7 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
                   OR
                   (lang IS NOT NULL AND marking_ref IS NULL)""",
             ),
+            schema=schema_name
         ),
     ]
     if child_table:

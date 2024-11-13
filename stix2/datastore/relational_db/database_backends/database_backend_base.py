@@ -40,8 +40,22 @@ class DatabaseBackend:
     def schema_for_core():
         return ""
 
+    # you must implement the next 4 methods in the subclass
+
     @staticmethod
     def determine_sql_type_for_property():  # noqa: F811
+        pass
+
+    @staticmethod
+    def determine_sql_type_for_binary_property():  # noqa: F811
+        pass
+
+    @staticmethod
+    def determine_sql_type_for_hex_property():  # noqa: F811
+        pass
+
+    @staticmethod
+    def determine_sql_type_for_timestamp_property():  # noqa: F811
         pass
 
     @staticmethod
