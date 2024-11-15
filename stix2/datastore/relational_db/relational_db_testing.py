@@ -254,15 +254,16 @@ def custom_obj():
 
 def main():
     store = RelationalDBStore(
-        PostgresBackend("postgresql://localhost/stix-data-sink"),
+        PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
         False,
         None,
         True,
+        print_sql=True,
     )
 
     if store.sink.db_backend.database_exists:
-        store.sink.generate_stix_schema()
-        store.sink.clear_tables()
+        # store.sink.generate_stix_schema()
+        # store.sink.clear_tables()
 
         # td = test_dictionary()
 
@@ -295,8 +296,8 @@ def main():
         dict_example = dictionary_test()
         store.add(dict_example)
 
-        read_obj = store.get(directory_stix_object.id)
-        print(read_obj)
+        # read_obj = store.get(directory_stix_object.id)
+        # print(read_obj)
     else:
         print("database does not exist")
 

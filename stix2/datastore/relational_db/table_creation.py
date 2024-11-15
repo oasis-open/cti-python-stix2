@@ -32,12 +32,12 @@ def aux_table_property(prop, name, core_properties):
         return False
 
 
-def create_array_column(property_name, contained_sql_type):
+def create_array_column(property_name, contained_sql_type, optional):
     return Column(
         property_name,
         ARRAY(contained_sql_type),
-        CheckConstraint(f"array_length({property_name}, 1) IS NOT NULL"),
-        nullable=False,
+        CheckConstraint(f"{property_name} IS NULL or array_length({property_name}, 1) IS NOT NULL"),
+        nullable=optional
     )
 
 
@@ -47,12 +47,12 @@ def create_array_child_table(metadata, db_backend, table_name, property_name, co
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
-            ForeignKey(
-                canonicalize_table_name(table_name, schema_name) + ".id",
-                ondelete="CASCADE",
-            ),
+            # ForeignKey(
+            #     canonicalize_table_name(table_name, schema_name) + ".id",
+            #     ondelete="CASCADE",
+            # ),
             nullable=False,
-            primary_key=True,
+            #primary_key=True,
         ),
         Column(
             property_name,
@@ -178,7 +178,7 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
             db_backend.determine_sql_type_for_key_as_id(),
             ForeignKey(canonicalize_table_name("core_" + sco_or_sdo, schema_name) + ".id", ondelete="CASCADE"),
             nullable=False,
-            primary_key=True,
+            # primary_key=not db_backend.array_allowed(),
         ),
         Column("lang", db_backend.determine_sql_type_for_string_property()),
         Column(
@@ -191,35 +191,61 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
         ),
     ]
     if db_backend.array_allowed():
-        child_table = False
-        columns.append(create_array_column("selectors", db_backend.determine_sql_type_for_string_property()))
-    else:
-        child_table = True
-
-    tables = [
-        Table(
-            canonicalize_table_name("granular_marking_" + sco_or_sdo),
-            metadata,
-            *columns,
-            CheckConstraint(
-            """(lang IS NULL AND marking_ref IS NOT NULL)
-                  OR
-                  (lang IS NOT NULL AND marking_ref IS NULL)""",
-            ),
-            schema=schema_name
-        ),
-    ]
-    if child_table:
-        tables.append(
-            create_array_child_table(
-                metadata,
-                db_backend,
+        columns.append(create_array_column("selectors", db_backend.determine_sql_type_for_string_property(), False))
+        return [
+            Table(
                 "granular_marking_" + sco_or_sdo,
+                metadata,
+                *columns,
+                CheckConstraint(
+                """(lang IS NULL AND marking_ref IS NOT NULL)
+                      OR
+                      (lang IS NOT NULL AND marking_ref IS NULL)""",
+                ),
+                schema=schema_name
+            ),
+        ]
+    else:
+        columns.append(Column(
+                "selectors",
+                db_backend.determine_sql_type_for_key_as_int(),
+                unique=True
+            )
+        )
+        tables = [
+            Table(
+                "granular_marking_" + sco_or_sdo,
+                metadata,
+                *columns,
+                CheckConstraint(
+                    """(lang IS NULL AND marking_ref IS NOT NULL)
+                          OR
+                          (lang IS NOT NULL AND marking_ref IS NULL)""",
+                ),
+                schema=schema_name
+            ),
+        ]
+        schema_name = db_backend.schema_for_core()
+        columns = [
+            Column(
+                "id",
+                db_backend.determine_sql_type_for_key_as_int(),
+                ForeignKey(
+                    canonicalize_table_name("granular_marking_" + sco_or_sdo, schema_name) + ".selectors",
+                    ondelete="CASCADE",
+                ),
+                # primary_key=True,
+                nullable=False,
+            ),
+            Column(
                 "selector",
                 db_backend.determine_sql_type_for_string_property(),
+                nullable=False,
             ),
-        )
-    return tables
+        ]
+        tables.append(Table(canonicalize_table_name("granular_marking_" + sco_or_sdo + "_" + "selector"),
+                            metadata, *columns, schema=schema_name))
+        return tables
 
 
 def create_external_references_tables(metadata, db_backend):
@@ -275,7 +301,7 @@ def create_core_table(metadata, db_backend, schema_name):
         ]
         columns.extend(sdo_columns)
         if db_backend.array_allowed():
-            columns.append(create_array_column("labels", db_backend.determine_sql_type_for_string_property())),
+            columns.append(create_array_column("labels", db_backend.determine_sql_type_for_string_property(), True))
     else:
         columns.append(Column("defanged", db_backend.determine_sql_type_for_boolean_property(), default=False))
 

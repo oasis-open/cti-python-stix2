@@ -184,10 +184,10 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 @add_method(ListProperty)
 def generate_insert_information(   # noqa: F811
-    self, name, stix_object, level=0, is_extension=False,
+    self, name, stix_object, data_sink=None, level=0, is_extension=False,
     foreign_key_value=None, schema_name=None, **kwargs,
 ):
-    data_sink = kwargs.get("data_sink")
+    db_backend = data_sink.db_backend
     table_name = kwargs.get("table_name")
     if isinstance(self.contained, ReferenceProperty):
         insert_statements = list()
@@ -226,7 +226,7 @@ def generate_insert_information(   # noqa: F811
     elif isinstance(self.contained, EmbeddedObjectProperty):
         insert_statements = list()
         for value in stix_object[name]:
-            with data_sink.database_connection.begin() as trans:
+            with db_backend.database_connection.begin() as trans:
                 next_id = trans.execute(data_sink.sequence)
             table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name, schema_name)]
             bindings = {
@@ -248,7 +248,22 @@ def generate_insert_information(   # noqa: F811
             )
         return insert_statements
     else:
-        return {name: stix_object[name]}
+        if db_backend.array_allowed():
+            return {name: stix_object[name]}
+        else:
+            insert_statements = list()
+            table = data_sink.tables_dictionary[
+                canonicalize_table_name(
+                    table_name + "_" + name,
+                    schema_name,
+                )
+            ]
+            for elem in stix_object[name]:
+                bindings = {"id": stix_object["id"], name: elem}
+                insert_statements.append(insert(table).values(bindings))
+            return insert_statements
+
+
 
 
 @add_method(ReferenceProperty)
@@ -286,6 +301,7 @@ def generate_insert_for_array_in_table(table, values, foreign_key_value):
 
 
 def generate_insert_for_external_references(data_sink, stix_object):
+    db_backend = data_sink.db_backend
     insert_statements = list()
     next_id = None
     object_table = data_sink.tables_dictionary["common.external_references"]
@@ -295,7 +311,7 @@ def generate_insert_for_external_references(data_sink, stix_object):
             if prop in er:
                 bindings[prop] = er[prop]
         if "hashes" in er:
-            with data_sink.database_connection.begin() as trans:
+            with db_backend.database_connection.begin() as trans:
                 next_id = trans.execute(data_sink.sequence)
             bindings["hash_ref_id"] = next_id
         else:
@@ -326,17 +342,22 @@ def generate_insert_for_granular_markings(data_sink, granular_markings_table, st
             bindings["marking_ref"] = marking_ref_value
         if db_backend.array_allowed():
             bindings["selectors"] = granular_marking.get("selectors")
+            insert_statements.append(insert(granular_markings_table).values(bindings))
         else:
+            with db_backend.database_connection.begin() as trans:
+                next_id = trans.execute(data_sink.sequence)
+            bindings["selectors"] = next_id
+            insert_statements.append(insert(granular_markings_table).values(bindings))
             table = data_sink.tables_dictionary[
                 canonicalize_table_name(
-                    granular_markings_table + "_selector",
+                    granular_markings_table.name + "_selector",
                     db_backend.schema_for_core(),
                 )
             ]
             for sel in granular_marking.get("selectors"):
-                selector_bindings = {"id": stix_object["id"], "selector": sel}
+                selector_bindings = {"id": next_id, "selector": sel}
                 insert_statements.append(insert(table).values(selector_bindings))
-        insert_statements.append(insert(granular_markings_table).values(bindings))
+
     return insert_statements
 
 

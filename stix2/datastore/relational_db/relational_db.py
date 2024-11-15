@@ -57,7 +57,7 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
 class RelationalDBStore(DataStoreMixin):
     def __init__(
         self, db_backend, allow_custom=True, version=None,
-        instantiate_database=True, *stix_object_classes,
+        instantiate_database=True, print_sql=False, *stix_object_classes,
     ):
         """
         Initialize this store.
@@ -91,6 +91,7 @@ class RelationalDBStore(DataStoreMixin):
             ),
             sink=RelationalDBSink(
                 db_backend,
+                print_sql=print_sql,
                 allow_custom=allow_custom,
                 version=version,
                 instantiate_database=instantiate_database,
@@ -102,7 +103,7 @@ class RelationalDBStore(DataStoreMixin):
 class RelationalDBSink(DataSink):
     def __init__(
         self, db_backend, allow_custom=True, version=None,
-        instantiate_database=True, *stix_object_classes, metadata=None,
+        instantiate_database=True, print_sql=False, *stix_object_classes, metadata=None,
     ):
         """
         Initialize this sink.  Only one of stix_object_classes and metadata
@@ -134,15 +135,6 @@ class RelationalDBSink(DataSink):
 
         self.db_backend = db_backend
 
-        # if isinstance(database_connection_or_url, str):
-        #     self.database_connection = create_engine(database_connection_or_url)
-        # else:
-        #     self.database_connection = database_connection_or_url
-
-        # self.database_exists = database_exists(self.database_connection.url)
-        # if force_recreate:
-        #     self._create_database()
-
         if metadata:
             self.metadata = metadata
         else:
@@ -161,43 +153,20 @@ class RelationalDBSink(DataSink):
         if instantiate_database:
             if not self.db_backend.database_exists:
                 self.db_backend._create_database()
+            # else:
+            #     self.clear_tables()
             self.db_backend._create_schemas()
-            self._instantiate_database()
+            self._instantiate_database(print_sql)
 
-    # def _create_schemas(self):
-    #     with self.database_connection.begin() as trans:
-    #         trans.execute(CreateSchema("common", if_not_exists=True))
-    #         trans.execute(CreateSchema("sdo", if_not_exists=True))
-    #         trans.execute(CreateSchema("sco", if_not_exists=True))
-    #         trans.execute(CreateSchema("sro", if_not_exists=True))
-
-    def _instantiate_database(self):
+    def _instantiate_database(self, print_sql=False):
         self.metadata.create_all(self.db_backend.database_connection)
-
-    # def _create_database(self):
-    #     if self.database_exists:
-    #         drop_database(self.database_connection.url)
-    #     create_database(self.database_connection.url)
-    #     self.database_exists = database_exists(self.database_connection.url)
-
-    def generate_stix_schema(self):
-        for t in self.metadata.tables.values():
-            print(CreateTable(t).compile(self.db_backend.database_connection))
+        if print_sql:
+            for t in self.metadata.tables.values():
+                print(CreateTable(t).compile(self.db_backend.database_connection))
 
     def add(self, stix_data, version=None):
         _add(self, stix_data)
     add.__doc__ = _add.__doc__
-
-    # @staticmethod
-    # def _determine_schema_name(stix_object):
-    #     if isinstance(stix_object, _DomainObject):
-    #         return "sdo"
-    #     elif isinstance(stix_object, _Observable):
-    #         return "sco"
-    #     elif isinstance(stix_object, _RelationshipObject):
-    #         return "sro"
-    #     elif isinstance(stix_object, _MetaObject):
-    #         return "common"
 
     def insert_object(self, stix_object):
         schema_name = self.db_backend.determine_schema_name(stix_object)

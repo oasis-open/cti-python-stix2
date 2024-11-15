@@ -31,7 +31,7 @@ class PostgresBackend(DatabaseBackend):
         f"{os.getenv('POSTGRES_PORT', '5432')}/postgres"
 
     def __init__(self, database_connection_url=default_database_connection_url, force_recreate=False, **kwargs: Any):
-        super().__init__(database_connection_url, force_recreate=False, **kwargs)
+        super().__init__(database_connection_url, force_recreate=force_recreate, **kwargs)
 
     def _create_schemas(self):
         with self.database_connection.begin() as trans:
