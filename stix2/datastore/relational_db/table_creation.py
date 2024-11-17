@@ -1,8 +1,8 @@
 # from collections import OrderedDict
 
 from sqlalchemy import (  # create_engine,; insert,
-    ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, ForeignKey,
-    Integer, Table, Text, UniqueConstraint
+    ARRAY, CheckConstraint, Column, ForeignKey, Integer, Table, Text,
+    UniqueConstraint,
 )
 
 from stix2.datastore.relational_db.add_method import add_method
@@ -27,7 +27,7 @@ def create_array_column(property_name, contained_sql_type, optional):
         property_name,
         ARRAY(contained_sql_type),
         CheckConstraint(f"{property_name} IS NULL or array_length({property_name}, 1) IS NOT NULL"),
-        nullable=optional
+        nullable=optional,
     )
 
 
@@ -183,11 +183,12 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
         columns.append(create_array_column("selectors", db_backend.determine_sql_type_for_string_property(), False))
 
     else:
-        columns.append(Column(
-                "selectors",
-                db_backend.determine_sql_type_for_key_as_int(),
-                unique=True
-            )
+        columns.append(
+            Column(
+                    "selectors",
+                    db_backend.determine_sql_type_for_key_as_int(),
+                    unique=True,
+            ),
         )
 
         child_columns = [
@@ -206,8 +207,12 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
                 nullable=False,
             ),
         ]
-        tables.append(Table(canonicalize_table_name("granular_marking_" + sco_or_sdo + "_" + "selector"),
-                            metadata, *child_columns, schema=schema_name))
+        tables.append(
+            Table(
+                canonicalize_table_name("granular_marking_" + sco_or_sdo + "_" + "selector"),
+                metadata, *child_columns, schema=schema_name,
+            ),
+        )
     tables.append(
         Table(
             "granular_marking_" + sco_or_sdo,
@@ -218,8 +223,9 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
                       OR
                       (lang IS NOT NULL AND marking_ref IS NULL)""",
             ),
-            schema=schema_name
-        ))
+            schema=schema_name,
+        ),
+    )
     return tables
 
 
@@ -279,12 +285,16 @@ def create_core_table(metadata, db_backend, stix_type_name):
         if db_backend.array_allowed():
             columns.append(create_array_column("labels", db_backend.determine_sql_type_for_string_property(), True))
         else:
-            tables.append(create_array_child_table(metadata,
-                                                   db_backend,
-                                                   table_name,
-                                                   "_labels",
-                                                   "label",
-                                                   db_backend.determine_sql_type_for_string_property()))
+            tables.append(
+                create_array_child_table(
+                    metadata,
+                    db_backend,
+                    table_name,
+                    "_labels",
+                    "label",
+                    db_backend.determine_sql_type_for_string_property(),
+                ),
+            )
     else:
         columns.append(Column("defanged", db_backend.determine_sql_type_for_boolean_property(), default=False))
 
@@ -294,7 +304,8 @@ def create_core_table(metadata, db_backend, stix_type_name):
             metadata,
             *columns,
             schema=db_backend.schema_for_core(),
-        ))
+        ),
+    )
     return tables
 
 
@@ -422,9 +433,11 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
             else:
                 contained_class = self.valid_types[0].contained
                 columns.append(
-                    create_array_column("value",
-                                        contained_class.determine_sql_type(db_backend),
-                                        False)
+                    create_array_column(
+                        "value",
+                        contained_class.determine_sql_type(db_backend),
+                        False,
+                    ),
                 )
         else:
             for column_type in self.valid_types:
@@ -586,6 +599,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
 @add_method(ListProperty)
 def generate_table_information(self, name, db_backend, metadata, schema_name, table_name, **kwargs):  # noqa: F811
     is_extension = kwargs.get('is_extension')
+    is_embedded_object = kwargs.get('is_embedded_object')
     tables = list()
     # handle more complex embedded object before deciding if the ARRAY type is usable
     if isinstance(self.contained, EmbeddedObjectProperty):
@@ -637,13 +651,23 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                 schema_name,
             ),
         ]
-    elif ((isinstance(self.contained, (StringProperty, IntegerProperty, FloatProperty)) and not db_backend.array_allowed()) or
+    elif ((
+        isinstance(
+            self.contained,
+            (BinaryProperty, BooleanProperty, StringProperty, IntegerProperty, FloatProperty, HexProperty),
+        ) and
+        not db_backend.array_allowed()
+    ) or
           isinstance(self.contained, EnumProperty)):
         columns = list()
+        if is_embedded_object:
+            id_type = db_backend.determine_sql_type_for_key_as_int()
+        else:
+            id_type = db_backend.determine_sql_type_for_key_as_id()
         columns.append(
             Column(
                 "id",
-                self.contained.determine_sql_type(db_backend),
+                id_type,
                 ForeignKey(
                     canonicalize_table_name(table_name, schema_name) + ".id",
                     ondelete="CASCADE",

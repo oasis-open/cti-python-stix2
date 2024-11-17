@@ -64,7 +64,7 @@ def malware_with_all_required_properties():
     ref2 = stix2.v21.ExternalReference(
         source_name="ACME Threat Intel",
         description="Threat report",
-        url="http://www.example.com/threat-report.pdf"
+        url="http://www.example.com/threat-report.pdf",
     )
     now = dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
 
@@ -203,10 +203,10 @@ def custom_obj():
 
 @stix2.CustomObject(
     "test-object", [
-        ("prop_name", stix2.properties.ListProperty(stix2.properties.BinaryProperty()))
+        ("prop_name", stix2.properties.ListProperty(stix2.properties.BinaryProperty())),
     ],
     "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
-    is_sdo=True
+    is_sdo=True,
 )
 class TestClass:
     pass
@@ -215,53 +215,58 @@ class TestClass:
 def test_binary_list():
     return TestClass(prop_name=["AREi", "7t3M"])
 
+
 @stix2.CustomObject(
         "test2-object", [
-            ("prop_name", stix2.properties.ListProperty(
-                stix2.properties.HexProperty()
-            ))
+            (
+                "prop_name", stix2.properties.ListProperty(
+                    stix2.properties.HexProperty(),
+                ),
+            ),
         ],
         "extension-definition--15de9cdb-4567-4271-8479-8141154c5647",
-        is_sdo=True
-    )
-
+        is_sdo=True,
+)
 class Test2Class:
-        pass
+    pass
+
 
 def test_hex_list():
     return Test2Class(
-        prop_name=["1122", "fedc"]
+        prop_name=["1122", "fedc"],
     )
+
 
 @stix2.CustomObject(
         "test3-object", [
-            ("prop_name",
-                 stix2.properties.DictionaryProperty(
-                     valid_types=[
-                         stix2.properties.IntegerProperty,
-                         stix2.properties.FloatProperty,
-                         stix2.properties.StringProperty
-                     ]
-                 )
-             )
+            (
+                "prop_name",
+                stix2.properties.DictionaryProperty(
+                    valid_types=[
+                        stix2.properties.IntegerProperty,
+                        stix2.properties.FloatProperty,
+                        stix2.properties.StringProperty,
+                    ],
+                ),
+            ),
         ],
         "extension-definition--15de9cdb-1234-4271-8479-8141154c5647",
-        is_sdo=True
-    )
+        is_sdo=True,
+)
 class Test3Class:
     pass
 
 
 def test_dictionary():
     return Test3Class(
-        prop_name={"a": 1, "b": 2.3, "c": "foo"}
+        prop_name={"a": 1, "b": 2.3, "c": "foo"},
     )
 
 
 def main():
     store = RelationalDBStore(
         PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
-        False,
+        True,
         None,
         True,
         print_sql=True,
@@ -269,17 +274,17 @@ def main():
 
     if store.sink.db_backend.database_exists:
 
-        # td = test_dictionary()
-        #
-        # store.add(td)
-        #
-        # th = test_hex_list()
-        #
-        # store.add(th)
-        #
-        # tb = test_binary_list()
-        #
-        # store.add(tb)
+        td = test_dictionary()
+
+        store.add(td)
+
+        th = test_hex_list()
+
+        store.add(th)
+
+        tb = test_binary_list()
+
+        store.add(tb)
 
         co = custom_obj()
 

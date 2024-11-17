@@ -1,23 +1,13 @@
 import os
 from typing import Any
 
-from sqlalchemy import (
-    TIMESTAMP, LargeBinary, Text,
-)
+from sqlalchemy import TIMESTAMP, LargeBinary, Text
 from sqlalchemy.schema import CreateSchema
 
 from stix2.base import (
-    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
-    _STIXBase,
+    _DomainObject, _MetaObject, _Observable, _RelationshipObject,
 )
 from stix2.datastore.relational_db.utils import schema_for
-from stix2.properties import (
-    BinaryProperty, BooleanProperty, DictionaryProperty,
-    EmbeddedObjectProperty, EnumProperty, ExtensionsProperty, FloatProperty,
-    HashesProperty, HexProperty, IDProperty, IntegerProperty, ListProperty,
-    ObjectReferenceProperty, Property, ReferenceProperty, StringProperty,
-    TimestampProperty, TypeProperty,
-)
 
 from .database_backend_base import DatabaseBackend
 

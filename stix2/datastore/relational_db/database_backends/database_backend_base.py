@@ -1,14 +1,12 @@
 from typing import Any
 
-from sqlalchemy import (
-    create_engine, Boolean, Float, Integer, LargeBinary, Text, TIMESTAMP,
-)
+from sqlalchemy import Boolean, Float, Integer, Text, create_engine
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from stix2.base import (
-    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
-    _STIXBase,
+    _DomainObject, _MetaObject, _Observable, _RelationshipObject,
 )
+
 
 class DatabaseBackend:
     def __init__(self, database_connection_url, force_recreate=False, **kwargs: Any):

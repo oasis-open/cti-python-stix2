@@ -248,7 +248,11 @@ def generate_insert_information(   # noqa: F811
         return insert_statements
     else:
         if db_backend.array_allowed():
-            return {name: stix_object[name]}
+            if isinstance(self.contained, HexProperty):
+                return {name: [bytes.fromhex(x) for x in stix_object[name]]}
+            else:
+                return {name: stix_object[name]}
+
         else:
             insert_statements = list()
             table = data_sink.tables_dictionary[
@@ -258,11 +262,12 @@ def generate_insert_information(   # noqa: F811
                 )
             ]
             for elem in stix_object[name]:
-                bindings = {"id": stix_object["id"], name: elem}
+                bindings = {
+                    "id": stix_object["id"],
+                    name: bytes.fromhex(elem) if isinstance(self.contained, HexProperty) else elem,
+                }
                 insert_statements.append(insert(table).values(bindings))
             return insert_statements
-
-
 
 
 @add_method(ReferenceProperty)
@@ -300,7 +305,6 @@ def generate_insert_for_array_in_table(table, values, foreign_key_value, column_
 
 
 def generate_insert_for_external_references(data_sink, stix_object):
-    db_backend = data_sink.db_backend
     insert_statements = list()
     next_id = None
     object_table = data_sink.tables_dictionary["common.external_references"]
@@ -395,7 +399,7 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, stix_type_
     core_insert_statement = insert(core_table).values(core_bindings)
     insert_statements.append(core_insert_statement)
 
-    if "labels" in stix_object:
+    if "labels" in stix_object and "labels" in child_table_properties:
         label_table_name = canonicalize_table_name(core_table.name + "_labels", data_sink.db_backend.schema_for_core())
         labels_table = data_sink.tables_dictionary[label_table_name]
         insert_statements.extend(
@@ -403,12 +407,15 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, stix_type_
                 labels_table,
                 stix_object["labels"],
                 stix_object["id"],
-                column_name="label"
-            ))
+                column_name="label",
+            ),
+        )
 
     if "object_marking_refs" in stix_object:
-        object_marking_table_name = canonicalize_table_name("object_marking_refs",
-                                                            data_sink.db_backend.schema_for_core())
+        object_marking_table_name = canonicalize_table_name(
+            "object_marking_refs",
+            data_sink.db_backend.schema_for_core(),
+        )
         if stix_type_name != "sco":
             object_markings_ref_table = data_sink.tables_dictionary[object_marking_table_name + "_sdo"]
         else:

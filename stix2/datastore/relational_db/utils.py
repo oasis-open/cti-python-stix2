@@ -1,9 +1,6 @@
 from collections.abc import Iterable, Mapping
 
 import inflection
-from sqlalchemy import (  # create_engine,; insert,
-    TIMESTAMP, Boolean, Float, Integer, LargeBinary, Text,
-)
 
 from stix2.properties import (
     BinaryProperty, BooleanProperty, FloatProperty, HexProperty,

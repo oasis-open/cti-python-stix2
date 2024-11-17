@@ -1,19 +1,14 @@
-from sqlalchemy import MetaData, create_engine, delete, select
-from sqlalchemy.schema import CreateSchema, CreateTable, Sequence
-from sqlalchemy_utils import create_database, database_exists, drop_database
+from sqlalchemy import MetaData, delete
+from sqlalchemy.schema import CreateTable, Sequence
 
-from stix2.base import (
-    _DomainObject, _MetaObject, _Observable, _RelationshipObject, _STIXBase,
-)
+from stix2.base import _STIXBase
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.datastore.relational_db.input_creation import (
     generate_insert_for_object,
 )
 from stix2.datastore.relational_db.query import read_object
 from stix2.datastore.relational_db.table_creation import create_table_objects
-from stix2.datastore.relational_db.utils import (
-    canonicalize_table_name, schema_for, table_name_for,
-)
+from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
 
 
@@ -88,6 +83,7 @@ class RelationalDBStore(DataStoreMixin):
             source=RelationalDBSource(
                 db_backend,
                 metadata=self.metadata,
+                allow_custom=allow_custom,
             ),
             sink=RelationalDBSink(
                 db_backend,
@@ -190,9 +186,10 @@ class RelationalDBSink(DataSink):
         with self.db_backend.database_connection.begin() as trans:
             return trans.execute(self.sequence)
 
+
 class RelationalDBSource(DataSource):
     def __init__(
-        self, db_backend, *stix_object_classes, metadata=None,
+        self, db_backend, allow_custom, *stix_object_classes, metadata=None,
     ):
         """
         Initialize this source.  Only one of stix_object_classes and metadata
@@ -216,6 +213,8 @@ class RelationalDBSource(DataSource):
         super().__init__()
 
         self.db_backend = db_backend
+
+        self.allow_custom = allow_custom
 
         if metadata:
             self.metadata = metadata
