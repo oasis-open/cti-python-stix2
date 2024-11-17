@@ -18,8 +18,8 @@ NOW = object()
 
 PREFIX_21_REGEX = re.compile(r'^[a-z].*')
 
-_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
-_TIMESTAMP_FORMAT_FRAC = "%Y-%m-%dT%H:%M:%S.%fZ"
+_TIMESTAMP_FORMAT = "%4Y-%m-%dT%H:%M:%SZ"
+_TIMESTAMP_FORMAT_FRAC = "%4Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class Precision(enum.Enum):
@@ -167,7 +167,7 @@ def format_datetime(dttm):
         zoned = pytz.utc.localize(dttm)
     else:
         zoned = dttm.astimezone(pytz.utc)
-    ts = zoned.strftime('%Y-%m-%dT%H:%M:%S')
+    ts = zoned.strftime('%4Y-%m-%dT%H:%M:%S')
     precision = getattr(dttm, 'precision', Precision.ANY)
     precision_constraint = getattr(
         dttm, 'precision_constraint', PrecisionConstraint.EXACT,
