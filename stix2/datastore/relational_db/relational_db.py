@@ -165,13 +165,14 @@ class RelationalDBSink(DataSink):
                 print(CreateTable(t).compile(self.db_backend.database_connection))
 
     def add(self, stix_data, version=None):
-        _add(self, stix_data)
+        _add(self, stix_data, self.allow_custom)
     add.__doc__ = _add.__doc__
 
     def insert_object(self, stix_object):
         schema_name = self.db_backend.determine_schema_name(stix_object)
+        stix_type_name = self.db_backend.determine_stix_type(stix_object)
         with self.db_backend.database_connection.begin() as trans:
-            statements = generate_insert_for_object(self, stix_object, schema_name)
+            statements = generate_insert_for_object(self, stix_object, stix_type_name, schema_name)
             for stmt in statements:
                 print("executing: ", stmt)
                 trans.execute(stmt)
@@ -185,6 +186,9 @@ class RelationalDBSink(DataSink):
                 print(f'delete_stmt: {delete_stmt}')
                 trans.execute(delete_stmt)
 
+    def next_id(self):
+        with self.db_backend.database_connection.begin() as trans:
+            return trans.execute(self.sequence)
 
 class RelationalDBSource(DataSource):
     def __init__(

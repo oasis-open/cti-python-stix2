@@ -52,18 +52,24 @@ def windows_registry_key_example():
 
 
 def malware_with_all_required_properties():
-    ref = stix2.v21.ExternalReference(
+    ref1 = stix2.v21.ExternalReference(
         source_name="veris",
         external_id="0001AA7F-C601-424A-B2B8-BE6C9F5164E7",
-        # hashes={
-        #    "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
-        # },
+        hashes={
+           "SHA-256": "6db12788c37247f2316052e142f42f4b259d6561751e5f401a1ae2a6df9c674b",
+           "MD5":  "3773a88f65a5e780c8dff9cdc3a056f3",
+        },
         url="https://github.com/vz-risk/VCDB/blob/master/data/json/0001AA7F-C601-424A-B2B8-BE6C9F5164E7.json",
+    )
+    ref2 = stix2.v21.ExternalReference(
+        source_name="ACME Threat Intel",
+        description="Threat report",
+        url="http://www.example.com/threat-report.pdf"
     )
     now = dt.datetime(2016, 5, 12, 8, 17, 27, tzinfo=pytz.utc)
 
     malware = stix2.v21.Malware(
-        external_references=[ref],
+        external_references=[ref1, ref2],
         type="malware",
         id="malware--9c4638ec-f1de-4ddb-abf4-1b760417654e",
         created=now,
@@ -195,61 +201,61 @@ def custom_obj():
     return obj
 
 
-# @stix2.CustomObject(
-#     "test-object", [
-#         ("prop_name", stix2.properties.ListProperty(stix2.properties.BinaryProperty()))
-#     ],
-#     "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
-#     is_sdo=True
-# )
-# class TestClass:
-#     pass
-#
-#
-# def test_binary_list():
-#     return TestClass(prop_name=["AREi", "7t3M"])
-#
-# @stix2.CustomObject(
-#         "test2-object", [
-#             ("prop_name", stix2.properties.ListProperty(
-#                 stix2.properties.HexProperty()
-#             ))
-#         ],
-#         "extension-definition--15de9cdb-4567-4271-8479-8141154c5647",
-#         is_sdo=True
-#     )
-#
-# class Test2Class:
-#         pass
-#
-# def test_hex_list():
-#     return Test2Class(
-#         prop_name=["1122", "fedc"]
-#     )
-#
-# @stix2.CustomObject(
-#         "test3-object", [
-#             ("prop_name",
-#                  stix2.properties.DictionaryProperty(
-#                      valid_types=[
-#                          stix2.properties.IntegerProperty,
-#                          stix2.properties.FloatProperty,
-#                          stix2.properties.StringProperty
-#                      ]
-#                  )
-#              )
-#         ],
-#         "extension-definition--15de9cdb-1234-4271-8479-8141154c5647",
-#         is_sdo=True
-#     )
-# class Test3Class:
-#     pass
-#
-#
-# def test_dictionary():
-#     return Test3Class(
-#         prop_name={"a": 1, "b": 2.3, "c": "foo"}
-#     )
+@stix2.CustomObject(
+    "test-object", [
+        ("prop_name", stix2.properties.ListProperty(stix2.properties.BinaryProperty()))
+    ],
+    "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",
+    is_sdo=True
+)
+class TestClass:
+    pass
+
+
+def test_binary_list():
+    return TestClass(prop_name=["AREi", "7t3M"])
+
+@stix2.CustomObject(
+        "test2-object", [
+            ("prop_name", stix2.properties.ListProperty(
+                stix2.properties.HexProperty()
+            ))
+        ],
+        "extension-definition--15de9cdb-4567-4271-8479-8141154c5647",
+        is_sdo=True
+    )
+
+class Test2Class:
+        pass
+
+def test_hex_list():
+    return Test2Class(
+        prop_name=["1122", "fedc"]
+    )
+
+@stix2.CustomObject(
+        "test3-object", [
+            ("prop_name",
+                 stix2.properties.DictionaryProperty(
+                     valid_types=[
+                         stix2.properties.IntegerProperty,
+                         stix2.properties.FloatProperty,
+                         stix2.properties.StringProperty
+                     ]
+                 )
+             )
+        ],
+        "extension-definition--15de9cdb-1234-4271-8479-8141154c5647",
+        is_sdo=True
+    )
+class Test3Class:
+    pass
+
+
+def test_dictionary():
+    return Test3Class(
+        prop_name={"a": 1, "b": 2.3, "c": "foo"}
+    )
 
 
 def main():
@@ -262,19 +268,17 @@ def main():
     )
 
     if store.sink.db_backend.database_exists:
-        # store.sink.generate_stix_schema()
-        # store.sink.clear_tables()
 
         # td = test_dictionary()
-
+        #
         # store.add(td)
-
+        #
         # th = test_hex_list()
-
+        #
         # store.add(th)
-
+        #
         # tb = test_binary_list()
-
+        #
         # store.add(tb)
 
         co = custom_obj()
@@ -295,6 +299,9 @@ def main():
 
         dict_example = dictionary_test()
         store.add(dict_example)
+
+        malware = malware_with_all_required_properties()
+        store.add(malware)
 
         # read_obj = store.get(directory_stix_object.id)
         # print(read_obj)

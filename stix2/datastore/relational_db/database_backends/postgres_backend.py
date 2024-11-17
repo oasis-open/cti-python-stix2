@@ -1,9 +1,8 @@
 import os
 from typing import Any
 
-from sqlalchemy import (  # create_engine,; insert,
-    ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, Float, ForeignKey,
-    Integer, LargeBinary, Table, Text, UniqueConstraint,
+from sqlalchemy import (
+    TIMESTAMP, LargeBinary, Text,
 )
 from sqlalchemy.schema import CreateSchema
 

@@ -226,8 +226,7 @@ def generate_insert_information(   # noqa: F811
     elif isinstance(self.contained, EmbeddedObjectProperty):
         insert_statements = list()
         for value in stix_object[name]:
-            with db_backend.database_connection.begin() as trans:
-                next_id = trans.execute(data_sink.sequence)
+            next_id = data_sink.next_id()
             table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name, schema_name)]
             bindings = {
                 "id": foreign_key_value,
@@ -289,12 +288,12 @@ def derive_column_name(prop):
         return "value"
 
 
-def generate_insert_for_array_in_table(table, values, foreign_key_value):
+def generate_insert_for_array_in_table(table, values, foreign_key_value, column_name="ref_id"):
     insert_statements = list()
     for idx, item in enumerate(values):
         bindings = {
             "id": foreign_key_value,
-            "ref_id": item,
+            column_name: item,
         }
         insert_statements.append(insert(table).values(bindings))
     return insert_statements
@@ -311,12 +310,11 @@ def generate_insert_for_external_references(data_sink, stix_object):
             if prop in er:
                 bindings[prop] = er[prop]
         if "hashes" in er:
-            with db_backend.database_connection.begin() as trans:
-                next_id = trans.execute(data_sink.sequence)
+            next_id = data_sink.next_id()
             bindings["hash_ref_id"] = next_id
-        else:
-            # hash_ref_id is non-NULL, so -1 means there are no hashes
-            bindings["hash_ref_id"] = -1
+        # else:
+        #     # hash_ref_id is non-NULL, so -1 means there are no hashes
+        #     bindings["hash_ref_id"] = -1
         er_insert_statement = insert(object_table).values(bindings)
         insert_statements.append(er_insert_statement)
 
@@ -344,8 +342,7 @@ def generate_insert_for_granular_markings(data_sink, granular_markings_table, st
             bindings["selectors"] = granular_marking.get("selectors")
             insert_statements.append(insert(granular_markings_table).values(bindings))
         else:
-            with db_backend.database_connection.begin() as trans:
-                next_id = trans.execute(data_sink.sequence)
+            next_id = data_sink.next_id()
             bindings["selectors"] = next_id
             insert_statements.append(insert(granular_markings_table).values(bindings))
             table = data_sink.tables_dictionary[
@@ -376,27 +373,43 @@ def generate_insert_for_granular_markings(data_sink, granular_markings_table, st
 #     return sql_bindings_tuples
 
 
-def generate_insert_for_core(data_sink, stix_object, core_properties, schema_name):
-    if schema_name in ["sdo", "sro", "common"]:
-        core_table = data_sink.tables_dictionary["common.core_sdo"]
+def generate_insert_for_core(data_sink, stix_object, core_properties, stix_type_name, schema_name):
+    db_backend = data_sink.db_backend
+    if stix_type_name in ["sdo", "sro", "common"]:
+        core_table = data_sink.tables_dictionary[db_backend.schema_for_core() + "." + "core_sdo"]
     else:
-        core_table = data_sink.tables_dictionary["common.core_sco"]
+        core_table = data_sink.tables_dictionary[db_backend.schema_for_core() + "." + "core_sco"]
     insert_statements = list()
     core_bindings = {}
 
-    for prop_name, value in stix_object.items():
+    child_table_properties = ["object_marking_refs", "granular_markings", "external_references", "type"]
+    if "labels" in core_properties and not db_backend.array_allowed():
+        child_table_properties.append("labels")
 
+    for prop_name, value in stix_object.items():
         if prop_name in core_properties:
             # stored in separate tables below, skip here
-            if prop_name not in {"object_marking_refs", "granular_markings", "external_references", "type"}:
+            if prop_name not in child_table_properties:
                 core_bindings[prop_name] = value
 
     core_insert_statement = insert(core_table).values(core_bindings)
     insert_statements.append(core_insert_statement)
-    object_marking_table_name = canonicalize_table_name("object_marking_refs", data_sink.db_backend.schema_for_core())
+
+    if "labels" in stix_object:
+        label_table_name = canonicalize_table_name(core_table.name + "_labels", data_sink.db_backend.schema_for_core())
+        labels_table = data_sink.tables_dictionary[label_table_name]
+        insert_statements.extend(
+            generate_insert_for_array_in_table(
+                labels_table,
+                stix_object["labels"],
+                stix_object["id"],
+                column_name="label"
+            ))
 
     if "object_marking_refs" in stix_object:
-        if schema_name != "sco":
+        object_marking_table_name = canonicalize_table_name("object_marking_refs",
+                                                            data_sink.db_backend.schema_for_core())
+        if stix_type_name != "sco":
             object_markings_ref_table = data_sink.tables_dictionary[object_marking_table_name + "_sdo"]
         else:
             object_markings_ref_table = data_sink.tables_dictionary[object_marking_table_name + "_sco"]
@@ -414,7 +427,7 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, schema_nam
             "granular_marking",
             data_sink.db_backend.schema_for_core(),
         )
-        if schema_name != "sco":
+        if stix_type_name != "sco":
             granular_marking_table = data_sink.tables_dictionary[granular_marking_table_name + "_sdo"]
         else:
             granular_marking_table = data_sink.tables_dictionary[granular_marking_table_name + "_sco"]
@@ -474,18 +487,18 @@ def generate_insert_for_sub_object(
     return insert_statements
 
 
-def generate_insert_for_object(data_sink, stix_object, schema_name, level=0):
+def generate_insert_for_object(data_sink, stix_object, stix_type_name, schema_name, level=0):
     insert_statements = list()
     bindings = dict()
-    if schema_name == "sco":
+    if stix_type_name == "sco":
         core_properties = SCO_COMMON_PROPERTIES
-    elif schema_name in ["sdo", "sro", "common"]:
+    elif stix_type_name in ["sdo", "sro", "common"]:
         core_properties = SDO_COMMON_PROPERTIES
     else:
         core_properties = list()
     type_name = stix_object["type"]
     if core_properties:
-        insert_statements.extend(generate_insert_for_core(data_sink, stix_object, core_properties, schema_name))
+        insert_statements.extend(generate_insert_for_core(data_sink, stix_object, core_properties, stix_type_name, schema_name))
     if "id" in stix_object:
         foreign_key_value = stix_object["id"]
     else:

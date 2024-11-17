@@ -22,16 +22,6 @@ from stix2.v21.base import _Extension
 from stix2.v21.common import KillChainPhase
 
 
-def aux_table_property(prop, name, core_properties):
-    if isinstance(prop, ListProperty) and name not in core_properties:
-        contained_property = prop.contained
-        return not isinstance(contained_property, (StringProperty, IntegerProperty, FloatProperty))
-    elif isinstance(prop, DictionaryProperty) and name not in core_properties:
-        return True
-    else:
-        return False
-
-
 def create_array_column(property_name, contained_sql_type, optional):
     return Column(
         property_name,
@@ -41,18 +31,17 @@ def create_array_column(property_name, contained_sql_type, optional):
     )
 
 
-def create_array_child_table(metadata, db_backend, table_name, property_name, contained_sql_type):
+def create_array_child_table(metadata, db_backend, parent_table_name, table_name_suffix, property_name, contained_sql_type):
     schema_name = db_backend.schema_for_core()
     columns = [
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
-            # ForeignKey(
-            #     canonicalize_table_name(table_name, schema_name) + ".id",
-            #     ondelete="CASCADE",
-            # ),
+            ForeignKey(
+                 canonicalize_table_name(parent_table_name, schema_name) + ".id",
+                 ondelete="CASCADE",
+            ),
             nullable=False,
-            #primary_key=True,
         ),
         Column(
             property_name,
@@ -60,7 +49,7 @@ def create_array_child_table(metadata, db_backend, table_name, property_name, co
             nullable=False,
         ),
     ]
-    return Table(canonicalize_table_name(table_name + "_" + "selector"), metadata, *columns, schema=schema_name)
+    return Table(parent_table_name + table_name_suffix, metadata, *columns, schema=schema_name)
 
 
 def derive_column_name(prop):
@@ -109,10 +98,10 @@ def create_hashes_table(name, metadata, db_backend, schema_name, table_name, key
         Column(
             "id",
             key_type,
-            ForeignKey(
-                canonicalize_table_name(table_name, schema_name) + (".hash_ref_id" if table_name == "external_references" else ".id"),
-                ondelete="CASCADE",
-            ),
+            # ForeignKey(
+            #     canonicalize_table_name(table_name, schema_name) + (".hash_ref_id" if table_name == "external_references" else ".id"),
+            #     ondelete="CASCADE",
+            # ),
 
             nullable=False,
         ),
@@ -172,13 +161,13 @@ def create_kill_chain_phases_table(name, metadata, db_backend, schema_name, tabl
 
 def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
     schema_name = db_backend.schema_for_core()
+    tables = list()
     columns = [
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
             ForeignKey(canonicalize_table_name("core_" + sco_or_sdo, schema_name) + ".id", ondelete="CASCADE"),
             nullable=False,
-            # primary_key=not db_backend.array_allowed(),
         ),
         Column("lang", db_backend.determine_sql_type_for_string_property()),
         Column(
@@ -192,19 +181,7 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
     ]
     if db_backend.array_allowed():
         columns.append(create_array_column("selectors", db_backend.determine_sql_type_for_string_property(), False))
-        return [
-            Table(
-                "granular_marking_" + sco_or_sdo,
-                metadata,
-                *columns,
-                CheckConstraint(
-                """(lang IS NULL AND marking_ref IS NOT NULL)
-                      OR
-                      (lang IS NOT NULL AND marking_ref IS NULL)""",
-                ),
-                schema=schema_name
-            ),
-        ]
+
     else:
         columns.append(Column(
                 "selectors",
@@ -212,21 +189,8 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
                 unique=True
             )
         )
-        tables = [
-            Table(
-                "granular_marking_" + sco_or_sdo,
-                metadata,
-                *columns,
-                CheckConstraint(
-                    """(lang IS NULL AND marking_ref IS NOT NULL)
-                          OR
-                          (lang IS NOT NULL AND marking_ref IS NULL)""",
-                ),
-                schema=schema_name
-            ),
-        ]
-        schema_name = db_backend.schema_for_core()
-        columns = [
+
+        child_columns = [
             Column(
                 "id",
                 db_backend.determine_sql_type_for_key_as_int(),
@@ -234,7 +198,6 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
                     canonicalize_table_name("granular_marking_" + sco_or_sdo, schema_name) + ".selectors",
                     ondelete="CASCADE",
                 ),
-                # primary_key=True,
                 nullable=False,
             ),
             Column(
@@ -244,8 +207,20 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
             ),
         ]
         tables.append(Table(canonicalize_table_name("granular_marking_" + sco_or_sdo + "_" + "selector"),
-                            metadata, *columns, schema=schema_name))
-        return tables
+                            metadata, *child_columns, schema=schema_name))
+    tables.append(
+        Table(
+            "granular_marking_" + sco_or_sdo,
+            metadata,
+            *columns,
+            CheckConstraint(
+                """(lang IS NULL AND marking_ref IS NOT NULL)
+                      OR
+                      (lang IS NOT NULL AND marking_ref IS NULL)""",
+            ),
+            schema=schema_name
+        ))
+    return tables
 
 
 def create_external_references_tables(metadata, db_backend):
@@ -263,7 +238,7 @@ def create_external_references_tables(metadata, db_backend):
         Column("url", db_backend.determine_sql_type_for_string_property()),
         Column("external_id", db_backend.determine_sql_type_for_string_property()),
         # all such keys are generated using the global sequence.
-        Column("hash_ref_id", db_backend.determine_sql_type_for_key_as_int(), primary_key=True, autoincrement=False),
+        Column("hash_ref_id", db_backend.determine_sql_type_for_key_as_int(), autoincrement=False),
     ]
     return [
         Table("external_references", metadata, *columns, schema="common"),
@@ -271,8 +246,9 @@ def create_external_references_tables(metadata, db_backend):
     ]
 
 
-def create_core_table(metadata, db_backend, schema_name):
+def create_core_table(metadata, db_backend, stix_type_name):
     tables = list()
+    table_name = "core_" + stix_type_name
     columns = [
         Column(
             "id",
@@ -284,7 +260,7 @@ def create_core_table(metadata, db_backend, schema_name):
         ),
         Column("spec_version", db_backend.determine_sql_type_for_string_property(), default="2.1"),
     ]
-    if schema_name == "sdo":
+    if stix_type_name == "sdo":
         sdo_columns = [
             Column(
                 "created_by_ref",
@@ -293,26 +269,32 @@ def create_core_table(metadata, db_backend, schema_name):
                     "created_by_ref ~ '^identity--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",   # noqa: E131
                 ),
             ),
-            Column("created", TIMESTAMP(timezone=True)),
-            Column("modified", TIMESTAMP(timezone=True)),
-            Column("revoked", Boolean),
-            Column("confidence", Integer),
+            Column("created", db_backend.determine_sql_type_for_timestamp_property()),
+            Column("modified", db_backend.determine_sql_type_for_timestamp_property()),
+            Column("revoked", db_backend.determine_sql_type_for_boolean_property()),
+            Column("confidence", db_backend.determine_sql_type_for_integer_property()),
             Column("lang", db_backend.determine_sql_type_for_string_property()),
         ]
         columns.extend(sdo_columns)
         if db_backend.array_allowed():
             columns.append(create_array_column("labels", db_backend.determine_sql_type_for_string_property(), True))
+        else:
+            tables.append(create_array_child_table(metadata,
+                                                   db_backend,
+                                                   table_name,
+                                                   "_labels",
+                                                   "label",
+                                                   db_backend.determine_sql_type_for_string_property()))
     else:
         columns.append(Column("defanged", db_backend.determine_sql_type_for_boolean_property(), default=False))
 
-    tables = [
+    tables.append(
         Table(
-            "core_" + schema_name,
+            table_name,
             metadata,
             *columns,
             schema=db_backend.schema_for_core(),
-        ),
-    ]
+        ))
     return tables
 
 
@@ -440,12 +422,9 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
             else:
                 contained_class = self.valid_types[0].contained
                 columns.append(
-                    Column(
-                        "value",
-                        # its an instance, not a class
-                        ARRAY(contained_class.determine_sql_type(db_backend)),
-                        nullable=False,
-                    ),
+                    create_array_column("value",
+                                        contained_class.determine_sql_type(db_backend),
+                                        False)
                 )
         else:
             for column_type in self.valid_types:
@@ -681,13 +660,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
     else:
         # if ARRAY is not allowed, it is handled by a previous if clause
         if isinstance(self.contained, Property):
-            sql_type = self.contained.determine_sql_type(db_backend)
-            if sql_type:
-                return Column(
-                    name,
-                    ARRAY(sql_type),
-                    nullable=not (self.required),
-                )
+            return create_array_column(name, self.contained.determine_sql_type(db_backend), not self.required)
 
 
 def ref_column(name, specifics, db_backend, auth_type=0):

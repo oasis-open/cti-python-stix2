@@ -1,11 +1,14 @@
 from typing import Any
 
-from sqlalchemy import (  # create_engine,; insert,
-    ARRAY, TIMESTAMP, Boolean, CheckConstraint, Column, Float, ForeignKey,
-    Integer, LargeBinary, Table, Text, UniqueConstraint, create_engine,
+from sqlalchemy import (
+    create_engine, Boolean, Float, Integer, LargeBinary, Text, TIMESTAMP,
 )
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
+from stix2.base import (
+    _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
+    _STIXBase,
+)
 
 class DatabaseBackend:
     def __init__(self, database_connection_url, force_recreate=False, **kwargs: Any):
@@ -26,6 +29,17 @@ class DatabaseBackend:
     @staticmethod
     def determine_schema_name(stix_object):
         return ""
+
+    @staticmethod
+    def determine_stix_type(stix_object):
+        if isinstance(stix_object, _DomainObject):
+            return "sdo"
+        elif isinstance(stix_object, _Observable):
+            return "sco"
+        elif isinstance(stix_object, _RelationshipObject):
+            return "sro"
+        elif isinstance(stix_object, _MetaObject):
+            return "common"
 
     def _create_database(self):
         if self.database_exists:
