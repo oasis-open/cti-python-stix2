@@ -147,7 +147,7 @@ def determine_sql_type_from_stix(cls_or_inst, db_backend):  # noqa: F811
     elif is_class_or_instance(cls_or_inst, StringProperty):
         return db_backend.determine_sql_type_for_string_property()
     elif is_class_or_instance(cls_or_inst, ReferenceProperty):
-        db_backend.determine_sql_type_for_reference_property()
+        return db_backend.determine_sql_type_for_reference_property()
     elif is_class_or_instance(cls_or_inst, TimestampProperty):
         return db_backend.determine_sql_type_for_timestamp_property()
     elif is_class_or_instance(cls_or_inst, Property):
