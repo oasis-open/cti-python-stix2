@@ -7,6 +7,9 @@ import pytest
 
 import stix2
 from stix2.datastore import DataSourceError
+from stix2.datastore.relational_db.database_backends.postgres_backend import (
+    PostgresBackend,
+)
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 import stix2.registry
@@ -15,7 +18,7 @@ import stix2.v21
 _DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres"
 
 store = RelationalDBStore(
-    _DB_CONNECT_URL,
+    PostgresBackend(_DB_CONNECT_URL, True),
     True,
     None,
     False,
@@ -878,7 +881,7 @@ def test_property(object_variation):
     ensure schemas can be created and values can be stored and retrieved.
     """
     rdb_store = RelationalDBStore(
-        _DB_CONNECT_URL,
+        PostgresBackend(_DB_CONNECT_URL, True),
         True,
         None,
         True,
@@ -918,7 +921,7 @@ def test_dictionary_property_complex():
         )
 
         rdb_store = RelationalDBStore(
-            _DB_CONNECT_URL,
+            PostgresBackend(_DB_CONNECT_URL, True),
             True,
             None,
             True,
@@ -934,6 +937,7 @@ def test_dictionary_property_complex():
 def test_extension_definition():
     obj = stix2.ExtensionDefinition(
         created_by_ref="identity--8a5fb7e4-aabe-4635-8972-cbcde1fa4792",
+        labels=["label1", "label2"],
         name="test",
         schema="a schema",
         version="1.2.3",

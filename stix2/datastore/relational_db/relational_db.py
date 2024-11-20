@@ -195,10 +195,11 @@ class RelationalDBSource(DataSource):
         Initialize this source.  Only one of stix_object_classes and metadata
         should be given: if the latter is given, assume table schemas are
         already created.  Instances of this class do not create the actual
-        database tables; see the source/sink for that.
+        database tables; see the store/sink for that.
 
         Args:
-            database_connection_or_url: An SQLAlchemy engine object, or URL
+            db_backend: A database backend object
+            allow_custom: TODO: unused so far
             *stix_object_classes: STIX object classes to map into table schemas.
                 This can be used to limit which schemas are created, if one is
                 only working with a subset of STIX types.  If not given,
@@ -230,6 +231,7 @@ class RelationalDBSource(DataSource):
                 stix_id,
                 self.metadata,
                 conn,
+                self.db_backend,
             )
 
         return stix_obj
