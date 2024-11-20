@@ -249,6 +249,10 @@ def test_hex_list():
                     ],
                 ),
             ),
+            (
+                "list_of_timestamps",
+                stix2.properties.ListProperty(stix2.properties.TimestampProperty()),
+            ),
         ],
         "extension-definition--15de9cdb-1234-4271-8479-8141154c5647",
         is_sdo=True,
@@ -260,6 +264,7 @@ class Test3Class:
 def test_dictionary():
     return Test3Class(
         prop_name={"a": 1, "b": 2.3, "c": "foo"},
+        list_of_timestamps={ "2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"}
     )
 
 

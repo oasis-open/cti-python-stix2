@@ -654,7 +654,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
     elif ((
         isinstance(
             self.contained,
-            (BinaryProperty, BooleanProperty, StringProperty, IntegerProperty, FloatProperty, HexProperty),
+            (BinaryProperty, BooleanProperty, StringProperty, IntegerProperty, FloatProperty, HexProperty, TimestampProperty),
         ) and
         not db_backend.array_allowed()
     ) or
