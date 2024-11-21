@@ -50,11 +50,12 @@ class PostgresBackend(DatabaseBackend):
 
     @staticmethod
     def determine_sql_type_for_binary_property():  # noqa: F811
-        return Text
+        return PostgresBackend.determine_sql_type_for_string_property()
 
     @staticmethod
     def determine_sql_type_for_hex_property():  # noqa: F811
-        return LargeBinary
+        # return LargeBinary
+        return PostgresBackend.determine_sql_type_for_string_property()
 
     @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811

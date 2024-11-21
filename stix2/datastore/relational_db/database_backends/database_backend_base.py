@@ -105,3 +105,10 @@ class DatabaseBackend:
     @staticmethod
     def array_allowed():
         return False
+
+    def generate_value(self, stix_type, value):
+        sql_type = stix_type.determine_sql_type(self)
+        if sql_type == self.determine_sql_type_for_string_property():
+            return value
+        elif sql_type == self.determine_sql_type_for_hex_property():
+            return bytes.fromhex(value)

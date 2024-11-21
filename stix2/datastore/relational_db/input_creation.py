@@ -140,9 +140,8 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 
 @add_method(HexProperty)
-def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
-    v = bytes.fromhex(stix_object[name])
-    return {name: v}
+def generate_insert_information(self, name, stix_object, data_sink, **kwargs):  # noqa: F811
+    return {name: data_sink.db_backend.generate_value(self, stix_object[name])}
 
 
 def generate_insert_for_hashes(
@@ -249,7 +248,7 @@ def generate_insert_information(   # noqa: F811
     else:
         if db_backend.array_allowed():
             if isinstance(self.contained, HexProperty):
-                return {name: [bytes.fromhex(x) for x in stix_object[name]]}
+                return {name: [data_sink.db_backend.generate_value(self.contained, x) for x in stix_object[name]]}
             else:
                 return {name: stix_object[name]}
 
