@@ -22,6 +22,9 @@ class PostgresBackend(DatabaseBackend):
     def __init__(self, database_connection_url=default_database_connection_url, force_recreate=False, **kwargs: Any):
         super().__init__(database_connection_url, force_recreate=force_recreate, **kwargs)
 
+    # =========================================================================
+    # schema methods
+
     def _create_schemas(self):
         with self.database_connection.begin() as trans:
             trans.execute(CreateSchema("common", if_not_exists=True))
@@ -48,6 +51,9 @@ class PostgresBackend(DatabaseBackend):
     def schema_for_core():
         return "common"
 
+    # =========================================================================
+    # sql type methods (overrides)
+
     @staticmethod
     def determine_sql_type_for_binary_property():  # noqa: F811
         return PostgresBackend.determine_sql_type_for_string_property()
@@ -60,6 +66,9 @@ class PostgresBackend(DatabaseBackend):
     @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811
         return TIMESTAMP(timezone=True)
+
+    # =========================================================================
+    # Other methods
 
     @staticmethod
     def array_allowed():

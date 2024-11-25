@@ -14,12 +14,21 @@ class DatabaseBackend:
         self.database_exists = database_exists(database_connection_url)
 
         if force_recreate:
-            if self.database_exists:
-                drop_database(database_connection_url)
-            create_database(database_connection_url)
-            self.database_exists = database_exists(database_connection_url)
+            self._create_database()
 
         self.database_connection = create_engine(database_connection_url)
+
+    def _create_database(self):
+        if self.database_exists:
+            drop_database(self.database_connection_url)
+        create_database(self.database_connection_url)
+        self.database_exists = database_exists(self.database_connection_url)
+
+    # =========================================================================
+    # schema methods
+
+    # the base methods assume schemas are not supported for the database
+    # ---------------------------------------------------------------------------
 
     def _create_schemas(self):
         pass
@@ -29,22 +38,6 @@ class DatabaseBackend:
         return ""
 
     @staticmethod
-    def determine_stix_type(stix_object):
-        if isinstance(stix_object, _DomainObject):
-            return "sdo"
-        elif isinstance(stix_object, _Observable):
-            return "sco"
-        elif isinstance(stix_object, _RelationshipObject):
-            return "sro"
-        elif isinstance(stix_object, _MetaObject):
-            return "common"
-
-    def _create_database(self):
-        if self.database_exists:
-            drop_database(self.database_connection.url)
-        create_database(self.database_connection.url)
-        self.database_exists = database_exists(self.database_connection.url)
-
     def schema_for(stix_class):
         return ""
 
@@ -52,6 +45,10 @@ class DatabaseBackend:
     def schema_for_core():
         return ""
 
+    # =========================================================================
+    # sql type methods
+
+    # Database specific SQL types for STIX property classes
     # you must implement the next 4 methods in the subclass
 
     @staticmethod
@@ -69,6 +66,9 @@ class DatabaseBackend:
     @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811
         pass
+
+    # ------------------------------------------------------------------
+    # Common SQL types for STIX property classes
 
     @staticmethod
     def determine_sql_type_for_kill_chain_phase():  # noqa: F811
@@ -102,11 +102,25 @@ class DatabaseBackend:
     def determine_sql_type_for_key_as_id():  # noqa: F811
         return Text
 
+    # =========================================================================
+    # Other methods
+
+    @staticmethod
+    def determine_stix_type(stix_object):
+        if isinstance(stix_object, _DomainObject):
+            return "sdo"
+        elif isinstance(stix_object, _Observable):
+            return "sco"
+        elif isinstance(stix_object, _RelationshipObject):
+            return "sro"
+        elif isinstance(stix_object, _MetaObject):
+            return "common"
+
     @staticmethod
     def array_allowed():
         return False
 
-    def generate_value(self, stix_type, value):
+    def process_value_for_insert(self, stix_type, value):
         sql_type = stix_type.determine_sql_type(self)
         if sql_type == self.determine_sql_type_for_string_property():
             return value

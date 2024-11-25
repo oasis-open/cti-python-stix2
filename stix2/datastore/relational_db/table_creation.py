@@ -31,14 +31,14 @@ def create_array_column(property_name, contained_sql_type, optional):
     )
 
 
-def create_array_child_table(metadata, db_backend, parent_table_name, table_name_suffix, property_name, contained_sql_type):
-    schema_name = db_backend.schema_for_core()
+def create_array_child_table(metadata, db_backend, parent_table_name, schema_name, table_name_suffix, property_name,
+                             contained_sql_type, foreign_key_property="id"):
     columns = [
         Column(
-            "id",
+            foreign_key_property,
             db_backend.determine_sql_type_for_key_as_id(),
             ForeignKey(
-                 canonicalize_table_name(parent_table_name, schema_name) + ".id",
+                 canonicalize_table_name(parent_table_name, schema_name) + "." + foreign_key_property,
                  ondelete="CASCADE",
             ),
             nullable=False,
@@ -49,7 +49,7 @@ def create_array_child_table(metadata, db_backend, parent_table_name, table_name
             nullable=False,
         ),
     ]
-    return Table(parent_table_name + table_name_suffix, metadata, *columns, schema=schema_name)
+    return Table(canonicalize_table_name(parent_table_name + table_name_suffix), metadata, *columns, schema=schema_name)
 
 
 def derive_column_name(prop):
@@ -290,6 +290,7 @@ def create_core_table(metadata, db_backend, stix_type_name):
                     metadata,
                     db_backend,
                     table_name,
+                    db_backend.schema_for_core(),
                     "_labels",
                     "label",
                     db_backend.determine_sql_type_for_string_property(),
@@ -308,11 +309,14 @@ def create_core_table(metadata, db_backend, stix_type_name):
     )
     return tables
 
+# =========================================================================
+# sql type methods
+
+# STIX classes defer to the DB backend
 
 @add_method(Property)
 def determine_sql_type(self, db_backend):  # noqa: F811
     pass
-
 
 @add_method(KillChainPhase)
 def determine_sql_type(self, db_backend):  # noqa: F811
@@ -358,8 +362,26 @@ def determine_sql_type(self, db_backend):  # noqa: F811
 def determine_sql_type(self, db_backend):  # noqa: F811
     return db_backend.determine_sql_type_for_timestamp_property()
 
+# =========================================================================
+# generate_table_information methods
 
-# ----------------------------- generate_table_information methods ----------------------------
+# positional arguments
+#
+#
+#   name                property name
+#   db_backend          Class instance related to the database backend
+
+# optional arguments
+#
+#   metadata:           SQL Alchemy metadata
+#   schema_name:        name of the schema for the related table, if it exists
+#   table_name:         name of the related table
+#   is_extension:       is this related to a table for an extension
+#   is_embedded_object: is this related to a table for an extension
+#   is_list:            is this property a list?
+#   level:              what "level" of child table is involved
+#   parent_table_name:  the name of the parent table, if called for a child table
+#   core_table:         name of the related core table
 
 @add_method(KillChainPhase)
 def generate_table_information(  # noqa: F811
@@ -404,7 +426,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
 @add_method(DictionaryProperty)
 def generate_table_information(self, name, db_backend, metadata, schema_name, table_name, is_extension=False, **kwargs):  # noqa: F811
     columns = list()
-
+    tables = list()
     columns.append(
         Column(
             "id",
@@ -428,17 +450,49 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                         # its a class
                         determine_sql_type_from_stix(self.valid_types[0], db_backend),
                         nullable=False,
+
                     ),
                 )
             else:
                 contained_class = self.valid_types[0].contained
-                columns.append(
-                    create_array_column(
-                        "value",
-                        contained_class.determine_sql_type(db_backend),
-                        False,
-                    ),
-                )
+                if db_backend.array_allowed():
+                    columns.append(
+                        create_array_column(
+                            "values",
+                            contained_class.determine_sql_type(db_backend),
+                            False,
+                        ),
+                    )
+                else:
+                    columns.append(
+                        Column(
+                            "values",
+                            db_backend.determine_sql_type_for_key_as_int(),
+                            unique = True,
+                        ),
+                    )
+                    child_columns = [
+                        Column(
+                            "id",
+                            db_backend.determine_sql_type_for_key_as_int(),
+                            ForeignKey(
+                                canonicalize_table_name(table_name + "_" + name, schema_name) + ".values",
+                                ondelete="CASCADE",
+                            ),
+                            nullable=False,
+                        ),
+                        Column(
+                            "value",
+                            db_backend.determine_sql_type_for_string_property(),
+                            nullable=False,
+                        ),
+                    ]
+                    tables.append(
+                        Table(
+                            canonicalize_table_name(table_name + "_" + name + "_" + "values"),
+                            metadata, *child_columns, schema=schema_name,
+                        ),
+                    )
         else:
             for column_type in self.valid_types:
                 sql_type = determine_sql_type_from_stix(column_type, db_backend)
@@ -456,15 +510,13 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                 nullable=False,
             ),
         )
-    return [
-        Table(
-            canonicalize_table_name(table_name + "_" + name),
-            metadata,
-            *columns,
-            UniqueConstraint("id", "name"),
-            schema=schema_name,
-        ),
-    ]
+
+    tables.append(Table(canonicalize_table_name(table_name + "_" + name),
+                        metadata,
+                        *columns,
+                        UniqueConstraint("id", "name"),
+                        schema=schema_name))
+    return tables
 
 
 @add_method(EmbeddedObjectProperty)
@@ -753,6 +805,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
 
+# =========================================================================
 
 def generate_object_table(
     stix_object_class, db_backend, metadata, schema_name, foreign_key_name=None,

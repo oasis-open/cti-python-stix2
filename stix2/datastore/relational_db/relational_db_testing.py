@@ -7,6 +7,23 @@ import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 
+email_message = stix2.EmailMessage(
+                    type="email-message",
+                    spec_version="2.1",
+                    id="email-message--0c57a381-2a17-5e61-8754-5ef96efb286c",
+                    from_ref="email-addr--9b7e29b3-fd8d-562e-b3f0-8fc8134f5dda",
+                    to_refs=["email-addr--d1b3bf0c-f02a-51a1-8102-11aba7959868"],
+                    is_multipart=False,
+                    date="2004-04-19T12:22:23.000Z",
+                    subject="Did you see this?",
+                    additional_header_fields={
+                        "Reply-To": [
+                            "steve@example.com",
+                            "jane@example.com"
+                        ]
+                    }
+)
+
 directory_stix_object = stix2.Directory(
     path="/foo/bar/a",
     path_enc="latin1",
@@ -278,6 +295,10 @@ def main():
     )
 
     if store.sink.db_backend.database_exists:
+
+        x=email_message
+
+        store.add(x)
 
         td = test_dictionary()
 

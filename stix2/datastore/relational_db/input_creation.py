@@ -14,6 +14,22 @@ from stix2.properties import (
 from stix2.utils import STIXdatetime
 from stix2.v21.common import KillChainPhase
 
+# =========================================================================
+# generate_insert_information methods
+
+# positional arguments
+#
+#   name:               property name
+#   stix_object:        STIX object data to be inserted in the table
+
+# optional arguments
+#
+#   data_sink:          STIX data sink object
+#   table_name:         name of the related table
+#   schema_name:        name of the schema for the related table, if it exists
+#   parent_table_name:  the name of the parent table, if called for a child table
+#   level:              what "level" of child table is involved
+#   foreign_key_value:
 
 @add_method(Property)
 def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
@@ -41,6 +57,16 @@ def is_valid_type(cls, valid_types):
     return cls in valid_types or instance_in_valid_types(cls, valid_types)
 
 
+def generate_insert_for_dictionary_list(table, next_id, value):
+    insert_stmts = list()
+    for v in value:
+        bindings = dict()
+        bindings["id"] = next_id
+        bindings["value"] = v
+        insert_stmts.append(insert(table).values(bindings))
+    return insert_stmts
+
+
 @add_method(DictionaryProperty)
 def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  # noqa: F811
     bindings = dict()
@@ -60,6 +86,7 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
     # binary, boolean, float, hex,
     # integer, string, timestamp
     valid_types = stix_object._properties[dictionary_name].valid_types
+    child_table_inserts = list()
     for name, value in stix_object[dictionary_name].items():
         bindings = dict()
         if "id" in stix_object:
@@ -67,7 +94,16 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
         elif foreign_key_value:
             bindings["id"] = foreign_key_value
         if not valid_types or len(self.valid_types) == 1:
-            value_binding = "value"
+            if is_valid_type(ListProperty, valid_types):
+                value_binding = "values"
+                if not data_sink.db_backend.array_allowed():
+                    next_id = data_sink.next_id()
+                    table_child = data_sink.tables_dictionary[
+                        canonicalize_table_name(table_name + "_" + dictionary_name + "_" + "values", schema_name)]
+                    child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value)
+                    value = next_id
+            else:
+                value_binding = "value"
         elif isinstance(value, int) and is_valid_type(IntegerProperty, valid_types):
             value_binding = "integer_value"
         elif isinstance(value, str) and is_valid_type(StringProperty, valid_types):
@@ -86,6 +122,7 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
 
         insert_statements.append(insert(table).values(bindings))
 
+    insert_statements.extend(child_table_inserts)
     return insert_statements
 
 
@@ -141,7 +178,7 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 @add_method(HexProperty)
 def generate_insert_information(self, name, stix_object, data_sink, **kwargs):  # noqa: F811
-    return {name: data_sink.db_backend.generate_value(self, stix_object[name])}
+    return {name: data_sink.db_backend.process_value_for_insert(self, stix_object[name])}
 
 
 def generate_insert_for_hashes(
@@ -248,7 +285,7 @@ def generate_insert_information(   # noqa: F811
     else:
         if db_backend.array_allowed():
             if isinstance(self.contained, HexProperty):
-                return {name: [data_sink.db_backend.generate_value(self.contained, x) for x in stix_object[name]]}
+                return {name: [data_sink.db_backend.process_value_for_insert(self.contained, x) for x in stix_object[name]]}
             else:
                 return {name: stix_object[name]}
 
@@ -282,6 +319,8 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 @add_method(TimestampProperty)
 def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     return {name: stix_object[name]}
+
+# =========================================================================
 
 
 def derive_column_name(prop):
