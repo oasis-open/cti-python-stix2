@@ -151,6 +151,7 @@ def test_filesystem_source_bad_stix_file(fs_source, bad_stix_files):
     except STIXError as e:
         assert "Can't parse object with no 'type' property" in str(e)
 
+
 def test_filesystem_sink_add_pretty_true(fs_sink, fs_source):
     """Test adding a STIX object with pretty=True."""
     camp1 = stix2.v21.Campaign(
@@ -168,6 +169,7 @@ def test_filesystem_sink_add_pretty_true(fs_sink, fs_source):
         assert '\n' in content  # Check for pretty-printed output
 
     os.remove(filepath)
+
 
 def test_filesystem_sink_add_pretty_false(fs_sink, fs_source):
     """Test adding a STIX object with pretty=False."""
