@@ -18,6 +18,9 @@ class DatabaseBackend:
 
         self.database_connection = create_engine(database_connection_url)
 
+    def _fk_pragma_on_connect(self):
+        self.database_connnection.execute('pragma foreign_keys=ON')
+
     def _create_database(self):
         if self.database_exists:
             drop_database(self.database_connection_url)
