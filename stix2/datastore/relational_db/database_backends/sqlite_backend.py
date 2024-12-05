@@ -2,7 +2,6 @@ import os
 from typing import Any
 
 from sqlalchemy import TIMESTAMP, LargeBinary, Text
-from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
 from stix2.base import (
@@ -19,11 +18,14 @@ class SQLiteBackend(DatabaseBackend):
     def __init__(self, database_connection_url=default_database_connection_url, force_recreate=False, **kwargs: Any):
         super().__init__(database_connection_url, force_recreate=force_recreate, **kwargs)
 
-        set_sqlite_pragma(self)
-
-    @event.listens_for(Engine, "connect")
-    def set_sqlite_pragma(self):
-        self.database_connection.execute("PRAGMA foreign_keys=ON")
+        @event.listens_for(self.database_connection, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            result = cursor.execute("PRAGMA foreign_keys")
+            for row in result:
+                print('PRAGMA foreign_keys:', row)
+            cursor.close()
 
     # =========================================================================
     # sql type methods (overrides)
