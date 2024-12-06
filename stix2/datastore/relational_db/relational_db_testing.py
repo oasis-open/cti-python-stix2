@@ -1,6 +1,7 @@
 import datetime as dt
 
 from database_backends.postgres_backend import PostgresBackend
+from database_backends.sqlite_backend import SQLiteBackend
 import pytz
 
 import stix2
@@ -287,7 +288,8 @@ def test_dictionary():
 
 def main():
     store = RelationalDBStore(
-        PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
+        #PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
+        SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
         True,
         None,
         True,
