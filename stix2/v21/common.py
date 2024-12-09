@@ -14,7 +14,7 @@ from ..properties import (
     TypeProperty,
 )
 from ..utils import NOW, _get_dict
-from .base import _STIXBase21
+from .base import _MetaObject, _STIXBase21
 from .vocab import EXTENSION_TYPE, HASHING_ALGORITHM
 
 
@@ -80,7 +80,7 @@ class GranularMarking(_STIXBase21):
         self._check_mutually_exclusive_properties(['lang', 'marking_ref'])
 
 
-class LanguageContent(_STIXBase21):
+class LanguageContent(_MetaObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_z9r1cwtu8jja>`__.
     """
@@ -108,7 +108,7 @@ class LanguageContent(_STIXBase21):
     ])
 
 
-class ExtensionDefinition(_STIXBase21):
+class ExtensionDefinition(_MetaObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_32j232tfvtly>`__.
     """
@@ -141,11 +141,11 @@ class ExtensionDefinition(_STIXBase21):
     ])
 
 
-def CustomExtension(type='x-custom-ext', properties=None):
+def CustomExtension(type='x-custom-ext', properties=None, applies_to="sco"):
     """Custom STIX Object Extension decorator.
     """
     def wrapper(cls):
-        return _custom_extension_builder(cls, type, properties, '2.1', _Extension)
+        return _custom_extension_builder(cls, applies_to, type, properties, '2.1', _Extension)
 
     return wrapper
 
@@ -191,7 +191,7 @@ class MarkingProperty(Property):
             raise ValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
-class MarkingDefinition(_STIXBase21, _MarkingsMixin):
+class MarkingDefinition(_MetaObject, _MarkingsMixin):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_k5fndj2c7c1k>`__.
     """

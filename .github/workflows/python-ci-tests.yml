@@ -3,10 +3,31 @@
 name: cti-python-stix2 test harness
 on: [push, pull_request]
 
-jobs:
-  build:
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_DB: postgres
 
+jobs:
+  test-job:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:11
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports: [ '5432:5432' ]
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     strategy:
       matrix:
         python-version: [3.8, 3.9, '3.10', '3.11', '3.12']

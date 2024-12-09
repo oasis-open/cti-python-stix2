@@ -39,7 +39,7 @@ class Relationship(_RelationshipObject):
     # Explicitly define the first three kwargs to make readable Relationship declarations.
     def __init__(
         self, source_ref=None, relationship_type=None,
-        target_ref=None, **kwargs
+        target_ref=None, **kwargs,
     ):
         # Allow (source_ref, relationship_type, target_ref) as positional args.
         if source_ref and not kwargs.get('source_ref'):

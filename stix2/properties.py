@@ -133,7 +133,7 @@ class Property(object):
 
     Subclasses can also define the following functions:
 
-    - ``def clean(self, value, allow_custom) -> (any, has_custom):``
+    - ``def clean(self, value, allow_custom, strict) -> (any, has_custom):``
         - Return a value that is valid for this property, and enforce and
           detect value customization.  If ``value`` is not valid for this
           property, you may attempt to transform it first.  If ``value`` is not
@@ -148,7 +148,9 @@ class Property(object):
           mean there actually are any).  The method must return an appropriate
           value for has_custom.  Customization may not be applicable/possible
           for a property.  In that case, allow_custom can be ignored, and
-          has_custom must be returned as False.
+          has_custom must be returned as False. strict is a True/False flag
+          that is used in the dictionary property. if strict is True,
+          properties like StringProperty will not be lenient in their clean method.
 
     - ``def default(self):``
         - provide a default value for this property.
@@ -170,7 +172,7 @@ class Property(object):
 
     """
 
-    def _default_clean(self, value, allow_custom=False):
+    def _default_clean(self, value, allow_custom=False, strict=False):
         if value != self._fixed_value:
             raise ValueError("must equal '{}'.".format(self._fixed_value))
         return value, False
@@ -191,7 +193,7 @@ class Property(object):
         if default:
             self.default = default
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         return value, False
 
 
@@ -224,7 +226,7 @@ class ListProperty(Property):
 
         super(ListProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         try:
             iter(value)
         except TypeError:
@@ -237,7 +239,10 @@ class ListProperty(Property):
         has_custom = False
         if isinstance(self.contained, Property):
             for item in value:
-                valid, temp_custom = self.contained.clean(item, allow_custom)
+                try:
+                    valid, temp_custom = self.contained.clean(item, allow_custom, strict=strict)
+                except TypeError:
+                    valid, temp_custom = self.contained.clean(item, allow_custom)
                 result.append(valid)
                 has_custom = has_custom or temp_custom
 
@@ -275,9 +280,11 @@ class StringProperty(Property):
     def __init__(self, **kwargs):
         super(StringProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
-        if not isinstance(value, str):
-            value = str(value)
+    def clean(self, value, allow_custom=False, strict=False):
+        if strict and not isinstance(value, str):
+            raise ValueError("Must be a string.")
+
+        value = str(value)
         return value, False
 
 
@@ -296,7 +303,7 @@ class IDProperty(Property):
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         _validate_id(value, self.spec_version, self.required_prefix)
         return value, False
 
@@ -311,7 +318,10 @@ class IntegerProperty(Property):
         self.max = max
         super(IntegerProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
+        if strict and not isinstance(value, int):
+            raise ValueError("must be an integer.")
+
         try:
             value = int(value)
         except Exception:
@@ -335,7 +345,10 @@ class FloatProperty(Property):
         self.max = max
         super(FloatProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
+        if strict and not isinstance(value, float):
+            raise ValueError("must be a float.")
+
         try:
             value = float(value)
         except Exception:
@@ -356,7 +369,10 @@ class BooleanProperty(Property):
     _trues = ['true', 't', '1', 1, True]
     _falses = ['false', 'f', '0', 0, False]
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
+
+        if strict and not isinstance(value, bool):
+            raise ValueError("must be a boolean value.")
 
         if isinstance(value, str):
             value = value.lower()
@@ -379,7 +395,7 @@ class TimestampProperty(Property):
 
         super(TimestampProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         return parse_into_datetime(
             value, self.precision, self.precision_constraint,
         ), False
@@ -387,36 +403,136 @@ class TimestampProperty(Property):
 
 class DictionaryProperty(Property):
 
-    def __init__(self, spec_version=DEFAULT_VERSION, **kwargs):
+    def __init__(self, valid_types=None, spec_version=DEFAULT_VERSION, **kwargs):
         self.spec_version = spec_version
+        self.valid_types = self._normalize_valid_types(valid_types or [])
+
         super(DictionaryProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def _normalize_valid_types(self, valid_types):
+        """
+        Normalize valid_types to a list of property instances.  Also ensure any
+        property types given are supported for type enforcement.
+
+        :param valid_types: A single or iterable of Property instances or
+            subclasses
+        :return: A list of Property instances, or None if none were given
+        """
+        simple_types = (
+            BinaryProperty, BooleanProperty, FloatProperty, HexProperty,
+            IntegerProperty, StringProperty, TimestampProperty,
+            ReferenceProperty, EnumProperty,
+        )
+
+        # Normalize single prop instances/classes to lists
+        try:
+            iter(valid_types)
+        except TypeError:
+            valid_types = [valid_types]
+
+        prop_instances = []
+        for valid_type in valid_types:
+            if inspect.isclass(valid_type):
+                # Note: this will fail as of this writing with EnumProperty
+                # ReferenceProperty, ListProperty.  Callers must instantiate
+                # those with suitable settings themselves.
+                prop_instance = valid_type()
+
+            else:
+                prop_instance = valid_type
+
+            # ListProperty's element type must be one of the supported
+            # simple types.
+            if isinstance(prop_instance, ListProperty):
+                if not isinstance(prop_instance.contained, simple_types):
+                    raise ValueError(
+                        "DictionaryProperty does not support lists of type: "
+                        + type(prop_instance.contained).__name__,
+                    )
+
+            elif not isinstance(prop_instance, simple_types):
+                raise ValueError(
+                    "DictionaryProperty does not support value type: "
+                    + type(prop_instance).__name__,
+                )
+
+            prop_instances.append(prop_instance)
+
+        return prop_instances or None
+
+    def _check_dict_key(self, k):
+        if self.spec_version == '2.0':
+            if len(k) < 3:
+                raise DictionaryKeyError(k, "shorter than 3 characters")
+            elif len(k) > 256:
+                raise DictionaryKeyError(k, "longer than 256 characters")
+        elif self.spec_version == '2.1':
+            if len(k) > 250:
+                raise DictionaryKeyError(k, "longer than 250 characters")
+        if not re.match(r"^[a-zA-Z0-9_-]+$", k):
+            msg = (
+                "contains characters other than lowercase a-z, "
+                "uppercase A-Z, numerals 0-9, hyphen (-), or "
+                "underscore (_)"
+            )
+            raise DictionaryKeyError(k, msg)
+
+    def clean(self, value, allow_custom=False, strict=False):
         try:
             dictified = _get_dict(value)
         except ValueError:
             raise ValueError("The dictionary property must contain a dictionary")
-        for k in dictified.keys():
-            if self.spec_version == '2.0':
-                if len(k) < 3:
-                    raise DictionaryKeyError(k, "shorter than 3 characters")
-                elif len(k) > 256:
-                    raise DictionaryKeyError(k, "longer than 256 characters")
-            elif self.spec_version == '2.1':
-                if len(k) > 250:
-                    raise DictionaryKeyError(k, "longer than 250 characters")
-            if not re.match(r"^[a-zA-Z0-9_-]+$", k):
-                msg = (
-                    "contains characters other than lowercase a-z, "
-                    "uppercase A-Z, numerals 0-9, hyphen (-), or "
-                    "underscore (_)"
-                )
-                raise DictionaryKeyError(k, msg)
+
+        has_custom = False
+        for k, v in dictified.items():
+
+            self._check_dict_key(k)
+
+            if self.valid_types:
+                for type_ in self.valid_types:
+                    try:
+                        # ReferenceProperty at least, does check for
+                        # customizations, so we must propagate that
+                        dictified[k], temp_custom = type_.clean(
+                            value=v,
+                            allow_custom=allow_custom,
+                            # Ignore the passed-in value and fix this to True;
+                            # we need strict cleaning to disambiguate value
+                            # types here.
+                            strict=True,
+                        )
+                    except CustomContentError:
+                        # Need to propagate these, not treat as a type error
+                        raise
+                    except Exception:
+                        # clean failed; value must not conform to type_
+                        # Should be a narrower exception type here, but I don't
+                        # know if it's safe to assume any particular exception
+                        # types...
+                        pass
+                    else:
+                        # clean succeeded; should check the has_custom flag
+                        # just in case.  But if allow_custom is False, I expect
+                        # one of the valid_types property instances would have
+                        # already raised an exception.
+                        has_custom = has_custom or temp_custom
+                        if has_custom and not allow_custom:
+                            raise CustomContentError(f'Custom content detected in key "{k}"')
+
+                        break
+
+                else:
+                    # clean failed for all properties!
+                    raise ValueError(
+                        f"Invalid value: {v!r}",
+                    )
+
+            # else: no valid types given, so we skip the validity check
 
         if len(dictified) < 1:
             raise ValueError("must not be empty.")
 
-        return dictified, False
+        return dictified, has_custom
 
 
 class HashesProperty(DictionaryProperty):
@@ -434,7 +550,7 @@ class HashesProperty(DictionaryProperty):
             if alg:
                 self.__alg_to_spec_name[alg] = spec_hash_name
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         # ignore the has_custom return value here; there is no customization
         # of DictionaryProperties.
         clean_dict, _ = super().clean(value, allow_custom)
@@ -482,7 +598,7 @@ class HashesProperty(DictionaryProperty):
 
 class BinaryProperty(Property):
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         try:
             base64.b64decode(value)
         except (binascii.Error, TypeError):
@@ -492,8 +608,10 @@ class BinaryProperty(Property):
 
 class HexProperty(Property):
 
-    def clean(self, value, allow_custom=False):
-        if not re.match(r"^([a-fA-F0-9]{2})+$", value):
+    def clean(self, value, allow_custom=False, strict=False):
+        if isinstance(value, (bytes, bytearray)):
+            value = value.hex()
+        elif not re.match(r"^([a-fA-F0-9]{2})+$", value):
             raise ValueError("must contain an even number of hexadecimal characters")
         return value, False
 
@@ -541,7 +659,7 @@ class ReferenceProperty(Property):
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
@@ -576,13 +694,13 @@ class ReferenceProperty(Property):
 
         if auth_type == self._WHITELIST:
             type_ok = is_stix_type(
-                obj_type, self.spec_version, *generics
+                obj_type, self.spec_version, *generics,
             ) or obj_type in specifics
 
         else:
             type_ok = (
                 not is_stix_type(
-                    obj_type, self.spec_version, *generics
+                    obj_type, self.spec_version, *generics,
                 ) and obj_type not in specifics
             ) or obj_type in blacklist_exceptions
 
@@ -619,7 +737,7 @@ SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))
 
 class SelectorProperty(Property):
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, strict=False):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("must adhere to selector syntax.")
         return value, False
@@ -640,7 +758,7 @@ class EmbeddedObjectProperty(Property):
         self.type = type
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         if isinstance(value, dict):
             value = self.type(allow_custom=allow_custom, **value)
         elif not isinstance(value, self.type):
@@ -668,8 +786,9 @@ class EnumProperty(StringProperty):
         self.allowed = allowed
         super(EnumProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
-        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
+    def clean(self, value, allow_custom=False, strict=False):
+
+        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom, strict)
 
         if cleaned_value not in self.allowed:
             raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
@@ -689,25 +808,20 @@ class OpenVocabProperty(StringProperty):
             allowed = [allowed]
         self.allowed = allowed
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         cleaned_value, _ = super(OpenVocabProperty, self).clean(
-            value, allow_custom,
+            value, allow_custom, strict,
         )
 
-        # Disabled: it was decided that enforcing this is too strict (might
-        # break too much user code).  Revisit when we have the capability for
-        # more granular config settings when creating objects.
-        #
-        # has_custom = cleaned_value not in self.allowed
-        #
-        # if not allow_custom and has_custom:
-        #     raise CustomContentError(
-        #         "custom value in open vocab: '{}'".format(cleaned_value),
-        #     )
+        # Customization enforcement is disabled: it was decided that enforcing
+        # it is too strict (might break too much user code).  On the other
+        # hand, we need to lock it down in strict mode.  If we are locking it
+        # down in strict mode, we always throw an exception if a value isn't
+        # in the vocab list, and never report anything as "custom".
+        if strict and cleaned_value not in self.allowed:
+            raise ValueError("not in vocab: " + cleaned_value)
 
-        has_custom = False
-
-        return cleaned_value, has_custom
+        return cleaned_value, False
 
 
 class PatternProperty(StringProperty):
@@ -722,7 +836,7 @@ class ObservableProperty(Property):
         self.spec_version = spec_version
         super(ObservableProperty, self).__init__(*args, **kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         try:
             dictified = _get_dict(value)
             # get deep copy since we are going modify the dict and might
@@ -770,7 +884,7 @@ class ExtensionsProperty(DictionaryProperty):
     def __init__(self, spec_version=DEFAULT_VERSION, required=False):
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         try:
             dictified = _get_dict(value)
             # get deep copy since we are going modify the dict and might
@@ -836,7 +950,7 @@ class STIXObjectProperty(Property):
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom=False, strict=False):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
         stix2_classes = {'_DomainObject', '_RelationshipObject', 'MarkingDefinition'}

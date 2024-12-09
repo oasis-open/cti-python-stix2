@@ -191,7 +191,7 @@ class Environment(DataStoreMixin):
     def object_similarity(
         obj1, obj2, prop_scores={}, ds1=None, ds2=None,
         ignore_spec_version=False, versioning_checks=False,
-        max_depth=1, **weight_dict
+        max_depth=1, **weight_dict,
     ):
         """This method returns a measure of how similar the two objects are.
 
@@ -236,14 +236,14 @@ class Environment(DataStoreMixin):
         """
         return object_similarity(
             obj1, obj2, prop_scores, ds1, ds2, ignore_spec_version,
-            versioning_checks, max_depth, **weight_dict
+            versioning_checks, max_depth, **weight_dict,
         )
 
     @staticmethod
     def object_equivalence(
         obj1, obj2, prop_scores={}, threshold=70, ds1=None, ds2=None,
         ignore_spec_version=False, versioning_checks=False,
-        max_depth=1, **weight_dict
+        max_depth=1, **weight_dict,
     ):
         """This method returns a true/false value if two objects are semantically equivalent.
         Internally, it calls the object_similarity function and compares it against the given
@@ -294,13 +294,13 @@ class Environment(DataStoreMixin):
         """
         return object_equivalence(
             obj1, obj2, prop_scores, threshold, ds1, ds2,
-            ignore_spec_version, versioning_checks, max_depth, **weight_dict
+            ignore_spec_version, versioning_checks, max_depth, **weight_dict,
         )
 
     @staticmethod
     def graph_similarity(
         ds1, ds2, prop_scores={}, ignore_spec_version=False,
-        versioning_checks=False, max_depth=1, **weight_dict
+        versioning_checks=False, max_depth=1, **weight_dict,
     ):
         """This method returns a similarity score for two given graphs.
         Each DataStore can contain a connected or disconnected graph and the
@@ -347,14 +347,14 @@ class Environment(DataStoreMixin):
         """
         return graph_similarity(
             ds1, ds2, prop_scores, ignore_spec_version,
-            versioning_checks, max_depth, **weight_dict
+            versioning_checks, max_depth, **weight_dict,
         )
 
     @staticmethod
     def graph_equivalence(
         ds1, ds2, prop_scores={}, threshold=70,
         ignore_spec_version=False, versioning_checks=False,
-        max_depth=1, **weight_dict
+        max_depth=1, **weight_dict,
     ):
         """This method returns a true/false value if two graphs are semantically equivalent.
         Internally, it calls the graph_similarity function and compares it against the given
@@ -403,5 +403,5 @@ class Environment(DataStoreMixin):
         """
         return graph_equivalence(
             ds1, ds2, prop_scores, threshold, ignore_spec_version,
-            versioning_checks, max_depth, **weight_dict
+            versioning_checks, max_depth, **weight_dict,
         )

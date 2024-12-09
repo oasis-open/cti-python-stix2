@@ -25,7 +25,7 @@ MALWARE_KWARGS.update({
             Malware(**MALWARE_KWARGS),
             Malware(
                 object_marking_refs=[MARKING_IDS[0]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MARKING_IDS[0],
         ),
@@ -33,7 +33,7 @@ MALWARE_KWARGS.update({
             MALWARE_KWARGS,
             dict(
                 object_marking_refs=[MARKING_IDS[0]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MARKING_IDS[0],
         ),
@@ -41,7 +41,7 @@ MALWARE_KWARGS.update({
             Malware(**MALWARE_KWARGS),
             Malware(
                 object_marking_refs=[TLP_AMBER.id],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             TLP_AMBER,
         ),
@@ -59,12 +59,12 @@ def test_add_markings_one_marking(data):
 
 def test_add_markings_multiple_marking():
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
 
     after = Malware(
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1]],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
 
     before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], None)
@@ -75,7 +75,7 @@ def test_add_markings_multiple_marking():
 
 def test_add_markings_combination():
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1]],
@@ -89,7 +89,7 @@ def test_add_markings_combination():
                 "marking_ref": MARKING_IDS[3],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
 
     before = markings.add_markings(before, MARKING_IDS[0], None)
@@ -113,7 +113,7 @@ def test_add_markings_combination():
 )
 def test_add_markings_bad_markings(data):
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     with pytest.raises(exceptions.InvalidValueError):
         before = markings.add_markings(before, data, None)
@@ -273,14 +273,14 @@ def test_get_markings_object_and_granular_combinations(data):
         (
             Malware(
                 object_marking_refs=[MARKING_IDS[0]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             Malware(**MALWARE_KWARGS),
         ),
         (
             dict(
                 object_marking_refs=[MARKING_IDS[0]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MALWARE_KWARGS,
         ),
@@ -305,33 +305,33 @@ def test_remove_markings_object_level(data):
         (
             Malware(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             Malware(
                 object_marking_refs=[MARKING_IDS[1]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             [MARKING_IDS[0], MARKING_IDS[2]],
         ),
         (
             dict(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             dict(
                 object_marking_refs=[MARKING_IDS[1]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             [MARKING_IDS[0], MARKING_IDS[2]],
         ),
         (
             Malware(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], TLP_AMBER.id],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             Malware(
                 object_marking_refs=[MARKING_IDS[1]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             [MARKING_IDS[0], TLP_AMBER],
         ),
@@ -349,7 +349,7 @@ def test_remove_markings_multiple(data):
 def test_remove_markings_bad_markings():
     before = Malware(
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     with pytest.raises(MarkingNotFoundError) as excinfo:
         markings.remove_markings(before, [MARKING_IDS[4]], None)
@@ -361,14 +361,14 @@ def test_remove_markings_bad_markings():
         (
             Malware(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             Malware(**MALWARE_KWARGS),
         ),
         (
             dict(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MALWARE_KWARGS,
         ),
@@ -532,14 +532,14 @@ def test_is_marked_object_and_granular_combinations():
         (
             Malware(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             Malware(**MALWARE_KWARGS),
         ),
         (
             dict(
                 object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MALWARE_KWARGS,
         ),
@@ -556,11 +556,11 @@ def test_is_marked_no_markings(data):
 def test_set_marking():
     before = Malware(
         object_marking_refs=[MARKING_IDS[0], MARKING_IDS[1], MARKING_IDS[2]],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         object_marking_refs=[MARKING_IDS[4], MARKING_IDS[5]],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
 
     before = markings.set_markings(before, [MARKING_IDS[4], MARKING_IDS[5]], None)
@@ -584,11 +584,11 @@ def test_set_marking():
 def test_set_marking_bad_input(data):
     before = Malware(
         object_marking_refs=[MARKING_IDS[0]],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         object_marking_refs=[MARKING_IDS[0]],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     with pytest.raises(exceptions.InvalidValueError):
         before = markings.set_markings(before, data, None)

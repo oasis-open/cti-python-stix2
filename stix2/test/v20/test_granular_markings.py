@@ -15,7 +15,7 @@ MALWARE_KWARGS = MALWARE_KWARGS_CONST.copy()
 
 def test_add_marking_mark_one_selector_multiple_refs():
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -28,7 +28,7 @@ def test_add_marking_mark_one_selector_multiple_refs():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
 
@@ -47,7 +47,7 @@ def test_add_marking_mark_one_selector_multiple_refs():
                         "marking_ref": MARKING_IDS[0],
                     },
                 ],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MARKING_IDS[0],
         ),
@@ -60,7 +60,7 @@ def test_add_marking_mark_one_selector_multiple_refs():
                         "marking_ref": MARKING_IDS[0],
                     },
                 ],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             MARKING_IDS[0],
         ),
@@ -73,7 +73,7 @@ def test_add_marking_mark_one_selector_multiple_refs():
                         "marking_ref": TLP_RED.id,
                     },
                 ],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             TLP_RED,
         ),
@@ -91,7 +91,7 @@ def test_add_marking_mark_multiple_selector_one_refs(data):
 
 def test_add_marking_mark_multiple_selector_multiple_refs():
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -104,7 +104,7 @@ def test_add_marking_mark_multiple_selector_multiple_refs():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.add_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "name"])
 
@@ -120,7 +120,7 @@ def test_add_marking_mark_another_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -129,7 +129,7 @@ def test_add_marking_mark_another_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.add_markings(before, [MARKING_IDS[0]], ["name"])
 
@@ -145,7 +145,7 @@ def test_add_marking_mark_same_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -154,7 +154,7 @@ def test_add_marking_mark_same_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.add_markings(before, [MARKING_IDS[0]], ["description"])
 
@@ -391,7 +391,7 @@ def test_get_markings_positional_arguments_combinations(data):
                         "marking_ref": MARKING_IDS[1],
                     },
                 ],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             [MARKING_IDS[0], MARKING_IDS[1]],
         ),
@@ -407,7 +407,7 @@ def test_get_markings_positional_arguments_combinations(data):
                         "marking_ref": MARKING_IDS[1],
                     },
                 ],
-                **MALWARE_KWARGS
+                **MALWARE_KWARGS,
             ),
             [MARKING_IDS[0], MARKING_IDS[1]],
         ),
@@ -426,7 +426,7 @@ def test_remove_marking_remove_multiple_selector_one_ref():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.remove_markings(before, MARKING_IDS[0], ["description", "modified"])
     assert "granular_markings" not in before
@@ -440,7 +440,7 @@ def test_remove_marking_mark_one_selector_from_multiple_ones():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = Malware(
         granular_markings=[
@@ -449,7 +449,7 @@ def test_remove_marking_mark_one_selector_from_multiple_ones():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
     for m in before["granular_markings"]:
@@ -468,7 +468,7 @@ def test_remove_marking_mark_one_selector_markings_from_multiple_ones():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = Malware(
         granular_markings=[
@@ -481,7 +481,7 @@ def test_remove_marking_mark_one_selector_markings_from_multiple_ones():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
     for m in before["granular_markings"]:
@@ -500,7 +500,7 @@ def test_remove_marking_mark_mutilple_selector_multiple_refs():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.remove_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "modified"])
     assert "granular_markings" not in before
@@ -514,7 +514,7 @@ def test_remove_marking_mark_another_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = Malware(
         granular_markings=[
@@ -527,7 +527,7 @@ def test_remove_marking_mark_another_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.remove_markings(before, [MARKING_IDS[0]], ["modified"])
     for m in before["granular_markings"]:
@@ -542,7 +542,7 @@ def test_remove_marking_mark_same_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.remove_markings(before, [MARKING_IDS[0]], ["description"])
     assert "granular_markings" not in before
@@ -572,7 +572,7 @@ def test_remove_marking_not_present():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     with pytest.raises(MarkingNotFoundError):
         markings.remove_markings(before, [MARKING_IDS[1]], ["description"])
@@ -594,7 +594,7 @@ IS_MARKED_TEST_DATA = [
                 "marking_ref": MARKING_IDS[3],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     ),
     dict(
         granular_markings=[
@@ -611,7 +611,7 @@ IS_MARKED_TEST_DATA = [
                 "marking_ref": MARKING_IDS[3],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     ),
 ]
 
@@ -844,14 +844,14 @@ def test_create_sdo_with_invalid_marking():
                     "marking_ref": MARKING_IDS[0],
                 },
             ],
-            **MALWARE_KWARGS
+            **MALWARE_KWARGS,
         )
     assert str(excinfo.value) == "Selector foo in Malware is not valid!"
 
 
 def test_set_marking_mark_one_selector_multiple_refs():
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -864,7 +864,7 @@ def test_set_marking_mark_one_selector_multiple_refs():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.set_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description"])
     for m in before["granular_markings"]:
@@ -879,7 +879,7 @@ def test_set_marking_mark_multiple_selector_one_refs():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -888,7 +888,7 @@ def test_set_marking_mark_multiple_selector_one_refs():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.set_markings(before, [MARKING_IDS[0]], ["description", "modified"])
     for m in before["granular_markings"]:
@@ -897,7 +897,7 @@ def test_set_marking_mark_multiple_selector_one_refs():
 
 def test_set_marking_mark_multiple_selector_multiple_refs_from_none():
     before = Malware(
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -910,7 +910,7 @@ def test_set_marking_mark_multiple_selector_multiple_refs_from_none():
                 "marking_ref": MARKING_IDS[1],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.set_markings(before, [MARKING_IDS[0], MARKING_IDS[1]], ["description", "modified"])
     for m in before["granular_markings"]:
@@ -925,7 +925,7 @@ def test_set_marking_mark_another_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -938,7 +938,7 @@ def test_set_marking_mark_another_property_same_marking():
                 "marking_ref": MARKING_IDS[2],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.set_markings(before, [MARKING_IDS[1], MARKING_IDS[2]], ["description"])
 
@@ -962,7 +962,7 @@ def test_set_marking_bad_selector(marking):
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -971,7 +971,7 @@ def test_set_marking_bad_selector(marking):
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
 
     with pytest.raises(InvalidSelectorError):
@@ -988,7 +988,7 @@ def test_set_marking_mark_same_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     after = Malware(
         granular_markings=[
@@ -997,7 +997,7 @@ def test_set_marking_mark_same_property_same_marking():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
     before = markings.set_markings(before, [MARKING_IDS[0]], ["description"])
     for m in before["granular_markings"]:
@@ -1020,7 +1020,7 @@ CLEAR_MARKINGS_TEST_DATA = [
                 "marking_ref": MARKING_IDS[2],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     ),
     dict(
         granular_markings=[
@@ -1037,7 +1037,7 @@ CLEAR_MARKINGS_TEST_DATA = [
                 "marking_ref": MARKING_IDS[2],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     ),
 ]
 
@@ -1099,7 +1099,7 @@ def test_set_marking_on_id_property():
                 "marking_ref": MARKING_IDS[0],
             },
         ],
-        **MALWARE_KWARGS
+        **MALWARE_KWARGS,
     )
 
     assert "id" in malware["granular_markings"][0]["selectors"]

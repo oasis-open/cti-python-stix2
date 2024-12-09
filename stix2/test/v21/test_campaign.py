@@ -21,7 +21,7 @@ EXPECTED = """{
 
 def test_campaign_example():
     campaign = stix2.v21.Campaign(
-        **CAMPAIGN_MORE_KWARGS
+        **CAMPAIGN_MORE_KWARGS,
     )
 
     assert campaign.serialize(pretty=True) == EXPECTED
