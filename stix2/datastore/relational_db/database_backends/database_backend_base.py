@@ -67,6 +67,10 @@ class DatabaseBackend:
     def determine_sql_type_for_timestamp_property():  # noqa: F811
         pass
 
+    @staticmethod
+    def determine_sql_type_for_key_as_id():  # noqa: F811
+        pass
+
     # ------------------------------------------------------------------
     # Common SQL types for STIX property classes
 
@@ -97,10 +101,6 @@ class DatabaseBackend:
     @staticmethod
     def determine_sql_type_for_key_as_int():  # noqa: F811
         return Integer
-
-    @staticmethod
-    def determine_sql_type_for_key_as_id():  # noqa: F811
-        return Text
 
     # =========================================================================
     # Other methods

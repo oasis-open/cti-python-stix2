@@ -174,7 +174,7 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
             "marking_ref",
             db_backend.determine_sql_type_for_reference_property(),
             CheckConstraint(
-                "marking_ref ~ '^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+                "marking_ref REGEXP '^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
                 # noqa: E131
             ),
         ),
@@ -236,7 +236,7 @@ def create_external_references_tables(metadata, db_backend):
             db_backend.determine_sql_type_for_key_as_id(),
             ForeignKey("common.core_sdo" + ".id", ondelete="CASCADE"),
             CheckConstraint(
-                "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
+                "id REGEXP '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
             ),
         ),
         Column("source_name", db_backend.determine_sql_type_for_string_property()),
@@ -260,7 +260,7 @@ def create_core_table(metadata, db_backend, stix_type_name):
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
             CheckConstraint(
-                "id ~ '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
+                "id REGEXP '^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",  # noqa: E131
             ),
             primary_key=True,
         ),
@@ -272,7 +272,7 @@ def create_core_table(metadata, db_backend, stix_type_name):
                 "created_by_ref",
                 db_backend.determine_sql_type_for_reference_property(),
                 CheckConstraint(
-                    "created_by_ref ~ '^identity--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",   # noqa: E131
+                    "created_by_ref REGEXP '^identity--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",   # noqa: E131
                 ),
             ),
             Column("created", db_backend.determine_sql_type_for_timestamp_property()),
@@ -407,7 +407,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
         self.determine_sql_type(db_backend),
         CheckConstraint(
             # this regular expression might accept or reject some legal base64 strings
-            f"{name} ~  " + "'^[-A-Za-z0-9+/]*={0,3}$'",
+            f"{name} REGEXP  " + "'^[-A-Za-z0-9+/]*={0,3}$'",
         ),
         nullable=not self.required,
     )
@@ -535,7 +535,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
         name,
         self.determine_sql_type(db_backend),
         CheckConstraint(
-            f"{name} ~ '^{enum_re}$'",
+            f"{name} REGEXP '^{enum_re}$'",
         ),
         nullable=not self.required,
     )
@@ -630,7 +630,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
         db_backend.determine_sql_type_for_key_as_id(),
         ForeignKey(foreign_key_column, ondelete="CASCADE"),
         CheckConstraint(
-            f"{name} ~ '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
+            f"{name} REGEXP '^{table_name}" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
             # noqa: E131
         ),
         primary_key=True,
@@ -745,13 +745,13 @@ def ref_column(name, specifics, db_backend, auth_type=0):
         if auth_type == 0:
             constraint = \
                 CheckConstraint(
-                    f"{name} ~ '^({types})" +
+                    f"{name} REGEXP '^({types})" +
                     "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'",
                 )
         else:
             constraint = \
                 CheckConstraint(
-                    f"(NOT({name} ~ '^({types})')) AND ({name} ~ " +
+                    f"(NOT({name} REGEXP '^({types})')) AND ({name} REGEXP " +
                     "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')",
                 )
         return Column(name, db_backend.determine_sql_type_for_reference_property(), constraint)

@@ -31,6 +31,10 @@ class SQLiteBackend(DatabaseBackend):
     # sql type methods (overrides)
 
     @staticmethod
+    def determine_sql_type_for_key_as_id():  # noqa: F811
+        return SQLiteBackend.determine_sql_type_for_string_property()
+
+    @staticmethod
     def determine_sql_type_for_binary_property():  # noqa: F811
         return SQLiteBackend.determine_sql_type_for_string_property()
 
