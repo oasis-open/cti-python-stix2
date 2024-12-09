@@ -2,7 +2,9 @@ import datetime as dt
 
 from database_backends.postgres_backend import PostgresBackend
 from database_backends.sqlite_backend import SQLiteBackend
+from database_backends.mariadb_backend import MariaDBBackend
 import pytz
+import os
 
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
@@ -288,8 +290,10 @@ def test_dictionary():
 
 def main():
     store = RelationalDBStore(
-        PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
+        MariaDBBackend("mariadb+pymysql://{os.getenv('MARIADB_USER')}:{os.getenv('MARIADB_PASSWORD')}@127.0.0.1:3306/rdb", force_recreate=True),
+        #PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
         #SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
+
         True,
         None,
         True,
