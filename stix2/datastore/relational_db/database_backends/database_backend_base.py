@@ -120,6 +120,10 @@ class DatabaseBackend:
     def array_allowed():
         return False
 
+    @staticmethod
+    def create_regex_constraint_expression(column, pattern):
+        pass
+
     def process_value_for_insert(self, stix_type, value):
         sql_type = stix_type.determine_sql_type(self)
         if sql_type == self.determine_sql_type_for_string_property():
