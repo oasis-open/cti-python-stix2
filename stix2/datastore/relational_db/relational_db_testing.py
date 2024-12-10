@@ -288,8 +288,8 @@ def test_dictionary():
 
 def main():
     store = RelationalDBStore(
-        #PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
-        SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
+        PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
+        #SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
         True,
         None,
         True,

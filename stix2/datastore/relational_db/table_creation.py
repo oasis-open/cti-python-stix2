@@ -162,7 +162,7 @@ def create_kill_chain_phases_table(name, metadata, db_backend, schema_name, tabl
 def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
     schema_name = db_backend.schema_for_core()
     tables = list()
-    reg_ex = f"'^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'" # noqa: E131
+    reg_ex = "'^marking-definition--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'" # noqa: E131
     columns = [
         Column(
             "id",

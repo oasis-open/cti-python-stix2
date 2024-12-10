@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Boolean, Float, Integer, Text, create_engine
+from sqlalchemy import Boolean, Float, Integer, String, Text, create_engine
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from stix2.base import (
@@ -88,7 +88,7 @@ class DatabaseBackend:
 
     @staticmethod
     def determine_sql_type_for_reference_property():  # noqa: F811
-        return Text
+        return String(255)
 
     @staticmethod
     def determine_sql_type_for_string_property():  # noqa: F811
@@ -100,7 +100,7 @@ class DatabaseBackend:
 
     @staticmethod
     def determine_sql_type_for_key_as_id():  # noqa: F811
-        return Text
+        return String(255)
 
     # =========================================================================
     # Other methods
