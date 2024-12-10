@@ -40,6 +40,18 @@ class SQLiteBackend(DatabaseBackend):
         return SQLiteBackend.determine_sql_type_for_string_property()
 
     @staticmethod
+    def determine_sql_type_for_reference_property():  # noqa: F811
+        return Text
+
+    @staticmethod
+    def determine_sql_type_for_string_property():  # noqa: F811
+        return Text
+
+    @staticmethod
+    def determine_sql_type_for_key_as_id():  # noqa: F811
+        return Text
+
+    @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811
         return TIMESTAMP(timezone=True)
 
@@ -49,3 +61,7 @@ class SQLiteBackend(DatabaseBackend):
     @staticmethod
     def array_allowed():
         return False
+
+    @staticmethod
+    def create_regex_constraint_expression(column_name, pattern):
+        return f"{column_name} ~ {pattern}"
