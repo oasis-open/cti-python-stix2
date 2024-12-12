@@ -96,7 +96,7 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
             if is_valid_type(ListProperty, valid_types):
                 value_binding = "values"
                 if not data_sink.db_backend.array_allowed():
-                    next_id = data_sink.next_id()
+                    next_id = data_sink.db_backend.next_id(data_sink)
                     table_child = data_sink.tables_dictionary[
                         canonicalize_table_name(table_name + "_" + dictionary_name + "_" + "values", schema_name)]
                     child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value)
@@ -261,7 +261,7 @@ def generate_insert_information(   # noqa: F811
     elif isinstance(self.contained, EmbeddedObjectProperty):
         insert_statements = list()
         for value in stix_object[name]:
-            next_id = data_sink.next_id()
+            next_id = db_backend.next_id(data_sink)
             table = data_sink.tables_dictionary[canonicalize_table_name(table_name + "_" + name, schema_name)]
             bindings = {
                 "id": foreign_key_value,
@@ -346,14 +346,15 @@ def generate_insert_for_array_in_table(table, values, foreign_key_value, column_
 def generate_insert_for_external_references(data_sink, stix_object):
     insert_statements = list()
     next_id = None
-    object_table = data_sink.tables_dictionary["common.external_references"]
+    schema_name = data_sink.db_backend.schema_for_core()
+    object_table = data_sink.tables_dictionary[canonicalize_table_name("external_references", schema_name)]
     for er in stix_object["external_references"]:
         bindings = {"id": stix_object["id"]}
         for prop in ["source_name", "description", "url", "external_id"]:
             if prop in er:
                 bindings[prop] = er[prop]
         if "hashes" in er:
-            next_id = data_sink.next_id()
+            next_id = data_sink.db_backend.next_id(data_sink)
             bindings["hash_ref_id"] = next_id
         # else:
         #     # hash_ref_id is non-NULL, so -1 means there are no hashes
@@ -363,7 +364,12 @@ def generate_insert_for_external_references(data_sink, stix_object):
 
         if "hashes" in er:
             insert_statements.extend(
-                generate_insert_for_hashes(data_sink, "hashes", er, "external_references", "common", foreign_key_value=next_id),
+                generate_insert_for_hashes(data_sink,
+                                           "hashes",
+                                           er,
+                                           "external_references",
+                                           schema_name,
+                                           foreign_key_value=next_id),
             )
 
     return insert_statements
@@ -385,7 +391,7 @@ def generate_insert_for_granular_markings(data_sink, granular_markings_table, st
             bindings["selectors"] = granular_marking.get("selectors")
             insert_statements.append(insert(granular_markings_table).values(bindings))
         else:
-            next_id = data_sink.next_id()
+            next_id = db_backend.next_id(data_sink)
             bindings["selectors"] = next_id
             insert_statements.append(insert(granular_markings_table).values(bindings))
             table = data_sink.tables_dictionary[
@@ -419,9 +425,9 @@ def generate_insert_for_granular_markings(data_sink, granular_markings_table, st
 def generate_insert_for_core(data_sink, stix_object, core_properties, stix_type_name, schema_name):
     db_backend = data_sink.db_backend
     if stix_type_name in ["sdo", "sro", "common"]:
-        core_table = data_sink.tables_dictionary[db_backend.schema_for_core() + "." + "core_sdo"]
+        core_table = data_sink.tables_dictionary[canonicalize_table_name("core_sdo", db_backend.schema_for_core())]
     else:
-        core_table = data_sink.tables_dictionary[db_backend.schema_for_core() + "." + "core_sco"]
+        core_table = data_sink.tables_dictionary[canonicalize_table_name("core_sco", db_backend.schema_for_core())]
     insert_statements = list()
     core_bindings = {}
 

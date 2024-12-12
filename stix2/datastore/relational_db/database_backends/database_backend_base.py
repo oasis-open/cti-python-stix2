@@ -9,6 +9,7 @@ from stix2.base import (
 
 from stix2.properties import HexProperty
 
+
 class DatabaseBackend:
     def __init__(self, database_connection_url, force_recreate=False, **kwargs: Any):
         self.database_connection_url = database_connection_url
@@ -40,11 +41,11 @@ class DatabaseBackend:
 
     @staticmethod
     def schema_for(stix_class):
-        return ""
+        return None
 
     @staticmethod
     def schema_for_core():
-        return ""
+        return None
 
     # =========================================================================
     # sql type methods
@@ -133,3 +134,7 @@ class DatabaseBackend:
             return bytes.fromhex(value)
         else:
             return value
+
+    def next_id(self, data_sink):
+        with self.database_connection.begin() as trans:
+            return trans.execute(data_sink.sequence)

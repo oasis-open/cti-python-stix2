@@ -11,7 +11,6 @@ from stix2.datastore.relational_db.table_creation import create_table_objects
 from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
 
-
 def _add(store, stix_data, allow_custom=True, version="2.1"):
     """Add STIX objects to MemoryStore/Sink.
 
@@ -138,7 +137,7 @@ class RelationalDBSink(DataSink):
             create_table_objects(
                 self.metadata, stix_object_classes,
             )
-        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1, schema="common")
+        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1, schema=db_backend.schema_for_core())
 
         self.allow_custom = allow_custom
 
@@ -181,10 +180,6 @@ class RelationalDBSink(DataSink):
                 delete_stmt = delete(table)
                 print(f'delete_stmt: {delete_stmt}')
                 trans.execute(delete_stmt)
-
-    def next_id(self):
-        with self.db_backend.database_connection.begin() as trans:
-            return trans.execute(self.sequence)
 
 
 class RelationalDBSource(DataSource):

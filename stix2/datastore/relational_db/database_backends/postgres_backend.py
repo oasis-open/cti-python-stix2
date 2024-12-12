@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from sqlalchemy import TIMESTAMP, LargeBinary, Text
+from sqlalchemy import TIMESTAMP, CheckConstraint, Text
 from sqlalchemy.schema import CreateSchema
 
 from stix2.base import (
@@ -88,4 +88,4 @@ class PostgresBackend(DatabaseBackend):
 
     @staticmethod
     def create_regex_constraint_expression(column_name, pattern):
-        return f"{column_name} ~ {pattern}"
+        return CheckConstraint(f"{column_name} ~ {pattern}")

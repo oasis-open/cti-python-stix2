@@ -1,5 +1,3 @@
-# from collections import OrderedDict
-
 from sqlalchemy import (  # create_engine,; insert,
     ARRAY, CheckConstraint, Column, ForeignKey, Integer, Table, Text,
     UniqueConstraint,
@@ -18,7 +16,7 @@ from stix2.properties import (
     ObjectReferenceProperty, Property, ReferenceProperty, StringProperty,
     TimestampProperty, TypeProperty,
 )
-from stix2.v21.base import _Extension
+from stix2.v21.base import _Extension, _Observable
 from stix2.v21.common import KillChainPhase
 
 
@@ -61,13 +59,14 @@ def derive_column_name(prop):
 
 
 def create_object_markings_refs_table(metadata, db_backend, sco_or_sdo):
+    schema_name = db_backend.schema_for_core()
     return create_ref_table(
         metadata,
         db_backend,
         {"marking-definition"},
         "object_marking_refs_" + sco_or_sdo,
-        "common.core_" + sco_or_sdo + ".id",
-        "common",
+        canonicalize_table_name("core_" + sco_or_sdo, schema_name) + ".id",
+        schema_name,
         0,
     )
 
@@ -174,7 +173,7 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
         Column(
             "marking_ref",
             db_backend.determine_sql_type_for_reference_property(),
-            CheckConstraint(db_backend.create_regex_constraint_expression("marking_ref", reg_ex)),
+            db_backend.create_regex_constraint_expression("marking_ref", reg_ex),
         ),
     ]
     if db_backend.array_allowed():
@@ -229,12 +228,13 @@ def create_granular_markings_table(metadata, db_backend, sco_or_sdo):
 
 def create_external_references_tables(metadata, db_backend):
     reg_ex = "'^[a-z][a-z0-9-]+[a-z0-9]--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'"  # noqa: E131
+    schema_name = db_backend.schema_for_core()
     columns = [
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
-            ForeignKey("common.core_sdo" + ".id", ondelete="CASCADE"),
-            CheckConstraint(db_backend.create_regex_constraint_expression("id", reg_ex))),
+            ForeignKey(canonicalize_table_name("core_sdo", schema_name) + ".id", ondelete="CASCADE"),
+            db_backend.create_regex_constraint_expression("id", reg_ex)),
         Column("source_name", db_backend.determine_sql_type_for_string_property()),
         Column("description", db_backend.determine_sql_type_for_string_property()),
         Column("url", db_backend.determine_sql_type_for_string_property()),
@@ -243,8 +243,8 @@ def create_external_references_tables(metadata, db_backend):
         Column("hash_ref_id", db_backend.determine_sql_type_for_key_as_int(), autoincrement=False),
     ]
     return [
-        Table("external_references", metadata, *columns, schema="common"),
-        create_hashes_table("hashes", metadata, db_backend, "common", "external_references", Integer),
+        Table("external_references", metadata, *columns, schema=schema_name),
+        create_hashes_table("hashes", metadata, db_backend, schema_name, "external_references", Integer),
     ]
 
 
@@ -256,7 +256,7 @@ def create_core_table(metadata, db_backend, stix_type_name):
         Column(
             "id",
             db_backend.determine_sql_type_for_key_as_id(),
-            CheckConstraint(db_backend.create_regex_constraint_expression("id", reg_ex)),
+            db_backend.create_regex_constraint_expression("id", reg_ex),
             primary_key=True,
         ),
         Column("spec_version", db_backend.determine_sql_type_for_string_property(), default="2.1"),
@@ -267,7 +267,7 @@ def create_core_table(metadata, db_backend, stix_type_name):
             Column(
                 "created_by_ref",
                 db_backend.determine_sql_type_for_reference_property(),
-                CheckConstraint(db_backend.create_regex_constraint_expression("created_by_ref", reg_ex))),
+                db_backend.create_regex_constraint_expression("created_by_ref", reg_ex)),
             Column("created", db_backend.determine_sql_type_for_timestamp_property()),
             Column("modified", db_backend.determine_sql_type_for_timestamp_property()),
             Column("revoked", db_backend.determine_sql_type_for_boolean_property()),
@@ -399,8 +399,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
         name,
         self.determine_sql_type(db_backend),
         # this regular expression might accept or reject some legal base64 strings
-        CheckConstraint(db_backend.create_regex_constraint_expression(name, "'^[-A-Za-z0-9+/]*={0,3}$'")
-        ),
+        db_backend.create_regex_constraint_expression(name, "'^[-A-Za-z0-9+/]*={0,3}$'"),
         nullable=not self.required,
     )
 
@@ -527,7 +526,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
     return Column(
         name,
         self.determine_sql_type(db_backend),
-        CheckConstraint(db_backend.create_regex_constraint_expression(name, f"'^{enum_re}$'")),
+        db_backend.create_regex_constraint_expression(name, f"'^{enum_re}$'"),
         nullable=not self.required,
     )
 
@@ -609,9 +608,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
         name,
         db_backend.determine_sql_type_for_key_as_id(),
         ForeignKey(foreign_key_column, ondelete="CASCADE"),
-        CheckConstraint(
-            db_backend.create_regex_constraint_expression(name, id_req_exp)
-        ),
+        db_backend.create_regex_constraint_expression(name, id_req_exp),
         primary_key=True,
         nullable=not (self.required),
     )
@@ -723,14 +720,13 @@ def ref_column(name, specifics, db_backend, auth_type=0):
         types = "|".join(specifics)
         if auth_type == 0:
             reg_ex = f"'^({types})" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'"  # noqa: F811
-            constraint = \
-                CheckConstraint(db_backend.create_regex_constraint_expression(name, reg_ex))
+            constraint = db_backend.create_regex_constraint_expression(name, reg_ex)
         else:
             reg_ex = "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')"
-            constraint = \
-                CheckConstraint(db_backend.create_regex_constraint_expression(f"NOT({name}", f"'^({types})'") + " AND " +
-                                db_backend.create_regex_constraint_expression(name, reg_ex))
-        return Column(name, db_backend.determine_sql_type_for_reference_property(), constraint)
+            # constraint = \
+            #     CheckConstraint(db_backend.create_regex_constraint_expression(f"NOT({name}", f"'^({types})'") + " AND " +
+            #                     db_backend.create_regex_constraint_expression(name, reg_ex))
+        return Column(name, db_backend.determine_sql_type_for_reference_property())  # , constraint)
     else:
         return Column(
             name,
@@ -805,7 +801,7 @@ def generate_object_table(
         core_properties = list()
     columns = list()
     tables = list()
-    if schema_name == "sco":
+    if issubclass(stix_object_class, _Observable):
         core_table = "sco"
     else:
         # sro, smo common properties are the same as sdo's

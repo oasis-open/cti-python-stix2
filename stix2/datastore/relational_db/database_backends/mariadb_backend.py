@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from sqlalchemy import Text, VARCHAR
+from sqlalchemy import Text, VARCHAR, CheckConstraint
 from sqlalchemy.schema import CreateSchema
 
 from stix2.base import (
@@ -80,6 +80,6 @@ class MariaDBBackend(DatabaseBackend):
 
     @staticmethod
     def create_regex_constraint_expression(column_name, pattern):
-        return f"{column_name} REGEXP {pattern}"
+        return CheckConstraint(f"{column_name} REGEXP {pattern}")
 
 

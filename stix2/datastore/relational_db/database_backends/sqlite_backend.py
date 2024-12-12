@@ -15,6 +15,8 @@ from .database_backend_base import DatabaseBackend
 class SQLiteBackend(DatabaseBackend):
     default_database_connection_url = f"sqlite:///stix-data-sink.db"
 
+    temp_sequence_count = 0
+
     def __init__(self, database_connection_url=default_database_connection_url, force_recreate=False, **kwargs: Any):
         super().__init__(database_connection_url, force_recreate=force_recreate, **kwargs)
 
@@ -64,4 +66,9 @@ class SQLiteBackend(DatabaseBackend):
 
     @staticmethod
     def create_regex_constraint_expression(column_name, pattern):
-        return f"{column_name} ~ {pattern}"
+        return None
+
+    @staticmethod
+    def next_id(data_sink):
+        SQLiteBackend.temp_sequence_count += 1
+        return SQLiteBackend.temp_sequence_count

@@ -290,9 +290,9 @@ def test_dictionary():
 
 def main():
     store = RelationalDBStore(
-        MariaDBBackend(f"mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
+        #MariaDBBackend(f"mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
         #PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
-        #SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
+        SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
 
         True,
         None,
@@ -305,9 +305,9 @@ def main():
         ap = kill_chain_test()
         store.add(ap)
 
-        x=email_message
+        # x=email_message
 
-        store.add(x)
+        # store.add(x)
 
         td = test_dictionary()
 
