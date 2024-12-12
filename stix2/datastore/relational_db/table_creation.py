@@ -460,7 +460,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                         Column(
                             "values",
                             db_backend.determine_sql_type_for_key_as_int(),
-                            unique = True,
+                            unique=True,
                         ),
                     )
                     child_columns = [
@@ -506,7 +506,8 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
     tables.append(Table(canonicalize_table_name(table_name + "_" + name),
                         metadata,
                         *columns,
-                        UniqueConstraint("id", "name"),
+                        # removed to make sort algorithm work for mariadb
+                        # UniqueConstraint("id", "name"),
                         schema=schema_name))
     return tables
 
@@ -684,7 +685,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
     elif ((
         isinstance(
             self.contained,
-            (BinaryProperty, BooleanProperty, StringProperty, IntegerProperty, FloatProperty, HexProperty, TimestampProperty),
+            (BinaryProperty, BooleanProperty, StringProperty, IntegerProperty, FloatProperty, HexProperty, TimestampProperty),  # noqa: E131
         ) and
         not db_backend.array_allowed()
     ) or
@@ -882,12 +883,9 @@ def generate_object_table(
             )
         columns.append(column)
 
-    # all_tables = [Table(canonicalize_table_name(table_name), metadata, *columns, schema=schema_name)]
-    # all_tables.extend(tables)
-    # return all_tables
-
-    tables.append(Table(canonicalize_table_name(table_name), metadata, *columns, schema=schema_name))
-    return tables
+    all_tables = [Table(canonicalize_table_name(table_name), metadata, *columns, schema=schema_name)]
+    all_tables.extend(tables)
+    return all_tables
 
 
 def add_tables(new_tables, tables):

@@ -1,4 +1,3 @@
-
 from sqlalchemy import insert
 
 from stix2.datastore.relational_db.add_method import add_method
@@ -300,7 +299,7 @@ def generate_insert_information(   # noqa: F811
             for elem in stix_object[name]:
                 bindings = {
                     "id": stix_object["id"],
-                    name: bytes.fromhex(elem) if isinstance(self.contained, HexProperty) else elem,
+                    name: db_backend.process_value_for_insert(self.contained, elem)
                 }
                 insert_statements.append(insert(table).values(bindings))
             return insert_statements
@@ -318,7 +317,9 @@ def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F81
 
 @add_method(TimestampProperty)
 def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
-    return {name: stix_object[name]}
+    db_backend = kwargs["data_sink"].db_backend
+    return {name: db_backend.process_value_for_insert(self, stix_object[name])}
+
 
 # =========================================================================
 
@@ -432,7 +433,7 @@ def generate_insert_for_core(data_sink, stix_object, core_properties, stix_type_
         if prop_name in core_properties:
             # stored in separate tables below, skip here
             if prop_name not in child_table_properties:
-                core_bindings[prop_name] = value
+                core_bindings[prop_name] = db_backend.process_value_for_insert(stix_object._properties[prop_name], value)
 
     core_insert_statement = insert(core_table).values(core_bindings)
     insert_statements.append(core_insert_statement)

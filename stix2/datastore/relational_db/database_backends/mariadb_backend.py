@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from sqlalchemy import TIMESTAMP, LargeBinary, Text, VARCHAR
+from sqlalchemy import Text, VARCHAR
 from sqlalchemy.schema import CreateSchema
 
 from stix2.base import (
@@ -69,7 +69,7 @@ class MariaDBBackend(DatabaseBackend):
 
     @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811
-        return TIMESTAMP(timezone=True)
+        return Text
 
     # =========================================================================
     # Other methods
@@ -81,3 +81,5 @@ class MariaDBBackend(DatabaseBackend):
     @staticmethod
     def create_regex_constraint_expression(column_name, pattern):
         return f"{column_name} REGEXP {pattern}"
+
+

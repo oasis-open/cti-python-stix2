@@ -7,6 +7,7 @@ from stix2.base import (
     _DomainObject, _MetaObject, _Observable, _RelationshipObject,
 )
 
+from stix2.properties import HexProperty
 
 class DatabaseBackend:
     def __init__(self, database_connection_url, force_recreate=False, **kwargs: Any):
@@ -128,5 +129,7 @@ class DatabaseBackend:
         sql_type = stix_type.determine_sql_type(self)
         if sql_type == self.determine_sql_type_for_string_property():
             return value
-        elif sql_type == self.determine_sql_type_for_hex_property():
+        elif sql_type == self.determine_sql_type_for_hex_property() and isinstance(stix_type, HexProperty):
             return bytes.fromhex(value)
+        else:
+            return value

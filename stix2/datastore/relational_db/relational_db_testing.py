@@ -17,7 +17,7 @@ email_message = stix2.EmailMessage(
                     from_ref="email-addr--9b7e29b3-fd8d-562e-b3f0-8fc8134f5dda",
                     to_refs=["email-addr--d1b3bf0c-f02a-51a1-8102-11aba7959868"],
                     is_multipart=False,
-                    date="2004-04-19T12:22:23.000Z",
+                    date="2004-05-19T12:22:23.000Z",
                     subject="Did you see this?",
                     additional_header_fields={
                         "Reply-To": [
@@ -284,13 +284,13 @@ class Test3Class:
 def test_dictionary():
     return Test3Class(
         prop_name={"a": 1, "b": 2.3, "c": "foo"},
-        list_of_timestamps={ "2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"}
+        list_of_timestamps=["2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"]
     )
 
 
 def main():
     store = RelationalDBStore(
-        MariaDBBackend("mariadb+pymysql://{os.getenv('MARIADB_USER')}:{os.getenv('MARIADB_PASSWORD')}@127.0.0.1:3306/rdb", force_recreate=True),
+        MariaDBBackend(f"mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
         #PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
         #SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
 
@@ -301,6 +301,9 @@ def main():
     )
 
     if store.sink.db_backend.database_exists:
+
+        ap = kill_chain_test()
+        store.add(ap)
 
         x=email_message
 
@@ -325,8 +328,7 @@ def main():
         pdf_file = file_example_with_PDFExt_Object()
         store.add(pdf_file)
 
-        ap = kill_chain_test()
-        store.add(ap)
+
 
         store.add(directory_stix_object)
 
