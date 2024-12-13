@@ -86,6 +86,5 @@ class PostgresBackend(DatabaseBackend):
     def array_allowed():
         return True
 
-    @staticmethod
-    def create_regex_constraint_expression(column_name, pattern):
-        return CheckConstraint(f"{column_name} ~ {pattern}")
+    def create_regex_constraint_clause(self, column_name, pattern):
+        return f"{column_name} ~ {pattern}"

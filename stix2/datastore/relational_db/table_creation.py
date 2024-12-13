@@ -91,7 +91,7 @@ def create_ref_table(metadata, db_backend, specifics, table_name, foreign_key_na
 def create_hashes_table(name, metadata, db_backend, schema_name, table_name, key_type=Text, level=1):
     columns = list()
     # special case, perhaps because its a single embedded object with hashes, and not a list of embedded object
-    # making the parent table's primary key does seem to worl
+    # making the parent table's primary key does seem to work
 
     columns.append(
         Column(
@@ -720,13 +720,13 @@ def ref_column(name, specifics, db_backend, auth_type=0):
         types = "|".join(specifics)
         if auth_type == 0:
             reg_ex = f"'^({types})" + "--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'"  # noqa: F811
-            constraint = db_backend.create_regex_constraint_expression(name, reg_ex)
+            constraint =  db_backend.create_regex_constraint_expression(name, reg_ex)
         else:
             reg_ex = "'--[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$')"
-            # constraint = \
-            #     CheckConstraint(db_backend.create_regex_constraint_expression(f"NOT({name}", f"'^({types})'") + " AND " +
-            #                     db_backend.create_regex_constraint_expression(name, reg_ex))
-        return Column(name, db_backend.determine_sql_type_for_reference_property())  # , constraint)
+            constraint = \
+                db_backend.create_regex_constraint_and_expression((f"NOT({name}", f"'^({types})'"),
+                                                                  (name, reg_ex))
+        return Column(name, db_backend.determine_sql_type_for_reference_property(), constraint)  # , constraint)
     else:
         return Column(
             name,

@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Boolean, Float, Integer, String, Text, create_engine
+from sqlalchemy import Boolean, CheckConstraint, Float, Integer, String, Text, create_engine
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from stix2.base import (
@@ -122,9 +122,12 @@ class DatabaseBackend:
     def array_allowed():
         return False
 
-    @staticmethod
-    def create_regex_constraint_expression(column, pattern):
-        pass
+    def create_regex_constraint_expression(self, column_name, pattern):
+        return CheckConstraint(self.create_regex_constraint_clause(column_name, pattern))
+
+    def create_regex_constraint_and_expression(self, clause1, clause2):
+        return (CheckConstraint("((" + self.create_regex_constraint_clause(clause1[0], clause1[1]) + ") AND (" +
+                self.create_regex_constraint_clause(clause2[0], clause2[1]) + "))"))
 
     def process_value_for_insert(self, stix_type, value):
         sql_type = stix_type.determine_sql_type(self)

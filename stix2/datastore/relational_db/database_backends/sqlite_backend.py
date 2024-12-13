@@ -64,8 +64,10 @@ class SQLiteBackend(DatabaseBackend):
     def array_allowed():
         return False
 
-    @staticmethod
-    def create_regex_constraint_expression(column_name, pattern):
+    def create_regex_constraint_expression(self, column_name, pattern):
+        return None
+
+    def create_regex_constraint_and_expression(self, clause1, clause2):
         return None
 
     @staticmethod
