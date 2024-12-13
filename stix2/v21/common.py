@@ -298,6 +298,14 @@ TLP_AMBER = MarkingDefinition(
     definition=TLPMarking(tlp='amber'),
 )
 
+TLP_AMBER_STRICT = MarkingDefinition(
+    id='marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003',
+    created='2022-08-16T00:00:00.000Z',
+    definition_type='tlp',
+    name='TLP:AMBER+STRICT',
+    definition=TLPMarking(tlp='amber+strict'),
+)
+
 TLP_RED = MarkingDefinition(
     id='marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     created='2017-01-20T00:00:00.000Z',
