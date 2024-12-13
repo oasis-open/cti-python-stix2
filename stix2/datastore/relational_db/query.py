@@ -250,7 +250,7 @@ def _read_granular_markings(stix_id, stix_type_class, metadata, conn, db_backend
                 selector_id,
                 "selector",
                 selector_table,
-                conn
+                conn,
             )
             marking_dict["selectors"] = selectors
 
@@ -468,25 +468,27 @@ def _read_complex_property_value(obj_id, prop_name, prop_instance, obj_table, me
             ref_table = metadata.tables[ref_table_name]
             prop_value = _read_simple_array(obj_id, "ref_id", ref_table, conn)
 
-        elif isinstance(prop_instance.contained, (
-            # Most of these list-of-simple-type cases would occur when array
-            # columns are disabled.
-            stix2.properties.BinaryProperty,
-            stix2.properties.BooleanProperty,
-            stix2.properties.EnumProperty,
-            stix2.properties.HexProperty,
-            stix2.properties.IntegerProperty,
-            stix2.properties.FloatProperty,
-            stix2.properties.StringProperty,
-            stix2.properties.TimestampProperty,
-        )):
+        elif isinstance(
+            prop_instance.contained, (
+                # Most of these list-of-simple-type cases would occur when array
+                # columns are disabled.
+                stix2.properties.BinaryProperty,
+                stix2.properties.BooleanProperty,
+                stix2.properties.EnumProperty,
+                stix2.properties.HexProperty,
+                stix2.properties.IntegerProperty,
+                stix2.properties.FloatProperty,
+                stix2.properties.StringProperty,
+                stix2.properties.TimestampProperty,
+            ),
+        ):
             array_table_name = f"{obj_table.fullname}_{prop_name}"
             array_table = metadata.tables[array_table_name]
             prop_value = _read_simple_array(
                 obj_id,
                 prop_name,
                 array_table,
-                conn
+                conn,
             )
 
         elif isinstance(prop_instance.contained, stix2.properties.EmbeddedObjectProperty):
@@ -549,7 +551,7 @@ def _read_complex_top_level_property_value(
     type_table,
     metadata,
     conn,
-    db_backend
+    db_backend,
 ):
     """
     Read property values which require auxiliary tables to store.  These
@@ -581,7 +583,7 @@ def _read_complex_top_level_property_value(
             stix_id,
             stix_type_class,
             metadata,
-            conn
+            conn,
         )
 
     elif prop_name == "granular_markings":
@@ -590,7 +592,7 @@ def _read_complex_top_level_property_value(
             stix_type_class,
             metadata,
             conn,
-            db_backend
+            db_backend,
         )
 
     # Will apply when array columns are unsupported/disallowed by the backend
@@ -608,7 +610,7 @@ def _read_complex_top_level_property_value(
             prop_instance,
             type_table,
             metadata,
-            conn
+            conn,
         )
 
     return prop_value
@@ -663,7 +665,7 @@ def read_object(stix_id, metadata, conn, db_backend):
                 type_table,
                 metadata,
                 conn,
-                db_backend
+                db_backend,
             )
 
             if prop_value is not None:

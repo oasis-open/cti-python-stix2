@@ -1,13 +1,15 @@
 from typing import Any
 
-from sqlalchemy import Boolean, CheckConstraint, Float, Integer, String, Text, create_engine
+from sqlalchemy import (
+    Boolean, CheckConstraint, Float, Integer, String, Text, create_engine,
+)
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
 from stix2.base import (
     _DomainObject, _MetaObject, _Observable, _RelationshipObject,
 )
-
 from stix2.properties import HexProperty
+from stix2.utils import STIXdatetime
 
 
 class DatabaseBackend:
@@ -126,13 +128,17 @@ class DatabaseBackend:
         return CheckConstraint(self.create_regex_constraint_clause(column_name, pattern))
 
     def create_regex_constraint_and_expression(self, clause1, clause2):
-        return (CheckConstraint("((" + self.create_regex_constraint_clause(clause1[0], clause1[1]) + ") AND (" +
-                self.create_regex_constraint_clause(clause2[0], clause2[1]) + "))"))
+        return (
+            CheckConstraint(
+                "((" + self.create_regex_constraint_clause(clause1[0], clause1[1]) + ") AND (" +
+                self.create_regex_constraint_clause(clause2[0], clause2[1]) + "))",
+            )
+        )
 
     def process_value_for_insert(self, stix_type, value):
         sql_type = stix_type.determine_sql_type(self)
-        if sql_type == self.determine_sql_type_for_string_property():
-            return value
+        if sql_type == self.determine_sql_type_for_timestamp_property() and isinstance(value, STIXdatetime):
+            return value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         elif sql_type == self.determine_sql_type_for_hex_property() and isinstance(stix_type, HexProperty):
             return bytes.fromhex(value)
         else:

@@ -410,7 +410,6 @@ def test_enum_property_strict():
     assert result == ("1", False)
 
 
-
 @pytest.mark.xfail(
     reason="Temporarily disabled custom open vocab enforcement",
     strict=True,

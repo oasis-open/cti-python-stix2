@@ -1,10 +1,10 @@
 import datetime as dt
+import os  # noqa: F401
 
-from database_backends.postgres_backend import PostgresBackend
+from database_backends.mariadb_backend import MariaDBBackend  # noqa: F401
+from database_backends.postgres_backend import PostgresBackend  # noqa: F401
 from database_backends.sqlite_backend import SQLiteBackend
-from database_backends.mariadb_backend import MariaDBBackend
 import pytz
-import os
 
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
@@ -22,9 +22,9 @@ email_message = stix2.EmailMessage(
                     additional_header_fields={
                         "Reply-To": [
                             "steve@example.com",
-                            "jane@example.com"
-                        ]
-                    }
+                            "jane@example.com",
+                        ],
+                    },
 )
 
 directory_stix_object = stix2.Directory(
@@ -284,14 +284,14 @@ class Test3Class:
 def test_dictionary():
     return Test3Class(
         prop_name={"a": 1, "b": 2.3, "c": "foo"},
-        list_of_timestamps=["2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"]
+        list_of_timestamps=["2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"],
     )
 
 
 def main():
     store = RelationalDBStore(
-        #MariaDBBackend(f"mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
-        #PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
+        # MariaDBBackend(f"mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
+        # PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
         SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
 
         True,
@@ -305,9 +305,9 @@ def main():
         ap = kill_chain_test()
         store.add(ap)
 
-        # x=email_message
+        x = email_message
 
-        # store.add(x)
+        store.add(x)
 
         td = test_dictionary()
 
@@ -327,8 +327,6 @@ def main():
 
         pdf_file = file_example_with_PDFExt_Object()
         store.add(pdf_file)
-
-
 
         store.add(directory_stix_object)
 

@@ -656,7 +656,7 @@ def _register_object(*args, **kwargs):
 
     try:
         yield TestClass
-    except:
+    except:  # noqa: E722
         ext_id = kwargs.get("extension_name")
         if not ext_id and len(args) >= 3:
             ext_id = args[2]
@@ -682,7 +682,7 @@ def _register_observable(*args, **kwargs):
 
     try:
         yield TestClass
-    except:
+    except:   # noqa: E722
         ext_id = kwargs.get("extension_name")
         if not ext_id and len(args) >= 4:
             ext_id = args[3]
@@ -903,13 +903,13 @@ def test_dictionary_property_complex():
         "test-object", [
             (
                 "prop_name",
-                    stix2.properties.DictionaryProperty(
-                        valid_types=[
-                            stix2.properties.IntegerProperty,
-                            stix2.properties.FloatProperty,
-                            stix2.properties.StringProperty,
-                        ],
-                    ),
+                stix2.properties.DictionaryProperty(
+                    valid_types=[
+                        stix2.properties.IntegerProperty,
+                        stix2.properties.FloatProperty,
+                        stix2.properties.StringProperty,
+                    ],
+                ),
             ),
         ],
         "extension-definition--15de9cdb-3515-4271-8479-8141154c5647",

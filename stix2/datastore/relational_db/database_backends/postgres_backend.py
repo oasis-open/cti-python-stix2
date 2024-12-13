@@ -1,7 +1,7 @@
 import os
 from typing import Any
 
-from sqlalchemy import TIMESTAMP, CheckConstraint, Text
+from sqlalchemy import Text
 from sqlalchemy.schema import CreateSchema
 
 from stix2.base import (
@@ -77,7 +77,7 @@ class PostgresBackend(DatabaseBackend):
 
     @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811
-        return TIMESTAMP(timezone=True)
+        return Text
 
     # =========================================================================
     # Other methods

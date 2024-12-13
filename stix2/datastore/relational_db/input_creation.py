@@ -30,6 +30,7 @@ from stix2.v21.common import KillChainPhase
 #   level:              what "level" of child table is involved
 #   foreign_key_value:
 
+
 @add_method(Property)
 def generate_insert_information(self, name, stix_object, **kwargs):  # noqa: F811
     pass
@@ -98,7 +99,8 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
                 if not data_sink.db_backend.array_allowed():
                     next_id = data_sink.db_backend.next_id(data_sink)
                     table_child = data_sink.tables_dictionary[
-                        canonicalize_table_name(table_name + "_" + dictionary_name + "_" + "values", schema_name)]
+                        canonicalize_table_name(table_name + "_" + dictionary_name + "_" + "values", schema_name)
+                    ]
                     child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value)
                     value = next_id
             else:
@@ -299,7 +301,7 @@ def generate_insert_information(   # noqa: F811
             for elem in stix_object[name]:
                 bindings = {
                     "id": stix_object["id"],
-                    name: db_backend.process_value_for_insert(self.contained, elem)
+                    name: db_backend.process_value_for_insert(self.contained, elem),
                 }
                 insert_statements.append(insert(table).values(bindings))
             return insert_statements
@@ -364,12 +366,14 @@ def generate_insert_for_external_references(data_sink, stix_object):
 
         if "hashes" in er:
             insert_statements.extend(
-                generate_insert_for_hashes(data_sink,
-                                           "hashes",
-                                           er,
-                                           "external_references",
-                                           schema_name,
-                                           foreign_key_value=next_id),
+                generate_insert_for_hashes(
+                    data_sink,
+                    "hashes",
+                    er,
+                    "external_references",
+                    schema_name,
+                    foreign_key_value=next_id,
+                ),
             )
 
     return insert_statements

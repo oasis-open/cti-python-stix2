@@ -11,6 +11,7 @@ from stix2.datastore.relational_db.table_creation import create_table_objects
 from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
 
+
 def _add(store, stix_data, allow_custom=True, version="2.1"):
     """Add STIX objects to MemoryStore/Sink.
 

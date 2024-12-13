@@ -1,19 +1,12 @@
-import os
 from typing import Any
 
-from sqlalchemy import TIMESTAMP, LargeBinary, Text
-from sqlalchemy import event
-
-from stix2.base import (
-    _DomainObject, _MetaObject, _Observable, _RelationshipObject,
-)
-from stix2.datastore.relational_db.utils import schema_for
+from sqlalchemy import Text, event
 
 from .database_backend_base import DatabaseBackend
 
 
 class SQLiteBackend(DatabaseBackend):
-    default_database_connection_url = f"sqlite:///stix-data-sink.db"
+    default_database_connection_url = "sqlite:///stix-data-sink.db"
 
     temp_sequence_count = 0
 
@@ -55,7 +48,7 @@ class SQLiteBackend(DatabaseBackend):
 
     @staticmethod
     def determine_sql_type_for_timestamp_property():  # noqa: F811
-        return TIMESTAMP(timezone=True)
+        return Text
 
     # =========================================================================
     # Other methods
@@ -72,5 +65,6 @@ class SQLiteBackend(DatabaseBackend):
 
     @staticmethod
     def next_id(data_sink):
+        # hack, which is nit reliable
         SQLiteBackend.temp_sequence_count += 1
         return SQLiteBackend.temp_sequence_count
