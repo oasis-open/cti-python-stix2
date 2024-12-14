@@ -57,14 +57,11 @@ class SQLiteBackend(DatabaseBackend):
     def array_allowed():
         return False
 
-    def create_regex_constraint_expression(self, column_name, pattern):
-        return None
-
-    def create_regex_constraint_and_expression(self, clause1, clause2):
-        return None
+    def create_regex_constraint_clause(self, column_name, pattern):
+        return f"{column_name} REGEXP {pattern}"
 
     @staticmethod
     def next_id(data_sink):
-        # hack, which is nit reliable
+        # hack, which is not reliable, must look for a better solution
         SQLiteBackend.temp_sequence_count += 1
         return SQLiteBackend.temp_sequence_count
