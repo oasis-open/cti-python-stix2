@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from codecs import open
 import os.path
+import sys
+import pkg_resources
 
 from setuptools import find_packages, setup
 
@@ -20,6 +22,14 @@ def get_version():
 def get_long_description():
     with open('README.rst') as f:
         return f.read()
+
+
+
+try:
+    pkg_resources.get_distribution("stix2")
+    sys.exit(f"Error: 'stix2' is installed. Uninstall it before proceeding.")
+except pkg_resources.DistributionNotFound:
+    pass
 
 
 setup(
