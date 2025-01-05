@@ -1,7 +1,7 @@
 from typing import Any
 
 from sqlalchemy import (
-    Boolean, CheckConstraint, Float, Integer, String, Text, create_engine,
+    Boolean, CheckConstraint, Float, Integer, Sequence, String, Text, create_engine,
 )
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
@@ -147,3 +147,6 @@ class DatabaseBackend:
     def next_id(self, data_sink):
         with self.database_connection.begin() as trans:
             return trans.execute(data_sink.sequence)
+
+    def create_sequence(self, metadata):
+        return Sequence("my_general_seq", metadata=metadata, start=1, schema=self.schema_for_core())
