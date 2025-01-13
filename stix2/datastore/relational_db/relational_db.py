@@ -12,7 +12,7 @@ from stix2.datastore.relational_db.utils import canonicalize_table_name
 from stix2.parsing import parse
 
 
-def _add(store, stix_data, allow_custom=True, version="2.1"):
+def _add(sink, stix_data, allow_custom=True, version="2.1"):
     """Add STIX objects to MemoryStore/Sink.
 
     Adds STIX objects to an in-memory dictionary for fast lookup.
@@ -32,12 +32,12 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
     if isinstance(stix_data, list):
         # STIX objects are in a list- recurse on each object
         for stix_obj in stix_data:
-            _add(store, stix_obj, allow_custom, version)
+            _add(sink, stix_obj, allow_custom, version)
 
     elif stix_data["type"] == "bundle":
         # adding a json bundle - so just grab STIX objects
         for stix_obj in stix_data.get("objects", []):
-            _add(store, stix_obj, allow_custom, version)
+            _add(sink, stix_obj, allow_custom, version)
 
     else:
         # Adding a single non-bundle object
@@ -46,7 +46,7 @@ def _add(store, stix_data, allow_custom=True, version="2.1"):
         else:
             stix_obj = parse(stix_data, allow_custom, version)
 
-        store.insert_object(stix_obj)
+        sink.insert_object(stix_obj)
 
 
 class RelationalDBStore(DataStoreMixin):
