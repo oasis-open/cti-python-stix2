@@ -210,11 +210,8 @@ class DataStoreMixin(object):
             stix_objs (list): a list of STIX objects
 
         """
-        try:
-            return self.sink.add(*args, **kwargs)
-        except AttributeError:
-            msg = "%s has no data sink to put objects in"
-            raise AttributeError(msg % self.__class__.__name__)
+        return self.sink.add(*args, **kwargs)
+
 
 
 class DataSink(metaclass=ABCMeta):
