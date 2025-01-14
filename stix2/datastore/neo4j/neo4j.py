@@ -180,8 +180,8 @@ class Neo4jSink(DataSink):
         self.sgraph.create(node)
         # check to see if the addition of this node makes it possible to create a relationship
         for rel in self.relationships_to_recheck:
-            self._insert_sro(obj, True)
-        self._insert_embedded_relationships(obj)
+            self._insert_sro(rel, True)
+        self._insert_embedded_relationships(obj, obj["id"])
         self._insert_external_references(external_references, node)
         self._insert_extensions(extension_relationships, node)
         self._insert_sub_objects(self.sub_object_relationships, node)
@@ -190,18 +190,19 @@ class Neo4jSink(DataSink):
         node_contents = dict()
         node_contents["type"] = sub_prop
         for key, value in sub_obj.items():
-            if isinstance(value, list):
-                if isinstance(value[0], str):
-                    node_contents[key] = ",".join(value)
-                elif isinstance(value[0], dict):
-                    for v in value:
-                        self.sub_object_relationships.append((key, v))
-            elif key == "hashes":
-                node_contents[key] = hash_dict_as_string(value)
-            elif not isinstance(value, dict):
-                node_contents[key] = value
-            else:
-                self.sub_object_relationships.append((key, value))
+            if not key.endswith("ref") and not key.endswith("refs"):
+                if isinstance(value, list):
+                    if isinstance(value[0], str):
+                        node_contents[key] = ",".join(value)
+                    elif isinstance(value[0], dict):
+                        for v in value:
+                            self.sub_object_relationships.append((key, v))
+                elif key == "hashes":
+                    node_contents[key] = hash_dict_as_string(value)
+                elif not isinstance(value, dict):
+                    node_contents[key] = value
+                else:
+                    self.sub_object_relationships.append((key, value))
         node = Node(sub_prop,
                     name=sub_prop + "_" + self.next_id(),
                     # bundlesource=self.bundlename,
@@ -209,6 +210,7 @@ class Neo4jSink(DataSink):
         self.sgraph.create(node)
         relationship = Relationship(parent_node, sub_prop, node)
         self.sgraph.create(relationship)
+        self._insert_embedded_relationships(sub_obj, parent_node["id"])
 
     def _insert_sub_objects(self, sub_objects, parent_node):
         for sub in sub_objects:
@@ -238,26 +240,29 @@ class Neo4jSink(DataSink):
             type_name = ext.__class__.__name__
             node_contents["type"] = type_name
             for key, value in ext.items():
-                if isinstance(value, list):
-                    if isinstance(value[0], str):
-                        node_contents[key] = ",".join(value)
+                if not key.endswith("ref") and not key.endswith("refs"):
+                    if isinstance(value, list):
+                        if isinstance(value[0], str):
+                            node_contents[key] = ",".join(value)
+                        else:
+                            for v in value:
+                                self.sub_object_relationships.append((key, v))
+                    elif key == "hashes":
+                        node_contents[key] = hash_dict_as_string(value)
                     else:
-                        for v in value:
-                            self.sub_object_relationships.append((key, v))
-                elif key == "hashes":
-                    node_contents[key] = hash_dict_as_string(value)
-                else:
-                    node_contents[key] = value
+                        node_contents[key] = value
             node = Node(type_name,
                         name=type_name + "_" + self.next_id(),
                         # bundlesource=self.bundlename,
                         **node_contents)
             relationship = Relationship(parent_node, type_name, node)
             self.sgraph.create(relationship)
+            self._insert_embedded_relationships(ext, parent_node["id"])
 
     def _is_node_available(self, id,):
-        cypher_string = f'OPTIONAL MATCH (a) WHERE a.id="{str(id)}" RETURN a'
-        return self.sgraph.run(cypher_string)
+        cypher_string = f'OPTIONAL MATCH (a) WHERE a.id="{str(id)}" UNWIND [a] AS list_rows RETURN list_rows'
+        cursor = self.sgraph.run(cypher_string).data()
+        return cursor[0]["list_rows"]
 
     def _insert_sro(self, obj, recheck=False):
         reltype = str(obj['relationship_type'])
@@ -270,13 +275,14 @@ class Neo4jSink(DataSink):
         if self._is_node_available(obj["source_ref"]) and self._is_node_available(obj["target_ref"]):
             cypher_string = f'MATCH (a),(b) WHERE a.id="{str(obj["source_ref"])}" AND b.id="{str(obj["target_ref"])}" CREATE (a)-[r:{reltype}]->(b) RETURN a,b'
             self.sgraph.run(cypher_string)
+            print(f'Created {str(obj["source_ref"])} {reltype} {obj["target_ref"]}')
             if recheck:
                 remove_sro_from_list(obj, self.relationships_to_recheck)
         else:
             if not recheck:
                 self.relationships_to_recheck.append(obj)
 
-    def _insert_embedded_relationships(self, obj, recheck=False):
+    def _insert_embedded_relationships(self, obj, id, recheck=False):
         for k in obj.keys():
             k_tokens = k.split("_")
             # find refs, but ignore external_references since they aren't objects
@@ -291,15 +297,16 @@ class Neo4jSink(DataSink):
                 for ref in ref_list:
                     if self._is_node_available(ref):
                         # The "b to a" relationship is reversed in this cypher query to ensure the correct relationship direction in the graph
-                        cypher_string = f'MATCH (a),(b) WHERE a.id="{str(ref)}" AND b.id="{str(obj["id"])}" CREATE (b)-[r:{rel_type}]->(a) RETURN a,b'
+                        cypher_string = f'MATCH (a),(b) WHERE a.id="{str(ref)}" AND b.id="{str(id)}" CREATE (b)-[r:{k}]->(a) RETURN a,b'
                         self.sgraph.run(cypher_string)
+                        print(f'Created * {str(id)} {k} {str(ref)}')
                         if recheck:
                             remove_sro_from_list(obj, self.relationships_to_recheck)
                     else:
                         if not recheck:
-                            embedded_relationship = {"source_ref": obj["id"],
+                            embedded_relationship = {"source_ref": id,
                                                      "target_ref": ref,
-                                                     "relationship_type": rel_type}
+                                                     "relationship_type": k}
                             self.relationships_to_recheck.append(embedded_relationship)
 
 
