@@ -1,6 +1,7 @@
 import json
 
 from py2neo import Graph, Node, Relationship
+import re
 
 import stix2
 from stix2.base import _STIXBase
@@ -10,6 +11,8 @@ from stix2.datastore import (
 from stix2.parsing import parse
 
 
+def convert_camel_case_to_snake_case(name):
+    return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 def remove_sro_from_list(sro, sro_list):
     for rel in sro_list:
         if (rel["source_ref"] == sro["source_ref"] and
@@ -237,7 +240,7 @@ class Neo4jSink(DataSink):
     def _insert_extensions(self, extensions, parent_node):
         for ext in extensions:
             node_contents = dict()
-            type_name = ext.__class__.__name__
+            type_name = convert_camel_case_to_snake_case(ext.__class__.__name__)
             node_contents["type"] = type_name
             for key, value in ext.items():
                 if not key.endswith("ref") and not key.endswith("refs"):
@@ -275,7 +278,7 @@ class Neo4jSink(DataSink):
         if self._is_node_available(obj["source_ref"]) and self._is_node_available(obj["target_ref"]):
             cypher_string = f'MATCH (a),(b) WHERE a.id="{str(obj["source_ref"])}" AND b.id="{str(obj["target_ref"])}" CREATE (a)-[r:{reltype}]->(b) RETURN a,b'
             self.sgraph.run(cypher_string)
-            print(f'Created {str(obj["source_ref"])} {reltype} {obj["target_ref"]}')
+            # print(f'Created {str(obj["source_ref"])} {reltype} {obj["target_ref"]}')
             if recheck:
                 remove_sro_from_list(obj, self.relationships_to_recheck)
         else:
@@ -299,7 +302,7 @@ class Neo4jSink(DataSink):
                         # The "b to a" relationship is reversed in this cypher query to ensure the correct relationship direction in the graph
                         cypher_string = f'MATCH (a),(b) WHERE a.id="{str(ref)}" AND b.id="{str(id)}" CREATE (b)-[r:{k}]->(a) RETURN a,b'
                         self.sgraph.run(cypher_string)
-                        print(f'Created * {str(id)} {k} {str(ref)}')
+                        # print(f'Created * {str(id)} {k} {str(ref)}')
                         if recheck:
                             remove_sro_from_list(obj, self.relationships_to_recheck)
                     else:
