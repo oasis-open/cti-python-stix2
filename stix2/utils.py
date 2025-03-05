@@ -327,9 +327,15 @@ def detect_spec_version(stix_dict):
     obj_type = stix_dict["type"]
 
     if 'spec_version' in stix_dict:
-        # For STIX 2.0, applies to bundles only.
-        # For STIX 2.1+, applies to SCOs, SDOs, SROs, and markings only.
-        v = stix_dict['spec_version']
+        # For STIX 2.0, applies to bundles only.  Presence in a bundle implies
+        # STIX 2.0; the value applies to the content of the bundle, not the
+        # bundle itself, so we don't care here about the value.
+        #
+        # For STIX 2.1+, applies to non-bundles only.
+        if obj_type == "bundle":
+            v = "2.0"
+        else:
+            v = stix_dict['spec_version']
     elif "id" not in stix_dict:
         # Only 2.0 SCOs don't have ID properties
         v = "2.0"

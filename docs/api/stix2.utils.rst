@@ -1,4 +1,4 @@
-utils
+﻿utils
 ===========
 
 .. automodule:: stix2.utils

@@ -244,7 +244,7 @@ def partial_timestamp_based(t1, t2, tdelta):
 def partial_list_based(l1, l2):
     """Performs a partial list matching via finding the intersection between
     common values. Repeated values are counted only once. This method can be
-    used for *_refs equality checks when de-reference is not possible.
+    used for _refs equality checks when de-reference is not possible.
 
     Args:
         l1: A list of values.
@@ -262,7 +262,7 @@ def partial_list_based(l1, l2):
 
 def exact_match(val1, val2):
     """Performs an exact value match based on two values. This method can be
-    used for *_ref equality check when de-reference is not possible.
+    used for _ref equality check when de-reference is not possible.
 
     Args:
         val1: A value suitable for an equality test.

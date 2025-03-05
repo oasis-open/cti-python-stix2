@@ -1,4 +1,4 @@
-exceptions
+﻿exceptions
 ================
 
 .. automodule:: stix2.exceptions

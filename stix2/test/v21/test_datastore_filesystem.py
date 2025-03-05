@@ -152,6 +152,44 @@ def test_filesystem_source_bad_stix_file(fs_source, bad_stix_files):
         assert "Can't parse object with no 'type' property" in str(e)
 
 
+def test_filesystem_sink_add_pretty_true(fs_sink, fs_source):
+    """Test adding a STIX object with pretty=True."""
+    camp1 = stix2.v21.Campaign(
+        name="Hannibal",
+        objective="Targeting Italian and Spanish Diplomat internet accounts",
+        aliases=["War Elephant"],
+    )
+    fs_sink.add(camp1, pretty=True)
+    filepath = os.path.join(
+        FS_PATH, "campaign", camp1.id, _timestamp2filename(camp1.modified) + ".json",
+    )
+    assert os.path.exists(filepath)
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+        assert '\n' in content  # Check for pretty-printed output
+
+    os.remove(filepath)
+
+
+def test_filesystem_sink_add_pretty_false(fs_sink, fs_source):
+    """Test adding a STIX object with pretty=False."""
+    camp1 = stix2.v21.Campaign(
+        name="Hannibal",
+        objective="Targeting Italian and Spanish Diplomat internet accounts",
+        aliases=["War Elephant"],
+    )
+    fs_sink.add(camp1, pretty=False)
+    filepath = os.path.join(
+        FS_PATH, "campaign", camp1.id, _timestamp2filename(camp1.modified) + ".json",
+    )
+    assert os.path.exists(filepath)
+    with open(filepath, 'r', encoding='utf-8') as f:
+        content = f.read()
+        assert '\n' not in content  # Check for non-pretty-printed output
+
+    os.remove(filepath)
+
+
 def test_filesystem_source_get_object(fs_source):
     # get (latest) object
     mal = fs_source.get("malware--6b616fc1-1505-48e3-8b2c-0d19337bff38")

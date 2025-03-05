@@ -1,4 +1,4 @@
-environment
+﻿environment
 =================
 
 .. automodule:: stix2.environment
