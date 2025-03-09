@@ -31,7 +31,7 @@ from .vocab import (
 )
 
 
-class git diff AttackPattern(_DomainObject):
+class AttackPattern(_DomainObject):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_axjijf603msy>`__.
     """
