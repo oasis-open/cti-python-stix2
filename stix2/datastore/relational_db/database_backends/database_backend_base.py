@@ -71,6 +71,9 @@ class DatabaseBackend:
     def determine_sql_type_for_timestamp_property():  # noqa: F811
         pass
 
+    def create_regex_constraint_clause(self, column_name, pattern):
+        pass
+
     # ------------------------------------------------------------------
     # Common SQL types for STIX property classes
 
@@ -126,6 +129,20 @@ class DatabaseBackend:
 
     def create_regex_constraint_expression(self, column_name, pattern):
         return CheckConstraint(self.create_regex_constraint_clause(column_name, pattern))
+
+    @staticmethod
+    def check_for_none(val):
+        return val is None
+
+    def create_min_max_constraint_expression(self, int_property, column_name):
+        if not self.check_for_none(int_property.min) and not self.check_for_none(int_property.max):
+            return CheckConstraint(f"{column_name} >= {int_property.min} and {column_name} <= {int_property.max}")
+        elif not self.check_for_none(int_property.min):
+            return CheckConstraint(f"{column_name} >= {int_property.min}")
+        elif not self.check_for_none(int_property.max):
+            return CheckConstraint(f"{column_name} <= {int_property.max}")
+        else:
+            return None
 
     def create_regex_constraint_and_expression(self, clause1, clause2):
         return (

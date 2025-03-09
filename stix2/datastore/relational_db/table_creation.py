@@ -630,6 +630,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
     return Column(
         name,
         self.determine_sql_type(db_backend),
+        db_backend.create_min_max_constraint_expression(self, name),
         nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
