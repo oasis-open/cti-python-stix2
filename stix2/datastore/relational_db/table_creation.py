@@ -275,7 +275,9 @@ def create_core_table(metadata, db_backend, stix_type_name):
             Column("created", db_backend.determine_sql_type_for_timestamp_property()),
             Column("modified", db_backend.determine_sql_type_for_timestamp_property()),
             Column("revoked", db_backend.determine_sql_type_for_boolean_property()),
-            Column("confidence", db_backend.determine_sql_type_for_integer_property()),
+            Column("confidence",
+                   db_backend.determine_sql_type_for_integer_property(),
+                   db_backend.create_min_max_constraint_expression(IntegerProperty(min=0, max=100), "confidence")),
             Column("lang", db_backend.determine_sql_type_for_string_property()),
         ]
         columns.extend(sdo_columns)
