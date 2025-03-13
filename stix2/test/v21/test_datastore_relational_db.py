@@ -21,7 +21,7 @@ store = RelationalDBStore(
     PostgresBackend(_DB_CONNECT_URL, True),
     True,
     None,
-    False,
+    True,
 )
 
 # Artifacts

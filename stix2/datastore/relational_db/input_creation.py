@@ -69,7 +69,6 @@ def generate_insert_for_dictionary_list(table, next_id, value):
 
 @add_method(DictionaryProperty)
 def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  # noqa: F811
-    bindings = dict()
     data_sink = kwargs.get("data_sink")
     table_name = kwargs.get("table_name")
     schema_name = kwargs.get("schema_name")
@@ -103,23 +102,37 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
                     ]
                     child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value)
                     value = next_id
+                    stix_type = IntegerProperty()
+                else:
+                    contained_type = valid_types[0].contained
+                    stix_type = ListProperty(contained_type)
+                    value = [data_sink.db_backend.process_value_for_insert(contained_type, x) for x in value]
             else:
                 value_binding = "value"
+                stix_type = StringProperty()
         elif isinstance(value, int) and is_valid_type(IntegerProperty, valid_types):
             value_binding = "integer_value"
+            stix_type = IntegerProperty()
         elif isinstance(value, str) and is_valid_type(StringProperty, valid_types):
             value_binding = "string_value"
+            stix_type = StringProperty()
         elif isinstance(value, bool) and is_valid_type(BooleanProperty, valid_types):
             value_binding = "boolean_value"
+            stix_type = BooleanProperty()
         elif isinstance(value, float) and is_valid_type(FloatProperty, valid_types):
             value_binding = "float_value"
+            stix_type = FloatProperty()
         elif isinstance(value, STIXdatetime) and is_valid_type(TimestampProperty, valid_types):
             value_binding = "timestamp_value"
+            stix_type = TimestampProperty()
         else:
             value_binding = "string_value"
+            stix_type = StringProperty()
 
         bindings["name"] = name
-        bindings[value_binding] = value
+        bindings[value_binding] = data_sink.db_backend.process_value_for_insert(stix_type, value)
+
+
 
         insert_statements.append(insert(table).values(bindings))
 
@@ -285,11 +298,7 @@ def generate_insert_information(   # noqa: F811
         return insert_statements
     else:
         if db_backend.array_allowed():
-            if isinstance(self.contained, HexProperty):
-                return {name: [data_sink.db_backend.process_value_for_insert(self.contained, x) for x in stix_object[name]]}
-            else:
-                return {name: stix_object[name]}
-
+            return {name: [data_sink.db_backend.process_value_for_insert(self.contained, x) for x in stix_object[name]]}
         else:
             insert_statements = list()
             table = data_sink.tables_dictionary[

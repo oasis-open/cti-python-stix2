@@ -156,7 +156,9 @@ class DatabaseBackend:
         sql_type = stix_type.determine_sql_type(self)
         if sql_type == self.determine_sql_type_for_timestamp_property() and isinstance(value, STIXdatetime):
             return value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        elif sql_type == self.determine_sql_type_for_hex_property() and isinstance(stix_type, HexProperty):
+        elif sql_type == self.determine_sql_type_for_hex_property() and isinstance(stix_type, HexProperty) and \
+                sql_type is not Text:
+            # make sure it isn't represented as Text
             return bytes.fromhex(value)
         else:
             return value
