@@ -36,7 +36,7 @@ def get_required_properties(properties):
 class _STIXBase(collections.abc.Mapping):
     """Base class for STIX object types"""
 
-    def _check_property(self, prop_name, prop, kwargs, allow_custom):
+    def _check_property(self, prop_name, prop, kwargs, allow_custom, interoperability):
         if prop_name not in kwargs:
             if hasattr(prop, 'default'):
                 value = prop.default()
@@ -46,10 +46,11 @@ class _STIXBase(collections.abc.Mapping):
 
         has_custom = False
         if prop_name in kwargs:
+            arguments = [kwargs[prop_name], allow_custom]
+            if isinstance(prop, self.__INTEROPERABILITY_types):
+                arguments.append(interoperability)
             try:
-                kwargs[prop_name], has_custom = prop.clean(
-                    kwargs[prop_name], allow_custom,
-                )
+                kwargs[prop_name], has_custom = prop.clean(*arguments)
             except InvalidValueError:
                 # No point in wrapping InvalidValueError in another
                 # InvalidValueError... so let those propagate.
@@ -114,11 +115,19 @@ class _STIXBase(collections.abc.Mapping):
         for m in self.get('granular_markings', []):
             validate(self, m.get('selectors'))
 
-    def __init__(self, allow_custom=False, **kwargs):
+    def __init__(self, allow_custom=False, interoperability=False, **kwargs):
         cls = self.__class__
 
         # Use the same timestamp for any auto-generated datetimes
         self.__now = get_timestamp()
+
+        self.__INTEROPERABILITY_types = (
+            stix2.properties.EmbeddedObjectProperty, stix2.properties.EnumProperty,
+            stix2.properties.ExtensionsProperty, stix2.properties.DictionaryProperty,
+            stix2.properties.HashesProperty, stix2.properties.IDProperty,
+            stix2.properties.ListProperty, stix2.properties.OpenVocabProperty,
+            stix2.properties.ReferenceProperty, stix2.properties.SelectorProperty,
+        )
 
         custom_props = kwargs.pop('custom_properties', {})
         if custom_props and not isinstance(custom_props, dict):
@@ -203,7 +212,7 @@ class _STIXBase(collections.abc.Mapping):
             prop = defined_properties.get(prop_name)
             if prop:
                 temp_custom = self._check_property(
-                    prop_name, prop, setting_kwargs, allow_custom,
+                    prop_name, prop, setting_kwargs, allow_custom, interoperability,
                 )
 
                 has_custom = has_custom or temp_custom
@@ -293,7 +302,7 @@ class _STIXBase(collections.abc.Mapping):
         if isinstance(self, _Observable):
             # Assume: valid references in the original object are still valid in the new version
             new_inner['_valid_refs'] = {'*': '*'}
-        return cls(allow_custom=True, **new_inner)
+        return cls(allow_custom=True, interoperability=False, **new_inner)
 
     def properties_populated(self):
         return list(self._inner.keys())
@@ -411,8 +420,8 @@ class _Observable(_STIXBase):
             if ref_type not in allowed_types:
                 raise InvalidObjRefError(self.__class__, prop_name, "object reference '%s' is of an invalid type '%s'" % (ref, ref_type))
 
-    def _check_property(self, prop_name, prop, kwargs, allow_custom):
-        has_custom = super(_Observable, self)._check_property(prop_name, prop, kwargs, allow_custom)
+    def _check_property(self, prop_name, prop, kwargs, allow_custom, interoperability):
+        has_custom = super(_Observable, self)._check_property(prop_name, prop, kwargs, allow_custom, interoperability)
 
         if prop_name in kwargs:
             from .properties import ObjectReferenceProperty

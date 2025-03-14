@@ -21,6 +21,9 @@ from .utils import (
 )
 from .version import DEFAULT_VERSION
 
+ID_REGEX_interoperability = re.compile(
+    r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+)
 TYPE_REGEX = re.compile(r'^-?[a-z0-9]+(-[a-z0-9]+)*-?$')
 TYPE_21_REGEX = re.compile(r'^([a-z][a-z0-9]*)+([a-z0-9-]+)*-?$')
 ERROR_INVALID_ID = (
@@ -28,7 +31,7 @@ ERROR_INVALID_ID = (
 )
 
 
-def _check_uuid(uuid_str, spec_version):
+def _check_uuid(uuid_str, spec_version, interoperability):
     """
     Check whether the given UUID string is valid with respect to the given STIX
     spec version.  STIX 2.0 requires UUIDv4; 2.1 only requires the RFC 4122
@@ -39,6 +42,9 @@ def _check_uuid(uuid_str, spec_version):
     :return: True if the UUID is valid, False if not
     :raises ValueError: If uuid_str is malformed
     """
+    if interoperability:
+        return ID_REGEX_interoperability.match(uuid_str)
+
     uuid_obj = uuid.UUID(uuid_str)
 
     ok = uuid_obj.variant == uuid.RFC_4122
@@ -48,7 +54,7 @@ def _check_uuid(uuid_str, spec_version):
     return ok
 
 
-def _validate_id(id_, spec_version, required_prefix):
+def _validate_id(id_, spec_version, required_prefix, interoperability=False):
     """
     Check the STIX identifier for correctness, raise an exception if there are
     errors.
@@ -71,7 +77,7 @@ def _validate_id(id_, spec_version, required_prefix):
             idx = id_.index("--")
             uuid_part = id_[idx+2:]
 
-        result = _check_uuid(uuid_part, spec_version)
+        result = _check_uuid(uuid_part, spec_version, interoperability)
     except ValueError:
         # replace their ValueError with ours
         raise ValueError(ERROR_INVALID_ID.format(id_))
@@ -170,7 +176,7 @@ class Property(object):
 
     """
 
-    def _default_clean(self, value, allow_custom=False):
+    def _default_clean(self, value, allow_custom=False, interoperability=False):
         if value != self._fixed_value:
             raise ValueError("must equal '{}'.".format(self._fixed_value))
         return value, False
@@ -224,7 +230,7 @@ class ListProperty(Property):
 
         super(ListProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         try:
             iter(value)
         except TypeError:
@@ -237,7 +243,7 @@ class ListProperty(Property):
         has_custom = False
         if isinstance(self.contained, Property):
             for item in value:
-                valid, temp_custom = self.contained.clean(item, allow_custom)
+                valid, temp_custom = self.contained.clean(item, allow_custom, interoperability)
                 result.append(valid)
                 has_custom = has_custom or temp_custom
 
@@ -248,7 +254,7 @@ class ListProperty(Property):
 
                 elif isinstance(item, collections.abc.Mapping):
                     # attempt a mapping-like usage...
-                    valid = self.contained(allow_custom=allow_custom, **item)
+                    valid = self.contained(allow_custom=allow_custom, interoperability=interoperability, **item)
 
                 else:
                     raise ValueError(
@@ -275,7 +281,7 @@ class StringProperty(Property):
     def __init__(self, **kwargs):
         super(StringProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, interoperability=False):
         if not isinstance(value, str):
             value = str(value)
         return value, False
@@ -296,8 +302,8 @@ class IDProperty(Property):
         self.spec_version = spec_version
         super(IDProperty, self).__init__()
 
-    def clean(self, value, allow_custom=False):
-        _validate_id(value, self.spec_version, self.required_prefix)
+    def clean(self, value, allow_custom=False, interoperability=False):
+        _validate_id(value, self.spec_version, self.required_prefix, interoperability)
         return value, False
 
     def default(self):
@@ -311,7 +317,7 @@ class IntegerProperty(Property):
         self.max = max
         super(IntegerProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, interoperability=False):
         try:
             value = int(value)
         except Exception:
@@ -391,7 +397,7 @@ class DictionaryProperty(Property):
         self.spec_version = spec_version
         super(DictionaryProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, interoperability=False):
         try:
             dictified = _get_dict(value)
         except ValueError:
@@ -434,7 +440,7 @@ class HashesProperty(DictionaryProperty):
             if alg:
                 self.__alg_to_spec_name[alg] = spec_hash_name
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         # ignore the has_custom return value here; there is no customization
         # of DictionaryProperties.
         clean_dict, _ = super().clean(value, allow_custom)
@@ -541,12 +547,12 @@ class ReferenceProperty(Property):
 
         super(ReferenceProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         if isinstance(value, _STIXBase):
             value = value.id
         value = str(value)
 
-        _validate_id(value, self.spec_version, None)
+        _validate_id(value, self.spec_version, None, interoperability)
 
         obj_type = get_type_from_id(value)
 
@@ -619,7 +625,7 @@ SELECTOR_REGEX = re.compile(r"^([a-z0-9_-]{3,250}(\.(\[\d+\]|[a-z0-9_-]{1,250}))
 
 class SelectorProperty(Property):
 
-    def clean(self, value, allow_custom=False):
+    def clean(self, value, allow_custom=False, interoperability=False):
         if not SELECTOR_REGEX.match(value):
             raise ValueError("must adhere to selector syntax.")
         return value, False
@@ -640,7 +646,7 @@ class EmbeddedObjectProperty(Property):
         self.type = type
         super(EmbeddedObjectProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         if isinstance(value, dict):
             value = self.type(allow_custom=allow_custom, **value)
         elif not isinstance(value, self.type):
@@ -668,8 +674,8 @@ class EnumProperty(StringProperty):
         self.allowed = allowed
         super(EnumProperty, self).__init__(**kwargs)
 
-    def clean(self, value, allow_custom):
-        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom)
+    def clean(self, value, allow_custom, interoperability=False):
+        cleaned_value, _ = super(EnumProperty, self).clean(value, allow_custom, interoperability)
 
         if cleaned_value not in self.allowed:
             raise ValueError("value '{}' is not valid for this enumeration.".format(cleaned_value))
@@ -689,9 +695,9 @@ class OpenVocabProperty(StringProperty):
             allowed = [allowed]
         self.allowed = allowed
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         cleaned_value, _ = super(OpenVocabProperty, self).clean(
-            value, allow_custom,
+            value, allow_custom, interoperability,
         )
 
         # Disabled: it was decided that enforcing this is too strict (might
@@ -770,7 +776,7 @@ class ExtensionsProperty(DictionaryProperty):
     def __init__(self, spec_version=DEFAULT_VERSION, required=False):
         super(ExtensionsProperty, self).__init__(spec_version=spec_version, required=required)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         try:
             dictified = _get_dict(value)
             # get deep copy since we are going modify the dict and might
@@ -785,7 +791,7 @@ class ExtensionsProperty(DictionaryProperty):
             cls = class_for_type(key, self.spec_version, "extensions")
             if cls:
                 if isinstance(subvalue, dict):
-                    ext = cls(allow_custom=allow_custom, **subvalue)
+                    ext = cls(allow_custom=allow_custom, interoperability=interoperability, **subvalue)
                 elif isinstance(subvalue, cls):
                     # If already an instance of the registered class, assume
                     # it's valid
@@ -836,7 +842,7 @@ class STIXObjectProperty(Property):
         self.spec_version = spec_version
         super(STIXObjectProperty, self).__init__(*args, **kwargs)
 
-    def clean(self, value, allow_custom):
+    def clean(self, value, allow_custom, interoperability=False):
         # Any STIX Object (SDO, SRO, or Marking Definition) can be added to
         # a bundle with no further checks.
         stix2_classes = {'_DomainObject', '_RelationshipObject', 'MarkingDefinition'}
@@ -876,7 +882,7 @@ class STIXObjectProperty(Property):
                 "containing objects of a different spec version.",
             )
 
-        parsed_obj = parse(dictified, allow_custom=allow_custom)
+        parsed_obj = parse(dictified, allow_custom=allow_custom, interoperability=interoperability)
 
         if isinstance(parsed_obj, _STIXBase):
             has_custom = parsed_obj.has_custom
