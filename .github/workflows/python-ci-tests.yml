@@ -6,7 +6,7 @@ on: [push, pull_request]
 env:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: postgres
-  POSTGRES_DB: postgres
+  POSTGRES_DB: stix
 
 jobs:
   test-job:
@@ -14,7 +14,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:11
+        image: postgres
         # Provide the password for postgres
         env:
           POSTGRES_USER: postgres
@@ -34,9 +34,9 @@ jobs:
 
     name: Python ${{ matrix.python-version }} Build
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4.2.2
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5.4.0
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install and update essential dependencies
@@ -48,7 +48,7 @@ jobs:
       run: |
         tox
     - name: Upload coverage information to Codecov
-      uses: codecov/codecov-action@v4.2.0
+      uses: codecov/codecov-action@v5.4.0
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         fail_ci_if_error: false # optional (default = false)
