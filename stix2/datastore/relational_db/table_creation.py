@@ -275,7 +275,9 @@ def create_core_table(metadata, db_backend, stix_type_name):
             Column("created", db_backend.determine_sql_type_for_timestamp_property()),
             Column("modified", db_backend.determine_sql_type_for_timestamp_property()),
             Column("revoked", db_backend.determine_sql_type_for_boolean_property()),
-            Column("confidence", db_backend.determine_sql_type_for_integer_property()),
+            Column("confidence",
+                   db_backend.determine_sql_type_for_integer_property(),
+                   db_backend.create_min_max_constraint_expression(IntegerProperty(min=0, max=100), "confidence")),
             Column("lang", db_backend.determine_sql_type_for_string_property()),
         ]
         columns.extend(sdo_columns)
@@ -630,6 +632,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
     return Column(
         name,
         self.determine_sql_type(db_backend),
+        db_backend.create_min_max_constraint_expression(self, name),
         nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
