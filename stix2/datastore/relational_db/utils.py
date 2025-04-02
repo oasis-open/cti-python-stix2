@@ -7,6 +7,7 @@ from stix2.properties import (
     IntegerProperty, Property, ReferenceProperty, StringProperty,
     TimestampProperty,
 )
+import stix2.v21
 from stix2.v21.base import (
     _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
 )
@@ -68,18 +69,38 @@ def get_all_subclasses(cls):
     return all_subclasses
 
 
-def get_stix_object_classes():
-    yield from get_all_subclasses(_DomainObject)
-    yield from get_all_subclasses(_RelationshipObject)
-    yield from get_all_subclasses(_Observable)
-    yield from get_all_subclasses(_MetaObject)
-    # Non-object extensions (property or toplevel-property only)
-    for ext_cls in get_all_subclasses(_Extension):
-        if ext_cls.extension_type not in (
-            "new-sdo", "new-sco", "new-sro",
-        ):
-            yield ext_cls
+def see_through_workbench(cls):
+    """
+    Deal with the workbench patching the registry.  This takes the given
+    "class" as obtained from the registry, and tries to find a real type.
+    The workbench replaces real types with "partial" objects, which causes
+    errors if used in type-specific contexts, e.g. issubclass().
 
+    :param cls: A registry-obtained "class" value
+    :return: A real class value
+    """
+    if hasattr(cls, "args"):
+        # The partial object's one stored positional arg is a subclass
+        # of the class we need.  But it will do.
+        return cls.args[0]
+    else:
+        return cls
+
+
+def get_stix_object_classes():
+    for type_, cls in stix2.v21.OBJ_MAP.items():
+        if type_ != "bundle":
+            yield see_through_workbench(cls)
+
+    # The workbench only patches SDO types, so we shouldn't have to do the
+    # same hackage with other kinds of types.
+    yield from stix2.v21.OBJ_MAP_OBSERVABLE.values()
+    yield from (
+        cls for cls in stix2.v21.EXT_MAP.values()
+        if cls.extension_type not in (
+            "new-sdo", "new-sco", "new-sro",
+        )
+    )
 
 def schema_for(stix_class):
 

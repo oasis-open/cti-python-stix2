@@ -7,6 +7,7 @@ import stix2
 from stix2.datastore import DataSourceError
 from stix2.datastore.relational_db.utils import (
     canonicalize_table_name, schema_for, table_name_for,
+    see_through_workbench,
 )
 import stix2.properties
 import stix2.utils
@@ -67,6 +68,9 @@ def _stix2_class_for(stix_id):
         # TODO: give user control over STIX version used?
         stix_type, stix_version=stix2.DEFAULT_VERSION,
     )
+
+    if stix_class:
+        stix_class = see_through_workbench(stix_class)
 
     return stix_class
 
