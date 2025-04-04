@@ -190,3 +190,12 @@ def determine_column_name(cls_or_inst):  # noqa: F811
         return "string_value"
     elif is_class_or_instance(cls_or_inst, TimestampProperty):
         return "timestamp_value"
+
+
+def shorten_extension_definition_id(id):
+    id_parts = id.split("--")
+    uuid_parts = id_parts[1].split("-")
+    shortened_part = ""
+    for p in uuid_parts:
+        shortened_part = shortened_part + p[0] + p[-1]
+    return "ext_def_" + shortened_part
