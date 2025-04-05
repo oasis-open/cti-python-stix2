@@ -109,10 +109,10 @@ def table_name_for(stix_type_or_class):
     # Applies to registered extension-definition style extensions only.
     # Their "_type" attribute is actually set to the extension definition ID,
     # rather than a STIX type.
-    if table_name.startswith("extension-definition"):
-        table_name = table_name[0:30]
-        table_name = table_name.replace("extension-definition-", "ext_def")
-
+    if table_name.startswith("extension-definition--"):
+        # table_name = table_name[0:30]
+        # table_name = table_name.replace("extension-definition-", "ext_def")
+        table_name = shorten_extension_definition_id(table_name)
     table_name = canonicalize_table_name(table_name)
     return table_name
 
@@ -169,3 +169,12 @@ def determine_column_name(cls_or_inst):  # noqa: F811
         return "string_value"
     elif is_class_or_instance(cls_or_inst, TimestampProperty):
         return "timestamp_value"
+
+
+def shorten_extension_definition_id(id):
+    id_parts = id.split("--")
+    uuid_parts = id_parts[1].split("-")
+    shortened_part = ""
+    for p in uuid_parts:
+        shortened_part = shortened_part + p[0] + p[-1]
+    return "ext_def_" + shortened_part
