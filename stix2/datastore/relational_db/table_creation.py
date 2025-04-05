@@ -7,7 +7,7 @@ from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
     SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
     determine_column_name, determine_sql_type_from_stix, flat_classes,
-    get_stix_object_classes,
+    get_stix_object_classes, shorten_extension_definition_id
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -803,9 +803,10 @@ def generate_object_table(
     else:
         table_name = stix_object_class.__name__
     # avoid long table names
-    if table_name.startswith("extension-definition"):
-        table_name = table_name[0:30]
-        table_name = table_name.replace("extension-definition-", "ext_def")
+    if table_name.startswith("extension-definition--"):
+        # table_name = table_name[0:30]
+        # table_name = table_name.replace("extension-definition-", "ext_def")
+        table_name = shorten_extension_definition_id(table_name)
     if parent_table_name:
         table_name = parent_table_name + "_" + table_name
     if is_embedded_object:

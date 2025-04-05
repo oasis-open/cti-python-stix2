@@ -2,7 +2,7 @@ from sqlalchemy import insert
 
 from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
-    SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
+    SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name, shorten_extension_definition_id
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -166,9 +166,10 @@ def generate_insert_information(self, name, stix_object, data_sink=None, table_n
     for ex_name, ex in stix_object["extensions"].items():
         # ignore new extensions - they have no properties
         if ex.extension_type is None or not ex.extension_type.startswith("new"):
-            if ex_name.startswith("extension-definition"):
-                ex_name = ex_name[0:30]
-                ex_name = ex_name.replace("extension-definition-", "ext_def")
+            if ex_name.startswith("extension-definition--"):
+                # ex_name = ex_name[0:30]
+                # ex_name = ex_name.replace("extension-definition-", "ext_def")
+                ex_name = shorten_extension_definition_id(ex_name)
             bindings = {
                 "id": stix_object["id"],
                 "ext_table_name": canonicalize_table_name(ex_name, schema_name),
@@ -519,9 +520,10 @@ def generate_insert_for_sub_object(
         bindings["id"] = foreign_key_value
     if parent_table_name and (not is_extension or level > 0):
         type_name = parent_table_name + "_" + type_name
-    if type_name.startswith("extension-definition"):
-        type_name = type_name[0:30]
-        type_name = type_name.replace("extension-definition-", "ext_def")
+    if type_name.startswith("extension-definition--"):
+        # type_name = type_name[0:30]
+        # type_name = type_name.replace("extension-definition-", "ext_def")
+        type_name = shorten_extension_definition_id(type_name)
     sub_insert_statements = list()
     for name, prop in stix_object._properties.items():
         if name in stix_object:
