@@ -310,7 +310,7 @@ def generate_insert_information(   # noqa: F811
             ]
             for elem in stix_object[name]:
                 bindings = {
-                    "id": stix_object["id"],
+                    "id": foreign_key_value,
                     name: db_backend.process_value_for_insert(self.contained, elem),
                 }
                 insert_statements.append(insert(table).values(bindings))

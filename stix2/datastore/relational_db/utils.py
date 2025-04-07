@@ -41,6 +41,16 @@ SDO_COMMON_PROPERTIES = {
 }
 
 
+def determine_core_properties(stix_object_class, is_embedded_object):
+    if is_embedded_object or issubclass(stix_object_class, (_MetaObject, _Extension)):
+        return list()
+    elif issubclass(stix_object_class, (_RelationshipObject, _DomainObject)):
+        return SDO_COMMON_PROPERTIES
+    elif issubclass(stix_object_class, _Observable):
+        return SCO_COMMON_PROPERTIES
+    else:
+        raise ValueError(f"{stix_object_class} not a STIX object")
+
 def canonicalize_table_name(table_name, schema_name=None):
     if schema_name:
         full_name = schema_name + "." + table_name
@@ -103,7 +113,6 @@ def get_stix_object_classes():
     )
 
 def schema_for(stix_class):
-
     if issubclass(stix_class, _DomainObject):
         schema_name = "sdo"
     elif issubclass(stix_class, _RelationshipObject):
@@ -116,7 +125,6 @@ def schema_for(stix_class):
         schema_name = getattr(stix_class, "_applies_to", "sco")
     else:
         schema_name = None
-
     return schema_name
 
 

@@ -1,6 +1,7 @@
 import datetime as dt
 
 from database_backends.postgres_backend import PostgresBackend
+from database_backends.sqlite_backend import SQLiteBackend
 import sys
 import json
 
@@ -19,6 +20,7 @@ def main():
         bundle = stix2.parse(json.load(f), allow_custom=True)
     store = RelationalDBStore(
         PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
+        # SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
         True,
         None,
         True,
