@@ -49,9 +49,10 @@ def store(db_backend):
         True,
     )
 
-    yield store
-
-    store.metadata.drop_all(db_backend.database_connection)
+    try:
+        yield store
+    finally:
+        store.metadata.drop_all(db_backend.database_connection)
 
 
 # Artifacts
@@ -905,11 +906,8 @@ def object_variation(request, property_variation_value):
         _unregister(reg_section, TestClass._type, ext_id)
 
 
-def test_property(db_backend, object_variation):
-    """
-    Try to more exhaustively test many different property configurations:
-    ensure schemas can be created and values can be stored and retrieved.
-    """
+@pytest.fixture
+def property_store(db_backend, object_variation):
     rdb_store = RelationalDBStore(
         db_backend,
         True,
@@ -919,12 +917,22 @@ def test_property(db_backend, object_variation):
         type(object_variation),
     )
 
-    rdb_store.add(object_variation)
-    read_obj = rdb_store.get(object_variation["id"])
+    try:
+        yield rdb_store
+    finally:
+        rdb_store.metadata.drop_all(db_backend.database_connection)
+
+
+def test_property(property_store, object_variation):
+    """
+    Try to more exhaustively test many different property configurations:
+    ensure schemas can be created and values can be stored and retrieved.
+    """
+
+    property_store.add(object_variation)
+    read_obj = property_store.get(object_variation["id"])
 
     assert read_obj == object_variation
-
-    rdb_store.metadata.drop_all(db_backend.database_connection)
 
 
 def test_dictionary_property_complex(db_backend):
@@ -961,11 +969,12 @@ def test_dictionary_property_complex(db_backend):
             cls,
         )
 
-        rdb_store.add(obj)
-        read_obj = rdb_store.get(obj["id"])
-        assert read_obj == obj
-
-        rdb_store.metadata.drop_all(db_backend.database_connection)
+        try:
+            rdb_store.add(obj)
+            read_obj = rdb_store.get(obj["id"])
+            assert read_obj == obj
+        finally:
+            rdb_store.metadata.drop_all(db_backend.database_connection)
 
 
 def test_extension_definition(store):
