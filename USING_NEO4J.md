@@ -35,8 +35,8 @@ Open the neo4j desktop app create a new project named STIX
 
 python demo.py <STIX bundle file> will populate a local neo4j database which can be viewed using the neo4j browser.
 
-![](docs/select-dbms.png "")
+![](docs/diagrams/select-dbms.png "")
 
-![](docs/create-dbms.png "")
+![](docs/diagrams/create-dbms.png "")
 
-![](docs/start-dbms.png "")
+![](docs/diagrams/start-dbms.png "")
