@@ -22,10 +22,10 @@ To accomplish these goals, and to incorporate lessons learned while developing
 
 1. All data structures are meant to be immutable by default. In contrast to python-stix,
    where users would create an object and then assign attributes to it, in
-   ``stix2`` all properties should be provided when creating the object. Changing a property 
-   after creation will trigger an Immutability error, but some data structures like 
-   Lists and Dictionaries retain functions that allow for content modification without 
-   triggering an Immutability error. Data can be added to or removed from these structures 
+   ``stix2`` all properties should be provided when creating the object. Changing a property
+   after creation will trigger an Immutability error, but some data structures like
+   Lists and Dictionaries retain functions that allow for content modification without
+   triggering an Immutability error. Data can be added to or removed from these structures
    after creation, which does allow for some flexibility in building an object.
 2. Where necessary, library objects should act like ``dict``'s. When treated as
    a ``str``, the JSON representation of the object should be used.
