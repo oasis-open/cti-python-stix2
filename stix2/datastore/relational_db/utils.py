@@ -42,9 +42,9 @@ SDO_COMMON_PROPERTIES = {
 
 
 def determine_core_properties(stix_object_class, is_embedded_object):
-    if is_embedded_object or issubclass(stix_object_class, (_MetaObject, _Extension)):
+    if is_embedded_object or issubclass(stix_object_class, _Extension):
         return list()
-    elif issubclass(stix_object_class, (_RelationshipObject, _DomainObject)):
+    elif issubclass(stix_object_class, (_MetaObject, _RelationshipObject, _DomainObject)):
         return SDO_COMMON_PROPERTIES
     elif issubclass(stix_object_class, _Observable):
         return SCO_COMMON_PROPERTIES

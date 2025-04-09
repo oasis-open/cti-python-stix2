@@ -483,7 +483,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                         ),
                         Column(
                             "value",
-                            db_backend.determine_sql_type_for_string_property(),
+                            contained_class.determine_sql_type(db_backend),
                             nullable=False,
                         ),
                     ]

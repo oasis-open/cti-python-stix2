@@ -57,12 +57,12 @@ def is_valid_type(cls, valid_types):
     return cls in valid_types or instance_in_valid_types(cls, valid_types)
 
 
-def generate_insert_for_dictionary_list(table, next_id, value):
+def generate_insert_for_dictionary_list(table, next_id, value, data_sink, contained_type):
     insert_stmts = list()
     for v in value:
         bindings = dict()
         bindings["id"] = next_id
-        bindings["value"] = v
+        bindings["value"] = data_sink.db_backend.process_value_for_insert(contained_type, v)
         insert_stmts.append(insert(table).values(bindings))
     return insert_stmts
 
@@ -95,16 +95,16 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
         if not valid_types or len(self.valid_types) == 1:
             if is_valid_type(ListProperty, valid_types):
                 value_binding = "values"
+                contained_type = valid_types[0].contained
                 if not data_sink.db_backend.array_allowed():
                     next_id = data_sink.db_backend.next_id(data_sink)
                     table_child = data_sink.tables_dictionary[
                         canonicalize_table_name(table_name + "_" + dictionary_name + "_" + "values", schema_name)
                     ]
-                    child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value)
+                    child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value, data_sink, contained_type)
                     value = next_id
                     stix_type = IntegerProperty()
                 else:
-                    contained_type = valid_types[0].contained
                     stix_type = ListProperty(contained_type)
                     value = [data_sink.db_backend.process_value_for_insert(contained_type, x) for x in value]
             else:
