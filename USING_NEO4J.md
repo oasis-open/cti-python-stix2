@@ -70,8 +70,8 @@ Remove the report object node for a better view of the graph.
 
 Explore the graph.
 
-<img src="docs/diagrams/exploring-the-graph.png"  width="750" height="450">
+<img src="docs/diagrams/exploring-the-graph.png"  width="750" height="400">
 
 View the node properties, by mousing on any node.
 
-<img src="docs/diagrams/node-properties.png"  width="750" height="450">
+<img src="docs/diagrams/node-properties.png"  width="750" height="400">
