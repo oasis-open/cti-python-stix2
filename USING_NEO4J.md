@@ -1,11 +1,11 @@
 # Experimenting with the Neo4j graph database Python STIX DataStore
 
-The Neo4j graph database Python STIX DataStore is a proof-of-concept implementation to show how to store STIX content in a graph database. 
+The Neo4j graph database Python STIX DataStore is a proof-of-concept implementation to show how to store STIX content in a graph database.
 
 ## Limitations:
 
-As a proof-of-concept it has minimal functionality.  
- 
+As a proof-of-concept it has minimal functionality.
+
 ## Installing Neo4j
 
 See https://neo4j.com/docs/desktop-manual/current/installation
@@ -18,18 +18,18 @@ The python neo4j library used is py2neo, available in pypi at https://pypi.org/p
 
 ## Implementation Details
 
-We would like to that the folks at JHU/APL for their implementation of [STIX2NEO4J.py](https://github.com/opencybersecurityalliance/oca-iob/tree/main/STIX2NEO4J%20Converter), which this code is based on.  
+We would like to that the folks at JHU/APL for their implementation of [STIX2NEO4J.py](https://github.com/opencybersecurityalliance/oca-iob/tree/main/STIX2NEO4J%20Converter), which this code is based on.
 
 Only the DataSink (for storing STIX data) part of the DataStore object has been implemented.  The DataSource part is implemented as a stub.  However, the graph database can be queried using the neo4j cypher langauge within
 the neo4j browser.
 
-The main concept behind any graphs is nodes and edges.  STIX data is similar as it contains relationship objects (SROs) and node objects (SDOs, SCOs and SMOs). Additional edges are provided by STIX embedded relationships, which are expressed as properties in STIX node objects. This organization of data in STIX is a natural fit for graph models, such as neo4j.  
+The main concept behind any graphs is nodes and edges.  STIX data is similar as it contains relationship objects (SROs) and node objects (SDOs, SCOs and SMOs). Additional edges are provided by STIX embedded relationships, which are expressed as properties in STIX node objects. This organization of data in STIX is a natural fit for graph models, such as neo4j.
 
-The order in which STIX objects are added to the graph database is arbitrary. Therefore, when an SRO or embedded relationship is added via the DataStore, the nodes that it connects may not be present in the database, so the relationship is not added to the database, but remembered by the DataStore code as an unconnected relationship. Whenever a new node is 
-added to the database, the unconnected relationships must be reviewed to determine if both nodes of a relationship can now be represented using an edge in the graph database.  
+The order in which STIX objects are added to the graph database is arbitrary. Therefore, when an SRO or embedded relationship is added via the DataStore, the nodes that it connects may not be present in the database, so the relationship is not added to the database, but remembered by the DataStore code as an unconnected relationship. Whenever a new node is
+added to the database, the unconnected relationships must be reviewed to determine if both nodes of a relationship can now be represented using an edge in the graph database.
 
-Note that unless both the source and target nodes are eventually added, 
-the relationship will not be added either.  
+Note that unless both the source and target nodes are eventually added,
+the relationship will not be added either.
 How to address this issue in the implementation has not been determined.
 
 ## Demonstrating a neo4j database for STIX

@@ -3,11 +3,11 @@
 # Code developed by JHU/APL - First Draft December 2021
 
 # DISCLAIMER
-# The script developed by JHU/APL for the demonstration are not “turn key” and are 
+# The script developed by JHU/APL for the demonstration are not “turn key” and are
 # not safe for deployment without being tailored to production infrastructure. These
 # files are not being delivered as software and are not appropriate for direct use on any
 # production networks. JHU/APL assumes no liability for the direct use of these files and
-# they are provided strictly as a reference implementation. 
+# they are provided strictly as a reference implementation.
 #
 # NO WARRANTY, NO LIABILITY. THIS MATERIAL IS PROVIDED “AS IS.” JHU/APL MAKES NO
 # REPRESENTATION OR WARRANTY WITH RESPECT TO THE PERFORMANCE OF THE MATERIALS, INCLUDING
@@ -20,11 +20,12 @@
 # CONSEQUENTIAL, SPECIAL OR OTHER DAMAGES ARISING FROM THE USE OF, OR INABILITY TO USE,
 # THE MATERIAL, INCLUDING, BUT NOT LIMITED TO, ANY DAMAGES FOR LOST PROFITS.
 
+from getpass import getpass
 ## Import python modules for this script
 import json
 from typing import List
+
 from py2neo import Graph, Node
-from getpass import getpass
 from tqdm import tqdm
 
 #Import variables
@@ -44,10 +45,12 @@ class NeoUploader(object):
         self.nodes_with_object_ref = list()
         self.nodes = list()
         self.bundlename = BundleName
-        self.infer_relation = {"parent_ref": "parent_of",
+        self.infer_relation = {
+            "parent_ref": "parent_of",
             "created_by_ref": "created_by",
             "src_ref": "source_of",
-            "dst_ref": "destination_of"}
+            "dst_ref": "destination_of",
+        }
         self.__load_json(JSONFILE)
 
     def __load_json(self, fd):
@@ -85,16 +88,18 @@ class NeoUploader(object):
                         node_contents[key] = apobj[key]
             # Make the Bundle ID a property
             # use dictionary expansion as keywork for optional node properties
-            node = Node(apobj["type"],
-                    name=node_name,
-                    bundlesource=self.bundlename,
-                    **node_contents)
+            node = Node(
+                apobj["type"],
+                name=node_name,
+                bundlesource=self.bundlename,
+                **node_contents,
+            )
             # if node needs new created_by relation, create the node and then the relationship
             self.sgraph.create(node)
             # save off these nodes for additional relationship creating
             if 'object_refs' in keys:
                 self.nodes_with_object_ref.append(apobj)
-    
+
     # create relationships that exist outside of relationship objects
     # such as Created_by and Parent_Of
     def __make_inferred_relations(self):
@@ -112,7 +117,7 @@ class NeoUploader(object):
                     else:
                         ref_list = apobj[k]
                     for ref in ref_list:
-                    	# The "b to a" relationship is reversed in this cypher query to ensure the correct relationship direction in the graph 
+                    	# The "b to a" relationship is reversed in this cypher query to ensure the correct relationship direction in the graph
                         cypher_string = f'MATCH (a),(b) WHERE a.bundlesource="{self.bundlename}" AND b.bundlesource="{self.bundlename}" AND a.ap_id="{str(ref)}" AND b.ap_id="{str(apobj["id"])}" CREATE (b)-[r:{rel_type}]->(a) RETURN a,b'
                         try:
                             self.sgraph.run(cypher_string)

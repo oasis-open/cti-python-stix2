@@ -1,15 +1,15 @@
-
-import sys
 import json
+import sys
+
+# needed so the relational db code knows to create tables for this
+from identity_contact_information import \
+    identity_contact_information  # noqa F401
+from incident import event, impact, incident, task  # noqa F401
+from observed_string import observed_string  # noqa F401
 
 import stix2
 from stix2.datastore.neo4j.neo4j import Neo4jStore
 import stix2.properties
-
-# needed so the relational db code knows to create tables for this
-from incident import incident, event, task, impact
-from identity_contact_information import identity_contact_information
-from observed_string import observed_string
 
 
 def main():

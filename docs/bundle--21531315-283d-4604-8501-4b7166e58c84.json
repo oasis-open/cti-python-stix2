@@ -1,0 +1,706 @@
+{
+    "type": "bundle",
+    "id": "bundle--21531315-283d-4604-8501-4b7166e58c84",
+    "objects": [
+        {
+            "type": "note",
+            "content" : "Medusa ransomware Identification and Detection",
+            "spec_version": "2.1",
+            "id": "note--d7ae46e6-24fc-44fc-bd8f-55f572d70d38",
+            "created": "2025-03-10T14:04:00.000Z",
+            "modified": "2025-03-10T14:04:00.000Z",
+            "external_references": [ 
+                {
+                  "source_name": "Palo Alto Unit42",
+                  "description": "Threat analysis report", 
+                  "url": "https://unit42.paloaltonetworks.com/medusa-ransomware-escalation-new-leak-site/" 
+                }
+            ],
+            "object_refs": [
+                "report--89682035-1d5e-406a-86d7-8c348677e17e"
+            ]
+        },
+        {
+            "x_comment":"d",
+            "type": "report",
+            "id": "report--89682035-1d5e-406a-86d7-8c348677e17e",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "name": "IRF-20",
+            "description": "Example IRF submission for FIRR",
+            "published": "2025-02-14T17:05:00.000Z",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "object_refs": [
+                "incident--cf4a03b1-03fd-4884-8321-88991d254064",
+                "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+                "impact--777ae6d5-eccd-4894-8c41-2da1450d8e84",
+                "event--77769935-ce2d-40a4-8341-28a1a7518e84",
+                "relationship--77a3f051-eccd-40a4-8c41-28a1b6718e84",
+                "observed-string--77745228-3fcd-45c4-8661-865df4d15e54",
+                "relationship--929bda31-031d-43c4-8941-3d3165d94644",
+                "malware--5449a49c-6fc5-4a98-87b4-34852311683e",
+                "relationship--3c75452c-4ed2-49e6-9971-2123ec549d2b",
+                "observed-string--953fbc6b-688b-451a-ad44-e6c5d8e48d24",
+                "relationship--2413a685-2e6f-48b8-ba5f-d59aae81ea11",
+                "identity--7f108fed-2baa-479a-bf4d-4278802d4d84",
+                "email-addr--b04589e8-a568-49a2-9385-938b5aa1e7a2",
+                "relationship--de45169a-fb48-422b-8e43-783b8939bff2",
+                "task--ee7cf842-eb89-4971-a9c2-8aac699fd06b",
+                "task--486a1153-3909-4820-936b-67c4906b1ad2",
+                "identity--9de8c413-a348-424c-b9be-617140036702",
+                "relationship--3c143cea-3526-4cb7-8801-b4773965237f",
+                "email-addr--e26170cd-64f3-4314-9133-cf3c54a7ad59",
+                "identity--e1f0169d-8457-4de8-8e15-398e90bd9784",
+                "relationship--ffc6f797-ae39-48ce-b7ba-566c26fd3b31",
+                "location--14db9da1-c440-410f-93f7-e85d815fd0ed",
+                "relationship--2b226d9b-5e3b-473a-a374-9d1d0c0398e4",
+                "task--29211699-3bf9-4f29-9968-a4bf63a90803",
+                "impact--c828e0dd-35a9-4b89-a612-28a6fe3e9ef6",
+                "identity--3c7a50aa-6aae-4469-8464-83f2b23b59e8",
+                "relationship--28ae8bdb-f4c5-4ae3-8c5d-ad5fbfb8de75",
+                "location--dbd84684-3487-4f8a-85e5-c103110b16d7",
+                "relationship--d6bf9e8b-92b5-4369-8ad8-9ec4671da8bd",
+                "identity--f34407c7-8895-49d9-9325-e993e73193d4",
+                "relationship--ba9358fd-ef5a-42e7-9f9e-cb03dda2662e",
+                "task--c6426f0f-19d6-4103-87f5-568225495a5e",
+                "identity--9dcc0a07-ccb1-463e-a382-93aeea5fe9b6",
+                "relationship--6a8a3df7-787e-47f5-a0f3-fcf5e247115a",
+                "task--3145de80-1e1e-485f-ac97-11745172368d",
+                "impact--60001a3b-a1f7-41d4-a88f-9d56d4d11f64",
+                "event--d17fd3c1-d55f-47e5-befc-9868c0a451d2",
+                "relationship--570044fb-d594-4918-b610-d11f8fff60bf"
+            ]
+        },
+        {
+            "x_comment":"d, l",
+            "type": "incident",
+            "id": "incident--cf4a03b1-03fd-4884-8321-88991d254064",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "name": "Medusa ransomware attack",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "extensions": {
+                "extension-definition--ef765651-680c-498d-9894-99799f2fa126": {
+                    "extension_type": "property-extension",
+                    "determination": "confirmed",
+                    "investigation_status": "open",
+                    "event_refs": [
+                        "event--77769935-ce2d-40a4-8341-28a1a7518e84",
+                        "event--d17fd3c1-d55f-47e5-befc-9868c0a451d2"
+                    ],
+                    "impact_refs": [
+                        "impact--777ae6d5-eccd-4894-8c41-2da1450d8e84",
+                        "impact--c828e0dd-35a9-4b89-a612-28a6fe3e9ef6",
+                        "impact--60001a3b-a1f7-41d4-a88f-9d56d4d11f64"
+                    ],
+                    "task_refs": [
+                        "task--ee7cf842-eb89-4971-a9c2-8aac699fd06b",
+                        "task--486a1153-3909-4820-936b-67c4906b1ad2",
+                        "task--29211699-3bf9-4f29-9968-a4bf63a90803",
+                        "task--c6426f0f-19d6-4103-87f5-568225495a5e",
+                        "task--3145de80-1e1e-485f-ac97-11745172368d"
+                    ]
+                }
+            }
+        },
+        {
+            "x_comment": "IRF System",
+            "type": "identity",
+            "id": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "name": "IRF",
+            "identity_class": "system",
+            "description": "Incident Reporting Form (IRF) system",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.27",
+            "type": "impact",
+            "id": "impact--777ae6d5-eccd-4894-8c41-2da1450d8e84",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "impact_category": "economic",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE",
+                "ransomware-insured"
+            ],
+            "extensions": {
+                "extension-definition--7cc33dd6-f6a1-489b-98ea-522d351d71b9": {
+                    "extension_type": "new-sdo"
+                },
+                "economic-ext": {
+                    "variety": "ransom-demand",
+                    "min_amount": 1,
+                    "max_amount": 600000,
+                    "currency": "USD",
+                    "currency_actual": "USD",
+		    "conversion_rate": 1.0,
+		    "conversion_time": "2025-02-14T17:05:00.000Z"
+                }
+            }
+        },
+        {
+            "x_comment":"l.27",
+            "type": "event",
+            "id": "event--77769935-ce2d-40a4-8341-28a1a7518e84",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "goal": "economic-gain",
+            "status": "occurred",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "extensions": {
+                "extension-definition--4ca6de00-5b0d-45ef-a1dc-ea7279ea910e": {
+                    "extension_type": "new-sdo"
+                }
+            }
+        },
+        {
+            "x_comment": "l.27",
+            "type": "relationship",
+            "id": "relationship--77a3f051-eccd-40a4-8c41-28a1b6718e84",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "causes",
+            "source_ref": "event--77769935-ce2d-40a4-8341-28a1a7518e84",
+            "target_ref": "impact--777ae6d5-eccd-4894-8c41-2da1450d8e84"
+        },
+        {
+            "x_comment": "l.27.A",
+            "type": "observed-string",
+            "id": "observed-string--77745228-3fcd-45c4-8661-865df4d15e54",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "purpose": "ransom-demand-text",
+            "value": "Sorry to interrupt your busy business. WHAT HAPPEND? 1. We have PENETRATE your network and COPIED data. We have penetrated your entire network for several months and researched all about your data. You're high tech valuable business and your data was very crucial. And finally, we have copied terabytes of all your confidential data and uploaded to several private & cloud storages. 2. We have ENCRYPTED your files. We mainly focus on data exfiltration but we also encrypt some of your files too. While you are reading this message, it means your files and data has been ENCRYPTED by world's strongest ransomware. Your files have encrypted with new military-grade encryption algorithe and you can not decrypt your files. But don't worry, can decrypt your files. There is only one ossible way to get back your computers and servers, keep your privacy safe MEDUSA DECRYPTOR and DECRYPTION KEYS. CONTACT us via LIVE CHAT and pay for the special. This MEDUSA DECRYPTOR w111 restore your entire network within less than 1 business day. WHAT GUARANTEES? We can post all of your sensitive data to the public and send emails to your customers. We have professional OSINTs and media team for leak data to telegram, facebook, twitter channels and top news websites. You can easily search about us. You can suffer significant problems due disastrous consequences, leading to loss of valuable intellectual property and other sensitive information, costly incident response efforts, information misuse/abuse, loss of customer trust, brand and reputational damage, legal and regulatory issues. After paying for the data breach and decryption, we guarantee that your data will never be leaked and this is also for our reputation. YOU should be AWARE! We will speak only with an authorized person. It can be the CEO, top management, etc. In case you not such a person DON'T CONTACT US! Your decisions and action can result in serious harm to your company! Inform your supervisors and stay calml. If you do not contact us within 3 days, We will start publish your case to our official blog and everybody will start notice your incident! [Official blog tor address] Using TOR Browser(https://www.torproject.org/download/): http://medusaxko7jxtrojdkxo66j7ck4q5tgktf7uqsqyfry&ebnx1cbkccyd.onion/ CONTACT US! Your company live chat address 1-Using TOR Browser(https://www.torproject.org/download/): http://medusakxxtp3uo7vusntvubnytaph4d3amxivbgg13hnhpk2nmus34yd.onion/. Or Use Tox Chat Program (https://utox.org/uTox_win64.exe) Add user with our tox ID: 4AE245548F2A225882951F814E9BF87EE01A0C10AE15989901EA62620091A372205227254A9F. Our support email: (medusa.support@onionmail.org)",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment":"l.27.A",
+            "type": "relationship",
+            "id": "relationship--929bda31-031d-43c4-8941-3d3165d94644",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "related-to",
+            "source_ref": "observed-string--77745228-3fcd-45c4-8661-865df4d15e54",
+            "target_ref": "event--77769935-ce2d-40a4-8341-28a1a7518e84"
+        },
+        {
+            "x_comment": "l.27.C",
+            "type": "malware",
+            "spec_version": "2.1",
+            "id": "malware--5449a49c-6fc5-4a98-87b4-34852311683e",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2016-05-12T08:17:27.000Z",
+            "modified": "2016-05-12T08:17:27.000Z",
+            "name": "Medusa",
+            "is_family": false,
+            "malware_types": ["ransomware"],
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]  
+        },
+        {
+            "x_comment": "l.27.C",
+            "type": "relationship",
+            "id": "relationship--3c75452c-4ed2-49e6-9971-2123ec549d2b",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "related-to",
+            "source_ref": "malware--5449a49c-6fc5-4a98-87b4-34852311683e",
+            "target_ref": "event--77769935-ce2d-40a4-8341-28a1a7518e84"
+        }, 
+        {
+            "x_comment": "l.27.F",
+            "type": "observed-string",
+            "id": "observed-string--953fbc6b-688b-451a-ad44-e6c5d8e48d24",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-02-14T17:05:00.000Z",
+            "modified": "2025-02-14T17:05:00.000Z",
+            "spec_version": "2.1",
+            "purpose": "ransom-payment-instructions-text",
+            "value": "If you do not contact us within 3 days, We will start publish your case to our official blog and everybody will start notice your incident! [Official blog tor address]. Using TOR Browser(https://www.torproject.org/download/):http://medusaxko7jxtrojdkxo66j7ck4q5tgktf7uqsqyfry&ebnx1cbkccyd.onion/. CONTACT US! Your company live chat address 1-Using TOR Browser(https://www.torproject.org/download/): http://medusakxxtp3uo7vusntvubnytaph4d3amxivbgg13hnhpk2nmus34yd.onion/ Or Use Tox Chat Program (https://utox.org/uTox_win64.exe) Add user with our tox ID: 4AE245548F2A225882951F814E9BF87EE01A0C10AE15989901EA62620091A372205227254A9F Our support email: (medusa.support@onionmail.org)",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.27.F",
+            "type": "relationship",
+            "id": "relationship--2413a685-2e6f-48b8-ba5f-d59aae81ea11",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "related-to",
+            "source_ref": "observed-string--953fbc6b-688b-451a-ad44-e6c5d8e48d24",
+            "target_ref": "event--77769935-ce2d-40a4-8341-28a1a7518e84"
+        },
+        {
+            "x_comment": "l.27.H.2",
+            "type": "identity",
+            "id": "identity--7f108fed-2baa-479a-bf4d-4278802d4d84",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T01:02:00.000Z",
+            "modified": "2024-03-28T01:03:01.000Z",
+            "spec_version": "2.1",
+            "name": "Medusa ransomware group",
+            "identity_class": "group",
+            "contact_information" : "@@additional-contact-information: http://medusakxxtp3uo7vusntvubnytaph4d3amxivbgg13hnhpk2nmus34yd.onion/; Tox Chat Program (https://utox.org/uTox_win64.exe) Add user with our tox ID: 4AE245548F2A225882951F814E9BF87EE01A0C10AE15989901EA62620091A372205227254A9F",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "extensions": {
+                "extension-definition--66e2492a-bbd3-4be6-88f5-cc91a017a498": {
+                    "extension_type": "property-extension",
+                    "email_addresses": [
+                        {
+                            "email_address_ref": "email-addr--b04589e8-a568-49a2-9385-938b5aa1e7a2",
+                            "digital_contact_type": "work",
+                            "description": "Preferred",
+                            "classified": false
+                        }
+                    ],
+                    "websites": [
+                        "http://medusaxko7jxtrojdkxo66j7ck4q5tgktf7uqsqyfry&ebnx1cbkccyd.onion/"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "email-addr",
+            "spec_version": "2.1",
+            "id": "email-addr--b04589e8-a568-49a2-9385-938b5aa1e7a2",
+            "value": "medusa.support@onionmail.org"
+        },
+        {
+            "x_comment": "l.27.H.2",
+            "type": "relationship",
+            "id": "relationship--de45169a-fb48-422b-8e43-783b8939bff2",
+            "created_by_ref": "identity--c04a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-03-28T15:15:00.000Z",
+            "modified": "2025-03-28T15:15:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "performed",
+            "source_ref": "identity--7f108fed-2baa-479a-bf4d-4278802d4d84",
+            "target_ref": "event--77769935-ce2d-40a4-8341-28a1a7518e84"
+        },
+        {
+            "x_comment": "l.28.1",
+            "type": "task",
+            "id": "task--ee7cf842-eb89-4971-a9c2-8aac699fd06b",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-04-07T20:00:00.0002Z",
+            "modified": "2023-04-07T20:00:00.0002Z",
+            "outcome": "successful",
+            "task_types": ["ransom-payment"],
+            "labels": [ 
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "spec_version": "2.1"
+        },
+        {
+            "x_comment": "l.28.2.1",
+            "type": "task",
+            "id": "task--486a1153-3909-4820-936b-67c4906b1ad2",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-04-07T20:00:00.0002Z",
+            "modified": "2023-04-07T20:00:00.0002Z",
+            "outcome": "successful",
+            "task_types": ["negotiation"],
+            "spec_version": "2.1",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.1.1",
+            "type": "identity",
+            "id": "identity--9de8c413-a348-424c-b9be-617140036702",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T01:02:00.000Z",
+            "modified": "2024-03-28T01:03:01.000Z",
+            "spec_version": "2.1",
+            "name": "Stanley Tucci",
+            "identity_class": "individual",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE",
+                "ransom-payer"
+            ],
+            "extensions": {
+                "extension-definition--66e2492a-bbd3-4be6-88f5-cc91a017a498": {
+                    "extension_type": "property-extension",
+                    "first_name": "Stanley",
+                    "last_name": "Tucci",
+                    "contact_numbers": [
+                        {
+                            "contact_number": "717-555-9090",
+                            "contact_number_type": "work_phone",
+                            "description": "Preferred",
+                            "classified": false
+                        }
+                    ],
+                    "email_addresses": [
+                        {
+                            "email_address_ref": "email-addr--e26170cd-64f3-4314-9133-cf3c54a7ad59",
+                            "digital_contact_type": "work",
+                            "description": "Preferred",
+                            "classified": false
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "type": "email-addr",
+            "spec_version": "2.1",
+            "id": "email-addr--e26170cd-64f3-4314-9133-cf3c54a7ad59",
+            "value": "stucci@aig.org"
+        },
+        {
+            "x_comment": "l.28.2.1.1",
+            "type": "relationship",
+            "id": "relationship--3c143cea-3526-4cb7-8801-b4773965237f",
+            "created_by_ref": "identity--c04a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2025-03-28T15:15:00.000Z",
+            "modified": "2025-03-28T15:15:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "performed",
+            "source_ref": "identity--9de8c413-a348-424c-b9be-617140036702",
+            "target_ref": "task--486a1153-3909-4820-936b-67c4906b1ad2"
+        },
+        {
+            "x_comment": "l.28.2.1.1.6",
+            "type": "identity",
+            "id": "identity--e1f0169d-8457-4de8-8e15-398e90bd9784",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-08T01:02:00.000Z",
+            "modified": "2024-03-08T01:03:01.000Z",
+            "spec_version": "2.1",
+            "name": "AIG",
+            "identity_class": "organization",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.1.1.7",
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--14db9da1-c440-410f-93f7-e85d815fd0ed",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-28T01:03:01.000Z",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "street_address": "2020 K St. NW #420",
+            "city": "Washington",
+            "administrative_area": "US-DC",
+            "country": "us",
+            "postal_code": "20006",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.1.1.6",
+            "type": "relationship",
+            "id": "relationship--ffc6f797-ae39-48ce-b7ba-566c26fd3b31",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "employee-of",
+            "source_ref": "identity--9de8c413-a348-424c-b9be-617140036702",
+            "target_ref": "identity--e1f0169d-8457-4de8-8e15-398e90bd9784"
+        },
+        {
+            "x_comment": "l.28.2.1.1.7",
+            "type": "relationship",
+            "id": "relationship--2b226d9b-5e3b-473a-a374-9d1d0c0398e4",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "located-at",
+            "source_ref": "identity--e1f0169d-8457-4de8-8e15-398e90bd9784",
+            "target_ref": "location--14db9da1-c440-410f-93f7-e85d815fd0ed"
+        },
+        {
+            "x_comment": "l.28.2.3",
+            "type": "task",
+            "id": "task--29211699-3bf9-4f29-9968-a4bf63a90803",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-04-07T20:00:00.0002Z",
+            "modified": "2023-04-07T20:00:00.0002Z",
+            "outcome": "successful",
+            "start_time": "2025-01-01T00:00:00.000Z",
+            "end_time": "2025-01-01T00:00:00.000Z",
+            "task_types": ["ransom-payment"],
+            "labels": [ 
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "spec_version": "2.1"
+        },
+        {
+            "x_comment": "l.28.2.3",
+            "type": "impact",
+            "impact_category": "economic",
+            "id": "impact--c828e0dd-35a9-4b89-a612-28a6fe3e9ef6",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-05-02T20:00:00.0002Z",
+            "modified": "2023-05-02T20:00:00.0002Z",
+            "spec_version": "2.1",
+            "labels": [ 
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "extensions": {
+                "extension-definition--7cc33dd6-f6a1-489b-98ea-522d351d71b9": {
+                    "extension_type": "new-sdo"
+                },
+                "economic-ext": {
+                    "currency": "USD",
+                    "min_amount": 1,
+                    "max_amount": 600000,
+                    "variety": "ransom-payment",
+                    "currency_actual": "BTC",
+		    "conversion_rate": 0.00000034,
+		    "conversion_time": "2023-05-02T20:00:00.0002Z"
+                }
+            }
+        }, 
+        {
+            "x_comment": "l.28.2.4, l.28.2.4.iv, l.28.2.4.v",
+            "type": "identity",
+            "id": "identity--3c7a50aa-6aae-4469-8464-83f2b23b59e8",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T01:02:00.000Z",
+            "modified": "2024-03-28T01:03:01.000Z",
+            "spec_version": "2.1",
+            "name": "GS",
+            "sectors": ["financial-services"],
+            "identity_class": "organization",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.4",
+            "type": "relationship",
+            "id": "relationship--28ae8bdb-f4c5-4ae3-8c5d-ad5fbfb8de75",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "financial-institution-used",
+            "source_ref": "task--29211699-3bf9-4f29-9968-a4bf63a90803",
+            "target_ref": "identity--3c7a50aa-6aae-4469-8464-83f2b23b59e8"
+        },
+        {
+            "x_comment": "l.28.2.4.ii",
+            "type": "location",
+            "spec_version": "2.1",
+            "id": "location--dbd84684-3487-4f8a-85e5-c103110b16d7",
+            "created": "2024-03-08T00:00:00.000Z",
+            "modified": "2024-03-08T01:03:01.000Z",
+            "name": "GS",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "street_address": "200 West Street",
+            "city": "New York City",
+            "administrative_area": "US-NY",
+            "country": "us",
+            "postal_code": "10282",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.4.ii",
+            "type": "relationship",
+            "id": "relationship--d6bf9e8b-92b5-4369-8ad8-9ec4671da8bd",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "located-at",
+            "source_ref": "identity--3c7a50aa-6aae-4469-8464-83f2b23b59e8",
+            "target_ref": "location--dbd84684-3487-4f8a-85e5-c103110b16d7"
+        },
+        {
+            "x_comment": "l.28.2.4.iii, l.28.2.4.iv, l.28.2.4.v",
+            "type": "identity",
+            "id": "identity--f34407c7-8895-49d9-9325-e993e73193d4",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T01:02:00.000Z",
+            "modified": "2024-03-28T01:03:01.000Z",
+            "spec_version": "2.1",
+            "name": "Nela Powell",
+            "identity_class": "individual",
+            "description" : "@@account-number: 123456789 @@routing-number: 987654321",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "extensions": {
+                "extension-definition--66e2492a-bbd3-4be6-88f5-cc91a017a498": {
+                    "extension_type": "property-extension",
+                    "first_name": "Nela",
+                    "last_name": "Powell",
+		    "contact_numbers": [
+                        {
+                            "contact_number": "555-717-9090",
+                            "contact_number_type": "work_phone",
+                            "description": "Preferred",
+                            "classified": false
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "x_comment": "l.28.2.4.iii",
+            "type": "relationship",
+            "id": "relationship--ba9358fd-ef5a-42e7-9f9e-cb03dda2662e",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "has-account-at",
+            "source_ref": "identity--f34407c7-8895-49d9-9325-e993e73193d4",
+            "target_ref": "identity--3c7a50aa-6aae-4469-8464-83f2b23b59e8"
+        },
+        {
+            "x_comment": "l.28.2.5",
+            "type": "task",
+            "id": "task--c6426f0f-19d6-4103-87f5-568225495a5e",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-04-07T20:00:00.0002Z",
+            "modified": "2023-04-07T20:00:00.0002Z",
+            "outcome": "successful",
+            "task_types": ["digital-payment"],
+            "spec_version": "2.1",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.5.i, l.28.2.5.ii, l.28.2.5.iii",
+            "type": "identity",
+            "id": "identity--9dcc0a07-ccb1-463e-a382-93aeea5fe9b6",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T01:02:00.000Z",
+            "modified": "2024-03-28T01:03:01.000Z",
+            "spec_version": "2.1",
+            "name": "Coinbase",
+            "identity_class": "individual",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE",
+                "purchase-service",
+                "store-service",
+                "transmit-service"
+            ]
+        },
+        {
+            "x_comment": "l.28.2.5.i, l.28.2.5.ii, l.28.2.5.iii",
+            "type": "relationship",
+            "id": "relationship--6a8a3df7-787e-47f5-a0f3-fcf5e247115a",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "participated-in",
+            "source_ref": "identity--9dcc0a07-ccb1-463e-a382-93aeea5fe9b6",
+            "target_ref": "task--c6426f0f-19d6-4103-87f5-568225495a5e"
+        },
+        {
+            "x_comment": "l.28.3",
+            "type": "task",
+            "id": "task--3145de80-1e1e-485f-ac97-11745172368d",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-04-07T20:00:00.0002Z",
+            "modified": "2023-04-07T20:00:00.0002Z",
+            "outcome": "successful",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE",
+                "decryption-key-provided"
+            ],
+            "task_types": [
+                "recovery", 
+                "ransomware-decryption"
+            ],
+            "spec_version": "2.1"
+        },
+        {
+            "x_comment": "l.28.4",
+            "type": "impact",
+            "impact_category": "confidentiality",
+            "id": "impact--60001a3b-a1f7-41d4-a88f-9d56d4d11f64",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-04-07T20:00:00.0002Z",
+            "modified": "2023-04-07T20:00:00.0002Z",
+            "spec_version": "2.1",
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ],
+            "extensions": {
+                "extension-definition--7cc33dd6-f6a1-489b-98ea-522d351d71b9": {
+                    "extension_type": "new-sdo"
+		},
+                "confidentiality-ext": {
+                    "loss_type": "confirmed-loss",
+                    "information_type": "unknown"
+                }
+            }
+        },  
+        {
+            "x_comment": "l.28.4",
+            "type": "event",
+            "spec_version": "2.1",
+            "id": "event--d17fd3c1-d55f-47e5-befc-9868c0a451d2",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2023-05-02T20:00:00.0002Z",
+            "modified": "2023-05-02T20:00:00.0002Z",
+            "status": "occurred",
+            "event_types": ["data-exfiltration"],
+            "labels": [
+                "THIS-OBJECT-IS-CREATED-WITH-ARTIFICIAL-DATA-AND-SHOULD-NOT-BE-TREATED-AS-REAL-THREAT-INTELLIGENCE"
+            ]
+        },
+        {
+            "x_comment": "l.28.4",
+            "type": "relationship",
+            "id": "relationship--570044fb-d594-4918-b610-d11f8fff60bf",
+            "created_by_ref": "identity--c02a9f0a-d13a-42ac-86a1-23311352aec4",
+            "created": "2024-03-28T00:00:00.000Z",
+            "modified": "2024-03-29T15:30:00.000Z",
+            "spec_version": "2.1",
+            "relationship_type": "causes",
+            "source_ref": "event--d17fd3c1-d55f-47e5-befc-9868c0a451d2",
+            "target_ref": "impact--60001a3b-a1f7-41d4-a88f-9d56d4d11f64"
+        }
+    ]
+}
