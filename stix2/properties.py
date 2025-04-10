@@ -49,7 +49,7 @@ def _check_uuid(uuid_str, spec_version, interoperability):
 
     ok = uuid_obj.variant == uuid.RFC_4122
     if ok and spec_version == "2.0":
-        ok = uuid_obj.version == 4
+        ok = uuid_obj.version == 4 or uuid_obj.version == 5
 
     return ok
 
