@@ -687,14 +687,12 @@ def _register_object(*args, **kwargs):
 
     try:
         yield TestClass
-    except:  # noqa: E722
+    finally:
         ext_id = kwargs.get("extension_name")
         if not ext_id and len(args) >= 3:
             ext_id = args[2]
 
         _unregister("objects", TestClass._type, ext_id)
-
-        raise
 
 
 @contextlib.contextmanager
@@ -713,14 +711,12 @@ def _register_observable(*args, **kwargs):
 
     try:
         yield TestClass
-    except:   # noqa: E722
+    finally:
         ext_id = kwargs.get("extension_name")
         if not ext_id and len(args) >= 4:
             ext_id = args[3]
 
         _unregister("observables", TestClass._type, ext_id)
-
-        raise
 
 
 # "Base" properties used to derive property variations for testing (e.g. in a
