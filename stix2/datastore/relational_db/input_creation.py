@@ -2,7 +2,8 @@ from sqlalchemy import insert
 
 from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
-    SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name, shorten_extension_definition_id
+    SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
+    shorten_extension_definition_id,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -131,8 +132,6 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
 
         bindings["name"] = name
         bindings[value_binding] = data_sink.db_backend.process_value_for_insert(stix_type, value)
-
-
 
         insert_statements.append(insert(table).values(bindings))
 

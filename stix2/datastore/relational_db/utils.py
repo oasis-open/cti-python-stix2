@@ -51,6 +51,7 @@ def determine_core_properties(stix_object_class, is_embedded_object):
     else:
         raise ValueError(f"{stix_object_class} not a STIX object")
 
+
 def canonicalize_table_name(table_name, schema_name=None):
     if schema_name:
         full_name = schema_name + "." + table_name
@@ -111,6 +112,7 @@ def get_stix_object_classes():
             "new-sdo", "new-sco", "new-sro",
         )
     )
+
 
 def schema_for(stix_class):
     if issubclass(stix_class, _DomainObject):

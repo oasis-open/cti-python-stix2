@@ -10,7 +10,9 @@ from stix2.datastore import DataSourceError
 from stix2.datastore.relational_db.database_backends.postgres_backend import (
     PostgresBackend,
 )
-from stix2.datastore.relational_db.database_backends.sqlite_backend import SQLiteBackend
+from stix2.datastore.relational_db.database_backends.sqlite_backend import (
+    SQLiteBackend,
+)
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 import stix2.registry
@@ -19,7 +21,7 @@ import stix2.v21
 
 @pytest.fixture(
     scope="module",
-    params=["postgresql", "sqlite"]
+    params=["postgresql", "sqlite"],
 )
 def db_backend(request):
     if request.param == "postgresql":

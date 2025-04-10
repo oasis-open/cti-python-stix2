@@ -1,6 +1,6 @@
 from typing import Any
 
-from sqlalchemy import Table, Column, Text, event, insert, select, update
+from sqlalchemy import Column, Table, Text, event, insert, select, update
 from sqlalchemy.schema import CreateTable
 
 from .database_backend_base import DatabaseBackend
@@ -86,12 +86,13 @@ class SQLiteBackend(DatabaseBackend):
 
     def create_sequence(self, metadata):
         # need id column, so update has something to work with (see above)
-        t = Table("my_general_seq",
-                  metadata,
-                  Column("id", SQLiteBackend.determine_sql_type_for_key_as_int()),
-                  Column("value", SQLiteBackend.determine_sql_type_for_integer_property()),
-                  schema=self.schema_for_core())
+        t = Table(
+            "my_general_seq",
+            metadata,
+            Column("id", SQLiteBackend.determine_sql_type_for_key_as_int()),
+            Column("value", SQLiteBackend.determine_sql_type_for_integer_property()),
+            schema=self.schema_for_core(),
+        )
         CreateTable(t).compile(self.database_connection)
         self.select_stmt_for_sequence = select(t.c.value)
         return t
-

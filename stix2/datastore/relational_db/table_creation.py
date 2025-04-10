@@ -5,8 +5,9 @@ from sqlalchemy import (  # create_engine,; insert,
 
 from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
-    canonicalize_table_name, determine_column_name, determine_core_properties, determine_sql_type_from_stix,
-    flat_classes, get_stix_object_classes, shorten_extension_definition_id
+    canonicalize_table_name, determine_column_name, determine_core_properties,
+    determine_sql_type_from_stix, flat_classes, get_stix_object_classes,
+    shorten_extension_definition_id,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -15,8 +16,7 @@ from stix2.properties import (
     ObjectReferenceProperty, Property, ReferenceProperty, StringProperty,
     TimestampProperty, TypeProperty,
 )
-
-from stix2.v21.base import (_Extension, _Observable)
+from stix2.v21.base import _Extension, _Observable
 from stix2.v21.common import KillChainPhase
 
 
@@ -275,9 +275,11 @@ def create_core_table(metadata, db_backend, stix_type_name):
             Column("created", db_backend.determine_sql_type_for_timestamp_property()),
             Column("modified", db_backend.determine_sql_type_for_timestamp_property()),
             Column("revoked", db_backend.determine_sql_type_for_boolean_property()),
-            Column("confidence",
-                   db_backend.determine_sql_type_for_integer_property(),
-                   db_backend.create_min_max_constraint_expression(IntegerProperty(min=0, max=100), "confidence")),
+            Column(
+                "confidence",
+                db_backend.determine_sql_type_for_integer_property(),
+                db_backend.create_min_max_constraint_expression(IntegerProperty(min=0, max=100), "confidence"),
+            ),
             Column("lang", db_backend.determine_sql_type_for_string_property()),
         ]
         columns.extend(sdo_columns)

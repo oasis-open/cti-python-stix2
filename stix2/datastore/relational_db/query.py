@@ -6,8 +6,7 @@ import sqlalchemy as sa
 import stix2
 from stix2.datastore import DataSourceError
 from stix2.datastore.relational_db.utils import (
-    canonicalize_table_name, schema_for, table_name_for,
-    see_through_workbench,
+    canonicalize_table_name, see_through_workbench, table_name_for,
 )
 import stix2.properties
 import stix2.utils
@@ -50,13 +49,13 @@ def _tables_for(stix_class, metadata, db_backend):
     # Some fixed info about core tables
     if stix2.utils.is_sco(stix_class._type, stix2.DEFAULT_VERSION):
         canon_core_table_name = canonicalize_table_name(
-            "core_sco", db_backend.schema_for_core()
+            "core_sco", db_backend.schema_for_core(),
         )
 
     else:
         # for SROs and SMOs too?
         canon_core_table_name = canonicalize_table_name(
-            "core_sdo", db_backend.schema_for_core()
+            "core_sdo", db_backend.schema_for_core(),
         )
 
     core_table = metadata.tables[canon_core_table_name]
@@ -160,13 +159,13 @@ def _read_external_references(stix_id, metadata, conn, db_backend):
     ext_refs_table = metadata.tables[
         canonicalize_table_name(
             "external_references",
-            db_backend.schema_for_core()
+            db_backend.schema_for_core(),
         )
     ]
     ext_refs_hashes_table = metadata.tables[
         canonicalize_table_name(
             "external_references_hashes",
-            db_backend.schema_for_core()
+            db_backend.schema_for_core(),
         )
     ]
     ext_refs = []
@@ -206,7 +205,7 @@ def _read_object_marking_refs(stix_id, common_table_kind, metadata, conn, db_bac
 
     marking_table_name = canonicalize_table_name(
         "object_marking_refs_" + common_table_kind,
-        db_backend.schema_for_core()
+        db_backend.schema_for_core(),
     )
 
     # The SCO/SDO object_marking_refs tables are mostly identical; they just
@@ -237,7 +236,7 @@ def _read_granular_markings(stix_id, common_table_kind, metadata, conn, db_backe
 
     marking_table_name = canonicalize_table_name(
         "granular_marking_" + common_table_kind,
-        db_backend.schema_for_core()
+        db_backend.schema_for_core(),
     )
     marking_table = metadata.tables[marking_table_name]
 
@@ -310,7 +309,7 @@ def _read_dictionary_property(
     prop_instance,
     metadata,
     conn,
-    db_backend
+    db_backend,
 ):
     """
     Read a dictionary from a table.
@@ -350,11 +349,11 @@ def _read_dictionary_property(
                 list_table_name = f"{dict_table_name}_values"
                 list_table = metadata.tables[list_table_name]
                 stmt = sa.select(
-                    dict_table.c.name, list_table.c.value
+                    dict_table.c.name, list_table.c.value,
                 ).select_from(dict_table).join(
-                    list_table, list_table.c.id == dict_table.c["values"]
+                    list_table, list_table.c.id == dict_table.c["values"],
                 ).where(
-                    dict_table.c.id == stix_id
+                    dict_table.c.id == stix_id,
                 )
 
                 results = conn.execute(stmt)
@@ -509,7 +508,7 @@ def _read_complex_property_value(
     obj_table,
     metadata,
     conn,
-    db_backend
+    db_backend,
 ):
     """
     Read property values which require auxiliary tables to store.  These are
@@ -605,7 +604,7 @@ def _read_complex_property_value(
             prop_instance,
             metadata,
             conn,
-            db_backend
+            db_backend,
         )
 
     elif isinstance(prop_instance, stix2.properties.EmbeddedObjectProperty):
@@ -663,7 +662,7 @@ def _read_complex_top_level_property_value(
             stix_id,
             metadata,
             conn,
-            db_backend
+            db_backend,
         )
 
     elif prop_name == "object_marking_refs":
@@ -689,7 +688,7 @@ def _read_complex_top_level_property_value(
         label_table = metadata.tables[
             canonicalize_table_name(
                 f"core_{common_table_kind}_labels",
-                db_backend.schema_for_core()
+                db_backend.schema_for_core(),
             )
         ]
         prop_value = _read_simple_array(stix_id, "label", label_table, conn)
@@ -703,7 +702,7 @@ def _read_complex_top_level_property_value(
             type_table,
             metadata,
             conn,
-            db_backend
+            db_backend,
         )
 
     return prop_value
@@ -761,7 +760,7 @@ def read_object(stix_id, metadata, conn, db_backend):
     stix_obj = stix2.parse(
         obj_dict,
         allow_custom=True,
-        version=stix2.DEFAULT_VERSION
+        version=stix2.DEFAULT_VERSION,
     )
 
     return stix_obj

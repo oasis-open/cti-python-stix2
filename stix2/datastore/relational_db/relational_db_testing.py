@@ -3,7 +3,7 @@ import os  # noqa: F401
 
 from database_backends.mariadb_backend import MariaDBBackend  # noqa: F401
 from database_backends.postgres_backend import PostgresBackend  # noqa: F401
-from database_backends.sqlite_backend import SQLiteBackend
+from database_backends.sqlite_backend import SQLiteBackend  # noqa: F401
 import pytz
 
 import stix2
@@ -290,7 +290,7 @@ def test_dictionary():
 
 def main():
     store = RelationalDBStore(
-        MariaDBBackend(f"mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
+        MariaDBBackend("mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
         # PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
         # SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
 
