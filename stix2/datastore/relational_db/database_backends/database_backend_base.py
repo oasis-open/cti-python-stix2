@@ -1,7 +1,8 @@
 from typing import Any
 
 from sqlalchemy import (
-    Boolean, CheckConstraint, Float, Integer, String, Text, create_engine,
+    Boolean, CheckConstraint, Float, Integer, Sequence, String, Text,
+    create_engine,
 )
 from sqlalchemy_utils import create_database, database_exists, drop_database
 
@@ -71,6 +72,9 @@ class DatabaseBackend:
     def determine_sql_type_for_timestamp_property():  # noqa: F811
         pass
 
+    def create_regex_constraint_clause(self, column_name, pattern):
+        pass
+
     # ------------------------------------------------------------------
     # Common SQL types for STIX property classes
 
@@ -127,6 +131,20 @@ class DatabaseBackend:
     def create_regex_constraint_expression(self, column_name, pattern):
         return CheckConstraint(self.create_regex_constraint_clause(column_name, pattern))
 
+    @staticmethod
+    def check_for_none(val):
+        return val is None
+
+    def create_min_max_constraint_expression(self, int_property, column_name):
+        if not self.check_for_none(int_property.min) and not self.check_for_none(int_property.max):
+            return CheckConstraint(f"{column_name} >= {int_property.min} and {column_name} <= {int_property.max}")
+        elif not self.check_for_none(int_property.min):
+            return CheckConstraint(f"{column_name} >= {int_property.min}")
+        elif not self.check_for_none(int_property.max):
+            return CheckConstraint(f"{column_name} <= {int_property.max}")
+        else:
+            return None
+
     def create_regex_constraint_and_expression(self, clause1, clause2):
         return (
             CheckConstraint(
@@ -139,7 +157,9 @@ class DatabaseBackend:
         sql_type = stix_type.determine_sql_type(self)
         if sql_type == self.determine_sql_type_for_timestamp_property() and isinstance(value, STIXdatetime):
             return value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-        elif sql_type == self.determine_sql_type_for_hex_property() and isinstance(stix_type, HexProperty):
+        elif sql_type == self.determine_sql_type_for_hex_property() and isinstance(stix_type, HexProperty) and \
+                sql_type is not Text:
+            # make sure it isn't represented as Text
             return bytes.fromhex(value)
         else:
             return value
@@ -147,3 +167,6 @@ class DatabaseBackend:
     def next_id(self, data_sink):
         with self.database_connection.begin() as trans:
             return trans.execute(data_sink.sequence)
+
+    def create_sequence(self, metadata):
+        return Sequence("my_general_seq", metadata=metadata, start=1, schema=self.schema_for_core())

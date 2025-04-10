@@ -1,5 +1,5 @@
 from sqlalchemy import MetaData, delete
-from sqlalchemy.schema import CreateTable, Sequence
+from sqlalchemy.schema import CreateTable
 
 from stix2.base import _STIXBase
 from stix2.datastore import DataSink, DataSource, DataStoreMixin
@@ -138,7 +138,6 @@ class RelationalDBSink(DataSink):
             create_table_objects(
                 self.metadata, stix_object_classes,
             )
-        self.sequence = Sequence("my_general_seq", metadata=self.metadata, start=1, schema=db_backend.schema_for_core())
 
         self.allow_custom = allow_custom
 
@@ -155,6 +154,7 @@ class RelationalDBSink(DataSink):
             self._instantiate_database(print_sql)
 
     def _instantiate_database(self, print_sql=False):
+        self.sequence = self.db_backend.create_sequence(self.metadata)
         self.metadata.create_all(self.db_backend.database_connection)
         if print_sql:
             for t in self.metadata.tables.values():
