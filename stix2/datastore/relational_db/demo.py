@@ -1,17 +1,16 @@
-import datetime as dt
+import json
+import sys
 
 from database_backends.postgres_backend import PostgresBackend
-import sys
-import json
+# needed so the relational db code knows to create tables for this
+from identity_contact_information import \
+    identity_contact_information  # noqa F401
+from incident import event, impact, incident, task  # noqa F401
+from observed_string import observed_string  # noqa F401
 
 import stix2
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
-
-# needed so the relational db code knows to create tables for this
-from incident import incident, event, task, impact
-from identity_contact_information import identity_contact_information
-from observed_string import observed_string
 
 
 def main():

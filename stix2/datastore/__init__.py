@@ -213,7 +213,6 @@ class DataStoreMixin(object):
         return self.sink.add(*args, **kwargs)
 
 
-
 class DataSink(metaclass=ABCMeta):
     """An implementer will create a concrete subclass from
     this class for the specific DataSink.
