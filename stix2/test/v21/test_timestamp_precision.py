@@ -71,6 +71,11 @@ def test_stix_datetime():
 
 @pytest.mark.parametrize(
     "us, precision, precision_constraint, expected_truncated_us", [
+        (123456789, Precision.ANY, PrecisionConstraint.EXACT, 123456),
+        (123456789, Precision.SECOND, PrecisionConstraint.EXACT, 0),
+        (123456789, Precision.SECOND, PrecisionConstraint.MIN, 123456),
+        (123456789, Precision.MILLISECOND, PrecisionConstraint.EXACT, 123000),
+        (123456789, Precision.MILLISECOND, PrecisionConstraint.MIN, 123456),
         (123456, Precision.ANY, PrecisionConstraint.EXACT, 123456),
         (123456, Precision.SECOND, PrecisionConstraint.EXACT, 0),
         (123456, Precision.SECOND, PrecisionConstraint.MIN, 123456),
