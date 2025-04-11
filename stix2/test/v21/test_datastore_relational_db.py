@@ -10,19 +10,52 @@ from stix2.datastore import DataSourceError
 from stix2.datastore.relational_db.database_backends.postgres_backend import (
     PostgresBackend,
 )
+from stix2.datastore.relational_db.database_backends.sqlite_backend import (
+    SQLiteBackend,
+)
 from stix2.datastore.relational_db.relational_db import RelationalDBStore
 import stix2.properties
 import stix2.registry
 import stix2.v21
 
-_DB_CONNECT_URL = f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', 'postgres')}@0.0.0.0:5432/postgres"
 
-store = RelationalDBStore(
-    PostgresBackend(_DB_CONNECT_URL, True),
-    True,
-    None,
-    False,
+@pytest.fixture(
+    scope="module",
+    params=["postgresql", "sqlite"],
 )
+def db_backend(request):
+    if request.param == "postgresql":
+        user = os.getenv('POSTGRES_USER', 'postgres')
+        pass_ = os.getenv('POSTGRES_PASSWORD', 'postgres')
+        dbname = os.getenv('POSTGRES_DB', 'postgres')
+
+        connect_url = f"postgresql://{user}:{pass_}@0.0.0.0:5432/{dbname}"
+        backend = PostgresBackend(connect_url, force_recreate=True)
+
+    elif request.param == "sqlite":
+        connect_url = "sqlite://"  # in-memory DB
+        backend = SQLiteBackend(connect_url, force_recreate=True)
+
+    else:
+        raise ValueError(request.param)
+
+    return backend
+
+
+@pytest.fixture
+def store(db_backend):
+    store = RelationalDBStore(
+        db_backend,
+        True,
+        None,
+        True,
+    )
+
+    try:
+        yield store
+    finally:
+        store.metadata.drop_all(db_backend.database_connection)
+
 
 # Artifacts
 basic_artifact_dict = {
@@ -48,7 +81,7 @@ encrypted_artifact_dict = {
 }
 
 
-def test_basic_artifact():
+def test_basic_artifact(store):
     artifact_stix_object = stix2.parse(basic_artifact_dict)
     store.add(artifact_stix_object)
     read_obj = json.loads(store.get(artifact_stix_object['id']).serialize())
@@ -57,7 +90,7 @@ def test_basic_artifact():
         assert basic_artifact_dict[attrib] == read_obj[attrib]
 
 
-def test_encrypted_artifact():
+def test_encrypted_artifact(store):
     artifact_stix_object = stix2.parse(encrypted_artifact_dict)
     store.add(artifact_stix_object)
     read_obj = json.loads(store.get(artifact_stix_object['id']).serialize())
@@ -77,7 +110,7 @@ as_dict = {
 }
 
 
-def test_autonomous_system():
+def test_autonomous_system(store):
     as_obj = stix2.parse(as_dict)
     store.add(as_obj)
     read_obj = json.loads(store.get(as_obj['id']).serialize())
@@ -102,7 +135,7 @@ directory_dict = {
 }
 
 
-def test_directory():
+def test_directory(store):
     directory_obj = stix2.parse(directory_dict)
     store.add(directory_obj)
     read_obj = json.loads(store.get(directory_obj['id']).serialize())
@@ -123,7 +156,7 @@ domain_name_dict = {
 }
 
 
-def test_domain_name():
+def test_domain_name(store):
     domain_name_obj = stix2.parse(domain_name_dict)
     store.add(domain_name_obj)
     read_obj = json.loads(store.get(domain_name_obj['id']).serialize())
@@ -143,7 +176,7 @@ email_addr_dict = {
 }
 
 
-def test_email_addr():
+def test_email_addr(store):
     email_addr_stix_object = stix2.parse(email_addr_dict)
     store.add(email_addr_stix_object)
     read_obj = json.loads(store.get(email_addr_stix_object['id']).serialize())
@@ -228,7 +261,7 @@ multipart_email_msg_dict = {
 }
 
 
-def test_email_msg():
+def test_email_msg(store):
     email_msg_stix_object = stix2.parse(email_msg_dict)
     store.add(email_msg_stix_object)
     read_obj = json.loads(store.get(email_msg_stix_object['id']).serialize())
@@ -242,7 +275,7 @@ def test_email_msg():
         assert email_msg_dict[attrib] == read_obj[attrib]
 
 
-def test_multipart_email_msg():
+def test_multipart_email_msg(store):
     multipart_email_msg_stix_object = stix2.parse(multipart_email_msg_dict)
     store.add(multipart_email_msg_stix_object)
     read_obj = json.loads(store.get(multipart_email_msg_stix_object['id']).serialize())
@@ -281,7 +314,7 @@ file_dict = {
 }
 
 
-def test_file():
+def test_file(store):
     file_stix_object = stix2.parse(file_dict)
     store.add(file_stix_object)
     read_obj = json.loads(store.get(file_stix_object['id']).serialize())
@@ -309,7 +342,7 @@ ipv6_dict = {
 }
 
 
-def test_ipv4():
+def test_ipv4(store):
     ipv4_stix_object = stix2.parse(ipv4_dict)
     store.add(ipv4_stix_object)
     read_obj = store.get(ipv4_stix_object['id'])
@@ -318,7 +351,7 @@ def test_ipv4():
         assert ipv4_dict[attrib] == read_obj[attrib]
 
 
-def test_ipv6():
+def test_ipv6(store):
     ipv6_stix_object = stix2.parse(ipv6_dict)
     store.add(ipv6_stix_object)
     read_obj = store.get(ipv6_stix_object['id'])
@@ -336,7 +369,7 @@ mutex_dict = {
 }
 
 
-def test_mutex():
+def test_mutex(store):
     mutex_stix_object = stix2.parse(mutex_dict)
     store.add(mutex_stix_object)
     read_obj = store.get(mutex_stix_object['id'])
@@ -376,7 +409,7 @@ network_traffic_dict = {
 }
 
 
-def test_network_traffic():
+def test_network_traffic(store):
     network_traffic_stix_object = stix2.parse(network_traffic_dict)
     store.add(network_traffic_stix_object)
     read_obj = store.get(network_traffic_stix_object['id'])
@@ -414,7 +447,7 @@ process_dict = {
 }
 
 
-def test_process():
+def test_process(store):
     process_stix_object = stix2.parse(process_dict)
     store.add(process_stix_object)
     read_obj = json.loads(store.get(process_stix_object['id']).serialize())
@@ -438,7 +471,7 @@ software_dict = {
 }
 
 
-def test_software():
+def test_software(store):
     software_stix_object = stix2.parse(software_dict)
     store.add(software_stix_object)
     read_obj = json.loads(store.get(software_stix_object['id']).serialize())
@@ -455,7 +488,7 @@ url_dict = {
 }
 
 
-def test_url():
+def test_url(store):
     url_stix_object = stix2.parse(url_dict)
     store.add(url_stix_object)
     read_obj = json.loads(store.get(url_stix_object['id']).serialize())
@@ -486,7 +519,7 @@ user_account_dict = {
 }
 
 
-def test_user_account():
+def test_user_account(store):
     user_account_stix_object = stix2.parse(user_account_dict)
     store.add(user_account_stix_object)
     read_obj = json.loads(store.get(user_account_stix_object['id']).serialize())
@@ -526,7 +559,7 @@ windows_registry_dict = {
 }
 
 
-def test_windows_registry():
+def test_windows_registry(store):
     windows_registry_stix_object = stix2.parse(windows_registry_dict)
     store.add(windows_registry_stix_object)
     read_obj = json.loads(store.get(windows_registry_stix_object['id']).serialize())
@@ -584,7 +617,7 @@ extensions_x509_certificate_dict = {
 }
 
 
-def test_basic_x509_certificate():
+def test_basic_x509_certificate(store):
     basic_x509_certificate_stix_object = stix2.parse(basic_x509_certificate_dict)
     store.add(basic_x509_certificate_stix_object)
     read_obj = json.loads(store.get(basic_x509_certificate_stix_object['id']).serialize())
@@ -598,7 +631,7 @@ def test_basic_x509_certificate():
         assert basic_x509_certificate_dict[attrib] == read_obj[attrib]
 
 
-def test_x509_certificate_with_extensions():
+def test_x509_certificate_with_extensions(store):
     extensions_x509_certificate_stix_object = stix2.parse(extensions_x509_certificate_dict)
     store.add(extensions_x509_certificate_stix_object)
     read_obj = json.loads(store.get(extensions_x509_certificate_stix_object['id']).serialize())
@@ -612,12 +645,12 @@ def test_x509_certificate_with_extensions():
         assert extensions_x509_certificate_dict[attrib] == read_obj[attrib]
 
 
-def test_source_get_not_exists():
+def test_source_get_not_exists(store):
     obj = store.get("identity--00000000-0000-0000-0000-000000000000")
     assert obj is None
 
 
-def test_source_no_registration():
+def test_source_no_registration(store):
     with pytest.raises(DataSourceError):
         # error, since no registered class can be found
         store.get("doesnt-exist--a9e52398-3312-4377-90c2-86d49446c0d0")
@@ -656,14 +689,12 @@ def _register_object(*args, **kwargs):
 
     try:
         yield TestClass
-    except:  # noqa: E722
+    finally:
         ext_id = kwargs.get("extension_name")
         if not ext_id and len(args) >= 3:
             ext_id = args[2]
 
         _unregister("objects", TestClass._type, ext_id)
-
-        raise
 
 
 @contextlib.contextmanager
@@ -682,14 +713,12 @@ def _register_observable(*args, **kwargs):
 
     try:
         yield TestClass
-    except:   # noqa: E722
+    finally:
         ext_id = kwargs.get("extension_name")
         if not ext_id and len(args) >= 4:
             ext_id = args[3]
 
         _unregister("observables", TestClass._type, ext_id)
-
-        raise
 
 
 # "Base" properties used to derive property variations for testing (e.g. in a
@@ -875,13 +904,10 @@ def object_variation(request, property_variation_value):
         _unregister(reg_section, TestClass._type, ext_id)
 
 
-def test_property(object_variation):
-    """
-    Try to more exhaustively test many different property configurations:
-    ensure schemas can be created and values can be stored and retrieved.
-    """
+@pytest.fixture
+def property_store(db_backend, object_variation):
     rdb_store = RelationalDBStore(
-        PostgresBackend(_DB_CONNECT_URL, True),
+        db_backend,
         True,
         None,
         True,
@@ -889,13 +915,25 @@ def test_property(object_variation):
         type(object_variation),
     )
 
-    rdb_store.add(object_variation)
-    read_obj = rdb_store.get(object_variation["id"])
+    try:
+        yield rdb_store
+    finally:
+        rdb_store.metadata.drop_all(db_backend.database_connection)
+
+
+def test_property(property_store, object_variation):
+    """
+    Try to more exhaustively test many different property configurations:
+    ensure schemas can be created and values can be stored and retrieved.
+    """
+
+    property_store.add(object_variation)
+    read_obj = property_store.get(object_variation["id"])
 
     assert read_obj == object_variation
 
 
-def test_dictionary_property_complex():
+def test_dictionary_property_complex(db_backend):
     """
     Test a dictionary property with multiple valid_types
     """
@@ -921,7 +959,7 @@ def test_dictionary_property_complex():
         )
 
         rdb_store = RelationalDBStore(
-            PostgresBackend(_DB_CONNECT_URL, True),
+            db_backend,
             True,
             None,
             True,
@@ -929,12 +967,15 @@ def test_dictionary_property_complex():
             cls,
         )
 
-        rdb_store.add(obj)
-        read_obj = rdb_store.get(obj["id"])
-        assert read_obj == obj
+        try:
+            rdb_store.add(obj)
+            read_obj = rdb_store.get(obj["id"])
+            assert read_obj == obj
+        finally:
+            rdb_store.metadata.drop_all(db_backend.database_connection)
 
 
-def test_extension_definition():
+def test_extension_definition(store):
     obj = stix2.ExtensionDefinition(
         created_by_ref="identity--8a5fb7e4-aabe-4635-8972-cbcde1fa4792",
         labels=["label1", "label2"],

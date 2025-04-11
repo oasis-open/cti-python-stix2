@@ -1,13 +1,11 @@
 import datetime as dt
 import os  # noqa: F401
 
-from database_backends.mariadb_backend import MariaDBBackend  # noqa: F401
-from database_backends.postgres_backend import PostgresBackend  # noqa: F401
-from database_backends.sqlite_backend import SQLiteBackend  # noqa: F401
+
 import pytz
 
 import stix2
-from stix2.datastore.relational_db.relational_db import RelationalDBStore
+from stix2.datastore.neo4j.neo4j import Neo4jStore
 import stix2.properties
 
 email_message = stix2.EmailMessage(
@@ -289,18 +287,9 @@ def test_dictionary():
 
 
 def main():
-    store = RelationalDBStore(
-        MariaDBBackend("mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
-        # PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
-        # SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
+    store = Neo4jStore()
 
-        True,
-        None,
-        True,
-        print_sql=True,
-    )
-
-    if store.sink.db_backend.database_exists:
+    if store.sink:
 
         ap = kill_chain_test()
         store.add(ap)

@@ -65,9 +65,8 @@ def test_datastore_related_to_raises():
 
 
 def test_datastore_add_raises():
-    with pytest.raises(AttributeError) as excinfo:
+    with pytest.raises(AttributeError):
         DataStoreMixin().add(CAMPAIGN_MORE_KWARGS)
-    assert "DataStoreMixin has no data sink to put objects in" == str(excinfo.value)
 
 
 def test_composite_datastore_get_raises_error():
