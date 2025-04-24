@@ -287,12 +287,53 @@ def test_dictionary():
         list_of_timestamps=["2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"],
     )
 
+multipart_email_msg_dict = {
+    "type": "email-message",
+    "spec_version": "2.1",
+    "id": "email-message--ef9b4b7f-14c8-5955-8065-020e0316b559",
+    "is_multipart": True,
+    "received_lines": [
+        "from mail.example.com ([198.51.100.3]) by smtp.gmail.com with ESMTPSA id \
+        q23sm23309939wme.17.2016.07.19.07.20.32 (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 \
+        bits=128/128); Tue, 19 Jul 2016 07:20:40 -0700 (PDT)",
+    ],
+    "content_type": "multipart/mixed",
+    "date": "2016-06-19T14:20:40.000Z",
+    "from_ref": "email-addr--89f52ea8-d6ef-51e9-8fce-6a29236436ed",
+    "to_refs": ["email-addr--d1b3bf0c-f02a-51a1-8102-11aba7959868"],
+    "cc_refs": ["email-addr--e4ee5301-b52d-59cd-a8fa-8036738c7194"],
+    "subject": "Check out this picture of a cat!",
+    "additional_header_fields": {
+        "Content-Disposition": ["inline"],
+        "X-Mailer": ["Mutt/1.5.23"],
+        "X-Originating-IP": ["198.51.100.3"],
+    },
+    "body_multipart": [
+        {
+            "content_type": "text/plain; charset=utf-8",
+            "content_disposition": "inline",
+            "body": "Cats are funny!",
+        },
+        {
+            "content_type": "image/png",
+            "content_disposition": "attachment; filename=\"tabby.png\"",
+            "body_raw_ref": "artifact--4cce66f8-6eaa-53cb-85d5-3a85fca3a6c5",
+        },
+        {
+            "content_type": "application/zip",
+            "content_disposition": "attachment; filename=\"tabby_pics.zip\"",
+            "body_raw_ref": "file--6ce09d9c-0ad3-5ebf-900c-e3cb288955b5",
+        },
+    ],
+}
+
+
 
 def main():
     store = RelationalDBStore(
-        MariaDBBackend("mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
+        # MariaDBBackend("mariadb+pymysql://admin:admin@127.0.0.1:3306/rdb", force_recreate=True),
         # PostgresBackend("postgresql://localhost/stix-data-sink", force_recreate=True),
-        # SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
+        SQLiteBackend("sqlite:///stix-data-sink.db", force_recreate=True),
 
         True,
         None,
@@ -339,6 +380,8 @@ def main():
 
         malware = malware_with_all_required_properties()
         store.add(malware)
+
+        store.add(stix2.parse(multipart_email_msg_dict))
 
         # read_obj = store.get(directory_stix_object.id)
         # print(read_obj)
