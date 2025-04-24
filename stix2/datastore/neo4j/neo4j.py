@@ -1,23 +1,24 @@
-import json
+import re
 
 from py2neo import Graph, Node, Relationship
-import re
 
 import stix2
 from stix2.base import _STIXBase
-from stix2.datastore import (
-    DataSink, DataSource, DataStoreMixin,
-)
+from stix2.datastore import DataSink, DataSource, DataStoreMixin
 from stix2.parsing import parse
 
 
 def convert_camel_case_to_snake_case(name):
     return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+
+
 def remove_sro_from_list(sro, sro_list):
     for rel in sro_list:
-        if (rel["source_ref"] == sro["source_ref"] and
-                rel["target_ref"] == sro["target_ref"] and
-                    rel["relationship_type"] == sro["relationship_type"]):
+        if (
+            rel["source_ref"] == sro["source_ref"] and
+            rel["target_ref"] == sro["target_ref"] and
+                rel["relationship_type"] == sro["relationship_type"]
+        ):
             sro_list.remove(rel)
             break
     return sro_list
@@ -28,6 +29,7 @@ def hash_dict_as_string(hash_dict):
     for hash_type, hash in hash_dict.items():
         hashes.append(f'{hash_type}:{hash}')
     return ",".join(hashes)
+
 
 def _add(sink, stix_data, allow_custom=True, version="2.1"):
     """Add STIX objects to MemoryStore/Sink.
@@ -73,23 +75,25 @@ class Neo4jStore(DataStoreMixin):
 
     default_neo4j_connection = "bolt://neo4j:password@localhost:7687"
 
-    def __init__(self, host=default_host, username=default_username, password=default_password, allow_custom=True, version=None,
-                 clear_database=True):
+    def __init__(
+        self, host=default_host, username=default_username, password=default_password, allow_custom=True, version=None,
+        clear_database=True,
+    ):
         self.sgraph = Graph(host=host, auth=(username, password))
         super().__init__(
-            source = Neo4jSource(
+            source=Neo4jSource(
                 sgraph=self.sgraph,
                 allow_custom=allow_custom,
 
             ),
-            sink = Neo4jSink(
+            sink=Neo4jSink(
                 sgraph=self.sgraph,
                 allow_custom=allow_custom,
                 version=version,
                 clear_database=clear_database,
 
 
-            )
+            ),
         )
 
 
@@ -119,7 +123,7 @@ class Neo4jSink(DataSink):
         self.relationships_to_recheck = list()
         self.sub_object_relationships = list()
         self.counter = 1
-        self.allow_custom=allow_custom
+        self.allow_custom = allow_custom
         if clear_database:
             self.sgraph.delete_all()
 
@@ -175,10 +179,12 @@ class Neo4jSink(DataSink):
                     self.sub_object_relationships.append((key, obj[key]))
         # Make the Bundle ID a property
         # use dictionary expansion as keyword for optional node properties
-        node = Node(type_name,
-                    name=node_name,
-                    # bundlesource=self.bundlename,
-                    **node_contents)
+        node = Node(
+            type_name,
+            name=node_name,
+            # bundlesource=self.bundlename,
+            **node_contents,
+        )
         # if node needs new created_by relation, create the node and then the relationship
         self.sgraph.create(node)
         # check to see if the addition of this node makes it possible to create a relationship
@@ -206,10 +212,12 @@ class Neo4jSink(DataSink):
                     node_contents[key] = value
                 else:
                     self.sub_object_relationships.append((key, value))
-        node = Node(sub_prop,
-                    name=sub_prop + "_" + self.next_id(),
-                    # bundlesource=self.bundlename,
-                    **node_contents)
+        node = Node(
+            sub_prop,
+            name=sub_prop + "_" + self.next_id(),
+            # bundlesource=self.bundlename,
+            **node_contents,
+        )
         self.sgraph.create(node)
         relationship = Relationship(parent_node, sub_prop, node)
         self.sgraph.create(relationship)
@@ -230,10 +238,12 @@ class Neo4jSink(DataSink):
                     node_contents[key] = value
                 else:
                     self.sub_object_relationships.append((key, value))
-            node = Node("external_reference",
-                        name="external_reference" + "_" + self.next_id(),
-                        # bundlesource=self.bundlename,
-                        **node_contents)
+            node = Node(
+                "external_reference",
+                name="external_reference" + "_" + self.next_id(),
+                # bundlesource=self.bundlename,
+                **node_contents,
+            )
             relationship = Relationship(parent_node, "external_reference", node)
             self.sgraph.create(relationship)
 
@@ -254,15 +264,17 @@ class Neo4jSink(DataSink):
                         node_contents[key] = hash_dict_as_string(value)
                     else:
                         node_contents[key] = value
-            node = Node(type_name,
-                        name=type_name + "_" + self.next_id(),
-                        # bundlesource=self.bundlename,
-                        **node_contents)
+            node = Node(
+                type_name,
+                name=type_name + "_" + self.next_id(),
+                # bundlesource=self.bundlename,
+                **node_contents,
+            )
             relationship = Relationship(parent_node, type_name, node)
             self.sgraph.create(relationship)
             self._insert_embedded_relationships(ext, parent_node["id"])
 
-    def _is_node_available(self, id,):
+    def _is_node_available(self, id):
         cypher_string = f'OPTIONAL MATCH (a) WHERE a.id="{str(id)}" UNWIND [a] AS list_rows RETURN list_rows'
         cursor = self.sgraph.run(cypher_string).data()
         return cursor[0]["list_rows"]
@@ -290,7 +302,7 @@ class Neo4jSink(DataSink):
             k_tokens = k.split("_")
             # find refs, but ignore external_references since they aren't objects
             if "ref" in k_tokens[len(k_tokens) - 1] and k_tokens[len(k_tokens) - 1] != "references":
-                rel_type = "_".join(k_tokens[: -1])
+                rel_type = "_".join(k_tokens[: -1])   # noqa F841
                 ref_list = []
                 # refs are lists, push singular ref into list to make it iterable for loop
                 if not type(obj[k]).__name__ == "list":
@@ -307,9 +319,9 @@ class Neo4jSink(DataSink):
                             remove_sro_from_list(obj, self.relationships_to_recheck)
                     else:
                         if not recheck:
-                            embedded_relationship = {"source_ref": id,
-                                                     "target_ref": ref,
-                                                     "relationship_type": k}
+                            embedded_relationship = {
+                                "source_ref": id,
+                                "target_ref": ref,
+                                "relationship_type": k,
+                            }
                             self.relationships_to_recheck.append(embedded_relationship)
-
-

@@ -102,7 +102,7 @@ def generate_insert_information(self, dictionary_name, stix_object, **kwargs):  
                     table_child = data_sink.tables_dictionary[
                         canonicalize_table_name(table_name + "_" + dictionary_name + "_" + "values", schema_name)
                     ]
-                    child_table_inserts = generate_insert_for_dictionary_list(table_child, next_id, value, data_sink, contained_type)
+                    child_table_inserts.extend(generate_insert_for_dictionary_list(table_child, next_id, value, data_sink, contained_type))
                     value = next_id
                     stix_type = IntegerProperty()
                 else:

@@ -29,7 +29,7 @@ IDENTITY_CUSTOM_PROP = stix2.v21.Identity(
 @contextlib.contextmanager
 def _register_custom_sdo(ext_class, stix_type, props):
     ext_class = stix2.v21.CustomObject(
-        stix_type, props, None, True
+        stix_type, props, None, True,
     )(ext_class)
 
     try:
@@ -41,7 +41,7 @@ def _register_custom_sdo(ext_class, stix_type, props):
 @contextlib.contextmanager
 def _register_custom_sco(ext_class, stix_type, props, id_contrib_props=None):
     ext_class = stix2.v21.CustomObservable(
-        stix_type, props, id_contrib_props
+        stix_type, props, id_contrib_props,
     )(ext_class)
 
     try:
@@ -53,7 +53,7 @@ def _register_custom_sco(ext_class, stix_type, props, id_contrib_props=None):
 @contextlib.contextmanager
 def _register_custom_marking(ext_class, marking_type, props):
     ext_class = stix2.v21.CustomMarking(marking_type, props)(
-        ext_class
+        ext_class,
     )
 
     try:
@@ -92,7 +92,7 @@ def _register_extension(ext, props):
 @contextlib.contextmanager
 def _register_subtype_extension(ext_class, name, props):
     ext_class = stix2.v21.CustomExtension(name, props)(
-        ext_class
+        ext_class,
     )
 
     try:
@@ -107,7 +107,7 @@ def _register_sdo_extension(ext_class, stix_type, props):
     ext_def_id = "extension-definition--" + str(uuid.uuid4())
 
     ext_class = stix2.v21.CustomObject(
-        stix_type, props, ext_def_id, True
+        stix_type, props, ext_def_id, True,
     )(ext_class)
 
     try:
@@ -123,7 +123,7 @@ def _register_sro_extension(ext_class, stix_type, props):
     ext_def_id = "extension-definition--" + str(uuid.uuid4())
 
     ext_class = stix2.v21.CustomObject(
-        stix_type, props, ext_def_id, False
+        stix_type, props, ext_def_id, False,
     )(ext_class)
 
     try:
@@ -139,7 +139,7 @@ def _register_sco_extension(ext_class, stix_type, props, id_contrib_props=None):
     ext_def_id = "extension-definition--" + str(uuid.uuid4())
 
     ext_class = stix2.v21.CustomObservable(
-        stix_type, props, id_contrib_props, ext_def_id
+        stix_type, props, id_contrib_props, ext_def_id,
     )(ext_class)
 
     try:
@@ -164,7 +164,7 @@ def custom_subtype_extension_type():
         'x-new-ext', [
             ('property1', stix2.properties.StringProperty(required=True)),
             ('property2', stix2.properties.IntegerProperty()),
-        ]
+        ],
     ) as ext:
         yield ext
 
@@ -496,9 +496,11 @@ def test_custom_marking_no_init_1():
     class NewObj:
         pass
 
-    with _register_custom_marking(NewObj, 'x-new-obj', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ]) as marking_class:
+    with _register_custom_marking(
+        NewObj, 'x-new-obj', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    ) as marking_class:
         no = marking_class(property1='something')
         assert no.property1 == 'something'
 
@@ -507,9 +509,11 @@ def test_custom_marking_no_init_2():
     class NewObj2(object):
         pass
 
-    with _register_custom_marking(NewObj2, 'x-new-obj2', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ]) as marking_class:
+    with _register_custom_marking(
+        NewObj2, 'x-new-obj2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    ) as marking_class:
         no2 = marking_class(property1='something')
         assert no2.property1 == 'something'
 
@@ -550,9 +554,11 @@ def test_register_duplicate_marking():
     class NewObj:
         pass
 
-    with _register_custom_marking(NewObj, 'x-new-obj', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ]):
+    with _register_custom_marking(
+        NewObj, 'x-new-obj', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    ):
         with pytest.raises(DuplicateRegistrationError) as excinfo:
             @stix2.v21.CustomMarking(
                 'x-new-obj', [
@@ -575,10 +581,12 @@ def custom_sdo_type():
             if "property3" in kwargs and not isinstance(kwargs.get("property3"), int):
                 raise TypeError("Must be integer!")
 
-    with _register_custom_sdo(NewType, 'x-new-type', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-        ('property2', stix2.properties.IntegerProperty()),
-    ]) as sdo_class:
+    with _register_custom_sdo(
+        NewType, 'x-new-type', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ],
+    ) as sdo_class:
         yield sdo_class
 
 
@@ -606,9 +614,11 @@ def test_custom_object_no_init_1():
     class NewObj:
         pass
 
-    with _register_custom_sdo(NewObj, 'x-new-obj', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ]) as sdo_class:
+    with _register_custom_sdo(
+        NewObj, 'x-new-obj', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    ) as sdo_class:
         no = sdo_class(property1='something')
         assert no.property1 == 'something'
 
@@ -617,9 +627,11 @@ def test_custom_object_no_init_2():
     class NewObj2(object):
         pass
 
-    with _register_custom_sdo(NewObj2, 'x-new-obj2', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ]) as sdo_class:
+    with _register_custom_sdo(
+        NewObj2, 'x-new-obj2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    ) as sdo_class:
         no2 = sdo_class(property1='something')
         assert no2.property1 == 'something'
 
@@ -660,9 +672,11 @@ def test_custom_object_ref_property_containing_identifier():
     class NewObs:
         pass
 
-    with _register_custom_sdo(NewObs, 'x-new-obj-with-ref', [
-        ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
-    ]):
+    with _register_custom_sdo(
+        NewObs, 'x-new-obj-with-ref', [
+            ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
+        ],
+    ):
         pass
 
 
@@ -670,9 +684,11 @@ def test_custom_object_refs_property_containing_identifiers():
     class NewObs:
         pass
 
-    with _register_custom_sdo(NewObs, 'x-new-obj-with-refs', [
-        ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
-    ]):
+    with _register_custom_sdo(
+        NewObs, 'x-new-obj-with-refs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
+        ],
+    ):
         pass
 
 
@@ -932,9 +948,11 @@ def test_custom_observable_object_ref_property_as_identifier():
     class NewObs:
         pass
 
-    with _register_custom_sco(NewObs, 'x-new-obs-with-ref', [
-        ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
-    ]):
+    with _register_custom_sco(
+        NewObs, 'x-new-obs-with-ref', [
+            ('property_ref', stix2.properties.ReferenceProperty(invalid_types=[])),
+        ],
+    ):
         pass
 
 
@@ -942,9 +960,11 @@ def test_custom_observable_object_refs_property_containing_identifiers():
     class NewObs:
         pass
 
-    with _register_custom_sco(NewObs, 'x-new-obs-with-refs', [
-        ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
-    ]):
+    with _register_custom_sco(
+        NewObs, 'x-new-obs-with-refs', [
+            ('property_refs', stix2.properties.ListProperty(stix2.properties.ReferenceProperty(invalid_types=[]))),
+        ],
+    ):
         pass
 
 
@@ -1140,12 +1160,14 @@ def test_custom_observable_object_det_id_1():
     class DetIdObs1:
         pass
 
-    with _register_custom_sco(DetIdObs1, 'x-det-id-observable-1', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-        ('property2', stix2.properties.IntegerProperty()),
-    ], [
-        'property1',
-    ]) as sco_class:
+    with _register_custom_sco(
+        DetIdObs1, 'x-det-id-observable-1', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ], [
+            'property1',
+        ],
+    ) as sco_class:
 
         dio_1 = sco_class(property1='I am property1!', property2=42)
         dio_2 = sco_class(property1='I am property1!', property2=24)
@@ -1167,12 +1189,14 @@ def test_custom_observable_object_det_id_2():
     class DetIdObs2:
         pass
 
-    with _register_custom_sco(DetIdObs2, 'x-det-id-observable-2', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-        ('property2', stix2.properties.IntegerProperty()),
-    ], [
-        'property1', 'property2',
-    ]) as sco_class:
+    with _register_custom_sco(
+        DetIdObs2, 'x-det-id-observable-2', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+            ('property2', stix2.properties.IntegerProperty()),
+        ], [
+            'property1', 'property2',
+        ],
+    ) as sco_class:
 
         dio_1 = sco_class(property1='I am property1!', property2=42)
         dio_2 = sco_class(property1='I am property1!', property2=42)
@@ -1192,9 +1216,11 @@ def test_custom_observable_object_no_id_contrib_props():
     class DetIdObs3:
         pass
 
-    with _register_custom_sco(DetIdObs3, 'x-det-id-observable-3', [
-        ('property1', stix2.properties.StringProperty(required=True)),
-    ]) as sco_class:
+    with _register_custom_sco(
+        DetIdObs3, 'x-det-id-observable-3', [
+            ('property1', stix2.properties.StringProperty(required=True)),
+        ],
+    ) as sco_class:
         dio = sco_class(property1="I am property1!")
 
         uuid_obj = uuid.UUID(dio.id[-36:])
@@ -1259,7 +1285,7 @@ def test_custom_extension_with_list_and_dict_properties_observable_type(data):
         SomeCustomExtension,
         "x-some-extension-ext", [
                 ('keys', stix2.properties.ListProperty(stix2.properties.DictionaryProperty, required=True)),
-        ]
+        ],
     ) as ext_type:
         example = ext_type(keys=[{'test123': 123, 'test345': 'aaaa'}])
         assert data == example.serialize(pretty=True)
@@ -1326,7 +1352,7 @@ def test_custom_extension_no_init_1():
         NewExt,
         'x-new-extension-ext', [
             ('property1', stix2.properties.StringProperty(required=True)),
-        ]
+        ],
     ) as ext_class:
         ne = ext_class(property1="foobar")
         assert ne.property1 == "foobar"
@@ -1340,7 +1366,7 @@ def test_custom_extension_no_init_2():
         NewExt2,
         'x-new-extension-ext', [
             ('property1', stix2.properties.StringProperty(required=True)),
-        ]
+        ],
     ) as ext_class:
         ne = ext_class(property1="foobar")
         assert ne.property1 == "foobar"
@@ -1563,9 +1589,11 @@ def test_custom_object_nested_dictionary(data):
         def __init__(self, **kwargs):
             pass
 
-    with _register_custom_sdo(Example, 'x-example', [
-        ('dictionary', stix2.properties.DictionaryProperty()),
-    ]) as sdo_class:
+    with _register_custom_sdo(
+        Example, 'x-example', [
+            ('dictionary', stix2.properties.DictionaryProperty()),
+        ],
+    ) as sdo_class:
         example = sdo_class(
             id='x-example--336d8a9f-91f1-46c5-b142-6441bb9f8b8d',
             created='2018-06-12T16:20:58.059Z',
@@ -1581,10 +1609,12 @@ def custom_sdo_type2():
     class NewType3(object):
         pass
 
-    with _register_custom_sdo(NewType3, 'x-new-type-2', [
-        ('property1', stix2.properties.StringProperty()),
-        ('property2', stix2.properties.IntegerProperty()),
-    ]) as sdo_class:
+    with _register_custom_sdo(
+        NewType3, 'x-new-type-2', [
+            ('property1', stix2.properties.StringProperty()),
+            ('property2', stix2.properties.IntegerProperty()),
+        ],
+    ) as sdo_class:
         yield sdo_class
 
 
@@ -1621,7 +1651,7 @@ def test_register_observable():
     with _register_custom_sco(
         NewObservable3, 'x-new-observable-3', [
             ('property1', stix2.properties.StringProperty()),
-        ]
+        ],
     ) as sco_class:
         custom_obs = sco_class(property1="Test Observable")
 
@@ -1655,7 +1685,7 @@ def test_register_observable_custom_extension():
         NewExtension2, 'x-new-2-ext', [
             ('property1', stix2.properties.StringProperty(required=True)),
             ('property2', stix2.properties.IntegerProperty()),
-        ]
+        ],
     ) as ext_class:
         example = ext_class(property1="Hi there")
 
@@ -1670,7 +1700,7 @@ def test_register_duplicate_observable_extension():
             SubtypeExt, 'x-new-2-ext', [
                     ('property1', stix2.properties.StringProperty(required=True)),
                     ('property2', stix2.properties.IntegerProperty()),
-            ]
+            ],
     ):
         with pytest.raises(DuplicateRegistrationError) as excinfo:
             @stix2.v21.CustomExtension(
@@ -1744,10 +1774,11 @@ def test_registered_top_level_extension_passes_with_allow_custom_false():
     class ExtensionFoo1:
         extension_type = 'toplevel-property-extension'
 
-    with _register_extension(ExtensionFoo1, [
-            ('rank', stix2.properties.IntegerProperty(required=True)),
-            ('toxicity', stix2.properties.IntegerProperty(required=True)),
-        ]
+    with _register_extension(
+        ExtensionFoo1, [
+                ('rank', stix2.properties.IntegerProperty(required=True)),
+                ('toxicity', stix2.properties.IntegerProperty(required=True)),
+        ],
     ) as ext_class:
         ext_id = ext_class._type
 
@@ -1827,7 +1858,7 @@ def test_registered_new_extension_sdo_allow_custom_false():
             ('name', stix2.properties.StringProperty(required=True)),
             ('some_property_name1', stix2.properties.StringProperty(required=True)),
             ('some_property_name2', stix2.properties.StringProperty()),
-        ]
+        ],
     ) as sdo_class:
         ext_id = sdo_class.with_extension
 
@@ -1864,7 +1895,7 @@ def test_registered_new_extension_sro_allow_custom_false():
             ('name', stix2.properties.StringProperty(required=True)),
             ('some_property_name1', stix2.properties.StringProperty(required=True)),
             ('some_property_name2', stix2.properties.StringProperty()),
-        ]
+        ],
     ) as sro_class:
         ext_id = sro_class.with_extension
 
@@ -1900,7 +1931,7 @@ def test_registered_new_extension_sco_allow_custom_false():
         MyFavSCO, 'my-favorite-sco', [
             ('name', stix2.properties.StringProperty(required=True)),
             ('some_network_protocol_field', stix2.properties.StringProperty(required=True)),
-        ], ['name', 'some_network_protocol_field']
+        ], ['name', 'some_network_protocol_field'],
     ) as sco_class:
         ext_id = sco_class.with_extension
 
