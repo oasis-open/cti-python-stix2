@@ -1108,9 +1108,9 @@ def test_network_traffic_http_request_example():
         request_value="/download.html",
         request_version="http/1.1",
         request_header={
-            "Accept-Encoding": "gzip,deflate",
-            "User-Agent": "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113",
-            "Host": "www.example.com",
+            "Accept-Encoding": ["gzip,deflate"],
+            "User-Agent": ["Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113"],
+            "Host": ["www.example.com"],
         },
     )
     nt = stix2.v21.NetworkTraffic(
@@ -1121,9 +1121,9 @@ def test_network_traffic_http_request_example():
     assert nt.extensions['http-request-ext'].request_method == "get"
     assert nt.extensions['http-request-ext'].request_value == "/download.html"
     assert nt.extensions['http-request-ext'].request_version == "http/1.1"
-    assert nt.extensions['http-request-ext'].request_header['Accept-Encoding'] == "gzip,deflate"
-    assert nt.extensions['http-request-ext'].request_header['User-Agent'] == "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113"
-    assert nt.extensions['http-request-ext'].request_header['Host'] == "www.example.com"
+    assert nt.extensions['http-request-ext'].request_header['Accept-Encoding'] == ["gzip,deflate"]
+    assert nt.extensions['http-request-ext'].request_header['User-Agent'] == ["Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6) Gecko/20040113"]
+    assert nt.extensions['http-request-ext'].request_header['Host'] == ["www.example.com"]
 
 
 def test_network_traffic_icmp_example():
@@ -1183,7 +1183,7 @@ def test_incorrect_socket_options():
             socket_type="SOCK_STREAM",
             options={"SO_RCVTIMEO": '100'},
         )
-    assert "Dictionary Property does not support this value's type" in str(excinfo.value)
+    assert "Invalid value for SocketExt 'options': Invalid value: '100'" in str(excinfo.value)
 
 
 def test_network_traffic_tcp_example():
