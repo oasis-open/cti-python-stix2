@@ -725,6 +725,8 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
     elif self.contained == KillChainPhase:
         tables.append(create_kill_chain_phases_table(name, metadata, db_backend, schema_name, table_name))
         return tables
+    elif isinstance(self.contained, DictionaryProperty):
+        raise NotImplementedError(f"A list of dictionaries property for {table_name}.{name} is not supported for the RDB DataStore yet")   # noqa: E131
     else:
         # if ARRAY is not allowed, it is handled by a previous if clause
         if isinstance(self.contained, Property):
