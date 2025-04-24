@@ -287,6 +287,7 @@ def test_dictionary():
         list_of_timestamps=["2016-05-12T08:17:27.000Z", "2024-05-12T08:17:27.000Z"],
     )
 
+
 multipart_email_msg_dict = {
     "type": "email-message",
     "spec_version": "2.1",
@@ -326,7 +327,6 @@ multipart_email_msg_dict = {
         },
     ],
 }
-
 
 
 def main():

@@ -1,7 +1,6 @@
 import datetime as dt
 import os  # noqa: F401
 
-
 import pytz
 
 import stix2
