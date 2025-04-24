@@ -5,9 +5,9 @@ from sqlalchemy import (  # create_engine,; insert,
 
 from stix2.datastore.relational_db.add_method import add_method
 from stix2.datastore.relational_db.utils import (
-    SCO_COMMON_PROPERTIES, SDO_COMMON_PROPERTIES, canonicalize_table_name,
-    determine_column_name, determine_sql_type_from_stix, flat_classes,
-    get_stix_object_classes, shorten_extension_definition_id
+    canonicalize_table_name, determine_column_name, determine_core_properties,
+    determine_sql_type_from_stix, flat_classes, get_stix_object_classes,
+    shorten_extension_definition_id,
 )
 from stix2.properties import (
     BinaryProperty, BooleanProperty, DictionaryProperty,
@@ -275,7 +275,11 @@ def create_core_table(metadata, db_backend, stix_type_name):
             Column("created", db_backend.determine_sql_type_for_timestamp_property()),
             Column("modified", db_backend.determine_sql_type_for_timestamp_property()),
             Column("revoked", db_backend.determine_sql_type_for_boolean_property()),
-            Column("confidence", db_backend.determine_sql_type_for_integer_property()),
+            Column(
+                "confidence",
+                db_backend.determine_sql_type_for_integer_property(),
+                db_backend.create_min_max_constraint_expression(IntegerProperty(min=0, max=100), "confidence"),
+            ),
             Column("lang", db_backend.determine_sql_type_for_string_property()),
         ]
         columns.extend(sdo_columns)
@@ -481,7 +485,7 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
                         ),
                         Column(
                             "value",
-                            db_backend.determine_sql_type_for_string_property(),
+                            contained_class.determine_sql_type(db_backend),
                             nullable=False,
                         ),
                     ]
@@ -630,6 +634,7 @@ def generate_table_information(self, name, db_backend, **kwargs):  # noqa: F811
     return Column(
         name,
         self.determine_sql_type(db_backend),
+        db_backend.create_min_max_constraint_expression(self, name),
         nullable=not self.required,
         default=self._fixed_value if hasattr(self, "_fixed_value") else None,
     )
@@ -720,6 +725,8 @@ def generate_table_information(self, name, db_backend, metadata, schema_name, ta
     elif self.contained == KillChainPhase:
         tables.append(create_kill_chain_phases_table(name, metadata, db_backend, schema_name, table_name))
         return tables
+    elif isinstance(self.contained, DictionaryProperty):
+        raise NotImplementedError(f"A list of dictionaries property for {table_name}.{name} is not supported for the RDB DataStore yet")   # noqa: E131
     else:
         # if ARRAY is not allowed, it is handled by a previous if clause
         if isinstance(self.contained, Property):
@@ -806,14 +813,7 @@ def generate_object_table(
         table_name = shorten_extension_definition_id(table_name)
     if parent_table_name:
         table_name = parent_table_name + "_" + table_name
-    if is_embedded_object:
-        core_properties = list()
-    elif schema_name in ["sdo", "sro", "common"]:
-        core_properties = SDO_COMMON_PROPERTIES
-    elif schema_name == "sco":
-        core_properties = SCO_COMMON_PROPERTIES
-    else:
-        core_properties = list()
+    core_properties = determine_core_properties(stix_object_class, is_embedded_object)
     columns = list()
     tables = list()
     if issubclass(stix_object_class, _Observable):

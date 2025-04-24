@@ -7,6 +7,7 @@ from stix2.properties import (
     IntegerProperty, Property, ReferenceProperty, StringProperty,
     TimestampProperty,
 )
+import stix2.v21
 from stix2.v21.base import (
     _DomainObject, _Extension, _MetaObject, _Observable, _RelationshipObject,
 )
@@ -40,6 +41,17 @@ SDO_COMMON_PROPERTIES = {
 }
 
 
+def determine_core_properties(stix_object_class, is_embedded_object):
+    if is_embedded_object or issubclass(stix_object_class, _Extension):
+        return list()
+    elif issubclass(stix_object_class, (_MetaObject, _RelationshipObject, _DomainObject)):
+        return SDO_COMMON_PROPERTIES
+    elif issubclass(stix_object_class, _Observable):
+        return SCO_COMMON_PROPERTIES
+    else:
+        raise ValueError(f"{stix_object_class} not a STIX object")
+
+
 def canonicalize_table_name(table_name, schema_name=None):
     if schema_name:
         full_name = schema_name + "." + table_name
@@ -68,21 +80,41 @@ def get_all_subclasses(cls):
     return all_subclasses
 
 
+def see_through_workbench(cls):
+    """
+    Deal with the workbench patching the registry.  This takes the given
+    "class" as obtained from the registry, and tries to find a real type.
+    The workbench replaces real types with "partial" objects, which causes
+    errors if used in type-specific contexts, e.g. issubclass().
+
+    :param cls: A registry-obtained "class" value
+    :return: A real class value
+    """
+    if hasattr(cls, "args"):
+        # The partial object's one stored positional arg is a subclass
+        # of the class we need.  But it will do.
+        return cls.args[0]
+    else:
+        return cls
+
+
 def get_stix_object_classes():
-    yield from get_all_subclasses(_DomainObject)
-    yield from get_all_subclasses(_RelationshipObject)
-    yield from get_all_subclasses(_Observable)
-    yield from get_all_subclasses(_MetaObject)
-    # Non-object extensions (property or toplevel-property only)
-    for ext_cls in get_all_subclasses(_Extension):
-        if ext_cls.extension_type not in (
+    for type_, cls in stix2.v21.OBJ_MAP.items():
+        if type_ != "bundle":
+            yield see_through_workbench(cls)
+
+    # The workbench only patches SDO types, so we shouldn't have to do the
+    # same hackage with other kinds of types.
+    yield from stix2.v21.OBJ_MAP_OBSERVABLE.values()
+    yield from (
+        cls for cls in stix2.v21.EXT_MAP.values()
+        if cls.extension_type not in (
             "new-sdo", "new-sco", "new-sro",
-        ):
-            yield ext_cls
+        )
+    )
 
 
 def schema_for(stix_class):
-
     if issubclass(stix_class, _DomainObject):
         schema_name = "sdo"
     elif issubclass(stix_class, _RelationshipObject):
@@ -95,7 +127,6 @@ def schema_for(stix_class):
         schema_name = getattr(stix_class, "_applies_to", "sco")
     else:
         schema_name = None
-
     return schema_name
 
 
@@ -109,10 +140,10 @@ def table_name_for(stix_type_or_class):
     # Applies to registered extension-definition style extensions only.
     # Their "_type" attribute is actually set to the extension definition ID,
     # rather than a STIX type.
-    if table_name.startswith("extension-definition--"):
-        # table_name = table_name[0:30]
-        # table_name = table_name.replace("extension-definition-", "ext_def")
-        table_name = shorten_extension_definition_id(table_name)
+    if table_name.startswith("extension-definition"):
+        table_name = table_name[0:30]
+        table_name = table_name.replace("extension-definition-", "ext_def")
+
     table_name = canonicalize_table_name(table_name)
     return table_name
 
