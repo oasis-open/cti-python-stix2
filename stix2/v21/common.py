@@ -4,7 +4,9 @@ from collections import OrderedDict
 
 from . import _Extension
 from ..custom import _custom_extension_builder, _custom_marking_builder
-from ..exceptions import InvalidValueError, PropertyPresenceError
+from ..exceptions import (
+    InvalidValueError, PropertyPresenceError, PropertyValueError,
+)
 from ..markings import _MarkingsMixin
 from ..markings.utils import check_tlp_marking
 from ..properties import (
@@ -188,7 +190,7 @@ class MarkingProperty(Property):
         if type(value) in OBJ_MAP_MARKING.values():
             return value, False
         else:
-            raise ValueError("must be a Statement, TLP Marking or a registered marking.")
+            raise PropertyValueError("must be a Statement, TLP Marking or a registered marking.")
 
 
 class MarkingDefinition(_STIXBase21, _MarkingsMixin):
@@ -218,7 +220,7 @@ class MarkingDefinition(_STIXBase21, _MarkingsMixin):
             try:
                 marking_type = OBJ_MAP_MARKING[kwargs['definition_type']]
             except KeyError:
-                raise ValueError("definition_type must be a valid marking type")
+                raise PropertyValueError("definition_type must be a valid marking type")
 
             if not isinstance(kwargs['definition'], marking_type):
                 defn = _get_dict(kwargs['definition'])

@@ -6,6 +6,7 @@ from io import StringIO
 import pytest
 import pytz
 
+from stix2.exceptions import PropertyValueError
 import stix2.serialization
 import stix2.utils
 
@@ -62,7 +63,7 @@ def test_parse_datetime_precision(timestamp, dttm, precision):
     ],
 )
 def test_parse_datetime_invalid(ts):
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         stix2.utils.parse_into_datetime('foobar')
 
 
@@ -87,7 +88,7 @@ def test_get_dict(data):
     ],
 )
 def test_get_dict_invalid(data):
-    with pytest.raises(ValueError):
+    with pytest.raises(PropertyValueError):
         stix2.utils._get_dict(data)
 
 
