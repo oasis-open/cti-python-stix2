@@ -121,6 +121,15 @@ filters = [
         {"type": "file", "id": "file--42a7175a-42cc-508f-8fa7-23b330aff876", "name": "HAL 9000.exe", "spec_version": "2.1", "defanged": False},
     ),
     Filter("labels", "contains", "heartbleed"),
+    Filter(
+        "objects", "iequals",
+        {"0": {"type": "FILE", "id": "FILE--42A7175A-42CC-508F-8FA7-23B330AFF876", "name": "HAL 9000.EXE", "spec_version": "2.1", "defanged": False}},
+    ),
+    Filter(
+        "objects", "icontains",
+        {"type": "FILE", "id": "FILE--42A7175A-42CC-508F-8FA7-23B330AFF876", "name": "HAL 9000.EXE", "spec_version": "2.1", "defanged": False},
+    ),
+    Filter("labels", "icontains", "HEARTBLEED"),
 ]
 
 # same as above objects but converted to real Python STIX2 objects
@@ -339,6 +348,42 @@ def test_apply_common_filters15():
     assert len(resp) == 1
 
     resp = list(apply_common_filters(real_stix_objs, [filters[16]]))
+    assert resp[0].id == real_stix_objs[3].id
+    assert len(resp) == 1
+
+
+def test_apply_common_filters16():
+    # Return any object that matches file object in "objects"
+    resp = list(apply_common_filters(stix_objs, [filters[17]]))
+    assert resp[0]["id"] == stix_objs[4]["id"]
+    assert len(resp) == 1
+    # important additional check to make sure original File dict was
+    # not converted to File object. (this was a deep bug found)
+    assert isinstance(resp[0]["objects"]["0"], dict)
+
+    resp = list(apply_common_filters(real_stix_objs, [filters[17]]))
+    assert resp[0].id == real_stix_objs[4].id
+    assert len(resp) == 1
+
+
+def test_apply_common_filters17():
+    # Return any object that contains a case insensitive specific File Cyber Observable Object
+    resp = list(apply_common_filters(stix_objs, [filters[18]]))
+    assert resp[0]['id'] == stix_objs[4]['id']
+    assert len(resp) == 1
+
+    resp = list(apply_common_filters(real_stix_objs, [filters[18]]))
+    assert resp[0].id == real_stix_objs[4].id
+    assert len(resp) == 1
+
+
+def test_apply_common_filters18():
+    # Return any object that contains case insensitive 'heartbleed' in "labels"
+    resp = list(apply_common_filters(stix_objs, [filters[19]]))
+    assert resp[0]['id'] == stix_objs[3]['id']
+    assert len(resp) == 1
+
+    resp = list(apply_common_filters(real_stix_objs, [filters[19]]))
     assert resp[0].id == real_stix_objs[3].id
     assert len(resp) == 1
 
