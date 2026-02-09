@@ -7,7 +7,7 @@ from .exceptions import ParseError
 from .utils import _get_dict, detect_spec_version
 
 
-def parse(data, allow_custom=False, version=None):
+def parse(data, allow_custom=False, interoperability=False, version=None):
     """Convert a string, dict or file-like object into a STIX object.
 
     Args:
@@ -37,12 +37,12 @@ def parse(data, allow_custom=False, version=None):
     obj = _get_dict(data)
 
     # convert dict to full python-stix2 obj
-    obj = dict_to_stix2(obj, allow_custom, version)
+    obj = dict_to_stix2(obj, allow_custom, interoperability, version)
 
     return obj
 
 
-def dict_to_stix2(stix_dict, allow_custom=False, version=None):
+def dict_to_stix2(stix_dict, allow_custom=False, interoperability=False, version=None):
     """convert dictionary to full python-stix2 object
 
     Args:
@@ -96,10 +96,10 @@ def dict_to_stix2(stix_dict, allow_custom=False, version=None):
                 return stix_dict
         raise ParseError("Can't parse unknown object type '%s'! For custom types, use the CustomObject decorator." % obj_type)
 
-    return obj_class(allow_custom=allow_custom, **stix_dict)
+    return obj_class(allow_custom=allow_custom, interoperability=interoperability, **stix_dict)
 
 
-def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
+def parse_observable(data, _valid_refs=None, allow_custom=False, interoperability=False, version=None):
     """Deserialize a string or file-like object into a STIX Cyber Observable
     object.
 
@@ -144,4 +144,4 @@ def parse_observable(data, _valid_refs=None, allow_custom=False, version=None):
             "use the CustomObservable decorator." % obj['type'],
         )
 
-    return obj_class(allow_custom=allow_custom, **obj)
+    return obj_class(allow_custom=allow_custom, interoperability=interoperability, **obj)
