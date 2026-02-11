@@ -51,7 +51,7 @@ setup(
         'pytz',
         'requests',
         'simplejson',
-        'stix2-patterns>=1.2.0',
+        'stix2-patterns>=2.1.1',
     ],
     project_urls={
         'Documentation': 'https://stix2.readthedocs.io/',
