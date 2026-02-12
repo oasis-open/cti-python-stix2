@@ -2,6 +2,7 @@ import datetime
 
 import pytest
 import pytz
+from stix2patterns.exceptions import ParseException
 
 import stix2
 from stix2.pattern_visitor import create_pattern_object
@@ -551,11 +552,11 @@ def test_parsing_qualified_expression():
 
 
 def test_parsing_start_stop_qualified_expression():
-    patt_obj = create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'", version="2.0")
+    patt_obj = create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'", version="2.0")
 
     assert str(
         patt_obj,
-    ) == "[ipv4-addr:value = '1.2.3.4'] START '2016-06-01T00:00:00Z' STOP '2017-03-12T08:30:00Z'"
+    ) == "[ipv4-addr:value = '1.2.3.4'] START t'2016-06-01T00:00:00Z' STOP t'2017-03-12T08:30:00Z'"
 
 
 def test_parsing_mixed_boolean_expression_1():
@@ -585,8 +586,8 @@ def test_parsing_quoted_second_path_component():
 
 
 def test_parsing_illegal_start_stop_qualified_expression():
-    with pytest.raises(ValueError):
-        create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START '2016-06-01' STOP '2017-03-12T08:30:00Z'", version="2.0")
+    with pytest.raises(ParseException):
+        create_pattern_object("[ipv4-addr:value = '1.2.3.4'] START t'2016-06-01' STOP t'2017-03-12T08:30:00Z'", version="2.0")
 
 
 def test_list_constant():
@@ -631,7 +632,7 @@ def test_ast_class_override_string_constant():
 
 def test_ast_class_override_startstop_qualifier():
     patt_ast = create_pattern_object(
-        "[a:b=1] START '1993-01-20T01:33:52.592Z' STOP '2001-08-19T23:50:23.129Z'",
+        "[a:b=1] START t'1993-01-20T01:33:52.592Z' STOP t'2001-08-19T23:50:23.129Z'",
         "Testing", "stix2.test.v20.pattern_ast_overrides", version="2.0",
     )
 
@@ -646,4 +647,4 @@ def test_ast_class_override_startstop_qualifier():
     assert isinstance(
         patt_ast.qualifier, StartStopQualifierForTesting,
     )
-    assert str(patt_ast) == "[a:b = 1] START '1993-01-20T01:33:52.592Z' STOP '2001-08-19T23:50:23.129Z'"
+    assert str(patt_ast) == "[a:b = 1] START t'1993-01-20T01:33:52.592Z' STOP t'2001-08-19T23:50:23.129Z'"

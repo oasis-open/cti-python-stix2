@@ -9,7 +9,7 @@ from stix2.utils import (
     parse_into_datetime, to_enum,
 )
 
-_DT = datetime.datetime.utcnow()
+_DT = datetime.datetime.now(datetime.timezone.utc)
 # intentionally omit microseconds from the following.  We add it in as
 # needed for each test.
 _DT_STR = _DT.strftime("%Y-%m-%dT%H:%M:%S")
@@ -55,7 +55,7 @@ def test_stix_datetime_now():
 
 
 def test_stix_datetime():
-    dt = datetime.datetime.utcnow()
+    dt = datetime.datetime.now(datetime.timezone.utc)
 
     sdt = STIXdatetime(dt, precision=Precision.SECOND)
     assert sdt.precision is Precision.SECOND
