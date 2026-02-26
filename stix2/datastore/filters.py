@@ -6,7 +6,7 @@ from datetime import datetime
 import stix2.utils
 
 """Supported filter operations"""
-FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains']
+FILTER_OPS = ['=', '!=', 'in', '>', '<', '>=', '<=', 'contains', 'iequals', 'icontains']
 
 """Supported filter value types"""
 FILTER_VALUE_TYPES = (
@@ -88,6 +88,8 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
 
         if self.op == "=":
             return stix_obj_property == filter_value
+        elif self.op == "iequals":
+            return _casefold(filter_value) == _casefold(stix_obj_property)
         elif self.op == "!=":
             return stix_obj_property != filter_value
         elif self.op == "in":
@@ -97,6 +99,11 @@ class Filter(collections.namedtuple('Filter', ['property', 'op', 'value'])):
                 return filter_value in stix_obj_property.values()
             else:
                 return filter_value in stix_obj_property
+        elif self.op == "icontains":
+            if isinstance(filter_value, dict):
+                return _casefold(filter_value) in _casefold(stix_obj_property).values()
+            else:
+                return _casefold(filter_value) in _casefold(stix_obj_property)
         elif self.op == ">":
             return stix_obj_property > filter_value
         elif self.op == "<":
@@ -191,7 +198,7 @@ class FilterSet(object):
     """Internal STIX2 class to facilitate the grouping of Filters
     into sets. The primary motivation for this class came from the problem
     that Filters that had a dict as a value could not be added to a Python
-    set as dicts are not hashable. Thus this class provides set functionality
+    set as dicts are not hashable. Thus, this class provides set functionality
     but internally stores filters in a list.
     """
 
@@ -219,7 +226,7 @@ class FilterSet(object):
         Operates like set, only adding unique stix2.Filters to the FilterSet
 
         Note:
-            method designed to be very accomodating (i.e. even accepting filters=None)
+            method designed to be very accommodating (i.e. even accepting filters=None)
             as it allows for blind calls (very useful in DataStore)
 
         Args:
@@ -242,7 +249,7 @@ class FilterSet(object):
         """Remove a Filter, list of Filters, or FilterSet from the FilterSet.
 
         Note:
-            method designed to be very accomodating (i.e. even accepting filters=None)
+            method designed to be very accommodating (i.e. even accepting filters=None)
             as it allows for blind calls (very useful in DataStore)
 
         Args:
@@ -259,3 +266,17 @@ class FilterSet(object):
 
         for f in filters:
             self._filters.remove(f)
+
+
+def _casefold(input_value):
+    if not isinstance(input_value, FILTER_VALUE_TYPES):
+        input_value = stix2.utils._get_dict(input_value)
+    if hasattr(input_value, 'casefold'):
+        return input_value.casefold()
+    if isinstance(input_value, dict):
+        return {k: _casefold(v) for k, v in input_value.items()}
+    if isinstance(input_value, list):
+        return [_casefold(v) for v in input_value]
+    if isinstance(input_value, tuple):
+        return tuple(_casefold(v) for v in input_value)
+    return input_value
