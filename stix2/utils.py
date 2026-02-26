@@ -8,6 +8,7 @@ import re
 
 import pytz
 
+from stix2.exceptions import PropertyValueError
 import stix2.registry as mappings
 import stix2.version
 
@@ -249,7 +250,7 @@ def parse_into_datetime(
             parsed = dt.datetime.strptime(value, fmt)
         except (TypeError, ValueError):
             # Unknown format
-            raise ValueError(
+            raise PropertyValueError(
                 "must be a datetime object, date object, or "
                 "timestamp string in a recognizable format.",
             )
@@ -292,14 +293,18 @@ def _get_dict(data):
             return json.loads(data)
         except TypeError:
             pass
+        except json.decoder.JSONDecodeError as ex:
+            raise PropertyValueError("Error parsing JSON") from ex
         try:
             return json.load(data)
         except AttributeError:
             pass
+        except json.decoder.JSONDecodeError as ex:
+            raise PropertyValueError("Error parsing JSON") from ex
         try:
             return dict(data)
         except (ValueError, TypeError):
-            raise ValueError("Cannot convert '%s' to dictionary." % str(data))
+            raise PropertyValueError("Cannot convert '%s' to dictionary." % str(data))
 
 
 def get_class_hierarchy_names(obj):
