@@ -212,6 +212,32 @@ def format_datetime(dttm):
     return ts
 
 
+def adjust_nanoseconds(value):
+    """
+    This function checks if the timestamp has exactly 9 digits after the decimal
+    and ends with 'Z'. If it does, it adjusts to microseconds precision (6 digits).
+    Otherwise, it returns the value unchanged.
+    """
+
+    # Return the value if there is no decimal or
+    # if the frac_seconds_part length is not 10
+    if '.' not in value:
+        return value
+
+    seconds_part, frac_seconds_part = value.split('.', 1)
+
+    if len(frac_seconds_part) != 10:
+        return value
+
+    # Ensure the fractional part has exactly 10 characters (9 digits + 1 'Z')
+    if frac_seconds_part[:9].isdigit() and frac_seconds_part[9] == 'Z':
+        # Adjust precision to microseconds (6 digits)
+        microseconds_part = frac_seconds_part[:6]
+        value = f'{seconds_part}.{microseconds_part}Z'
+
+    return value
+
+
 def parse_into_datetime(
     value, precision=Precision.ANY,
     precision_constraint=PrecisionConstraint.EXACT,
@@ -245,6 +271,8 @@ def parse_into_datetime(
     else:
         # value isn't a date or datetime object so assume it's a string
         fmt = _TIMESTAMP_FORMAT_FRAC if "." in value else _TIMESTAMP_FORMAT
+        # adjust value precision from nanoseconds to microseconds if applicable
+        value = adjust_nanoseconds(value)
         try:
             parsed = dt.datetime.strptime(value, fmt)
         except (TypeError, ValueError):
