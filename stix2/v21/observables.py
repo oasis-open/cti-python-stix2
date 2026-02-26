@@ -143,11 +143,12 @@ class EmailAddress(_Observable):
     _id_contributing_properties = ["value"]
 
 
-class EmailMIMEComponent(_STIXBase21):
+class EmailMIMEComponentType(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_qpo5x7d8mefq>`__.
     """
 
+    _type = 'email-mime-component-type'
     _properties = OrderedDict([
         ('body', StringProperty()),
         ('body_raw_ref', ReferenceProperty(valid_types=['artifact', 'file'], spec_version='2.1')),
@@ -156,7 +157,7 @@ class EmailMIMEComponent(_STIXBase21):
     ])
 
     def _check_object_constraints(self):
-        super(EmailMIMEComponent, self)._check_object_constraints()
+        super(EmailMIMEComponentType, self)._check_object_constraints()
         self._check_at_least_one_property(['body', 'body_raw_ref'])
 
 
@@ -183,7 +184,7 @@ class EmailMessage(_Observable):
         ('received_lines', ListProperty(StringProperty)),
         ('additional_header_fields', DictionaryProperty(spec_version='2.1')),
         ('body', StringProperty()),
-        ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponent))),
+        ('body_multipart', ListProperty(EmbeddedObjectProperty(type=EmailMIMEComponentType))),
         ('raw_email_ref', ReferenceProperty(valid_types='artifact', spec_version='2.1')),
         ('object_marking_refs', ListProperty(ReferenceProperty(valid_types='marking-definition', spec_version='2.1'))),
         ('granular_markings', ListProperty(GranularMarking)),
@@ -212,11 +213,12 @@ class ArchiveExt(_Extension):
     ])
 
 
-class AlternateDataStream(_STIXBase21):
+class AlternateDataStreamType(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_8i2ts0xicqea>`__.
     """
 
+    _type = 'alternate-data-stream-type'
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
@@ -232,7 +234,7 @@ class NTFSExt(_Extension):
     _type = 'ntfs-ext'
     _properties = OrderedDict([
         ('sid', StringProperty()),
-        ('alternate_data_streams', ListProperty(EmbeddedObjectProperty(type=AlternateDataStream))),
+        ('alternate_data_streams', ListProperty(EmbeddedObjectProperty(type=AlternateDataStreamType))),
     ])
 
 
@@ -270,6 +272,7 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_29l09w731pzc>`__.
     """
 
+    _type = 'windows-pe-optional-header-type'
     _properties = OrderedDict([
         ('magic_hex', HexProperty()),
         ('major_linker_version', IntegerProperty()),
@@ -309,11 +312,12 @@ class WindowsPEOptionalHeaderType(_STIXBase21):
         self._check_at_least_one_property()
 
 
-class WindowsPESection(_STIXBase21):
+class WindowsPESectionType(_STIXBase21):
     """For more detailed information on this object's properties, see
     `the STIX 2.1 specification <https://docs.oasis-open.org/cti/stix/v2.1/os/stix-v2.1-os.html#_ioapwyd8oimw>`__.
     """
 
+    _type = 'windows-pe-section-type'
     _properties = OrderedDict([
         ('name', StringProperty(required=True)),
         ('size', IntegerProperty(min=0)),
@@ -340,7 +344,7 @@ class WindowsPEBinaryExt(_Extension):
         ('characteristics_hex', HexProperty()),
         ('file_header_hashes', HashesProperty(HASHING_ALGORITHM, spec_version="2.1")),
         ('optional_header', EmbeddedObjectProperty(type=WindowsPEOptionalHeaderType)),
-        ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
+        ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESectionType))),
     ])
 
 
