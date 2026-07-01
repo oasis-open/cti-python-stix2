@@ -192,6 +192,23 @@ def test_add_marking_mark_same_property_same_marking():
         assert m in after["granular_markings"]
 
 
+def test_add_marking_mark_nested_sub_object_property():
+    # A selector reaching into a STIX sub-object such as external_references
+    # is valid per STIX 2.1 section 7.2.3.1, which gives the example
+    # external_references.[0].source_name.
+    kwargs = MALWARE_KWARGS.copy()
+    kwargs["external_references"] = [
+        {"source_name": "capec", "external_id": "CAPEC-163"},
+    ]
+    before = Malware(**kwargs)
+    selector = "external_references.[0].source_name"
+
+    after = markings.add_markings(before, [MARKING_IDS[0]], [selector])
+
+    assert after["granular_markings"][0]["selectors"] == [selector]
+    assert after["granular_markings"][0]["marking_ref"] == MARKING_IDS[0]
+
+
 @pytest.mark.parametrize(
     "data,marking", [
         (

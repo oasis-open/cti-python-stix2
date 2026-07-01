@@ -1,6 +1,6 @@
 """Utility functions for STIX2 data markings."""
 
-import collections
+import collections.abc
 
 from stix2 import exceptions, utils
 
@@ -232,7 +232,7 @@ def iterpath(obj, path=None):
         path.append(varname)
         yield (path, varobj)
 
-        if isinstance(varobj, dict):
+        if isinstance(varobj, collections.abc.Mapping):
 
             for item in iterpath(varobj, path):
                 yield item
@@ -245,7 +245,7 @@ def iterpath(obj, path=None):
 
                 yield (path, item)
 
-                if isinstance(item, dict):
+                if isinstance(item, collections.abc.Mapping):
                     for descendant in iterpath(item, path):
                         yield descendant
 
