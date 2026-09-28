@@ -343,6 +343,10 @@ class WindowsPEBinaryExt(_Extension):
         ('sections', ListProperty(EmbeddedObjectProperty(type=WindowsPESection))),
     ])
 
+    def _check_object_constraints(self):
+        super(WindowsPEBinaryExt, self)._check_object_constraints()
+        self._check_at_least_one_property(self._properties.keys() - {'pe_type'})
+
 
 class File(_Observable):
     """For more detailed information on this object's properties, see

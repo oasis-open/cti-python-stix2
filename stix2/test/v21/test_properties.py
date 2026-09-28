@@ -491,6 +491,7 @@ def test_extension_property_valid():
         {
             'windows-pebinary-ext': {
                 'pe_type': 'exe',
+                'machine_hex': '014c',
             },
         }, False,
     )
@@ -504,6 +505,7 @@ def test_extension_property_valid():
         {
             'windows-pebinary-ext': {
                 'pe_type': 'exe',
+                'machine_hex': '014c',
             },
         }, True,
     )
@@ -549,6 +551,7 @@ def test_extension_property_invalid3():
             {
                 'windows-pebinary-ext': {
                     'pe_type': 'exe',
+                    'machine_hex': '014c',
                     'abc': 123,
                 },
             },
@@ -559,6 +562,7 @@ def test_extension_property_invalid3():
         {
             'windows-pebinary-ext': {
                 'pe_type': 'exe',
+                'machine_hex': '014c',
                 'abc': 123,
             },
         }, True,
@@ -574,6 +578,31 @@ def test_extension_property_invalid3():
 def test_extension_at_least_one_property_constraint():
     with pytest.raises(AtLeastOnePropertyError):
         stix2.v21.TCPExt()
+
+
+@pytest.mark.parametrize(
+    "extra_properties", [
+        {},
+        {"x_custom": "value"},
+    ],
+)
+def test_windows_pe_binary_ext_requires_another_defined_property(extra_properties):
+    with pytest.raises(AtLeastOnePropertyError) as excinfo:
+        stix2.v21.WindowsPEBinaryExt(
+            pe_type="exe", allow_custom=True, **extra_properties
+        )
+
+    assert excinfo.value.cls == stix2.v21.WindowsPEBinaryExt
+
+
+def test_file_rejects_windows_pe_binary_ext_with_only_pe_type():
+    with pytest.raises(stix2.exceptions.InvalidValueError) as excinfo:
+        stix2.v21.File(
+            name="example.exe",
+            extensions={"windows-pebinary-ext": {"pe_type": "exe"}},
+        )
+
+    assert isinstance(excinfo.value.__cause__, AtLeastOnePropertyError)
 
 
 def test_marking_property_error():
